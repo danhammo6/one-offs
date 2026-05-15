@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Random Walk Heatmap</title>
+<style>
+  body {
+    margin: 0;
+    background: #111;
+    color: #eee;
+    font-family: system-ui, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px;
+  }
+  h1 { margin: 0 0 8px; font-size: 18px; font-weight: 500; }
+  #stats {
+    font-size: 13px; margin-bottom: 8px; opacity: 0.85;
+    display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;
+    max-width: 620px; min-height: 1.4em;
+  }
+  #stats span b { color: #fff; font-weight: 600; }
+  #controls {
+    margin-bottom: 12px; display: flex; gap: 16px; align-items: center;
+    flex-wrap: wrap; justify-content: center; max-width: 620px;
+  }
+  button {
+    background: #2a2a2a; color: #eee; border: 1px solid #444;
+    padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 13px;
+  }
+  button:hover { background: #3a3a3a; }
+  label { font-size: 13px; }
+  input[type=range] { vertical-align: middle; }
+  canvas { background: #000; border: 1px solid #333; image-rendering: pixelated; }
+</style>
+</head>
+<body>
+  <h1>Random Walk Heatmap</h1>
+  <div id="stats">&nbsp;</div>
+  <div id="controls">
+    <button id="pauseBtn">Pause</button>
+    <button id="resetBtn">Reset</button>
+    <label>Speed: <input id="speed" type="range" min="1" max="200" value="40"></label>
+    <label>Grid: <input id="grid" type="range" min="11" max="121" step="2" value="41">
+      <span id="gridVal">41</span></label>
+    <label>Fade: <input id="fade" type="range" min="0" max="100" value="30">
+      <span id="fadeVal">30</span></label>
+    <label>Max moves: <input id="maxMul" type="range" min="1" max="200" value="50">
+      <span id="maxVal">50× = 2050</span></label>
+  </div>
+  <canvas id="canvas" width="588" height="588"></canvas>
+
+<script>
+(() => {
+  const CANVAS_SIZE = 588;
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+
+  const statsEl = document.getElementById('stats');
+  const pauseBtn = document.getElementById('pauseBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const speedEl = document.getElementById('speed');
+  const gridEl = document.getElementById('grid');
+  const gridValEl = document.getElementById('gridVal');
+  const fadeEl = document.getElementById('fade');
+  const fadeValEl = document.getElementById('fadeVal');
+  const maxMulEl = document.getElementById('maxMul');
+  const maxValEl = document.getElementById('maxVal');
+
+  let GRID, PIXEL, heat, x, y, walks, steps, hottest, paused, lastTime;
+  let totalSteps, longest, shortest, lastLen, totalMoves, stopped;
+
+  function maxMoves() {
+    return Number(maxMulEl.value) * GRID * GRID;
+  }
+  function updateMaxLabel() {
+    maxValEl.textContent = `${maxMulEl.value}× = ${maxMoves()}`;
+  }
+
+  function reset() {
+    GRID = Number(gridEl.value);
+    PIXEL = CANVAS_SIZE / GRID;
+    heat = Array.from({ length: GRID }, () => new Float32Array(GRID));
+    walks = 0;
+    hottest = 0;
+    totalSteps = 0;
+    longest = 0;
+    shortest = Infinity;
+    lastLen = 0;
+    totalMoves = 0;
+    stopped = false;
+    lastTime = performance.now();
+    updateMaxLabel();
+    startWalk();
+  }
+
+  function startWalk() {
+    if (walks > 0) {
+      // Record the just-finished walk's length.
+      lastLen = steps;
+      totalSteps += steps;
+      if (steps > longest) longest = steps;
+      if (steps < shortest) shortest = steps;
+    }
+    x = Math.floor(GRID / 2);
+    y = Math.floor(GRID / 2);
+    steps = 0;
+    walks += 1;
+    heat[y][x] += 1;
+    if (heat[y][x] > hottest) hottest = heat[y][x];
+  }
+
+  function step() {
+    const dir = Math.floor(Math.random() * 4);
+    if (dir === 0) y -= 1;
+    else if (dir === 1) y += 1;
+    else if (dir === 2) x -= 1;
+    else x += 1;
+    steps += 1;
+    totalMoves += 1;
+
+    if (x < 0 || x >= GRID || y < 0 || y >= GRID) {
+      // Walk ended; start a new one unless we've hit the cap.
+      if (totalMoves >= maxMoves()) {
+        lastLen = steps;
+        totalSteps += steps;
+        if (steps > longest) longest = steps;
+        if (steps < shortest) shortest = steps;
+        stopped = true;
+        return;
+      }
+      startWalk();
+      return;
+    }
+    heat[y][x] += 1;
+    if (heat[y][x] > hottest) hottest = heat[y][x];
+
+    if (totalMoves >= maxMoves()) {
+      stopped = true;
+    }
+  }
+
+  // Fade every cell toward 0. `rate` is fraction lost per second.
+  function fade(dt) {
+    const rate = Number(fadeEl.value) / 100; // 0..1 per second
+    if (rate <= 0) return;
+    const factor = Math.exp(-rate * dt);
+    let newHottest = 0;
+    for (let j = 0; j < GRID; j++) {
+      const row = heat[j];
+      for (let i = 0; i < GRID; i++) {
+        const v = row[i] * factor;
+        row[i] = v < 0.001 ? 0 : v;
+        if (row[i] > newHottest) newHottest = row[i];
+      }
+    }
+    hottest = newHottest;
+  }
+
+  // Map a heat value (0..hottest) to a color via a log scale so a few
+  // hot cells don't wash out the rest of the map.
+  function heatColor(v) {
+    if (v <= 0) return '#000';
+    const t = Math.log(1 + v) / Math.log(1 + Math.max(hottest, 1));
+    const stops = [
+      [0.00,   0,   0,   0],
+      [0.15,  20,  10,  80],
+      [0.35, 130,  20, 140],
+      [0.55, 220,  40,  60],
+      [0.75, 250, 140,  20],
+      [0.90, 250, 230,  60],
+      [1.00, 255, 255, 255],
+    ];
+    for (let i = 1; i < stops.length; i++) {
+      if (t <= stops[i][0]) {
+        const a = stops[i - 1], b = stops[i];
+        const f = (t - a[0]) / (b[0] - a[0]);
+        const r = Math.round(a[1] + f * (b[1] - a[1]));
+        const g = Math.round(a[2] + f * (b[2] - a[2]));
+        const bl = Math.round(a[3] + f * (b[3] - a[3]));
+        return `rgb(${r},${g},${bl})`;
+      }
+    }
+    return '#fff';
+  }
+
+  function draw() {
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+    for (let j = 0; j < GRID; j++) {
+      for (let i = 0; i < GRID; i++) {
+        if (heat[j][i] > 0) {
+          ctx.fillStyle = heatColor(heat[j][i]);
+          ctx.fillRect(i * PIXEL, j * PIXEL, PIXEL + 1, PIXEL + 1);
+        }
+      }
+    }
+    // Grid lines (only when cells are big enough to be worth it)
+    if (PIXEL >= 6) {
+      ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+      ctx.lineWidth = 1;
+      for (let i = 0; i <= GRID; i++) {
+        const p = Math.round(i * PIXEL) + 0.5;
+        ctx.beginPath(); ctx.moveTo(p, 0); ctx.lineTo(p, CANVAS_SIZE); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, p); ctx.lineTo(CANVAS_SIZE, p); ctx.stroke();
+      }
+    }
+    // Active dot
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    const r = Math.max(1.5, PIXEL / 2 - 1);
+    ctx.arc(x * PIXEL + PIXEL / 2, y * PIXEL + PIXEL / 2, r, 0, Math.PI * 2);
+    ctx.fill();
+
+    const completed = walks - 1;
+    const avg = completed > 0 ? (totalSteps / completed) : 0;
+    const shortestStr = completed > 0 ? shortest : '–';
+    const longestStr = completed > 0 ? longest : '–';
+    const lastStr = completed > 0 ? lastLen : '–';
+    statsEl.innerHTML =
+      `<span>Walks: <b>${walks}</b></span>` +
+      `<span>Current: <b>${steps}</b></span>` +
+      `<span>Last: <b>${lastStr}</b></span>` +
+      `<span>Avg: <b>${avg.toFixed(1)}</b></span>` +
+      `<span>Shortest: <b>${shortestStr}</b></span>` +
+      `<span>Longest: <b>${longestStr}</b></span>` +
+      `<span>Total moves: <b>${totalMoves}</b>/${maxMoves()}</span>` +
+      `<span>Hottest: <b>${hottest.toFixed(1)}</b></span>` +
+      (stopped ? `<span style="color:#ffb84d"><b>STOPPED</b></span>` : '');
+  }
+
+  function tick(now) {
+    const dt = Math.min(0.1, (now - lastTime) / 1000);
+    lastTime = now;
+    if (!paused && !stopped) {
+      const stepsPerFrame = Number(speedEl.value);
+      for (let i = 0; i < stepsPerFrame; i++) {
+        step();
+        if (stopped) break;
+      }
+      fade(dt);
+    }
+    draw();
+    requestAnimationFrame(tick);
+  }
+
+  pauseBtn.addEventListener('click', () => {
+    paused = !paused;
+    pauseBtn.textContent = paused ? 'Resume' : 'Pause';
+  });
+  resetBtn.addEventListener('click', reset);
+  gridEl.addEventListener('input', () => {
+    gridValEl.textContent = gridEl.value;
+    reset();
+  });
+  fadeEl.addEventListener('input', () => {
+    fadeValEl.textContent = fadeEl.value;
+  });
+  maxMulEl.addEventListener('input', () => {
+    updateMaxLabel();
+    // Resume if the cap was raised above current totalMoves.
+    if (stopped && totalMoves < maxMoves()) stopped = false;
+  });
+
+  paused = false;
+  reset();
+  requestAnimationFrame((t) => { lastTime = t; tick(t); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,385 @@
+{
+  "130": {
+    "inputs": {
+      "width": 1920,
+      "height": 1088,
+      "batch_size": 1
+    },
+    "class_type": "EmptySD3LatentImage",
+    "_meta": {
+      "title": "EmptySD3LatentImage"
+    }
+  },
+  "132": {
+    "inputs": {
+      "text": "watermark",
+      "clip": [
+        "161",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Negative Prompt)"
+    }
+  },
+  "133": {
+    "inputs": {
+      "text": "A close-up portrait photograph of an elderly woman from Ghana, showing clear skin texture and fine lines",
+      "clip": [
+        "161",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Positive Prompt)"
+    }
+  },
+  "145": {
+    "inputs": {
+      "filename_prefix": "ComfyUI",
+      "images": [
+        "641:632",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image"
+    }
+  },
+  "161": {
+    "inputs": {
+      "PowerLoraLoaderHeaderWidget": {
+        "type": "PowerLoraLoaderHeaderWidget"
+      },
+      "lora_1": {
+        "on": true,
+        "lora": "Z-Image-Fun-Lora-Distill-8-Steps_ComfyUI.safetensors",
+        "strength": 0.6
+      },
+      "➕ Add Lora": "",
+      "model": [
+        "641:634",
+        0
+      ],
+      "clip": [
+        "556",
+        0
+      ]
+    },
+    "class_type": "Power Lora Loader (rgthree)",
+    "_meta": {
+      "title": "Power Lora Loader (rgthree)"
+    }
+  },
+  "162": {
+    "inputs": {
+      "PowerLoraLoaderHeaderWidget": {
+        "type": "PowerLoraLoaderHeaderWidget"
+      },
+      "➕ Add Lora": "",
+      "model": [
+        "641:629",
+        0
+      ]
+    },
+    "class_type": "Power Lora Loader (rgthree)",
+    "_meta": {
+      "title": "Power Lora Loader (rgthree)"
+    }
+  },
+  "508": {
+    "inputs": {
+      "sampler_name": "euler"
+    },
+    "class_type": "KSamplerSelect",
+    "_meta": {
+      "title": "KSamplerSelect"
+    }
+  },
+  "509": {
+    "inputs": {
+      "noise_seed": 264667668189710
+    },
+    "class_type": "RandomNoise",
+    "_meta": {
+      "title": "RandomNoise"
+    }
+  },
+  "510": {
+    "inputs": {
+      "scheduler": "simple",
+      "steps": 12,
+      "denoise": 1,
+      "model": [
+        "161",
+        0
+      ]
+    },
+    "class_type": "BasicScheduler",
+    "_meta": {
+      "title": "BasicScheduler"
+    }
+  },
+  "556": {
+    "inputs": {
+      "clip_name": "Qwen3-4B-UD-Q6_K_XL.gguf",
+      "type": "lumina2"
+    },
+    "class_type": "CLIPLoaderGGUF",
+    "_meta": {
+      "title": "CLIPLoader (GGUF)"
+    }
+  },
+  "557": {
+    "inputs": {
+      "vae_name": "ae.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Load VAE"
+    }
+  },
+  "558": {
+    "inputs": {
+      "unet_name": "z_image_turbo-Q8_0.gguf"
+    },
+    "class_type": "UnetLoaderGGUF",
+    "_meta": {
+      "title": "Unet Loader (GGUF)"
+    }
+  },
+  "559": {
+    "inputs": {
+      "unet_name": "z_image-Q8_0.gguf"
+    },
+    "class_type": "UnetLoaderGGUF",
+    "_meta": {
+      "title": "Unet Loader (GGUF)"
+    }
+  },
+  "628": {
+    "inputs": {
+      "detail_amount": 0.5,
+      "start": 0.1,
+      "end": 0.9,
+      "bias": 0.5,
+      "exponent": 3,
+      "start_offset": 0,
+      "end_offset": 0,
+      "fade": 0,
+      "smooth": true,
+      "cfg_scale_override": 0,
+      "sampler": [
+        "508",
+        0
+      ]
+    },
+    "class_type": "DetailDaemonSamplerNode",
+    "_meta": {
+      "title": "Detail Daemon Sampler"
+    }
+  },
+  "641:629": {
+    "inputs": {
+      "shift": 3,
+      "model": [
+        "558",
+        0
+      ]
+    },
+    "class_type": "ModelSamplingAuraFlow",
+    "_meta": {
+      "title": "ModelSamplingAuraFlow"
+    }
+  },
+  "641:630": {
+    "inputs": {
+      "cfg": 1,
+      "model": [
+        "162",
+        0
+      ],
+      "positive": [
+        "133",
+        0
+      ],
+      "negative": [
+        "132",
+        0
+      ]
+    },
+    "class_type": "CFGGuider",
+    "_meta": {
+      "title": "CFGGuider"
+    }
+  },
+  "641:631": {
+    "inputs": {
+      "anything": [
+        "641:637",
+        0
+      ]
+    },
+    "class_type": "easy cleanGpuUsed",
+    "_meta": {
+      "title": "Clean VRAM Used"
+    }
+  },
+  "641:632": {
+    "inputs": {
+      "anything": [
+        "641:631",
+        0
+      ]
+    },
+    "class_type": "easy clearCacheAll",
+    "_meta": {
+      "title": "Clear Cache All"
+    }
+  },
+  "641:633": {
+    "inputs": {},
+    "class_type": "DisableNoise",
+    "_meta": {
+      "title": "DisableNoise"
+    }
+  },
+  "641:634": {
+    "inputs": {
+      "shift": 3,
+      "model": [
+        "559",
+        0
+      ]
+    },
+    "class_type": "ModelSamplingAuraFlow",
+    "_meta": {
+      "title": "ModelSamplingAuraFlow"
+    }
+  },
+  "641:635": {
+    "inputs": {
+      "noise": [
+        "641:633",
+        0
+      ],
+      "guider": [
+        "641:630",
+        0
+      ],
+      "sampler": [
+        "628",
+        0
+      ],
+      "sigmas": [
+        "641:638",
+        1
+      ],
+      "latent_image": [
+        "641:636",
+        0
+      ]
+    },
+    "class_type": "SamplerCustomAdvanced",
+    "_meta": {
+      "title": "SamplerCustomAdvanced"
+    }
+  },
+  "641:637": {
+    "inputs": {
+      "samples": [
+        "641:635",
+        0
+      ],
+      "vae": [
+        "557",
+        0
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "641:640": {
+    "inputs": {
+      "cfg": 1,
+      "model": [
+        "161",
+        0
+      ],
+      "positive": [
+        "133",
+        0
+      ],
+      "negative": [
+        "132",
+        0
+      ]
+    },
+    "class_type": "CFGGuider",
+    "_meta": {
+      "title": "CFGGuider"
+    }
+  },
+  "641:636": {
+    "inputs": {
+      "noise": [
+        "509",
+        0
+      ],
+      "guider": [
+        "641:640",
+        0
+      ],
+      "sampler": [
+        "628",
+        0
+      ],
+      "sigmas": [
+        "641:639",
+        0
+      ],
+      "latent_image": [
+        "130",
+        0
+      ]
+    },
+    "class_type": "SamplerCustomAdvanced",
+    "_meta": {
+      "title": "SamplerCustomAdvanced"
+    }
+  },
+  "641:639": {
+    "inputs": {
+      "output_length": 9,
+      "mode": "polynomial",
+      "order": 4,
+      "rescale_after": false,
+      "sigmas_in": [
+        "641:638",
+        0
+      ]
+    },
+    "class_type": "Sigmas Resample",
+    "_meta": {
+      "title": "Sigmas Resample"
+    }
+  },
+  "641:638": {
+    "inputs": {
+      "step": 4,
+      "sigmas": [
+        "510",
+        0
+      ]
+    },
+    "class_type": "SplitSigmas",
+    "_meta": {
+      "title": "SplitSigmas"
+    }
+  }
+}

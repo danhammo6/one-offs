@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>one-offs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Inter:wght@400;500;600&family=Oswald:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+    background: #0e0a1a;
+    color: #f4eafc;
+    margin: 0;
+    min-height: 100vh;
+    padding: 60px 20px;
+  }
+  h1 {
+    font-family: 'Abril Fatface', Georgia, serif;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    text-align: center;
+    margin: 0 0 8px;
+    text-shadow: 4px 4px 0 #000, -2px -2px 0 #ff006e;
+    letter-spacing: 1px;
+    font-weight: normal;
+  }
+  .tagline {
+    text-align: center;
+    opacity: 0.7;
+    font-style: italic;
+    margin-bottom: 60px;
+    font-size: 1.15rem;
+  }
+  .grid {
+    display: grid;
+    gap: 28px;
+    max-width: 1100px;
+    margin: 0 auto;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  }
+  .card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 14px;
+    padding: 32px 30px 28px;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  }
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 36px rgba(255,0,110,0.25);
+    border-color: rgba(255,190,11,0.5);
+  }
+  .card h2 {
+    font-family: 'Oswald', sans-serif;
+    font-size: 1.6rem;
+    margin: 0 0 12px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: #ffbe0b;
+  }
+  .card p {
+    font-size: 1rem;
+    line-height: 1.55;
+    opacity: 0.88;
+    margin: 0 0 14px;
+    flex: 1;
+  }
+  .card .meta {
+    font-family: 'Oswald', sans-serif;
+    font-size: 0.78rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    opacity: 0.55;
+  }
+  .card .arrow {
+    margin-top: 16px;
+    font-family: 'Oswald', sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #ff006e;
+  }
+  footer {
+    text-align: center;
+    margin-top: 80px;
+    opacity: 0.45;
+    font-size: 0.9rem;
+    font-style: italic;
+  }
+</style>
+</head>
+<body>
+  <h1>one-offs</h1>
+  <div class="tagline">A scratchpad of small, self-contained side projects.</div>
+
+  <div class="grid">
+    <a class="card" href="genre-masher-prompts/">
+      <h2>Genre Masher</h2>
+      <p>Random film mashups built from two sub-genres + a character + a quirk. Includes a single-page browser game and a batch generator that drives a local LLM and ComfyUI to produce AI-rendered movie posters and synopses.</p>
+      <div class="meta">HTML · Python · llama.cpp · ComfyUI</div>
+      <div class="arrow">Open project →</div>
+    </a>
+
+    <a class="card" href="random-walk/">
+      <h2>Random Walk</h2>
+      <p>A 2D random walk on a grid, rendered as a live heatmap. Tweak speed, grid size, fade rate, and step budget while it runs. No dependencies — just open it in a browser.</p>
+      <div class="meta">HTML · Canvas</div>
+      <div class="arrow">Open project →</div>
+    </a>
+  </div>
+
+  <footer>~/spike/one-offs · open the README in any subfolder for details</footer>
+</body>
+</html>

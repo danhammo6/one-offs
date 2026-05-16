@@ -218,12 +218,25 @@
     color: #fff;
     border-bottom-color: #fff;
   }
+  .breadcrumb {
+    position: absolute;
+    top: 16px; left: 20px;
+    font-size: 0.85rem;
+    opacity: 0.65;
+  }
+  .breadcrumb a {
+    color: #fff;
+    text-decoration: none;
+    border-bottom: 1px dashed rgba(255,255,255,0.4);
+  }
+  .breadcrumb a:hover { opacity: 1; border-bottom-color: #fff; }
 </style>
 </head>
 <body>
+  <div class="breadcrumb"><a href="../">&larr; one-offs</a></div>
   <h1>Genre Masher 3000</h1>
   <div class="tagline">Pitch the next streaming hit nobody asked for</div>
-  <div class="gallery-link">→ <a href="mashups.html">Browse the AI-generated poster gallery</a></div>
+  <div class="gallery-link">&rarr; <a href="mashups.html">Browse the AI-generated poster gallery</a></div>
 
   <div class="container">
     <div class="slots">

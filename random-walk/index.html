@@ -33,9 +33,22 @@
   label { font-size: 13px; }
   input[type=range] { vertical-align: middle; }
   canvas { background: #000; border: 1px solid #333; image-rendering: pixelated; }
+  .breadcrumb {
+    position: absolute;
+    top: 12px; left: 16px;
+    font-size: 13px;
+    opacity: 0.7;
+  }
+  .breadcrumb a {
+    color: #eee;
+    text-decoration: none;
+    border-bottom: 1px dashed rgba(255,255,255,0.35);
+  }
+  .breadcrumb a:hover { opacity: 1; border-bottom-color: #fff; }
 </style>
 </head>
 <body>
+  <div class="breadcrumb"><a href="../">&larr; one-offs</a></div>
   <h1>Random Walk Heatmap</h1>
   <div id="stats">&nbsp;</div>
   <div id="controls">

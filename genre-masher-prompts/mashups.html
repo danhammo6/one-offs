@@ -56,9 +56,26 @@
   footer a { color: #ffbe0b; text-decoration: none;
               border-bottom: 1px dashed rgba(255,190,11,0.5); }
   footer a:hover { color: #fff; border-bottom-color: #fff; }
+  .breadcrumb {
+    position: absolute;
+    top: 16px; left: 20px;
+    font-size: 0.85rem;
+    opacity: 0.65;
+  }
+  .breadcrumb a {
+    color: #fff;
+    text-decoration: none;
+    border-bottom: 1px dashed rgba(255,255,255,0.4);
+    margin-right: 14px;
+  }
+  .breadcrumb a:hover { opacity: 1; border-bottom-color: #fff; }
 </style>
 </head>
 <body>
+  <div class="breadcrumb">
+    <a href="../">&larr; one-offs</a>
+    <a href="index.html">&larr; play the game</a>
+  </div>
   <h1>Genre Masher 3000</h1>
   <div class="tagline">AI-generated pitches that nobody asked for</div>
   <div class="grid">

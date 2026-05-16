@@ -4,14 +4,14 @@ Generate absurd genre mashup pitches — with AI-rendered movie posters and syno
 
 Two pieces:
 
-1. **`genre-masher.html`** — a single-page browser game. Click "Smash Genres!" to roll two sub-genres + a character + a quirk, get a randomized pitch, and optionally generate an AI poster via Pollinations.ai.
+1. **`index.html`** — a single-page browser game. Click "Smash Genres!" to roll two sub-genres + a character + a quirk, get a randomized pitch, and optionally generate an AI poster via Pollinations.ai.
 2. **`generate_mashups.py`** — batch generator that, for each mashup, calls a local llama.cpp server for a film title + synopsis + Z-Image prompt, drives ComfyUI to render a 1280×1664 poster, and produces a static HTML gallery.
 
 ## Files
 
 ```
 .
-├── genre-masher.html              # standalone browser game (no server needed)
+├── index.html                     # standalone browser game (no server needed)
 ├── generate_mashups.py            # batch CSV + HTML + image pipeline
 ├── comfy_art_workflow_api.json    # ComfyUI workflow (Z-Image art variant)
 ├── mashups.csv                    # last batch run output
@@ -21,7 +21,7 @@ Two pieces:
 
 ## Browser game
 
-Just open `genre-masher.html` in any browser — no server required. Spacebar rerolls; lock buttons pin individual slots. The poster generator hits `image.pollinations.ai` (free, keyless) on demand.
+Just open `index.html` in any browser — no server required. Spacebar rerolls; lock buttons pin individual slots. The poster generator hits `image.pollinations.ai` (free, keyless) on demand. There's a link near the top to `mashups.html`, the gallery of pre-rendered batch pitches.
 
 Combination space: 12 major genres × ~9 sub-genres each = 99 sub-genres, paired with 56 characters and 56 quirks. **Roughly 28 million distinct pitches.** Pre-generating them all would take about 4.5 years of continuous rendering, so on-demand it is.
 

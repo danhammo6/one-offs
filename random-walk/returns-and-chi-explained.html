@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Returns to Center &amp; Why χ² Drifts</title>
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['\\(', '\\)']], displayMath: [['$$', '$$']] },
+    svg: { fontCache: 'global' }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<style>
+  body {
+    margin: 0;
+    background: #14161a;
+    color: #e6e8ec;
+    font-family: -apple-system, system-ui, "Segoe UI", sans-serif;
+    line-height: 1.65;
+  }
+  main {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+  h1 { font-size: 28px; line-height: 1.25; margin: 0 0 8px; }
+  h2 {
+    font-size: 21px; margin: 38px 0 12px;
+    padding-top: 18px; border-top: 1px solid #2a2e36; color: #fff;
+  }
+  h3 { font-size: 17px; margin: 24px 0 8px; color: #fff; }
+  p { margin: 14px 0; }
+  blockquote {
+    margin: 18px 0; padding: 4px 18px;
+    border-left: 3px solid #5b8def; color: #c5cad3; font-style: italic;
+  }
+  strong { color: #fff; }
+  code {
+    background: #20242b; padding: 1px 5px; border-radius: 4px;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.92em;
+  }
+  pre {
+    background: #20242b; padding: 14px 16px; border-radius: 8px;
+    overflow-x: auto; border: 1px solid #2a2e36;
+  }
+  pre code { background: none; padding: 0; }
+  table {
+    border-collapse: collapse; margin: 18px 0; width: 100%;
+    font-size: 15px;
+  }
+  th, td {
+    border: 1px solid #2a2e36; padding: 8px 12px; text-align: left;
+  }
+  th { background: #1d2128; color: #fff; }
+  tr:nth-child(even) td { background: #181b21; }
+  .lead { font-size: 17px; color: #c5cad3; }
+  mjx-container { overflow-x: auto; overflow-y: hidden; max-width: 100%; }
+  a.back {
+    display: inline-block; margin-top: 28px; color: #7ba7ff;
+    text-decoration: none; font-size: 15px; margin-right: 20px;
+  }
+  a.back:hover { text-decoration: underline; }
+  .nav { margin-top: 32px; border-top: 1px solid #2a2e36; padding-top: 16px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Returns to Center &amp; Why χ² Drifts</h1>
+  <p class="lead">Two questions from watching the simulation run: what does
+  &ldquo;returns to center&rdquo; mean, and why does χ² keep climbing instead of settling down?</p>
+
+  <h2>Part 1 — &ldquo;Returns to center&rdquo;</h2>
+  <p>&ldquo;Returns to center&rdquo; counts how many times the walker steps <strong>back onto its
+  exact starting cell</strong> after leaving it &mdash; averaged over all the walks so far.</p>
+
+  <h3>What it&rsquo;s measuring</h3>
+  <p>On the Recenter board, every walk begins at the center cell. As the walker wanders, it
+  sometimes finds its way back to that origin cell. Each time it lands there again, that&rsquo;s one
+  &ldquo;return.&rdquo; The stat is:</p>
+  $$\text{Returns to center} = \frac{\text{total returns across all walks}}{\text{number of walks}}$$
+  <p>So if it reads <code>4.2</code>, the walker has revisited its starting square an average of
+  4.2 times per walk before falling off the edge.</p>
+  <p>In the code it&rsquo;s literally this check on each step (<code>index.html</code>):</p>
+  <pre><code>if (bx === cx &amp;&amp; by === cy) centerReturns += 1;</code></pre>
+  <p>where <code>(cx, cy)</code> is the start cell. (Note: the very first placement at the start
+  isn&rsquo;t counted as a &ldquo;return&rdquo; &mdash; only subsequent visits are.)</p>
+
+  <h3>Why it&rsquo;s an interesting statistic</h3>
+  <p>This is a window into a genuinely deep result &mdash; <strong>Pólya&rsquo;s recurrence theorem
+  (1921)</strong>:</p>
+  <blockquote>A simple random walk in <strong>1D and 2D is recurrent</strong> &mdash; it returns to
+  its starting point infinitely often, with probability 1. In <strong>3D and higher it is
+  transient</strong> &mdash; there&rsquo;s a real chance it wanders off and <em>never</em> comes
+  back.</blockquote>
+  <p>The folklore phrasing (attributed to Kakutani) is:</p>
+  <blockquote>&ldquo;A drunk man will find his way home, but a drunk bird may get lost
+  forever.&rdquo;</blockquote>
+  <p>A drunkard stumbling on a 2D street grid is <strong>certain</strong> to eventually stagger back
+  to their starting lamppost. A drunk bird flying in 3D might not.</p>
+
+  <h3>The catch in our game</h3>
+  <p>Here&rsquo;s the subtle part: Pólya&rsquo;s theorem says &ldquo;infinitely often&rdquo; &mdash;
+  but that&rsquo;s for a walk on an <strong>infinite, unbounded</strong> plane that runs
+  <strong>forever</strong>. Our Recenter board is finite and the walk <em>dies</em> when it hits the
+  edge. So in practice the count is cut short: the walker either keeps returning to center for a
+  while, or escapes off the board and the walk ends.</p>
+  <p>So our &ldquo;returns to center&rdquo; doesn&rsquo;t reach infinity &mdash; it&rsquo;s the
+  <em>finite</em> number of returns before absorption at the boundary. What you&rsquo;ll notice:</p>
+  <ul>
+    <li><strong>Larger grid</strong> &rarr; the edge is farther away &rarr; walks last longer &rarr;
+    <strong>more</strong> returns to center on average. (The unbounded ideal, recurrence, is the
+    limit as the grid &rarr; &infin;.)</li>
+    <li><strong>Smaller grid</strong> &rarr; the walker escapes quickly &rarr; <strong>few</strong>
+    returns.</li>
+  </ul>
+  <p>It&rsquo;s the same recurrent-vs-transient story you saw with the MSD plot, viewed from a
+  different angle: in 2D the walker is &ldquo;sticky&rdquo; near home and keeps drifting back, which
+  is exactly <em>why</em> it explores space so slowly (the &radic;N law). The Pan board&rsquo;s
+  unbounded walker is the version where, given infinite time, that return count really would climb
+  without bound.</p>
+
+  <h2>Part 2 — Why χ² keeps climbing (and whether that&rsquo;s a bug)</h2>
+  <p>Watching the simulation, χ² appeared to creep higher and higher &mdash; reaching ~17 after half
+  a million steps. Is that the RNG going bad? <strong>No &mdash; but it&rsquo;s also not the whole
+  story. It&rsquo;s a subtle and genuinely interesting statistical effect.</strong></p>
+
+  <h3>χ² does not grow with N</h3>
+  <p>For a fair RNG, the cumulative χ² is a <strong>stationary</strong> quantity &mdash; its expected
+  value stays at 3 <em>forever</em>, no matter how many steps. It does not trend upward. Here&rsquo;s
+  why, briefly:</p>
+  <ul>
+    <li>Let \(D_d = \text{count}_d - N/4\) be how far each direction&rsquo;s count strays from
+    fair.</li>
+    <li>As \(N\) grows, the <em>proportions</em> converge to 25%, but the raw deviation \(D_d\) grows
+    like \(\sqrt{N}\) (it&rsquo;s itself a random walk).</li>
+    <li>χ² divides those squared deviations by the expected count (\(N/4\)): the \(\sqrt{N}\) and the
+    \(N/4\) cancel, leaving an \(O(1)\) number centered on 3.</li>
+  </ul>
+  <p>Concretely, the statistic is</p>
+  $$\chi^2 = \sum_{d=1}^{4} \frac{(\text{count}_d - N/4)^2}{N/4} = \sum_{d=1}^{4} \frac{D_d^2}{N/4},
+  \qquad D_d \sim \sqrt{N} \;\Rightarrow\; \frac{D_d^2}{N/4} \sim O(1).$$
+  <p>So a true upward <em>divergence</em> would only happen with a real, persistent bias (then χ²
+  grows linearly with N and would be in the thousands by 500k steps &mdash; not 17). You&rsquo;re
+  nowhere near that.</p>
+
+  <h3>So why does it <em>look</em> like it&rsquo;s climbing?</h3>
+  <p>This is the key insight, and it&rsquo;s the flip side of the &ldquo;less jumpy over time&rdquo;
+  behavior: <strong>as N grows, the cumulative χ² mixes more and more slowly.</strong></p>
+  <p>At N=1,000, one new step noticeably moves the ratio, so it jitters fast around 3. At
+  N=500,000, a single step barely nudges the cumulative counts &mdash; so wherever the statistic
+  happens to be, it <strong>stays there for a long time.</strong> A chance excursion up to 17
+  doesn&rsquo;t snap back; it lingers and reads like a trend.</p>
+  <p>It&rsquo;s still stationary &mdash; given enough further steps it <em>will</em> wander back down
+  toward 3 &mdash; but at half a million steps it&rsquo;s moving glacially. You caught it
+  mid-excursion on a very slow-moving value.</p>
+
+  <h3>How to tell a real bias from slow mixing</h3>
+  <table>
+    <thead><tr><th>Behavior of χ²</th><th>Verdict</th></tr></thead>
+    <tbody>
+      <tr><td>Jitters around 3, rare spikes above 7.81</td><td>Healthy fair RNG</td></tr>
+      <tr><td>Drifts to ~17 and lingers at 500k steps</td><td>Slow mixing &mdash; still fair, just stuck mid-excursion</td></tr>
+      <tr><td>Grows roughly linearly with N (hundreds, thousands)</td><td>Real, persistent directional bias</td></tr>
+      <tr><td>Pinned near 0 forever</td><td>Suspiciously too even &mdash; a rigged/over-regular sequence</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Want to see the &ldquo;fair&rdquo; jitter again?</h3>
+  <p>The fix that makes this visually obvious: compute χ² over a <strong>sliding window</strong> of,
+  say, the last 10,000 moves instead of all moves since reset. A windowed χ² has a fixed mixing
+  speed, so it keeps jittering briskly around 3 forever and never gets &ldquo;stuck&rdquo; at a high
+  value. Plotting cumulative vs. windowed side by side directly demonstrates everything above.</p>
+
+  <div class="nav">
+    <a class="back" href="index.html">&larr; Back to the random walk game</a>
+    <a class="back" href="msd-explained.html">MSD explainer</a>
+    <a class="back" href="boundary-explained.html">Hitting the boundary &rarr;</a>
+  </div>
+</main>
+</body>
+</html>

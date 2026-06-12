@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hitting the Boundary — First-Passage &amp; Absorption</title>
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['\\(', '\\)']], displayMath: [['$$', '$$']] },
+    svg: { fontCache: 'global' }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<style>
+  body {
+    margin: 0;
+    background: #14161a;
+    color: #e6e8ec;
+    font-family: -apple-system, system-ui, "Segoe UI", sans-serif;
+    line-height: 1.65;
+  }
+  main {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+  h1 { font-size: 28px; line-height: 1.25; margin: 0 0 8px; }
+  h2 {
+    font-size: 21px; margin: 38px 0 12px;
+    padding-top: 18px; border-top: 1px solid #2a2e36; color: #fff;
+  }
+  h3 { font-size: 17px; margin: 24px 0 8px; color: #fff; }
+  p { margin: 14px 0; }
+  blockquote {
+    margin: 18px 0; padding: 4px 18px;
+    border-left: 3px solid #5b8def; color: #c5cad3; font-style: italic;
+  }
+  strong { color: #fff; }
+  code {
+    background: #20242b; padding: 1px 5px; border-radius: 4px;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.92em;
+  }
+  pre {
+    background: #20242b; padding: 14px 16px; border-radius: 8px;
+    overflow-x: auto; border: 1px solid #2a2e36;
+  }
+  pre code { background: none; padding: 0; }
+  table {
+    border-collapse: collapse; margin: 18px 0; width: 100%;
+    font-size: 15px;
+  }
+  th, td {
+    border: 1px solid #2a2e36; padding: 8px 12px; text-align: left;
+  }
+  th { background: #1d2128; color: #fff; }
+  tr:nth-child(even) td { background: #181b21; }
+  .lead { font-size: 17px; color: #c5cad3; }
+  mjx-container { overflow-x: auto; overflow-y: hidden; max-width: 100%; }
+  a.back {
+    display: inline-block; margin-top: 28px; color: #7ba7ff;
+    text-decoration: none; font-size: 15px; margin-right: 20px;
+  }
+  a.back:hover { text-decoration: underline; }
+  .nav { margin-top: 32px; border-top: 1px solid #2a2e36; padding-top: 16px; }
+  .callout {
+    background: #18241c; border: 1px solid #2c4733; border-radius: 8px;
+    padding: 2px 18px; margin: 20px 0;
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>Hitting the Boundary: First-Passage &amp; Absorption</h1>
+  <p class="lead">The unbounded walker gives you <em>diffusion</em> (the &radic;N law). The bounded
+  walker &mdash; the one that dies at the edge &mdash; gives you a completely different and equally
+  beautiful theory. The punchline: the same random walk that produces diffusion turns out to
+  <strong>solve classical physics equations</strong> (Laplace&rsquo;s and Poisson&rsquo;s) once you
+  put walls around it.</p>
+
+  <h2>The one object behind everything: the discrete Laplacian</h2>
+  <p>Every result here comes from a single, almost trivial observation. Suppose \(f(x,y)\) is some
+  quantity defined at each cell, and the walker computes it by <em>averaging over where it might
+  step next</em>. Because each of the 4 directions is equally likely:</p>
+  $$f(x,y) = \tfrac{1}{4}\big[f(x{+}1,y) + f(x{-}1,y) + f(x,y{+}1) + f(x,y{-}1)\big]$$
+  <p>&ldquo;A cell&rsquo;s value equals the average of its 4 neighbors.&rdquo; That&rsquo;s the
+  <strong>discrete mean-value property</strong>, and a function satisfying it is called
+  <strong>harmonic</strong>. The continuous version is <strong>Laplace&rsquo;s equation</strong>
+  \(\nabla^2 f = 0\) &mdash; the equation that governs steady-state heat, electrostatic potential,
+  soap films, ideal fluid flow. The random walk <em>is</em> a little machine for solving it. Two
+  different questions about the walk plug into this machine.</p>
+
+  <h2>Question 1 — <em>Which wall do you hit?</em> (Laplace&rsquo;s equation)</h2>
+  <p>Ask: starting from cell \((x,y)\), what&rsquo;s the probability \(h(x,y)\) that the walker
+  eventually exits through, say, the <strong>top</strong> edge rather than any other?</p>
+  <p>Condition on the first step. With probability &frac14; each you move to a neighbor, and from
+  there the probability is just \(h\) at that neighbor. So:</p>
+  $$h(x,y) = \tfrac14\big[h(x{+}1,y)+h(x{-}1,y)+h(x,y{+}1)+h(x,y{-}1)\big]$$
+  <p>That&rsquo;s the mean-value property again &mdash; \(h\) is <strong>harmonic</strong>. The
+  boundary conditions write themselves: \(h = 1\) on the top edge (you&rsquo;ve arrived) and
+  \(h = 0\) on the other edges. So &ldquo;which wall does a random walker hit?&rdquo; is
+  <em>exactly</em> the same math as &ldquo;what&rsquo;s the steady-state temperature, if the top
+  wall is held at 1&deg; and the others at 0&deg;?&rdquo; This probability distribution over exit
+  points has a name &mdash; <strong>harmonic measure</strong> &mdash; and it&rsquo;s a deep object
+  in analysis.</p>
+
+  <h2>Question 2 — <em>How long until you escape?</em> (Poisson&rsquo;s equation)</h2>
+  <p>Now the question the <strong>Avg</strong> stat is measuring. Let \(T(x,y)\) = expected number
+  of steps to fall off the board, starting at \((x,y)\). Condition on the first step again &mdash;
+  but this time you <em>spent</em> a step to take it, so there&rsquo;s a &ldquo;+1&rdquo;:</p>
+  $$T(x,y) = 1 + \tfrac14\big[T(x{+}1,y)+T(x{-}1,y)+T(x,y{+}1)+T(x,y{-}1)\big]$$
+  <p>Rearrange, and the averaging-minus-itself becomes the discrete Laplacian:</p>
+  $$\tfrac14\big[\textstyle\sum \text{neighbors}\big] - T = -1 \quad\Longleftrightarrow\quad \nabla^2 T = -4$$
+  <p>with \(T = 0\) on the boundary. That&rsquo;s <strong>Poisson&rsquo;s equation with a constant
+  source</strong> &mdash; the equation for the temperature of a plate with uniform internal heating,
+  or the deflection of a stretched membrane under uniform pressure, or the stress in a twisted beam.
+  The expected escape time of the dying walker is <em>literally the same function</em> as the sag of
+  a drumhead.</p>
+
+  <h2>The clean 1D case you can hold in your hand</h2>
+  <p>In 2D those PDEs need numerics, but the 1D version (a walker on \(\{0,1,\dots,N\}\) absorbed at
+  either end &mdash; the classic <strong>Gambler&rsquo;s Ruin</strong>) has gorgeous closed forms:</p>
+  <ul>
+    <li><strong>Probability of exiting at the right end</strong>, starting from \(k\): \(\;\dfrac{k}{N}\;\)
+    &mdash; perfectly linear (the 1D harmonic function is just a straight line).</li>
+    <li><strong>Expected time to absorption</strong>, starting from \(k\): \(\;k(N-k)\).</li>
+  </ul>
+  <p>From the center \(k = N/2\), that expected time is \(N^2/4\) &mdash; it grows like the
+  <strong>square</strong> of the box size.</p>
+
+  <h2>The thread that ties it back to diffusion</h2>
+  <p>That \(N^2\) scaling is not a coincidence &mdash; it&rsquo;s the &radic;N law wearing a
+  different hat. The free walker covers distance \(\sim\sqrt{\text{steps}}\), so to cross a box of
+  width \(L\) it needs \(\sim L^2\) steps. Bounded and unbounded are two views of one fact:</p>
+  $$\text{distance} \sim \sqrt{\text{time}} \qquad\Longleftrightarrow\qquad \text{time-to-escape} \sim (\text{size})^2$$
+
+  <div class="callout">
+    <p><strong>You can test this live in the game.</strong> The expected walk length on the Recenter
+    board should scale like (grid size)&sup2;. So if you roughly <strong>double the Grid slider, the
+    Avg walk length should roughly quadruple.</strong> Try 41 vs 81 and watch the Avg stat &mdash;
+    that quadratic jump is Poisson&rsquo;s equation showing through the simulation.</p>
+  </div>
+
+  <div class="nav">
+    <a class="back" href="index.html">&larr; Back to the random walk game</a>
+    <a class="back" href="msd-explained.html">MSD explainer</a>
+    <a class="back" href="returns-and-chi-explained.html">Returns &amp; χ² explainer</a>
+  </div>
+</main>
+</body>
+</html>

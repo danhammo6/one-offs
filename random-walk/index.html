@@ -2,7 +2,15 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Random Walk Heatmap</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Random Walk Heatmap — Bounded vs Unbounded</title>
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['\\(', '\\)']], displayMath: [['$$', '$$']] },
+    svg: { fontCache: 'global' }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
 <style>
   body {
     margin: 0;
@@ -10,41 +18,91 @@
     color: #eee;
     font-family: system-ui, sans-serif;
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 16px;
+    flex-direction: row;
+    align-items: flex-start;
   }
-  h1 { margin: 0 0 8px; font-size: 18px; font-weight: 500; }
-  #stats {
-    font-size: 13px; margin-bottom: 8px; opacity: 0.85;
-    display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;
-    max-width: 620px; min-height: 1.4em;
+  #main {
+    flex: 1 1 auto; min-width: 0;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 24px;
   }
-  #stats span b { color: #fff; font-weight: 600; }
-  #stats2 {
-    font-size: 13px; margin-bottom: 8px; opacity: 0.7;
-    display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;
-    max-width: 620px; min-height: 1.4em;
-  }
-  #stats2 span b { color: #9ad; font-weight: 600; }
+  h1 { margin: 0 0 4px; font-size: 26px; font-weight: 500; }
+  .subtitle { font-size: 15px; opacity: 0.6; margin-bottom: 18px; }
   #controls {
-    margin-bottom: 12px; display: flex; gap: 16px; align-items: center;
-    flex-wrap: wrap; justify-content: center; max-width: 620px;
+    margin-bottom: 20px; display: flex; gap: 24px; align-items: center;
+    flex-wrap: wrap; justify-content: center; max-width: 1000px;
   }
   button {
     background: #2a2a2a; color: #eee; border: 1px solid #444;
-    padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 13px;
+    padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 15px;
   }
   button:hover { background: #3a3a3a; }
-  label { font-size: 13px; }
-  input[type=range] { vertical-align: middle; }
+  label { font-size: 15px; }
+  input[type=range] { vertical-align: middle; width: 130px; }
+  #boards {
+    display: flex; gap: 40px; flex-wrap: wrap; justify-content: center;
+    width: 100%; max-width: 1280px;
+  }
+  .board { display: flex; flex-direction: column; align-items: center; flex: 1 1 560px; max-width: 600px; }
+  .board h2 { margin: 0 0 2px; font-size: 19px; font-weight: 600; }
+  .board .tag { font-size: 14px; opacity: 0.55; margin-bottom: 10px; }
   canvas { background: #000; border: 1px solid #333; image-rendering: pixelated; }
+  canvas.plot { margin-top: 12px; image-rendering: auto; width: 100%; }
+  .stats {
+    font-size: 14px; margin-top: 10px; opacity: 0.85;
+    display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;
+    min-height: 1.4em; line-height: 1.6;
+  }
+  .stats span b { color: #fff; font-weight: 600; }
+  .stats.diag span b { color: #9ad; }
+  .stats.msd span b { color: #ad9; }
+  .stats.boundary span b { color: #dca; }
+
+  /* Clickable stats / captions */
+  .stats span[data-explain], .tag[data-explain] { cursor: help; border-radius: 4px; }
+  .stats span[data-explain]:hover, .tag[data-explain]:hover {
+    background: rgba(255,255,255,0.08);
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.08);
+  }
+  [data-explain].active {
+    background: rgba(91,141,239,0.22) !important;
+    box-shadow: 0 0 0 3px rgba(91,141,239,0.22) !important;
+  }
+
+  /* Right sidebar */
+  #sidebar {
+    flex: 0 0 360px; align-self: stretch; min-height: 100vh;
+    background: #161922; border-left: 1px solid #2a2e36;
+    padding: 24px 22px; box-sizing: border-box;
+    position: sticky; top: 0; max-height: 100vh; overflow-y: auto;
+  }
+  #sidebar h3 { margin: 0 0 4px; font-size: 19px; color: #fff; }
+  #sidebar .kicker {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: #7ba7ff; margin-bottom: 14px;
+  }
+  #sidebar .body { font-size: 14.5px; line-height: 1.65; color: #d4d8df; }
+  #sidebar .body p { margin: 12px 0; }
+  #sidebar .body strong { color: #fff; }
+  #sidebar .body code {
+    background: #20242b; padding: 1px 5px; border-radius: 4px;
+    font-family: ui-monospace, Menlo, monospace; font-size: 0.9em;
+  }
+  #sidebar .placeholder { color: #7c828c; font-style: italic; }
+  #sidebar a { color: #7ba7ff; text-decoration: none; }
+  #sidebar a:hover { text-decoration: underline; }
+  #sidebar mjx-container { overflow-x: auto; overflow-y: hidden; max-width: 100%; }
+  @media (max-width: 1100px) {
+    body { flex-direction: column; }
+    #sidebar { flex-basis: auto; width: 100%; min-height: 0; position: static;
+      max-height: none; border-left: none; border-top: 1px solid #2a2e36; }
+  }
 </style>
 </head>
 <body>
-  <h1>Random Walk Heatmap</h1>
-  <div id="stats">&nbsp;</div>
-  <div id="stats2">&nbsp;</div>
+  <div id="main">
+  <h1>Random Walk: Bounded vs Unbounded</h1>
+  <div class="subtitle">Both walkers take the <em>same</em> random step each tick — only the boundary rule differs. <span style="opacity:0.8">Click any stat or caption to explain it →</span></div>
   <div id="controls">
     <button id="pauseBtn">Pause</button>
     <button id="resetBtn">Reset</button>
@@ -54,16 +112,68 @@
     <label>Fade: <input id="fade" type="range" min="0" max="100" value="30">
       <span id="fadeVal">30</span></label>
   </div>
-  <canvas id="canvas" width="588" height="588"></canvas>
+
+  <div id="boards">
+    <div class="board">
+      <h2>Recenter</h2>
+      <div class="tag">bounded — falls off the edge, restarts at center</div>
+      <canvas id="boundedCanvas"></canvas>
+      <div id="bStats" class="stats">&nbsp;</div>
+      <div id="bDiag" class="stats diag">&nbsp;</div>
+      <div id="bBoundary" class="stats boundary">&nbsp;</div>
+      <canvas id="chiPlot" class="plot"></canvas>
+      <div class="tag" data-explain="chiPlot">χ² vs N — jitters around mean 3 (df=3); a fair RNG never settles</div>
+    </div>
+    <div class="board">
+      <h2>Pan</h2>
+      <div class="tag">unbounded — camera follows, walks forever</div>
+      <canvas id="panCanvas"></canvas>
+      <div id="pStats" class="stats msd">&nbsp;</div>
+      <div id="pDiag" class="stats msd">&nbsp;</div>
+      <canvas id="msdPlot" class="plot"></canvas>
+      <div class="tag" data-explain="msdPlot">⟨r²⟩/N vs N — converges to the dashed line at 1</div>
+    </div>
+  </div>
+  </div><!-- /#main -->
+
+  <aside id="sidebar">
+    <div id="sbKicker" class="kicker">Explanations</div>
+    <h3 id="sbTitle">Click a stat to learn more</h3>
+    <div id="sbBody" class="body">
+      <p class="placeholder">Every number on these boards measures something about randomness or the
+      two walks. Click any stat or caption (they highlight on hover) and its explanation appears
+      here — including the formula and what to watch for.</p>
+    </div>
+  </aside>
 
 <script>
 (() => {
-  const CANVAS_SIZE = 588;
-  const canvas = document.getElementById('canvas');
-  const ctx = canvas.getContext('2d');
+  const CANVAS_SIZE = 560;
+  const ENSEMBLE = 400;   // ghost walkers used to estimate <r^2>/N
 
-  const statsEl = document.getElementById('stats');
-  const stats2El = document.getElementById('stats2');
+  const PLOT_H = 190;     // height of the convergence plot
+
+  const bCanvas = document.getElementById('boundedCanvas');
+  const pCanvas = document.getElementById('panCanvas');
+  const plotCanvas = document.getElementById('msdPlot');
+  const chiCanvas = document.getElementById('chiPlot');
+  const bCtx = bCanvas.getContext('2d');
+  const pCtx = pCanvas.getContext('2d');
+  const plotCtx = plotCanvas.getContext('2d');
+  const chiCtx = chiCanvas.getContext('2d');
+  bCanvas.width = bCanvas.height = CANVAS_SIZE;
+  pCanvas.width = pCanvas.height = CANVAS_SIZE;
+  plotCanvas.width = CANVAS_SIZE;
+  plotCanvas.height = PLOT_H;
+  chiCanvas.width = CANVAS_SIZE;
+  chiCanvas.height = PLOT_H;
+
+  const bStatsEl = document.getElementById('bStats');
+  const bDiagEl = document.getElementById('bDiag');
+  const bBoundaryEl = document.getElementById('bBoundary');
+  const pStatsEl = document.getElementById('pStats');
+  const pDiagEl = document.getElementById('pDiag');
+
   const pauseBtn = document.getElementById('pauseBtn');
   const resetBtn = document.getElementById('resetBtn');
   const speedEl = document.getElementById('speed');
@@ -72,44 +182,86 @@
   const fadeEl = document.getElementById('fade');
   const fadeValEl = document.getElementById('fadeVal');
 
-  let GRID, PIXEL, heat, x, y, walks, steps, hottest, paused, lastTime;
-  let totalSteps, longest, shortest, lastLen;
-  let sumLen2;                  // sum of squared lengths -> std-dev
-  let dirCounts;               // [U, D, L, R] move tally -> balance + chi-square
-  let visited, visitedCount;   // ever-touched cells -> coverage %
-  let cx, cy, centerReturns;   // start cell + revisit count this walk
-  let totalReturns;            // returns-to-center summed across walks
+  let GRID, PIXEL, paused, lastTime;
+
+  // Shared move tally across both boards (same stream feeds both).
+  let dirCounts;
+
+  // --- Bounded board state ---
+  let heat, bx, by, walks, steps, hottest;
+  let totalSteps, longest, shortest, lastLen, sumLen2;
+  let visited, visitedCount, cx, cy, centerReturns, totalReturns;
+  let exitCounts;   // [top, bottom, left, right] -> harmonic measure
+  let expectedLen;  // exact theoretical expected walk length from center
+
+  // --- Pan board state ---
+  let panHeat;          // Map "x,y" -> heat
+  let panHottest;
+  let px, py, panSteps; // true (unbounded) coordinates + step count
+  let panReturns;       // times the unbounded walker revisited the origin (0,0)
+
+  // --- Ensemble for the MSD law (independent ghost walkers) ---
+  let ensX, ensY, ensN;
+  let msdHistory;   // sampled [N, <r^2>/N] points for the convergence plot
+  let chiHistory;   // sampled [N, chi^2] points for the chi-square plot
+
+  // Exact expected walk length (steps to absorption) starting from the center
+  // of an n×n grid, walls just outside at -1 and n. Solves the discrete Poisson
+  // equation (I - ¼A)T = 1 in closed form via the sine eigenbasis of the
+  // discrete Laplacian, evaluated at the center cell. n is assumed odd.
+  function expectedExitTimeFromCenter(n) {
+    const np1 = n + 1;
+    let T = 0;
+    for (let k = 1; k <= n; k += 2) {           // even modes vanish by symmetry
+      const ak = (1 / Math.tan(Math.PI * k / (2 * np1))) * Math.sin(Math.PI * k / 2);
+      const ck = Math.cos(Math.PI * k / np1);
+      for (let l = 1; l <= n; l += 2) {
+        const al = (1 / Math.tan(Math.PI * l / (2 * np1))) * Math.sin(Math.PI * l / 2);
+        const cl = Math.cos(Math.PI * l / np1);
+        T += ak * al / (1 - 0.5 * (ck + cl));
+      }
+    }
+    return (4 / (np1 * np1)) * T;
+  }
 
   function reset() {
     GRID = Number(gridEl.value);
     PIXEL = CANVAS_SIZE / GRID;
-    heat = Array.from({ length: GRID }, () => new Float32Array(GRID));
-    walks = 0;
-    hottest = 0;
-    totalSteps = 0;
-    longest = 0;
-    shortest = Infinity;
-    lastLen = 0;
-    sumLen2 = 0;
+    expectedLen = expectedExitTimeFromCenter(GRID);
     dirCounts = [0, 0, 0, 0];
+
+    // Bounded
+    heat = Array.from({ length: GRID }, () => new Float32Array(GRID));
+    walks = 0; hottest = 0;
+    totalSteps = 0; longest = 0; shortest = Infinity; lastLen = 0; sumLen2 = 0;
     visited = Array.from({ length: GRID }, () => new Uint8Array(GRID));
-    visitedCount = 0;
-    totalReturns = 0;
-    centerReturns = 0;
+    visitedCount = 0; totalReturns = 0; centerReturns = 0;
+    exitCounts = [0, 0, 0, 0];
+
+    // Pan
+    panHeat = new Map();
+    panHottest = 0;
+    px = 0; py = 0; panSteps = 0;
+    panReturns = 0;
+    bumpPan(0, 0);
+
+    // Ensemble
+    ensX = new Int32Array(ENSEMBLE);
+    ensY = new Int32Array(ENSEMBLE);
+    ensN = 0;
+    msdHistory = [];
+    chiHistory = [];
+
     lastTime = performance.now();
     startWalk();
   }
 
   function markVisited(i, j) {
-    if (!visited[j][i]) {
-      visited[j][i] = 1;
-      visitedCount += 1;
-    }
+    if (!visited[j][i]) { visited[j][i] = 1; visitedCount += 1; }
   }
 
   function startWalk() {
     if (walks > 0) {
-      // Record the just-finished walk's stats.
       lastLen = steps;
       totalSteps += steps;
       sumLen2 += steps * steps;
@@ -117,59 +269,100 @@
       if (steps < shortest) shortest = steps;
       totalReturns += centerReturns;
     }
-    x = Math.floor(GRID / 2);
-    y = Math.floor(GRID / 2);
-    cx = x;
-    cy = y;
-    centerReturns = 0;
+    bx = Math.floor(GRID / 2);
+    by = Math.floor(GRID / 2);
+    cx = bx; cy = by; centerReturns = 0;
     steps = 0;
     walks += 1;
-    heat[y][x] += 1;
-    markVisited(x, y);
-    if (heat[y][x] > hottest) hottest = heat[y][x];
+    heat[by][bx] += 1;
+    markVisited(bx, by);
+    if (heat[by][bx] > hottest) hottest = heat[by][bx];
   }
 
+  function bumpPan(x, y) {
+    const k = x + ',' + y;
+    const v = (panHeat.get(k) || 0) + 1;
+    panHeat.set(k, v);
+    if (v > panHottest) panHottest = v;
+  }
+
+  // One tick: draw a single direction, apply it to BOTH boards.
   function step() {
     const dir = Math.floor(Math.random() * 4);
     dirCounts[dir] += 1;
-    if (dir === 0) y -= 1;
-    else if (dir === 1) y += 1;
-    else if (dir === 2) x -= 1;
-    else x += 1;
-    steps += 1;
+    const dx = dir === 2 ? -1 : dir === 3 ? 1 : 0;
+    const dy = dir === 0 ? -1 : dir === 1 ? 1 : 0;
 
-    if (x < 0 || x >= GRID || y < 0 || y >= GRID) {
+    // Bounded walker
+    bx += dx; by += dy;
+    steps += 1;
+    if (bx < 0 || bx >= GRID || by < 0 || by >= GRID) {
+      // Record which edge it left through (harmonic measure).
+      if (by < 0) exitCounts[0]++;
+      else if (by >= GRID) exitCounts[1]++;
+      else if (bx < 0) exitCounts[2]++;
+      else exitCounts[3]++;
       startWalk();
-      return;
+    } else {
+      heat[by][bx] += 1;
+      markVisited(bx, by);
+      if (bx === cx && by === cy) centerReturns += 1;
+      if (heat[by][bx] > hottest) hottest = heat[by][bx];
     }
-    heat[y][x] += 1;
-    markVisited(x, y);
-    if (x === cx && y === cy) centerReturns += 1;
-    if (heat[y][x] > hottest) hottest = heat[y][x];
+
+    // Pan walker (same direction, never dies)
+    px += dx; py += dy;
+    panSteps += 1;
+    if (px === 0 && py === 0) panReturns += 1;
+    bumpPan(px, py);
   }
 
-  // Fade every cell toward 0. `rate` is fraction lost per second.
-  function fade(dt) {
-    const rate = Number(fadeEl.value) / 100; // 0..1 per second
+  // Ensemble step: each ghost takes its own independent random step.
+  function stepEnsemble(n) {
+    for (let s = 0; s < n; s++) {
+      for (let k = 0; k < ENSEMBLE; k++) {
+        const dir = Math.floor(Math.random() * 4);
+        if (dir === 0) ensY[k] -= 1;
+        else if (dir === 1) ensY[k] += 1;
+        else if (dir === 2) ensX[k] -= 1;
+        else ensX[k] += 1;
+      }
+      ensN += 1;
+    }
+  }
+
+  function fadeArray(dt) {
+    const rate = Number(fadeEl.value) / 100;
     if (rate <= 0) return;
     const factor = Math.exp(-rate * dt);
-    let newHottest = 0;
+    let newHot = 0;
     for (let j = 0; j < GRID; j++) {
       const row = heat[j];
       for (let i = 0; i < GRID; i++) {
         const v = row[i] * factor;
         row[i] = v < 0.001 ? 0 : v;
-        if (row[i] > newHottest) newHottest = row[i];
+        if (row[i] > newHot) newHot = row[i];
       }
     }
-    hottest = newHottest;
+    hottest = newHot;
   }
 
-  // Map a heat value (0..hottest) to a color via a log scale so a few
-  // hot cells don't wash out the rest of the map.
-  function heatColor(v) {
+  function fadeMap(dt) {
+    const rate = Number(fadeEl.value) / 100;
+    if (rate <= 0) return;
+    const factor = Math.exp(-rate * dt);
+    let newHot = 0;
+    for (const [k, v] of panHeat) {
+      const nv = v * factor;
+      if (nv < 0.001) panHeat.delete(k);
+      else { panHeat.set(k, nv); if (nv > newHot) newHot = nv; }
+    }
+    panHottest = newHot;
+  }
+
+  function heatColor(v, hot) {
     if (v <= 0) return '#000';
-    const t = Math.log(1 + v) / Math.log(1 + Math.max(hottest, 1));
+    const t = Math.log(1 + v) / Math.log(1 + Math.max(hot, 1));
     const stops = [
       [0.00,   0,   0,   0],
       [0.15,  20,  10,  80],
@@ -192,97 +385,410 @@
     return '#fff';
   }
 
-  function draw() {
-    ctx.fillStyle = '#000';
-    ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+  function drawGridLines(ctx) {
+    if (PIXEL < 6) return;
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= GRID; i++) {
+      const p = Math.round(i * PIXEL) + 0.5;
+      ctx.beginPath(); ctx.moveTo(p, 0); ctx.lineTo(p, CANVAS_SIZE); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, p); ctx.lineTo(CANVAS_SIZE, p); ctx.stroke();
+    }
+  }
+
+  function drawDot(ctx, vi, vj, color) {
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    const r = Math.max(1.5, PIXEL / 2 - 1);
+    ctx.arc(vi * PIXEL + PIXEL / 2, vj * PIXEL + PIXEL / 2, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function drawBounded() {
+    bCtx.fillStyle = '#000';
+    bCtx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
     for (let j = 0; j < GRID; j++) {
       for (let i = 0; i < GRID; i++) {
         if (heat[j][i] > 0) {
-          ctx.fillStyle = heatColor(heat[j][i]);
-          ctx.fillRect(i * PIXEL, j * PIXEL, PIXEL + 1, PIXEL + 1);
+          bCtx.fillStyle = heatColor(heat[j][i], hottest);
+          bCtx.fillRect(i * PIXEL, j * PIXEL, PIXEL + 1, PIXEL + 1);
         }
       }
     }
-    // Grid lines (only when cells are big enough to be worth it)
-    if (PIXEL >= 6) {
-      ctx.strokeStyle = 'rgba(255,255,255,0.06)';
-      ctx.lineWidth = 1;
-      for (let i = 0; i <= GRID; i++) {
-        const p = Math.round(i * PIXEL) + 0.5;
-        ctx.beginPath(); ctx.moveTo(p, 0); ctx.lineTo(p, CANVAS_SIZE); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(0, p); ctx.lineTo(CANVAS_SIZE, p); ctx.stroke();
+    drawGridLines(bCtx);
+    drawDot(bCtx, bx, by, '#fff');
+  }
+
+  function drawPan() {
+    pCtx.fillStyle = '#000';
+    pCtx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+    const half = Math.floor(GRID / 2);
+    // Camera centers on the walker: world cell (px,py) -> view cell (half,half)
+    const originX = px - half;
+    const originY = py - half;
+    for (let vj = 0; vj < GRID; vj++) {
+      for (let vi = 0; vi < GRID; vi++) {
+        const v = panHeat.get((originX + vi) + ',' + (originY + vj));
+        if (v) {
+          pCtx.fillStyle = heatColor(v, panHottest);
+          pCtx.fillRect(vi * PIXEL, vj * PIXEL, PIXEL + 1, PIXEL + 1);
+        }
       }
     }
-    // Active dot
-    ctx.fillStyle = '#fff';
-    ctx.beginPath();
-    const r = Math.max(1.5, PIXEL / 2 - 1);
-    ctx.arc(x * PIXEL + PIXEL / 2, y * PIXEL + PIXEL / 2, r, 0, Math.PI * 2);
-    ctx.fill();
+    drawGridLines(pCtx);
+    // Mark the start cell (0,0) if it's in view, so you can see how far we've roamed.
+    const oVi = 0 - originX, oVj = 0 - originY;
+    if (oVi >= 0 && oVi < GRID && oVj >= 0 && oVj < GRID) {
+      pCtx.strokeStyle = '#5b8def';
+      pCtx.lineWidth = 2;
+      pCtx.strokeRect(oVi * PIXEL + 1, oVj * PIXEL + 1, PIXEL - 2, PIXEL - 2);
+    }
+    // Walker is always at the center of the view.
+    drawDot(pCtx, half, half, '#fff');
+  }
 
+  function drawStats() {
+    // --- Bounded walk-length stats ---
     const completed = walks - 1;
     const avg = completed > 0 ? (totalSteps / completed) : 0;
-    const shortestStr = completed > 0 ? shortest : '–';
-    const longestStr = completed > 0 ? longest : '–';
-    const lastStr = completed > 0 ? lastLen : '–';
-    // Std-dev of walk length (population) from running sums.
     const std = completed > 0
       ? Math.sqrt(Math.max(0, sumLen2 / completed - avg * avg)) : 0;
-    statsEl.innerHTML =
-      `<span>Walks: <b>${walks}</b></span>` +
-      `<span>Current: <b>${steps}</b></span>` +
-      `<span>Last: <b>${lastStr}</b></span>` +
-      `<span>Avg: <b>${avg.toFixed(1)}</b></span>` +
-      `<span>Std: <b>${std.toFixed(1)}</b></span>` +
-      `<span>Shortest: <b>${shortestStr}</b></span>` +
-      `<span>Longest: <b>${longestStr}</b></span>` +
-      `<span>Hottest: <b>${hottest.toFixed(1)}</b></span>`;
+    const dash = completed > 0;
+    bStatsEl.innerHTML =
+      `<span data-explain="walks">Walks: <b>${walks}</b></span>` +
+      `<span data-explain="current">Current: <b>${steps}</b></span>` +
+      `<span data-explain="last">Last: <b>${dash ? lastLen : '–'}</b></span>` +
+      `<span data-explain="avg">Avg: <b>${avg.toFixed(1)}</b></span>` +
+      `<span data-explain="std">Std: <b>${std.toFixed(1)}</b></span>` +
+      `<span data-explain="longest">Longest: <b>${dash ? longest : '–'}</b></span>`;
 
-    // --- Randomness diagnostics ---
-    const totalMoves = dirCounts[0] + dirCounts[1] + dirCounts[2] + dirCounts[3];
-    let chi = 0, pct = ['–', '–', '–', '–'];
-    if (totalMoves > 0) {
-      const expected = totalMoves / 4;
+    // --- Shared randomness diagnostics (direction balance + chi-square) ---
+    const total = dirCounts[0] + dirCounts[1] + dirCounts[2] + dirCounts[3];
+    let chi = 0; const pct = ['–', '–', '–', '–'];
+    if (total > 0) {
+      const expected = total / 4;
       for (let d = 0; d < 4; d++) {
         const diff = dirCounts[d] - expected;
         chi += (diff * diff) / expected;
-        pct[d] = ((dirCounts[d] / totalMoves) * 100).toFixed(1);
+        pct[d] = ((dirCounts[d] / total) * 100).toFixed(1);
       }
     }
     const coverage = (visitedCount / (GRID * GRID)) * 100;
-    // Average returns to start, counting the current walk in progress.
     const avgReturns = (totalReturns + centerReturns) / walks;
-    stats2El.innerHTML =
-      `<span>Dir U/D/L/R: <b>${pct[0]}% ${pct[1]}% ${pct[2]}% ${pct[3]}%</b></span>` +
-      `<span>χ²: <b>${chi.toFixed(2)}</b></span>` +
-      `<span>Coverage: <b>${coverage.toFixed(1)}%</b></span>` +
-      `<span>Avg returns to center: <b>${avgReturns.toFixed(1)}</b></span>`;
+    bDiagEl.innerHTML =
+      `<span data-explain="dirbalance">U/D/L/R: <b>${pct[0]} ${pct[1]} ${pct[2]} ${pct[3]}%</b></span>` +
+      `<span data-explain="chi">χ²: <b>${chi.toFixed(2)}</b></span>` +
+      `<span data-explain="coverage">Coverage: <b>${coverage.toFixed(1)}%</b></span>` +
+      `<span data-explain="returns">Returns to center: <b>${avgReturns.toFixed(1)}</b></span>`;
+    if (total > 0) chiHistory = record(chiHistory, total, chi);
+
+    // --- Boundary / first-passage stats ---
+    // Q1 (harmonic measure): which edge did completed walks exit through?
+    // By symmetry from the center each should be ~25%.
+    const exitTotal = exitCounts[0] + exitCounts[1] + exitCounts[2] + exitCounts[3];
+    const ePct = ['–', '–', '–', '–'];
+    if (exitTotal > 0) {
+      for (let d = 0; d < 4; d++) ePct[d] = ((exitCounts[d] / exitTotal) * 100).toFixed(1);
+    }
+    // Q2 (Poisson / L² law): measured avg vs the exact theoretical expected
+    // length, and the L² constant avg/grid² (should hold ~constant vs grid).
+    const l2const = completed > 0 ? (avg / (GRID * GRID)) : 0;
+    const l2theory = expectedLen / (GRID * GRID);
+    const measured = completed > 0 ? avg.toFixed(1) : '–';
+    const l2measured = completed > 0 ? l2const.toFixed(3) : '–';
+    bBoundaryEl.innerHTML =
+      `<span data-explain="exitdist">Exit T/B/L/R: <b>${ePct[0]} ${ePct[1]} ${ePct[2]} ${ePct[3]}%</b></span>` +
+      `<span data-explain="avgtheory">Avg len: <b>${measured}</b> vs theory <b>${expectedLen.toFixed(1)}</b></span>` +
+      `<span data-explain="l2const">Avg/grid²: <b>${l2measured}</b> vs theory <b>${l2theory.toFixed(3)}</b></span>`;
+
+    // --- Pan / MSD stats ---
+    const r2 = px * px + py * py;
+    const dist = Math.sqrt(r2);
+    const ratio = panSteps > 0 ? r2 / panSteps : 0;
+    // Expected returns to origin in 2D grows logarithmically: ~ (ln N)/π.
+    const expReturns = panSteps > 1 ? Math.log(panSteps) / Math.PI : 0;
+    pStatsEl.innerHTML =
+      `<span data-explain="panN">Steps N: <b>${panSteps}</b></span>` +
+      `<span data-explain="dist">Distance r: <b>${dist.toFixed(1)}</b></span>` +
+      `<span data-explain="r2n">r²/N: <b>${ratio.toFixed(3)}</b></span>` +
+      `<span data-explain="panreturns">Returns to origin: <b>${panReturns}</b> vs ~<b>${expReturns.toFixed(2)}</b></span>`;
+
+    // Ensemble estimate of <r^2>/N — should converge to 1 (the MSD law).
+    let sumR2 = 0;
+    for (let k = 0; k < ENSEMBLE; k++) {
+      sumR2 += ensX[k] * ensX[k] + ensY[k] * ensY[k];
+    }
+    const msd = ensN > 0 ? (sumR2 / ENSEMBLE) / ensN : 0;
+    pDiagEl.innerHTML =
+      `<span data-explain="msd">⟨r²⟩/N over ${ENSEMBLE} walkers: <b>${msd.toFixed(3)}</b> (theory → 1)</span>`;
+
+    applyActiveHighlight();
+
+    if (ensN > 0) msdHistory = record(msdHistory, ensN, msd);
+
+    // χ² plot: dashed lines at the mean (3) and the 95% threshold (7.81).
+    // Ceiling floors at 8 but grows so a high excursion never clips off-screen.
+    let chiMax = 8;
+    for (let i = 0; i < chiHistory.length; i++) {
+      if (chiHistory[i][1] > chiMax) chiMax = chiHistory[i][1];
+    }
+    chiMax = Math.ceil(chiMax / 2) * 2;
+    drawSeries(chiCtx, chiHistory, chiMax,
+      '#9abbff', [[3, 'rgba(154,187,255,0.6)'], [7.81, 'rgba(255,140,140,0.4)']]);
+    // MSD plot: dashed line at the theoretical limit of 1.
+    drawSeries(plotCtx, msdHistory, 2,
+      '#aadd99', [[1, 'rgba(170,221,153,0.5)']]);
+  }
+
+  // Generic time-series plotter. `refLines` are dashed horizontal markers
+  // [value, color]; `yMax` sets the visible top (yMin is always 0).
+  function drawSeries(ctx, history, yMax, color, refLines) {
+    const W = CANVAS_SIZE, H = PLOT_H;
+    const padL = 34, padR = 8, padT = 8, padB = 18;
+    ctx.fillStyle = '#0c0d10';
+    ctx.fillRect(0, 0, W, H);
+
+    const x0 = padL, x1 = W - padR, y0 = H - padB, y1 = padT;
+    const yToPx = (v) => y0 + (v / yMax) * (y1 - y0);
+
+    // Horizontal gridlines + y labels at integer-ish steps.
+    const ticks = yMax <= 2 ? [0, 1, 2] : [0, yMax / 2, yMax];
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.font = '10px system-ui, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    ctx.lineWidth = 1;
+    for (const v of ticks) {
+      const py = Math.round(yToPx(v)) + 0.5;
+      ctx.beginPath(); ctx.moveTo(x0, py); ctx.lineTo(x1, py); ctx.stroke();
+      ctx.fillText(v % 1 === 0 ? v.toFixed(0) : v.toFixed(1), x0 - 5, yToPx(v));
+    }
+
+    // Reference lines (dashed).
+    ctx.setLineDash([4, 4]);
+    for (const [v, c] of refLines) {
+      if (v > yMax) continue;
+      ctx.strokeStyle = c;
+      const py = Math.round(yToPx(v)) + 0.5;
+      ctx.beginPath(); ctx.moveTo(x0, py); ctx.lineTo(x1, py); ctx.stroke();
+    }
+    ctx.setLineDash([]);
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.fillText('N (steps) →', (x0 + x1) / 2, H - 5);
+
+    if (history.length < 2) return;
+    const nMax = history[history.length - 1][0];
+    const xToPx = (n) => x0 + (nMax > 0 ? n / nMax : 0) * (x1 - x0);
+
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    for (let i = 0; i < history.length; i++) {
+      const [n, v] = history[i];
+      const px = xToPx(n);
+      const py = yToPx(Math.max(0, Math.min(yMax, v)));
+      if (i === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+  }
+
+  // Push a sample and decimate (keep every other point) when the buffer fills,
+  // preserving the full N=0..now range so the line always spans the plot.
+  function record(history, n, v) {
+    history.push([n, v]);
+    if (history.length > 2000) {
+      const half = [];
+      for (let i = 0; i < history.length; i += 2) half.push(history[i]);
+      return half;
+    }
+    return history;
   }
 
   function tick(now) {
     const dt = Math.min(0.1, (now - lastTime) / 1000);
     lastTime = now;
     if (!paused) {
-      const stepsPerFrame = Number(speedEl.value);
-      for (let i = 0; i < stepsPerFrame; i++) step();
-      fade(dt);
+      const n = Number(speedEl.value);
+      for (let i = 0; i < n; i++) step();
+      stepEnsemble(n);
+      fadeArray(dt);
+      fadeMap(dt);
     }
-    draw();
+    drawBounded();
+    drawPan();
+    drawStats();
     requestAnimationFrame(tick);
   }
+
+  // ---- Explanation sidebar ----------------------------------------------
+  // Each entry: { kicker, title, html }. html may contain MathJax (\( \) and $$).
+  const EXPLAIN = {
+    walks: { kicker: 'Recenter · walk length', title: 'Walks',
+      html: `<p>How many walks have started since the last reset. A new walk begins
+        every time the bounded walker falls off an edge and is dropped back at the center.</p>
+        <p>It climbs faster on a <strong>small</strong> grid (the walker escapes quickly) and
+        slower on a large one.</p>` },
+    current: { kicker: 'Recenter · walk length', title: 'Current steps',
+      html: `<p>The number of steps the <strong>in-progress</strong> walk has taken so far,
+        before it falls off the edge. Resets to 0 at the start of each walk.</p>` },
+    last: { kicker: 'Recenter · walk length', title: 'Last walk length',
+      html: `<p>How many steps the <strong>most recently finished</strong> walk lasted.
+        Watch it jump around — walk lengths are heavy-tailed, so this varies wildly from one
+        walk to the next.</p>` },
+    avg: { kicker: 'Recenter · walk length', title: 'Average walk length',
+      html: `<p>Mean steps-to-escape over all completed walks. This is a measured estimate of a
+        quantity with an <em>exact</em> theoretical value — see <strong>Avg len vs theory</strong>.</p>
+        <p>It grows like the <strong>square</strong> of the grid size: double the grid and this
+        roughly quadruples. <a href="boundary-explained.html" target="_blank">Why? →</a></p>` },
+    std: { kicker: 'Recenter · walk length', title: 'Std. deviation of length',
+      html: `<p>The spread of completed walk lengths around the average. It's <em>large</em> —
+        comparable to the mean itself — because walk lengths are heavy-tailed: most walks die
+        young near the center, but a few wander a long time before escaping.</p>
+        $$\\text{Std} = \\sqrt{\\langle L^2\\rangle - \\langle L\\rangle^2}$$` },
+    longest: { kicker: 'Recenter · walk length', title: 'Longest walk',
+      html: `<p>The single longest walk seen so far, in steps. A record-tracker for the tail of
+        the distribution — it keeps creeping up as rare long walks occur.</p>` },
+
+    dirbalance: { kicker: 'Randomness · fairness', title: 'Direction balance (U/D/L/R)',
+      html: `<p>The share of all moves that went up, down, left, and right. The same random
+        stream drives <em>both</em> boards, so this is a direct check on the random number
+        generator.</p>
+        <p>For a fair RNG all four converge toward <strong>25%</strong>. See <strong>χ²</strong>
+        for the single-number version of this test.</p>` },
+    chi: { kicker: 'Randomness · fairness', title: 'Chi-square (χ²)',
+      html: `<p>Turns "are the four directions balanced?" into one number, measuring how far the
+        counts stray from a perfect 25% split:</p>
+        $$\\chi^2 = \\sum_{d=1}^{4} \\frac{(\\text{observed}_d - \\text{expected}_d)^2}{\\text{expected}_d}$$
+        <p>With <strong>3 degrees of freedom</strong> it should hover around its mean of
+        <strong>3</strong>, rarely poking above 7.81. It's a random variable — it never settles.
+        A value pinned near 0 (too perfect) or climbing past 12 and staying there (biased) would
+        be the warning signs. <a href="returns-and-chi-explained.html" target="_blank">More →</a></p>` },
+    coverage: { kicker: 'Recenter · exploration', title: 'Coverage',
+      html: `<p>The fraction of grid cells the bounded walker has <em>ever</em> visited since
+        reset. Trends toward 100% and illustrates how space-filling the walk is — slowly, because
+        a 2D walk keeps crossing its own path.</p>` },
+    returns: { kicker: 'Recenter · recurrence', title: 'Returns to center',
+      html: `<p>Average number of times a walk steps back onto its <strong>starting cell</strong>
+        before escaping. A window into <strong>Pólya's recurrence theorem</strong>: a 2D random
+        walk is recurrent, so the walker keeps drifting back home.</p>
+        <p>Bigger grid → walks last longer → more returns. <a href="returns-and-chi-explained.html" target="_blank">More →</a></p>` },
+
+    exitdist: { kicker: 'Recenter · first-passage', title: 'Exit edge distribution',
+      html: `<p>Which edge completed walks left through (Top/Bottom/Left/Right). Starting from the
+        center of a square, 4-fold symmetry predicts <strong>~25% each</strong>.</p>
+        <p>This distribution over exit points is called <strong>harmonic measure</strong> — it
+        solves the same equation as steady-state heat flow.
+        <a href="boundary-explained.html" target="_blank">Why? →</a></p>` },
+    avgtheory: { kicker: 'Recenter · first-passage', title: 'Avg length vs theory',
+      html: `<p>The measured average walk length next to its <strong>exact</strong> theoretical
+        value. The theory number isn't an approximation — it's the closed-form solution of the
+        discrete Poisson equation \\(\\nabla^2 T = -4\\) (with \\(T=0\\) on the walls), evaluated
+        at the center cell via the sine eigenbasis.</p>
+        <p>Let the sim run and the measured value homes in on it.
+        <a href="boundary-explained.html" target="_blank">The math →</a></p>` },
+    l2const: { kicker: 'Recenter · first-passage', title: 'Avg / grid² (the L² law)',
+      html: `<p>Average walk length divided by grid², shown next to its theoretical value. Expected
+        escape time grows like the <strong>square</strong> of the box size, so this ratio stays
+        roughly <em>constant</em> as you drag the Grid slider — even though Avg itself changes a lot.</p>
+        <p>It's the √N diffusion law in disguise: distance \\(\\sim\\sqrt{\\text{time}}\\)
+        \\(\\Leftrightarrow\\) time-to-escape \\(\\sim \\text{size}^2\\).</p>
+        <p>As the grid grows the ratio converges to a <strong>universal constant</strong> — the
+        center value of the continuum solution of \\(\\nabla^2 S = -4\\) on a unit square:</p>
+        $$\\frac{\\text{Avg}}{\\text{grid}^2} \\;\\longrightarrow\\; S_{\\text{center}} \\approx 0.2947$$
+        <p>(The theory shown uses the exact discrete value over grid², which lands a touch higher on
+        small grids and approaches 0.2947 as the grid grows.)
+        <a href="boundary-explained.html" target="_blank">More →</a></p>` },
+
+    panN: { kicker: 'Pan · unbounded', title: 'Steps N',
+      html: `<p>Total steps the unbounded walker has taken. It never dies — the camera just
+        follows it — so N grows without bound. It's the "time" axis for the
+        mean-squared-displacement law.</p>` },
+    dist: { kicker: 'Pan · diffusion', title: 'Distance r',
+      html: `<p>The walker's straight-line distance from the origin (the blue square). It grows,
+        but <strong>slowly</strong> — like \\(\\sqrt{N}\\), not \\(N\\). To get twice as far the
+        walker needs four times as many steps. <a href="msd-explained.html" target="_blank">Why? →</a></p>` },
+    r2n: { kicker: 'Pan · diffusion', title: 'r² / N (single walker)',
+      html: `<p>The squared distance divided by steps, for this <em>one</em> walker. Theory says
+        it should average to 1 — but a single walker is an extremely noisy sample, so this jumps
+        around a lot. The smooth, converging version is <strong>⟨r²⟩/N</strong> below, averaged
+        over 400 walkers.</p>` },
+    panreturns: { kicker: 'Pan · recurrence', title: 'Returns to origin',
+      html: `<p>How many times the unbounded walker has stepped back onto its start cell (0,0),
+        next to the theoretical estimate.</p>
+        <p>In 2D this grows <strong>logarithmically</strong> — not like √N:</p>
+        $$\\mathbb{E}[\\text{returns}] \\approx \\frac{\\ln N}{\\pi}$$
+        <p>That slow logarithm is why 2D is "barely" recurrent: infinitely many returns, but
+        agonizingly rare. (In 3D the walk is transient and may never return.)</p>` },
+    msd: { kicker: 'Pan · diffusion', title: '⟨r²⟩/N over 400 walkers',
+      html: `<p>The mean-squared displacement per step, averaged over 400 independent ghost
+        walkers. The averaging cancels the noise, so unlike the single-walker r²/N this
+        <strong>converges</strong> to the theoretical value:</p>
+        $$\\langle r^2 \\rangle = N \\quad\\Longrightarrow\\quad \\langle r^2\\rangle / N \\to 1$$
+        <p>The cross terms between independent steps average to zero, leaving exactly N.
+        <a href="msd-explained.html" target="_blank">The derivation →</a></p>` },
+    chiPlot: { kicker: 'Randomness · fairness', title: 'χ² vs N plot',
+      html: `<p>The χ² statistic plotted over time. The blue dashed line marks its mean (3); the
+        red dashed line marks the 95% threshold (7.81).</p>
+        <p>It <strong>never converges</strong> — a fair RNG produces a value that perpetually
+        orbits 3. At very large N it appears to drift because each new step barely moves the
+        cumulative count, so excursions linger. <a href="returns-and-chi-explained.html" target="_blank">More →</a></p>` },
+    msdPlot: { kicker: 'Pan · diffusion', title: '⟨r²⟩/N vs N plot',
+      html: `<p>The ensemble mean-squared-displacement ratio plotted over time, with the green
+        dashed line at the theoretical limit of 1.</p>
+        <p>Unlike the χ² plot, this one <strong>converges</strong>: it starts noisy at small N and
+        flattens onto the line as the 400-walker average tightens.
+        <a href="msd-explained.html" target="_blank">More →</a></p>` },
+  };
+
+  const sbKicker = document.getElementById('sbKicker');
+  const sbTitle = document.getElementById('sbTitle');
+  const sbBody = document.getElementById('sbBody');
+  let activeKey = null;
+
+  function showExplanation(key) {
+    const e = EXPLAIN[key];
+    if (!e) return;
+    activeKey = key;
+    sbKicker.textContent = e.kicker;
+    sbTitle.textContent = e.title;
+    sbBody.innerHTML = e.html;
+    if (window.MathJax && MathJax.typesetPromise) {
+      MathJax.typesetClear && MathJax.typesetClear([sbBody]);
+      MathJax.typesetPromise([sbBody]);
+    }
+    applyActiveHighlight();
+  }
+
+  // Re-mark the active stat after drawStats() rebuilds the spans each frame.
+  function applyActiveHighlight() {
+    document.querySelectorAll('[data-explain].active')
+      .forEach((el) => el.classList.remove('active'));
+    if (activeKey) {
+      document.querySelectorAll(`[data-explain="${activeKey}"]`)
+        .forEach((el) => el.classList.add('active'));
+    }
+  }
+
+  // One delegated listener handles every current and future stat span.
+  // Use mousedown, not click: drawStats() rebuilds these spans every frame, so
+  // a press and release rarely land on the same element instance — which would
+  // suppress the synthesized click event.
+  document.body.addEventListener('mousedown', (ev) => {
+    const target = ev.target.closest('[data-explain]');
+    if (target) showExplanation(target.getAttribute('data-explain'));
+  });
 
   pauseBtn.addEventListener('click', () => {
     paused = !paused;
     pauseBtn.textContent = paused ? 'Resume' : 'Pause';
   });
   resetBtn.addEventListener('click', reset);
-  gridEl.addEventListener('input', () => {
-    gridValEl.textContent = gridEl.value;
-    reset();
-  });
-  fadeEl.addEventListener('input', () => {
-    fadeValEl.textContent = fadeEl.value;
-  });
+  gridEl.addEventListener('input', () => { gridValEl.textContent = gridEl.value; reset(); });
+  fadeEl.addEventListener('input', () => { fadeValEl.textContent = fadeEl.value; });
 
   paused = false;
   reset();

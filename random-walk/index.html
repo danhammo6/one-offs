@@ -21,6 +21,12 @@
     max-width: 620px; min-height: 1.4em;
   }
   #stats span b { color: #fff; font-weight: 600; }
+  #stats2 {
+    font-size: 13px; margin-bottom: 8px; opacity: 0.7;
+    display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;
+    max-width: 620px; min-height: 1.4em;
+  }
+  #stats2 span b { color: #9ad; font-weight: 600; }
   #controls {
     margin-bottom: 12px; display: flex; gap: 16px; align-items: center;
     flex-wrap: wrap; justify-content: center; max-width: 620px;
@@ -33,24 +39,12 @@
   label { font-size: 13px; }
   input[type=range] { vertical-align: middle; }
   canvas { background: #000; border: 1px solid #333; image-rendering: pixelated; }
-  .breadcrumb {
-    position: absolute;
-    top: 12px; left: 16px;
-    font-size: 13px;
-    opacity: 0.7;
-  }
-  .breadcrumb a {
-    color: #eee;
-    text-decoration: none;
-    border-bottom: 1px dashed rgba(255,255,255,0.35);
-  }
-  .breadcrumb a:hover { opacity: 1; border-bottom-color: #fff; }
 </style>
 </head>
 <body>
-  <div class="breadcrumb"><a href="../">&larr; one-offs</a></div>
   <h1>Random Walk Heatmap</h1>
   <div id="stats">&nbsp;</div>
+  <div id="stats2">&nbsp;</div>
   <div id="controls">
     <button id="pauseBtn">Pause</button>
     <button id="resetBtn">Reset</button>
@@ -59,8 +53,6 @@
       <span id="gridVal">41</span></label>
     <label>Fade: <input id="fade" type="range" min="0" max="100" value="30">
       <span id="fadeVal">30</span></label>
-    <label>Max moves: <input id="maxMul" type="range" min="1" max="200" value="50">
-      <span id="maxVal">50× = 2050</span></label>
   </div>
   <canvas id="canvas" width="588" height="588"></canvas>
 
@@ -71,6 +63,7 @@
   const ctx = canvas.getContext('2d');
 
   const statsEl = document.getElementById('stats');
+  const stats2El = document.getElementById('stats2');
   const pauseBtn = document.getElementById('pauseBtn');
   const resetBtn = document.getElementById('resetBtn');
   const speedEl = document.getElementById('speed');
@@ -78,18 +71,14 @@
   const gridValEl = document.getElementById('gridVal');
   const fadeEl = document.getElementById('fade');
   const fadeValEl = document.getElementById('fadeVal');
-  const maxMulEl = document.getElementById('maxMul');
-  const maxValEl = document.getElementById('maxVal');
 
   let GRID, PIXEL, heat, x, y, walks, steps, hottest, paused, lastTime;
-  let totalSteps, longest, shortest, lastLen, totalMoves, stopped;
-
-  function maxMoves() {
-    return Number(maxMulEl.value) * GRID * GRID;
-  }
-  function updateMaxLabel() {
-    maxValEl.textContent = `${maxMulEl.value}× = ${maxMoves()}`;
-  }
+  let totalSteps, longest, shortest, lastLen;
+  let sumLen2;                  // sum of squared lengths -> std-dev
+  let dirCounts;               // [U, D, L, R] move tally -> balance + chi-square
+  let visited, visitedCount;   // ever-touched cells -> coverage %
+  let cx, cy, centerReturns;   // start cell + revisit count this walk
+  let totalReturns;            // returns-to-center summed across walks
 
   function reset() {
     GRID = Number(gridEl.value);
@@ -101,57 +90,62 @@
     longest = 0;
     shortest = Infinity;
     lastLen = 0;
-    totalMoves = 0;
-    stopped = false;
+    sumLen2 = 0;
+    dirCounts = [0, 0, 0, 0];
+    visited = Array.from({ length: GRID }, () => new Uint8Array(GRID));
+    visitedCount = 0;
+    totalReturns = 0;
+    centerReturns = 0;
     lastTime = performance.now();
-    updateMaxLabel();
     startWalk();
+  }
+
+  function markVisited(i, j) {
+    if (!visited[j][i]) {
+      visited[j][i] = 1;
+      visitedCount += 1;
+    }
   }
 
   function startWalk() {
     if (walks > 0) {
-      // Record the just-finished walk's length.
+      // Record the just-finished walk's stats.
       lastLen = steps;
       totalSteps += steps;
+      sumLen2 += steps * steps;
       if (steps > longest) longest = steps;
       if (steps < shortest) shortest = steps;
+      totalReturns += centerReturns;
     }
     x = Math.floor(GRID / 2);
     y = Math.floor(GRID / 2);
+    cx = x;
+    cy = y;
+    centerReturns = 0;
     steps = 0;
     walks += 1;
     heat[y][x] += 1;
+    markVisited(x, y);
     if (heat[y][x] > hottest) hottest = heat[y][x];
   }
 
   function step() {
     const dir = Math.floor(Math.random() * 4);
+    dirCounts[dir] += 1;
     if (dir === 0) y -= 1;
     else if (dir === 1) y += 1;
     else if (dir === 2) x -= 1;
     else x += 1;
     steps += 1;
-    totalMoves += 1;
 
     if (x < 0 || x >= GRID || y < 0 || y >= GRID) {
-      // Walk ended; start a new one unless we've hit the cap.
-      if (totalMoves >= maxMoves()) {
-        lastLen = steps;
-        totalSteps += steps;
-        if (steps > longest) longest = steps;
-        if (steps < shortest) shortest = steps;
-        stopped = true;
-        return;
-      }
       startWalk();
       return;
     }
     heat[y][x] += 1;
+    markVisited(x, y);
+    if (x === cx && y === cy) centerReturns += 1;
     if (heat[y][x] > hottest) hottest = heat[y][x];
-
-    if (totalMoves >= maxMoves()) {
-      stopped = true;
-    }
   }
 
   // Fade every cell toward 0. `rate` is fraction lost per second.
@@ -231,27 +225,46 @@
     const shortestStr = completed > 0 ? shortest : '–';
     const longestStr = completed > 0 ? longest : '–';
     const lastStr = completed > 0 ? lastLen : '–';
+    // Std-dev of walk length (population) from running sums.
+    const std = completed > 0
+      ? Math.sqrt(Math.max(0, sumLen2 / completed - avg * avg)) : 0;
     statsEl.innerHTML =
       `<span>Walks: <b>${walks}</b></span>` +
       `<span>Current: <b>${steps}</b></span>` +
       `<span>Last: <b>${lastStr}</b></span>` +
       `<span>Avg: <b>${avg.toFixed(1)}</b></span>` +
+      `<span>Std: <b>${std.toFixed(1)}</b></span>` +
       `<span>Shortest: <b>${shortestStr}</b></span>` +
       `<span>Longest: <b>${longestStr}</b></span>` +
-      `<span>Total moves: <b>${totalMoves}</b>/${maxMoves()}</span>` +
-      `<span>Hottest: <b>${hottest.toFixed(1)}</b></span>` +
-      (stopped ? `<span style="color:#ffb84d"><b>STOPPED</b></span>` : '');
+      `<span>Hottest: <b>${hottest.toFixed(1)}</b></span>`;
+
+    // --- Randomness diagnostics ---
+    const totalMoves = dirCounts[0] + dirCounts[1] + dirCounts[2] + dirCounts[3];
+    let chi = 0, pct = ['–', '–', '–', '–'];
+    if (totalMoves > 0) {
+      const expected = totalMoves / 4;
+      for (let d = 0; d < 4; d++) {
+        const diff = dirCounts[d] - expected;
+        chi += (diff * diff) / expected;
+        pct[d] = ((dirCounts[d] / totalMoves) * 100).toFixed(1);
+      }
+    }
+    const coverage = (visitedCount / (GRID * GRID)) * 100;
+    // Average returns to start, counting the current walk in progress.
+    const avgReturns = (totalReturns + centerReturns) / walks;
+    stats2El.innerHTML =
+      `<span>Dir U/D/L/R: <b>${pct[0]}% ${pct[1]}% ${pct[2]}% ${pct[3]}%</b></span>` +
+      `<span>χ²: <b>${chi.toFixed(2)}</b></span>` +
+      `<span>Coverage: <b>${coverage.toFixed(1)}%</b></span>` +
+      `<span>Avg returns to center: <b>${avgReturns.toFixed(1)}</b></span>`;
   }
 
   function tick(now) {
     const dt = Math.min(0.1, (now - lastTime) / 1000);
     lastTime = now;
-    if (!paused && !stopped) {
+    if (!paused) {
       const stepsPerFrame = Number(speedEl.value);
-      for (let i = 0; i < stepsPerFrame; i++) {
-        step();
-        if (stopped) break;
-      }
+      for (let i = 0; i < stepsPerFrame; i++) step();
       fade(dt);
     }
     draw();
@@ -269,11 +282,6 @@
   });
   fadeEl.addEventListener('input', () => {
     fadeValEl.textContent = fadeEl.value;
-  });
-  maxMulEl.addEventListener('input', () => {
-    updateMaxLabel();
-    // Resume if the cap was raised above current totalMoves.
-    if (stopped && totalMoves < maxMoves()) stopped = false;
   });
 
   paused = false;

@@ -107,8 +107,8 @@
     <button id="pauseBtn">Pause</button>
     <button id="resetBtn">Reset</button>
     <label>Speed: <input id="speed" type="range" min="1" max="200" value="40"></label>
-    <label>Grid: <input id="grid" type="range" min="11" max="121" step="2" value="41">
-      <span id="gridVal">41</span></label>
+    <label>Grid: <input id="grid" type="range" min="41" max="179" step="2" value="111">
+      <span id="gridVal">111</span></label>
     <label>Fade: <input id="fade" type="range" min="0" max="100" value="30">
       <span id="fadeVal">30</span></label>
   </div>
@@ -126,7 +126,7 @@
     </div>
     <div class="board">
       <h2>Pan</h2>
-      <div class="tag">unbounded — camera follows, walks forever</div>
+      <div class="tag">unbounded — roams inside the box, camera pans only at the edge</div>
       <canvas id="panCanvas"></canvas>
       <div id="pStats" class="stats msd">&nbsp;</div>
       <div id="pDiag" class="stats msd">&nbsp;</div>
@@ -199,6 +199,8 @@
   let panHottest;
   let px, py, panSteps; // true (unbounded) coordinates + step count
   let panReturns;       // times the unbounded walker revisited the origin (0,0)
+  let camX, camY;       // world coord of the top-left view cell (dead-zone camera)
+  let deadHalf;         // half-width (in cells) of the central dead-zone box
 
   // --- Ensemble for the MSD law (independent ghost walkers) ---
   let ensX, ensY, ensN;
@@ -244,6 +246,12 @@
     px = 0; py = 0; panSteps = 0;
     panReturns = 0;
     bumpPan(0, 0);
+    // Dead-zone camera: a central box ~1/5 of the view. The walker roams freely
+    // inside it and the map only pans when the walker pushes past the edge.
+    deadHalf = Math.max(1, Math.floor(GRID / 5));
+    const half = Math.floor(GRID / 2);
+    camX = px - half;   // origin so the walker starts centered
+    camY = py - half;
 
     // Ensemble
     ensX = new Int32Array(ENSEMBLE);
@@ -348,7 +356,9 @@
   }
 
   function fadeMap(dt) {
-    const rate = Number(fadeEl.value) / 100;
+    // Pan fades 1/5th as fast as the slider, so the trail lingers and you can
+    // watch the walker retrace old terrain.
+    const rate = (Number(fadeEl.value) / 100) / 5;
     if (rate <= 0) return;
     const factor = Math.exp(-rate * dt);
     let newHot = 0;
@@ -419,13 +429,27 @@
     drawDot(bCtx, bx, by, '#fff');
   }
 
+  // Pan the dead-zone camera the minimum needed to keep the walker within the
+  // central box. Called only at draw time (the simulation itself is unaffected).
+  function updateCamera() {
+    const half = Math.floor(GRID / 2);
+    // Walker's current cell within the view.
+    let vx = px - camX;
+    let vy = py - camY;
+    // If it has pushed outside the dead zone, slide the camera to catch up.
+    if (vx < half - deadHalf) camX = px - (half - deadHalf);
+    else if (vx > half + deadHalf) camX = px - (half + deadHalf);
+    if (vy < half - deadHalf) camY = py - (half - deadHalf);
+    else if (vy > half + deadHalf) camY = py - (half + deadHalf);
+  }
+
   function drawPan() {
+    updateCamera();
     pCtx.fillStyle = '#000';
     pCtx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
     const half = Math.floor(GRID / 2);
-    // Camera centers on the walker: world cell (px,py) -> view cell (half,half)
-    const originX = px - half;
-    const originY = py - half;
+    const originX = camX;
+    const originY = camY;
     for (let vj = 0; vj < GRID; vj++) {
       for (let vi = 0; vi < GRID; vi++) {
         const v = panHeat.get((originX + vi) + ',' + (originY + vj));
@@ -436,6 +460,12 @@
       }
     }
     drawGridLines(pCtx);
+    // Faint outline of the dead zone — the walker roams freely inside this box.
+    pCtx.strokeStyle = 'rgba(255,255,255,0.18)';
+    pCtx.lineWidth = 1;
+    const boxLo = (half - deadHalf) * PIXEL;
+    const boxSize = (2 * deadHalf + 1) * PIXEL;
+    pCtx.strokeRect(boxLo + 0.5, boxLo + 0.5, boxSize, boxSize);
     // Mark the start cell (0,0) if it's in view, so you can see how far we've roamed.
     const oVi = 0 - originX, oVj = 0 - originY;
     if (oVi >= 0 && oVi < GRID && oVj >= 0 && oVj < GRID) {
@@ -443,8 +473,8 @@
       pCtx.lineWidth = 2;
       pCtx.strokeRect(oVi * PIXEL + 1, oVj * PIXEL + 1, PIXEL - 2, PIXEL - 2);
     }
-    // Walker is always at the center of the view.
-    drawDot(pCtx, half, half, '#fff');
+    // Walker, drawn at its actual position within the (possibly offset) view.
+    drawDot(pCtx, px - camX, py - camY, '#fff');
   }
 
   function drawStats() {

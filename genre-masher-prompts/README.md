@@ -5,7 +5,9 @@ Generate absurd genre mashup pitches — with AI-rendered movie posters and syno
 Two pieces:
 
 1. **`index.html`** — a single-page browser game. Click "Smash Genres!" to roll two sub-genres + a character + a quirk, get a randomized pitch, and optionally generate an AI poster via Pollinations.ai.
-2. **`generate_mashups.py`** — batch generator that, for each mashup, calls a local llama.cpp server for a film title + synopsis + Z-Image prompt, drives ComfyUI to render a 1280×1664 poster, and produces a static HTML gallery.
+2. **`generate_mashups.py`** — batch generator that, for each mashup, calls a local llama.cpp server for a film title + synopsis + poster spec, drives ComfyUI to render a poster, and produces a static HTML gallery. Two image backends are selectable via `--backend`:
+   - **`ideogram4`** (default) — the LLM emits a full structured poster layout (palette + placed title/tagline/billing/illustrated elements with normalized coordinates) for the **Ideogram 4** text-to-image model. Renders a 1536×2304 (2:3 theatrical one-sheet) poster with crisp, legible text.
+   - **`zimage`** — the original path. The LLM emits one long natural-language prompt for the **Z-Image** model; renders a 1280×1664 (~3:4) poster.
 
 ## Files
 
@@ -14,9 +16,11 @@ Two pieces:
 ├── index.html                     # standalone browser game (no server needed)
 ├── generate_mashups.py            # batch CSV + HTML + image pipeline
 ├── comfy_art_workflow_api.json    # ComfyUI workflow (Z-Image art variant)
+├── ideogram4_t2i_api.json         # ComfyUI workflow (Ideogram 4 structured-poster variant)
+├── requirements.txt               # client deps (websocket-client, pillow)
 ├── mashups.csv                    # last batch run output
 ├── mashups.html                   # last batch gallery (open in a browser)
-└── images/                        # generated posters (PNG, ~3 MB each)
+└── images/                        # generated posters (PNG, ~3-6 MB each)
 ```
 
 ## Browser game
@@ -29,24 +33,31 @@ Combination space: 12 major genres × ~9 sub-genres each = 99 sub-genres, paired
 
 ### Requirements
 
-- A llama.cpp-compatible chat server (any OpenAI-style `/v1/chat/completions` endpoint). The included system prompt is tuned for reasoning models like Qwen3 — it lets the model think and emits `<title>`/`<synopsis>`/`<positive>` tags after the reasoning.
-- A ComfyUI server with the Z-Image art workflow loaded.
-- Python 3.9+ with `websocket-client` installed.
+- A llama.cpp-compatible chat server (any OpenAI-style `/v1/chat/completions` endpoint). The included system prompts are tuned for reasoning models like Qwen3 — they let the model think, then emit tags after the reasoning: `<title>`/`<synopsis>`/`<poster>` (ideogram4) or `<title>`/`<synopsis>`/`<positive>` (zimage).
+- A ComfyUI server with the matching workflow loaded (`ideogram4_t2i_api.json` or `comfy_art_workflow_api.json`).
+- Python 3.9+ with the deps in `requirements.txt`.
 
-The `realOrAi/tools/.venv` already has the right deps if you have that repo:
+Set up a dedicated virtualenv with [uv](https://docs.astral.sh/uv/):
 
 ```bash
-/Users/dhammond/spike/realOrAi/tools/.venv/bin/python generate_mashups.py 30
+uv venv --python 3.12 .venv
+uv pip install --python .venv -r requirements.txt
+
+.venv/bin/python generate_mashups.py 30
 ```
 
 ### Usage
 
 ```bash
-# Default: llama.cpp at 127.0.0.1:9503, ComfyUI at 127.0.0.1:8188
+# Default: ideogram4 backend, llama.cpp at 127.0.0.1:9503, ComfyUI at 127.0.0.1:8188
 python generate_mashups.py 30
+
+# Use the original Z-Image backend instead
+python generate_mashups.py 30 --backend zimage
 
 # Custom servers and paths
 python generate_mashups.py 50 my_run.csv \
+    --backend ideogram4 \
     --llm-server http://127.0.0.1:9503 \
     --comfy-server 127.0.0.1:8188 \
     --html my_run.html \
@@ -68,8 +79,10 @@ For each pitch:
 3. Ask the LLM (one round-trip) to produce three tagged outputs:
    - `<title>` — punchy 3–7 word fake film title
    - `<synopsis>` — 3–5 sentence streaming-style logline
-   - `<positive>` — long natural-language Z-Image prompt with the title baked in as visible poster text
-4. Patch the prompt + a fresh seed into the ComfyUI workflow and render a 1280×1664 PNG.
+   - the poster spec, which depends on the backend:
+     - **ideogram4**: a `<poster>` block containing a JSON object — `high_level_description`, `background`, `art_style`, `aesthetics`, `lighting`, a hex `palette`, `bg_brightness`, and an `elements` array of placed text/illustration blocks each with normalized `x`/`y`/`w`/`h` coordinates. The JSON is validated and lightly repaired (code fences stripped, off-canvas boxes clamped) before use.
+     - **zimage**: a `<positive>` block — one long natural-language prompt with the title baked in as visible poster text.
+4. Patch the poster spec + a fresh seed into the matching ComfyUI workflow and render the PNG (1536×2304 for ideogram4, 1280×1664 for zimage).
 5. Save the PNG **as-is** (no transcoding, no resizing).
 6. Rewrite `mashups.csv` and `mashups.html` after every row, so partial runs are usable.
 
@@ -96,14 +109,17 @@ CSV columns:
 | `pitch` | template-built seed pitch (used as LLM inspiration) |
 | `title` | LLM-generated film title |
 | `synopsis` | LLM-generated 3–5 sentence synopsis |
-| `image_prompt` | LLM-generated Z-Image prompt |
+| `image_prompt` | LLM-generated poster spec — the Z-Image prompt string, or the Ideogram poster JSON (pretty-printed) |
 | `image_file` | filename of the saved PNG, relative to `images-dir` |
 
 The HTML gallery shows poster + title + synopsis prominently, with a collapsible "Behind the scenes" panel exposing the seed pitch and image prompt.
 
+> **Note:** ideogram4 posters render much slower than Z-Image (~7 min vs ~50s each on the test rig), because Ideogram 4 is a larger model. Plan batch sizes accordingly.
+
 ## Tuning
 
-- **Posters too small / too big?** Adjust `minmax(520px, 1fr)` in the CSS `grid-template-columns` rule inside `HTML_HEAD`.
-- **Different aspect ratio?** Change `POSTER_W, POSTER_H` (currently 3:4 portrait at 1280×1664). ComfyUI expects multiples of 64.
+- **Posters too small / too big in the gallery?** Adjust `minmax(520px, 1fr)` in the CSS `grid-template-columns` rule inside `HTML_HEAD`.
+- **Different aspect ratio or size?** Change `poster_w`/`poster_h` for the backend in the `BACKENDS` registry. ComfyUI expects multiples of 64.
 - **More variety in titles?** Bump `temperature` in `_post_chat` (currently 0.95).
-- **Different model?** The system prompt is model-agnostic — it just asks for tagged output after any reasoning. Should work with non-reasoning models too; they'll just emit the tags directly.
+- **A new image backend?** Add an entry to the `BACKENDS` registry: a system prompt, a `<tag>` extractor, a workflow-patch function, and poster dimensions. The pipeline, CSV, and gallery are backend-agnostic.
+- **Different model?** The system prompts are model-agnostic — they just ask for tagged output after any reasoning. Should work with non-reasoning models too; they'll just emit the tags directly.

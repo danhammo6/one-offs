@@ -1,0 +1,360 @@
+{
+  "163": {
+    "inputs": {
+      "sampler_name": "euler"
+    },
+    "class_type": "KSamplerSelect",
+    "_meta": {
+      "title": "KSamplerSelect"
+    }
+  },
+  "165": {
+    "inputs": {
+      "noise_seed": 1335735769458
+    },
+    "class_type": "RandomNoise",
+    "_meta": {
+      "title": "RandomNoise"
+    }
+  },
+  "199": {
+    "inputs": {
+      "source": [
+        "319:317",
+        0
+      ]
+    },
+    "class_type": "PreviewAny",
+    "_meta": {
+      "title": "Preview as Text"
+    }
+  },
+  "200": {
+    "inputs": {
+      "width": 1440,
+      "height": 2560,
+      "high_level_description": "A 1960s retro spy thriller movie poster for \"The Crimson Cipher\", featuring a silhouetted secret agent in a charcoal suit and fedora against a deep oxblood red field, with a glowing red laser beam, a pale yellow moon disc, and a brutalist city skyline.",
+      "background": "A deep oxblood red full-bleed poster background fills the entire vertical composition with no border. Subtle paper grain and faint halftone texture cover the surface for a vintage screen-print feel. Along the lower-middle area, a silhouetted skyline of angular brutalist towers recedes into hazy grey depth. A wet rooftop ledge runs along the bottom edge with rain-slick reflections in muted gold and red. The overall mood is classic 1960s espionage poster design with a limited elegant palette.",
+      "style": "art_style",
+      "style.art_style": "1960s retro movie poster illustration, flat ink shapes, minimal shading, screen-print texture, subtle halftone grain, vintage paper texture, classic espionage poster design",
+      "aesthetics": "bold, retro, graphic, cinematic, dramatic, vintage, high contrast, elegant espionage mood",
+      "lighting": "flat screen-printed poster lighting, dramatic contrast, pale yellow circular backlight behind the agent, subtle glow from a red laser beam, moody vintage print atmosphere",
+      "medium": "graphic_design",
+      "style_palette_data": "[\"#4A0F19\",\"#1A1A1A\",\"#F2E8CF\",\"#D62828\",\"#C9A44C\",\"#6E6E6E\"]",
+      "elements_data": "[{\"type\":\"obj\",\"text\":\"\",\"desc\":\"A large pale yellow circular spotlight or moon disc placed behind the agent's head, creating a halo-like backlight. It is rendered as a flat graphic shape with a soft faded edge that glows subtly into the oxblood field.\",\"palette\":[],\"x\":0.52,\"y\":0.13,\"w\":0.3,\"h\":0.26},{\"type\":\"obj\",\"text\":\"\",\"desc\":\"A tiny black helicopter silhouette banking diagonally across the upper-left sky, with visible rotor blades, rendered in a flat ink shape.\",\"palette\":[],\"x\":0.1,\"y\":0.09,\"w\":0.17,\"h\":0.1},{\"type\":\"obj\",\"text\":\"\",\"desc\":\"A tall slender male secret agent in three-quarter back view, facing away toward the skyline. He is the clear focal subject. He wears a charcoal double-breasted suit with wide lapels, a narrow black tie, and a fedora pulled low. His face is mostly hidden in shadow. His right hand is in his trouser pocket, and his left hand holds a lit cigarette near hip height with a thin curl of smoke rising upward. The rendering is flat and graphic with minimal shading and a subtle rim light on the hat brim and shoulder.\",\"palette\":[],\"x\":0.33,\"y\":0.34,\"w\":0.39,\"h\":0.53},{\"type\":\"obj\",\"text\":\"\",\"desc\":\"A glowing red laser beam slicing diagonally across the composition from the lower-left toward the upper-right, passing behind the agent's shoulder. It is a clean bright line with a slight bloom, rendered in a flat poster style.\",\"palette\":[],\"x\":0.13,\"y\":0.35,\"w\":0.75,\"h\":0.41},{\"type\":\"text\",\"text\":\"THE\\nCRIMSON\\nCIPHER\",\"desc\":\"A huge stacked movie title filling the upper third of the poster. The typography is chunky condensed serif display lettering in ivory cream, centered, with the letters nearly reaching the side margins. The title has a subtle darker red offset shadow to simulate vintage screen-print misregistration.\",\"palette\":[],\"x\":0.1,\"y\":0.04,\"w\":0.8,\"h\":0.21},{\"type\":\"text\",\"text\":\"A SPY HAS NO COUNTRY. ONLY A CODE.\",\"desc\":\"A tagline centered directly beneath the main title in a tracked italic serif font, soft muted gold, elegant and cinematic.\",\"palette\":[],\"x\":0.17,\"y\":0.255,\"w\":0.66,\"h\":0.06},{\"type\":\"text\",\"text\":\"DIRECTED BY JONATHAN HARROW\",\"desc\":\"A small centered line of ivory cream sans-serif capital letters placed above the billing block.\",\"palette\":[],\"x\":0.2,\"y\":0.8333333333333333,\"w\":0.6,\"h\":0.04},{\"type\":\"text\",\"text\":\"STARRING\\nMARCUS VANE · ELENA ROSSI · SIR ALAN BRECKENRIDGE\",\"desc\":\"A centered billing block near the bottom of the poster, using tight condensed sans-serif capital letters in ivory cream, clean and balanced.\",\"palette\":[],\"x\":0.14,\"y\":0.87,\"w\":0.72,\"h\":0.055},{\"type\":\"text\",\"text\":\"IN CINEMAS OCTOBER 17\",\"desc\":\"A bold release-date strip centered near the bottom, in soft gold condensed sans-serif capitals.\",\"palette\":[],\"x\":0.22,\"y\":0.925,\"w\":0.56,\"h\":0.04},{\"type\":\"text\",\"text\":\"MERIDIAN PICTURES PRESENTS A HARROW-VELD PRODUCTION\",\"desc\":\"A very small credit line along the bottom edge in tiny ivory cream sans-serif capital letters.\",\"palette\":[],\"x\":0.06,\"y\":0.965,\"w\":0.88,\"h\":0.03}]",
+      "bg_brightness": 61
+    },
+    "class_type": "Ideogram4PromptBuilderKJ",
+    "_meta": {
+      "title": "Ideogram 4 Prompt Builder KJ"
+    }
+  },
+  "201": {
+    "inputs": {
+      "method": "rcas",
+      "method.strength": 0.55,
+      "image": [
+        "319:316",
+        0
+      ]
+    },
+    "class_type": "ImageSharpenKJ",
+    "_meta": {
+      "title": "Image Sharpen KJ"
+    }
+  },
+  "204": {
+    "inputs": {
+      "value": 1440
+    },
+    "class_type": "INTConstant",
+    "_meta": {
+      "title": "WIDTH"
+    }
+  },
+  "205": {
+    "inputs": {
+      "value": 2560
+    },
+    "class_type": "INTConstant",
+    "_meta": {
+      "title": "HEIGHT"
+    }
+  },
+  "271": {
+    "inputs": {
+      "clip_name": "qwen3vl_8b_fp8_scaled.safetensors",
+      "type": "ideogram4",
+      "device": "default"
+    },
+    "class_type": "CLIPLoader",
+    "_meta": {
+      "title": "Load CLIP"
+    }
+  },
+  "272": {
+    "inputs": {
+      "vae_name": "flux2-vae.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Load VAE"
+    }
+  },
+  "278": {
+    "inputs": {
+      "unet_name": "ideogram4_fp8_scaled.safetensors",
+      "weight_dtype": "default"
+    },
+    "class_type": "UNETLoader",
+    "_meta": {
+      "title": "Load Diffusion Model"
+    }
+  },
+  "279": {
+    "inputs": {
+      "unet_name": "ideogram4_unconditional_fp8_scaled.safetensors",
+      "weight_dtype": "default"
+    },
+    "class_type": "UNETLoader",
+    "_meta": {
+      "title": "Load Diffusion Model"
+    }
+  },
+  "290": {
+    "inputs": {
+      "value": 28
+    },
+    "class_type": "INTConstant",
+    "_meta": {
+      "title": "STEPS"
+    }
+  },
+  "295": {
+    "inputs": {
+      "PowerLoraLoaderHeaderWidget": {
+        "type": "PowerLoraLoaderHeaderWidget"
+      },
+      "lora_1": {
+        "on": false,
+        "lora": "jojo-ideogram.safetensors",
+        "strength": 1
+      },
+      "➕ Add Lora": "",
+      "model": [
+        "278",
+        0
+      ]
+    },
+    "class_type": "Power Lora Loader (rgthree)",
+    "_meta": {
+      "title": "Power Lora Loader (rgthree)"
+    }
+  },
+  "305": {
+    "inputs": {
+      "filename_prefix": "IDEOGRAM",
+      "images": [
+        "201",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image"
+    }
+  },
+  "308": {
+    "inputs": {
+      "PowerLoraLoaderHeaderWidget": {
+        "type": "PowerLoraLoaderHeaderWidget"
+      },
+      "lora_1": {
+        "on": false,
+        "lora": "jojo-ideogram.safetensors",
+        "strength": 1
+      },
+      "➕ Add Lora": "",
+      "model": [
+        "279",
+        0
+      ]
+    },
+    "class_type": "Power Lora Loader (rgthree)",
+    "_meta": {
+      "title": "Power Lora Loader (rgthree)"
+    }
+  },
+  "319:309": {
+    "inputs": {
+      "noise": [
+        "165",
+        0
+      ],
+      "guider": [
+        "319:312",
+        0
+      ],
+      "sampler": [
+        "163",
+        0
+      ],
+      "sigmas": [
+        "319:310",
+        0
+      ],
+      "latent_image": [
+        "319:311",
+        0
+      ]
+    },
+    "class_type": "SamplerCustomAdvanced",
+    "_meta": {
+      "title": "SamplerCustomAdvanced"
+    }
+  },
+  "319:310": {
+    "inputs": {
+      "scheduler": "simple",
+      "steps": [
+        "290",
+        0
+      ],
+      "denoise": 1,
+      "model": [
+        "319:318",
+        0
+      ]
+    },
+    "class_type": "BasicScheduler",
+    "_meta": {
+      "title": "BasicScheduler"
+    }
+  },
+  "319:311": {
+    "inputs": {
+      "width": [
+        "204",
+        0
+      ],
+      "height": [
+        "205",
+        0
+      ],
+      "batch_size": 1
+    },
+    "class_type": "EmptyFlux2LatentImage",
+    "_meta": {
+      "title": "Empty Flux 2 Latent"
+    }
+  },
+  "319:313": {
+    "inputs": {
+      "text": [
+        "319:317",
+        0
+      ],
+      "clip": [
+        "271",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Positive Prompt)"
+    }
+  },
+  "319:315": {
+    "inputs": {
+      "conditioning": [
+        "319:313",
+        0
+      ]
+    },
+    "class_type": "ConditioningZeroOut",
+    "_meta": {
+      "title": "ConditioningZeroOut"
+    }
+  },
+  "319:316": {
+    "inputs": {
+      "samples": [
+        "319:309",
+        0
+      ],
+      "vae": [
+        "272",
+        0
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "319:317": {
+    "inputs": {
+      "any_01": [
+        "200",
+        0
+      ]
+    },
+    "class_type": "Any Switch (rgthree)",
+    "_meta": {
+      "title": "Any Switch (rgthree)"
+    }
+  },
+  "319:318": {
+    "inputs": {
+      "shift": 5,
+      "model": [
+        "295",
+        0
+      ]
+    },
+    "class_type": "ModelSamplingAuraFlow",
+    "_meta": {
+      "title": "ModelSamplingAuraFlow"
+    }
+  },
+  "319:314": {
+    "inputs": {
+      "cfg": 3,
+      "start_percent": 0.7,
+      "end_percent": 1,
+      "model": [
+        "319:318",
+        0
+      ]
+    },
+    "class_type": "CFGOverride",
+    "_meta": {
+      "title": "CFG Override"
+    }
+  },
+  "319:312": {
+    "inputs": {
+      "cfg": 5,
+      "model": [
+        "319:314",
+        0
+      ],
+      "positive": [
+        "319:313",
+        0
+      ],
+      "model_negative": [
+        "308",
+        0
+      ],
+      "negative": [
+        "319:315",
+        0
+      ]
+    },
+    "class_type": "DualModelGuider",
+    "_meta": {
+      "title": "Dual Model CFG Guider"
+    }
+  }
+}

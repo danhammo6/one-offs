@@ -1,0 +1,4 @@
+# Runtime dependencies for generate_mashups.py
+# (the LLM and ComfyUI servers are external; these are just the client deps)
+websocket-client>=1.8   # ComfyUI websocket progress channel
+pillow>=10.0            # image handling

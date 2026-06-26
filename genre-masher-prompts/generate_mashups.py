@@ -985,6 +985,11 @@ def main():
                         help="Directory to write poster PNGs (default: ./images/<backend>)")
     parser.add_argument("--html", type=Path, default=None,
                         help="Output HTML gallery path (default: mashups_<backend>.html)")
+    parser.add_argument("--append", action="store_true",
+                        help="Append to an existing CSV/HTML instead of overwriting. "
+                             "Pre-existing rows are kept, new rows are added after them, "
+                             "and new poster filenames are numbered to continue past the "
+                             "existing ones (no clobbering).")
     parser.add_argument("--no-images", action="store_true",
                         help="Skip ComfyUI image generation")
     parser.add_argument("--no-llm", action="store_true",
@@ -1050,7 +1055,19 @@ def main():
         backend.load_workflow()
     comfy = ComfyClient(args.comfy_server) if do_images else None
 
+    # In --append mode, preload any existing CSV rows so write_outputs() (which
+    # rewrites the whole file each flush) keeps them. New rows are appended after.
     completed_rows = []
+    if args.append and args.output.exists():
+        with args.output.open(newline="", encoding="utf-8") as f:
+            completed_rows = list(csv.DictReader(f))
+        print(f"  Append:  {len(completed_rows)} existing row"
+              f"{'s' if len(completed_rows) != 1 else ''} in {args.output}")
+        print()
+    # New poster filenames continue past the highest existing index so an append
+    # run never clobbers an earlier run's PNGs.
+    row_offset = len(completed_rows)
+
     failures = 0
     start = time.monotonic()
 
@@ -1130,7 +1147,7 @@ def main():
                 img_start = time.monotonic()
                 seed = random.randint(1, 2**31 - 1)
                 wf = backend.patch(mashup["_payload"], seed)
-                slug = f"{i:04d}-{slugify(mashup['title'] or 'untitled')}"
+                slug = f"{row_offset + i:04d}-{slugify(mashup['title'] or 'untitled')}"
                 fname = f"{slug}.png"
                 dest = args.images_dir / fname
                 try:

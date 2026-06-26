@@ -87,6 +87,10 @@ python generate_mashups.py 100 --no-images
 
 # Skip the LLM entirely (just base mashups, no titles/synopses)
 python generate_mashups.py 100 --no-llm
+
+# Add 30 more to an existing batch instead of overwriting it
+# (keeps existing rows + posters, numbers new posters after them)
+python generate_mashups.py 30 --append
 ```
 
 ### How it works
@@ -103,7 +107,7 @@ For each pitch:
      - **zimage**: a `<positive>` block — one long natural-language prompt with the title baked in as visible poster text.
 4. Patch the poster spec + a fresh seed into the matching ComfyUI workflow and render the PNG (1152×1728 for krea, 1536×2304 for ideogram4, 1280×1664 for zimage).
 5. Save the PNG **as-is** (no transcoding, no resizing).
-6. Rewrite the backend's CSV and gallery (e.g. `mashups_krea.csv` / `.html`) after every row, so partial runs are usable.
+6. Rewrite the backend's CSV and gallery (e.g. `mashups_krea.csv` / `.html`) after every row, so partial runs are usable. By default this **overwrites** any existing CSV/HTML for that backend; pass `--append` to keep the existing rows and posters and add the new ones after them (new poster filenames are numbered to continue past the existing ones).
 
 ### Pipelining
 

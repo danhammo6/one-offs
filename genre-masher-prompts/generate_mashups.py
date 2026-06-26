@@ -6,25 +6,30 @@ render) concurrently — while ComfyUI renders row N's poster, the LLM is alread
 drafting row N+1. Each completed row gets written to the CSV and the HTML gallery,
 so a partial run is still useful.
 
-Two image backends are selectable with --backend:
-    - ideogram4 (default): LLM emits a structured poster layout (palette + placed
+Text LLM is selectable with --llm:
+    - claude (default): shells out to the Claude Code CLI (`claude -p`), tools off.
+    - llama: a local llama.cpp OpenAI-compatible server (--llm-server).
+
+Image backend is selectable with --backend:
+    - ideogram4: LLM emits a structured poster layout (palette + placed
       text/illustration elements with coordinates) for the Ideogram 4 model.
     - zimage: LLM emits one long natural-language prompt for the Z-Image model.
 
 Requires:
-    - llama.cpp server (default http://127.0.0.1:9503)
+    - Claude Code CLI on PATH (default LLM), or a llama.cpp server for --llm llama
     - ComfyUI server with the matching workflow loaded (default 127.0.0.1:8188)
     - deps from requirements.txt (websocket-client, pillow) — see README for uv setup
 
 Usage:
     python generate_mashups.py <count> [output.csv]
+                               [--llm {claude,llama}] [--claude-model NAME]
                                [--backend {ideogram4,zimage}]
                                [--llm-server URL] [--comfy-server HOST:PORT]
                                [--images-dir DIR] [--html FILE] [--no-images]
 
 Example:
     python generate_mashups.py 30
-    python generate_mashups.py 30 --backend zimage
+    python generate_mashups.py 30 --llm llama --backend zimage
     python generate_mashups.py 5 --no-images       # CSV only, no posters
     .venv/bin/python generate_mashups.py 50
 """
@@ -36,6 +41,8 @@ import csv
 import json
 import random
 import re
+import shutil
+import subprocess
 import sys
 import time
 import urllib.error
@@ -173,29 +180,91 @@ POSITIVE_RE = re.compile(r"<positive>\s*(.+?)\s*</positive>", re.DOTALL | re.IGN
 POSTER_RE = re.compile(r"<poster>\s*(.+?)\s*</poster>", re.DOTALL | re.IGNORECASE)
 
 
-def _post_chat(server_url, messages, timeout=600):
-    payload = {
-        "messages": messages,
-        "temperature": 0.95,
-        "top_p": 0.95,
-        "max_tokens": 16384,
-        "stream": False,
-    }
-    data = json.dumps(payload).encode("utf-8")
-    req = urllib.request.Request(
-        f"{server_url.rstrip('/')}/v1/chat/completions",
-        data=data,
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
-    with urllib.request.urlopen(req, timeout=timeout) as resp:
-        body = json.loads(resp.read().decode("utf-8"))
-    msg = body["choices"][0]["message"]
-    # Prefer the actual answer in `content`; fall back to reasoning_content if the
-    # model only emitted tags inside its thinking stream.
-    content = (msg.get("content") or "").strip()
-    reasoning = (msg.get("reasoning_content") or "").strip()
-    return content, reasoning
+# ----------------------------------------------------------------------------
+# LLM backends — both expose chat(system_prompt, user_prompt) -> (content, reasoning)
+# ----------------------------------------------------------------------------
+
+class LlamaLLM:
+    """OpenAI-compatible chat server (llama.cpp). Reasoning models split their
+    answer between `content` and `reasoning_content`; we return both."""
+
+    name = "llama"
+
+    def __init__(self, server_url, timeout=600):
+        self.server_url = server_url
+        self.timeout = timeout
+
+    def describe(self):
+        return self.server_url
+
+    def chat(self, system_prompt, user_prompt):
+        payload = {
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            "temperature": 0.95,
+            "top_p": 0.95,
+            "max_tokens": 16384,
+            "stream": False,
+        }
+        data = json.dumps(payload).encode("utf-8")
+        req = urllib.request.Request(
+            f"{self.server_url.rstrip('/')}/v1/chat/completions",
+            data=data,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=self.timeout) as resp:
+            body = json.loads(resp.read().decode("utf-8"))
+        msg = body["choices"][0]["message"]
+        # Prefer the actual answer in `content`; fall back to reasoning_content if
+        # the model only emitted tags inside its thinking stream.
+        content = (msg.get("content") or "").strip()
+        reasoning = (msg.get("reasoning_content") or "").strip()
+        return content, reasoning
+
+
+class ClaudeCodeLLM:
+    """Shells out to the Claude Code CLI (`claude -p`). Each call is a fresh,
+    stateless invocation: system prompt via --system-prompt, user text on stdin,
+    tools disabled (pure generation), JSON envelope parsed for `.result`."""
+
+    name = "claude"
+
+    def __init__(self, model="sonnet", timeout=300, cli="claude"):
+        self.model = model
+        self.timeout = timeout
+        self.cli = cli
+
+    def describe(self):
+        return f"Claude Code CLI ({self.model})"
+
+    def chat(self, system_prompt, user_prompt):
+        cmd = [
+            self.cli, "-p",
+            "--output-format", "json",
+            "--model", self.model,
+            "--system-prompt", system_prompt,
+            "--disallowedTools", "*",   # pure text generation, no agentic tool use
+        ]
+        proc = subprocess.run(
+            cmd,
+            input=user_prompt,
+            capture_output=True,
+            text=True,
+            timeout=self.timeout,
+        )
+        if proc.returncode != 0:
+            raise RuntimeError(f"claude exited {proc.returncode}: {proc.stderr.strip()[:200]}")
+        try:
+            env = json.loads(proc.stdout)
+        except json.JSONDecodeError:
+            raise RuntimeError(f"claude returned non-JSON: {proc.stdout.strip()[:200]!r}")
+        if env.get("is_error") or env.get("subtype") != "success":
+            raise RuntimeError(f"claude error envelope: subtype={env.get('subtype')}")
+        # Claude doesn't expose a separate reasoning stream here; it's all in result.
+        return (env.get("result") or "").strip(), ""
 
 
 def _extract_title_synopsis(text):
@@ -323,12 +392,13 @@ def _extract_ideogram(text):
     return title, synopsis, poster
 
 
-def call_llama_server(server_url, mashup, backend, max_attempts=3, timeout=300):
-    """Call llama.cpp chat completions and extract the backend's tagged output.
+def call_llm(llm, mashup, backend, max_attempts=3):
+    """Call the given LLM backend and extract the image-backend's tagged output.
 
-    Retries on missing/malformed tags up to max_attempts.
-    Returns (title, synopsis, payload). The payload type depends on the backend:
-    a prose string for Z-Image, a validated dict for Ideogram 4.
+    Retries on missing/malformed tags up to max_attempts. On retry, the retry
+    nudge is appended to the user prompt (both LLM backends are stateless here).
+    Returns (title, synopsis, payload). The payload type depends on the image
+    backend: a prose string for Z-Image, a validated dict for Ideogram/Krea.
     Raises RuntimeError if all attempts fail.
     """
     last_error = None
@@ -336,17 +406,11 @@ def call_llama_server(server_url, mashup, backend, max_attempts=3, timeout=300):
 
     for attempt in range(1, max_attempts + 1):
         try:
-            messages = [
-                {"role": "system", "content": backend.system_prompt},
-                {"role": "user", "content": build_user_prompt(mashup)},
-            ]
+            user_prompt = build_user_prompt(mashup)
             if attempt > 1:
-                messages.append({
-                    "role": "user",
-                    "content": backend.retry_nudge,
-                })
+                user_prompt += "\n\n" + backend.retry_nudge
 
-            content, reasoning = _post_chat(server_url, messages, timeout=timeout)
+            content, reasoning = llm.chat(backend.system_prompt, user_prompt)
             title, synopsis, payload = backend.extract(content)
             if not (title and synopsis and payload):
                 title, synopsis, payload = backend.extract(content + "\n" + reasoning)
@@ -356,6 +420,8 @@ def call_llama_server(server_url, mashup, backend, max_attempts=3, timeout=300):
             last_snippet = (content[-200:] or reasoning[-200:]).replace("\n", " ")
         except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError) as e:
             last_error = f"network: {e}"
+        except subprocess.TimeoutExpired as e:
+            last_error = f"claude timeout after {e.timeout}s"
         except Exception as e:
             last_error = f"unexpected: {e}"
 
@@ -792,8 +858,13 @@ def main():
     parser.add_argument("count", type=int, help="Number of mashups to generate")
     parser.add_argument("output", type=Path, nargs="?", default=None,
                         help="Output CSV path (default: mashups_<backend>.csv)")
+    parser.add_argument("--llm", choices=["claude", "llama"], default="claude",
+                        help="Text LLM: 'claude' (Claude Code CLI, default) or "
+                             "'llama' (local llama.cpp server)")
+    parser.add_argument("--claude-model", default="sonnet",
+                        help="Model for the Claude Code CLI (default: sonnet)")
     parser.add_argument("--llm-server", default="http://127.0.0.1:9503",
-                        help="llama.cpp server URL (default: http://127.0.0.1:9503)")
+                        help="llama.cpp server URL when --llm llama (default: http://127.0.0.1:9503)")
     parser.add_argument("--comfy-server", default="127.0.0.1:8188",
                         help="ComfyUI server host:port (default: 127.0.0.1:8188)")
     parser.add_argument("--backend", choices=sorted(BACKENDS), default="ideogram4",
@@ -815,6 +886,18 @@ def main():
     do_images = not args.no_images and not args.no_llm
     backend = BACKENDS[args.backend]
     gallery_meta = GALLERY_META[backend.name]
+
+    # Build the text LLM backend.
+    llm = None
+    if not args.no_llm:
+        if args.llm == "claude":
+            if shutil.which("claude") is None:
+                print("Error: 'claude' CLI not found on PATH (needed for --llm claude).",
+                      file=sys.stderr)
+                sys.exit(1)
+            llm = ClaudeCodeLLM(model=args.claude_model)
+        else:
+            llm = LlamaLLM(args.llm_server)
 
     # Resolve per-backend default paths (CSV / HTML / images dir) so each backend
     # writes to its own files and its own images/<backend>/ subdir.
@@ -841,7 +924,7 @@ def main():
     print(f"  CSV:     {args.output}")
     print(f"  HTML:    {args.html}")
     if not args.no_llm:
-        print(f"  LLM:     {args.llm_server}")
+        print(f"  LLM:     {llm.describe()}")
     if do_images:
         print(f"  Backend: {backend.name} ({backend.poster_w}x{backend.poster_h})")
         print(f"  Comfy:   {args.comfy_server}")
@@ -874,7 +957,7 @@ def main():
         if args.no_llm:
             return m, None
         try:
-            title, synopsis, payload = call_llama_server(args.llm_server, m, backend)
+            title, synopsis, payload = call_llm(llm, m, backend)
             m["title"] = title
             m["synopsis"] = synopsis
             m["_payload"] = payload

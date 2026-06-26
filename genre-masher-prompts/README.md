@@ -41,7 +41,10 @@ Combination space: 12 major genres × ~9 sub-genres each = 99 sub-genres, paired
 
 ### Requirements
 
-- A llama.cpp-compatible chat server (any OpenAI-style `/v1/chat/completions` endpoint). The included system prompts are tuned for reasoning models like Qwen3 — they let the model think, then emit tags after the reasoning: `<title>`/`<synopsis>`/`<poster>` (ideogram4) or `<title>`/`<synopsis>`/`<positive>` (zimage).
+- A text LLM, selected with `--llm`:
+  - **`claude`** (default) — the [Claude Code CLI](https://docs.claude.com/en/docs/claude-code) on your `PATH`. Each pitch is a fresh `claude -p` invocation with tools disabled (pure generation). Much higher quality than a local model.
+  - **`llama`** — any llama.cpp-compatible OpenAI-style `/v1/chat/completions` server (`--llm-server`). The system prompts are tuned for reasoning models like Qwen3 — they let the model think, then emit tags after the reasoning.
+  - Either way the model emits tags after any reasoning: `<title>`/`<synopsis>`/`<poster>` (ideogram4) or `<title>`/`<synopsis>`/`<positive>` (zimage).
 - A ComfyUI server with the matching workflow loaded (`workflows/ideogram4_t2i_api.json` or `workflows/comfy_art_workflow_api.json`).
 - Python 3.9+ with the deps in `requirements.txt`.
 
@@ -57,9 +60,12 @@ uv pip install --python .venv -r requirements.txt
 ### Usage
 
 ```bash
-# Default: ideogram4 backend, llama.cpp at 127.0.0.1:9503, ComfyUI at 127.0.0.1:8188
+# Default: Claude Code LLM, ideogram4 backend, ComfyUI at 127.0.0.1:8188
 # Writes mashups_ideogram4.csv/.html and images/ideogram4/
 python generate_mashups.py 30
+
+# Use the local llama.cpp server instead of Claude Code
+python generate_mashups.py 30 --llm llama --llm-server http://127.0.0.1:9503
 
 # Use the original Z-Image backend instead
 # Writes mashups_zimage.csv/.html and images/zimage/

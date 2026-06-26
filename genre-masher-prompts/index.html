@@ -244,8 +244,12 @@
   .stats {
     text-align: center;
     margin-top: 20px;
-    font-size: 0.85rem;
-    opacity: 0.7;
+    font-size: 1.8rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+    opacity: 0.55;
+    font-variant-numeric: tabular-nums;
+    cursor: default;
   }
   .gallery-link {
     text-align: center;
@@ -321,7 +325,7 @@
 
     <div class="poster-area" id="posterArea"></div>
 
-    <div class="stats" id="stats">Films pitched: 0</div>
+    <div class="stats" id="stats" title="films remaining this cycle">&middot;&middot;&middot;</div>
   </div>
 
   <div class="footer-links">
@@ -482,8 +486,11 @@ async function smash() {
   revealFilm(film);
 
   state.count++;
-  document.getElementById('stats').textContent =
-    `Films pitched: ${state.count} · pool: ${FILMS.length}`;
+  // Full detail goes to the console; the UI shows just a single mysterious
+  // number — how many unseen films remain in this shuffle-bag cycle (it ticks
+  // down to 0, then refills on the next reshuffle).
+  console.log(`Films pitched: ${state.count} · pool: ${FILMS.length}`);
+  document.getElementById('stats').textContent = filmBag.length;
   btn.disabled = false;
 }
 
@@ -560,7 +567,9 @@ smashBtn.disabled = true;
 loadGameData()
   .then(() => {
     smashBtn.disabled = false;
-    document.getElementById('stats').textContent = `Films pitched: 0 · pool: ${FILMS.length}`;
+    // Mysterious countdown starts at the full pool size (nothing seen yet).
+    console.log(`Films pitched: 0 · pool: ${FILMS.length}`);
+    document.getElementById('stats').textContent = FILMS.length;
   })
   .catch(err => {
     console.error(err);

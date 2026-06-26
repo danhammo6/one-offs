@@ -42,7 +42,7 @@ The game serves **pre-generated** films: clicking "Smash Genres!" spins the reel
 
 It loads the `mashups_<backend>.json` manifests via `fetch()`, so it must be **served over HTTP** rather than opened as a `file://` — run `python -m http.server` in this folder and visit the printed URL. Spacebar rerolls. A subtle footer links to the full per-backend galleries.
 
-Films are dealt from a **shuffle-bag**: the pool is shuffled and dealt through without repeats, then reshuffled — so you see every film once per cycle and never an immediate repeat.
+Films are dealt from a **shuffle-bag**: the pool is shuffled and dealt through without repeats, then reshuffled — so you see every film once per cycle and never an immediate repeat. The lone number under the poster is a mysterious countdown of how many unseen films remain in the current cycle (it ticks down to 0, then refills). The full `Films pitched: N · pool: M` detail is logged to the browser console.
 
 **Which films are in the pool is configurable.** By default the pool merges all backends (Z-Image + Ideogram 4 + Krea). Narrow it with a `?backends=` query param:
 

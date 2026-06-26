@@ -69,6 +69,17 @@
     margin-right: 14px;
   }
   .breadcrumb a:hover { opacity: 1; border-bottom-color: #fff; }
+  .gallery-nav { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;
+                 margin: -34px 0 46px; }
+  .gallery-nav .nav-link {
+    font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 1px;
+    font-size: 0.85rem; padding: 7px 18px; border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.18); text-decoration: none;
+    color: #f4eafc; opacity: 0.7; transition: opacity 0.2s, background 0.2s; }
+  .gallery-nav a.nav-link:hover { opacity: 1; background: rgba(255,255,255,0.08); }
+  .gallery-nav .nav-link.active {
+    opacity: 1; color: #ffbe0b; border-color: rgba(255,190,11,0.6);
+    background: rgba(255,190,11,0.12); cursor: default; }
 </style>
 </head>
 <body>
@@ -78,9 +89,13 @@
   </div>
   <h1>Genre Masher 3000</h1>
   <div class="tagline">AI-generated pitches that nobody asked for</div>
+  <nav class="gallery-nav">
+    <span class="nav-link active">Z-Image</span>
+    <a class="nav-link" href="mashups_ideogram4.html">Ideogram 4</a>
+  </nav>
   <div class="grid">
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0001-the-spectral-draft-pick-at-sundown.png" alt="The Spectral Draft Pick at Sundown">
+      <img class="poster" loading="lazy" src="images/zimage/0001-the-spectral-draft-pick-at-sundown.png" alt="The Spectral Draft Pick at Sundown">
       <div class="meta">
         <div class="title">The Spectral Draft Pick at Sundown</div>
         <div class="badges">
@@ -97,7 +112,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0002-the-duke-of-dust-and-demons.png" alt="The Duke of Dust and Demons">
+      <img class="poster" loading="lazy" src="images/zimage/0002-the-duke-of-dust-and-demons.png" alt="The Duke of Dust and Demons">
       <div class="meta">
         <div class="title">The Duke of Dust and Demons</div>
         <div class="badges">
@@ -114,7 +129,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0003-tomorrow-is-overdue-for-naptime.png" alt="Tomorrow Is Overdue for Naptime">
+      <img class="poster" loading="lazy" src="images/zimage/0003-tomorrow-is-overdue-for-naptime.png" alt="Tomorrow Is Overdue for Naptime">
       <div class="meta">
         <div class="title">Tomorrow Is Overdue for Naptime</div>
         <div class="badges">
@@ -131,7 +146,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0004-chrome-molar-paranoia-the-final-flossing.png" alt="CHROME MOLAR PARANOIA: THE FINAL FLOSSING">
+      <img class="poster" loading="lazy" src="images/zimage/0004-chrome-molar-paranoia-the-final-flossing.png" alt="CHROME MOLAR PARANOIA: THE FINAL FLOSSING">
       <div class="meta">
         <div class="title">CHROME MOLAR PARANOIA: THE FINAL FLOSSING</div>
         <div class="badges">
@@ -148,7 +163,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0005-folk-songs-for-a-strange-stomach.png" alt="Folk Songs for a Strange Stomach">
+      <img class="poster" loading="lazy" src="images/zimage/0005-folk-songs-for-a-strange-stomach.png" alt="Folk Songs for a Strange Stomach">
       <div class="meta">
         <div class="title">Folk Songs for a Strange Stomach</div>
         <div class="badges">
@@ -165,7 +180,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0006-picket-fences-pentagram-hymns.png" alt="Picket Fences &amp; Pentagram Hymns">
+      <img class="poster" loading="lazy" src="images/zimage/0006-picket-fences-pentagram-hymns.png" alt="Picket Fences &amp; Pentagram Hymns">
       <div class="meta">
         <div class="title">Picket Fences &amp; Pentagram Hymns</div>
         <div class="badges">
@@ -182,7 +197,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0007-the-yield-statement-a-taxing-musical.png" alt="THE YIELD STATEMENT: A TAXING MUSICAL">
+      <img class="poster" loading="lazy" src="images/zimage/0007-the-yield-statement-a-taxing-musical.png" alt="THE YIELD STATEMENT: A TAXING MUSICAL">
       <div class="meta">
         <div class="title">THE YIELD STATEMENT: A TAXING MUSICAL</div>
         <div class="badges">
@@ -199,7 +214,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0008-dust-devil-s-final-dialogue.png" alt="Dust Devil’s Final Dialogue">
+      <img class="poster" loading="lazy" src="images/zimage/0008-dust-devil-s-final-dialogue.png" alt="Dust Devil’s Final Dialogue">
       <div class="meta">
         <div class="title">Dust Devil’s Final Dialogue</div>
         <div class="badges">
@@ -216,7 +231,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0009-branching-out-in-aisle-four.png" alt="Branching Out in Aisle Four">
+      <img class="poster" loading="lazy" src="images/zimage/0009-branching-out-in-aisle-four.png" alt="Branching Out in Aisle Four">
       <div class="meta">
         <div class="title">Branching Out in Aisle Four</div>
         <div class="badges">
@@ -233,7 +248,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0010-tracking-the-tithes-a-looping-audit.png" alt="TRACKING THE TITHES: A LOOPING AUDIT">
+      <img class="poster" loading="lazy" src="images/zimage/0010-tracking-the-tithes-a-looping-audit.png" alt="TRACKING THE TITHES: A LOOPING AUDIT">
       <div class="meta">
         <div class="title">TRACKING THE TITHES: A LOOPING AUDIT</div>
         <div class="badges">
@@ -250,7 +265,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0011-the-sodden-serenade-of-squawking-doom.png" alt="THE SODDEN SERENADE OF SQUAWKING DOOM">
+      <img class="poster" loading="lazy" src="images/zimage/0011-the-sodden-serenade-of-squawking-doom.png" alt="THE SODDEN SERENADE OF SQUAWKING DOOM">
       <div class="meta">
         <div class="title">THE SODDEN SERENADE OF SQUAWKING DOOM</div>
         <div class="badges">
@@ -267,7 +282,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0012-counter-service-divinity-a-dough-driven-conspiracy.png" alt="Counter Service Divinity: A Dough-Driven Conspiracy">
+      <img class="poster" loading="lazy" src="images/zimage/0012-counter-service-divinity-a-dough-driven-conspiracy.png" alt="Counter Service Divinity: A Dough-Driven Conspiracy">
       <div class="meta">
         <div class="title">Counter Service Divinity: A Dough-Driven Conspiracy</div>
         <div class="badges">
@@ -284,7 +299,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0013-double-naptime-beyond-the-apache-rift.png" alt="Double Naptime Beyond the Apache Rift">
+      <img class="poster" loading="lazy" src="images/zimage/0013-double-naptime-beyond-the-apache-rift.png" alt="Double Naptime Beyond the Apache Rift">
       <div class="meta">
         <div class="title">Double Naptime Beyond the Apache Rift</div>
         <div class="badges">
@@ -301,7 +316,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0014-bless-this-lease-a-true-crime-romance.png" alt="Bless This Lease: A True Crime Romance">
+      <img class="poster" loading="lazy" src="images/zimage/0014-bless-this-lease-a-true-crime-romance.png" alt="Bless This Lease: A True Crime Romance">
       <div class="meta">
         <div class="title">Bless This Lease: A True Crime Romance</div>
         <div class="badges">
@@ -318,7 +333,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0015-the-peyote-palimpsest-a-suburban-odyssey.png" alt="The Peyote Palimpsest: A Suburban Odyssey">
+      <img class="poster" loading="lazy" src="images/zimage/0015-the-peyote-palimpsest-a-suburban-odyssey.png" alt="The Peyote Palimpsest: A Suburban Odyssey">
       <div class="meta">
         <div class="title">The Peyote Palimpsest: A Suburban Odyssey</div>
         <div class="badges">
@@ -335,7 +350,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0016-tenure-tentacles-and-a-thousand-doors.png" alt="Tenure, Tentacles, and a Thousand Doors">
+      <img class="poster" loading="lazy" src="images/zimage/0016-tenure-tentacles-and-a-thousand-doors.png" alt="Tenure, Tentacles, and a Thousand Doors">
       <div class="meta">
         <div class="title">Tenure, Tentacles, and a Thousand Doors</div>
         <div class="badges">
@@ -352,7 +367,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0017-the-knight-in-the-empty-courtyard.png" alt="The Knight in the Empty Courtyard">
+      <img class="poster" loading="lazy" src="images/zimage/0017-the-knight-in-the-empty-courtyard.png" alt="The Knight in the Empty Courtyard">
       <div class="meta">
         <div class="title">The Knight in the Empty Courtyard</div>
         <div class="badges">
@@ -369,7 +384,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0018-a-santa-s-long-road-to-sin.png" alt="A Santa’s Long Road to Sin">
+      <img class="poster" loading="lazy" src="images/zimage/0018-a-santa-s-long-road-to-sin.png" alt="A Santa’s Long Road to Sin">
       <div class="meta">
         <div class="title">A Santa’s Long Road to Sin</div>
         <div class="badges">
@@ -386,7 +401,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0019-squelch-city-shadows-the-prepper-protocol.png" alt="SQUELCH CITY SHADOWS: THE PREPPER PROTOCOL">
+      <img class="poster" loading="lazy" src="images/zimage/0019-squelch-city-shadows-the-prepper-protocol.png" alt="SQUELCH CITY SHADOWS: THE PREPPER PROTOCOL">
       <div class="meta">
         <div class="title">SQUELCH CITY SHADOWS: THE PREPPER PROTOCOL</div>
         <div class="badges">
@@ -403,7 +418,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0020-please-return-the-world-to-its-shelf.png" alt="Please Return the World to Its Shelf">
+      <img class="poster" loading="lazy" src="images/zimage/0020-please-return-the-world-to-its-shelf.png" alt="Please Return the World to Its Shelf">
       <div class="meta">
         <div class="title">Please Return the World to Its Shelf</div>
         <div class="badges">
@@ -420,7 +435,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0021-a-gentleman-s-guide-to-gridiron-ghosts.png" alt="A Gentleman&#x27;s Guide to Gridiron Ghosts">
+      <img class="poster" loading="lazy" src="images/zimage/0021-a-gentleman-s-guide-to-gridiron-ghosts.png" alt="A Gentleman&#x27;s Guide to Gridiron Ghosts">
       <div class="meta">
         <div class="title">A Gentleman&#x27;s Guide to Gridiron Ghosts</div>
         <div class="badges">
@@ -437,7 +452,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0022-the-queue-beyond-the-vein.png" alt="The Queue Beyond the Vein">
+      <img class="poster" loading="lazy" src="images/zimage/0022-the-queue-beyond-the-vein.png" alt="The Queue Beyond the Vein">
       <div class="meta">
         <div class="title">The Queue Beyond the Vein</div>
         <div class="badges">
@@ -454,7 +469,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0023-pirate-of-the-pavement-tears-and-biscuits.png" alt="PIRATE OF THE PAVEMENT: TEARS AND BISCUITS">
+      <img class="poster" loading="lazy" src="images/zimage/0023-pirate-of-the-pavement-tears-and-biscuits.png" alt="PIRATE OF THE PAVEMENT: TEARS AND BISCUITS">
       <div class="meta">
         <div class="title">PIRATE OF THE PAVEMENT: TEARS AND BISCUITS</div>
         <div class="badges">
@@ -471,7 +486,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0024-the-howling-lute-and-honeyed-dread.png" alt="The Howling Lute and Honeyed Dread">
+      <img class="poster" loading="lazy" src="images/zimage/0024-the-howling-lute-and-honeyed-dread.png" alt="The Howling Lute and Honeyed Dread">
       <div class="meta">
         <div class="title">The Howling Lute and Honeyed Dread</div>
         <div class="badges">
@@ -488,7 +503,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0025-oyez-the-fluorescent-void-demands-forms.png" alt="Oyez! The Fluorescent Void Demands Forms">
+      <img class="poster" loading="lazy" src="images/zimage/0025-oyez-the-fluorescent-void-demands-forms.png" alt="Oyez! The Fluorescent Void Demands Forms">
       <div class="meta">
         <div class="title">Oyez! The Fluorescent Void Demands Forms</div>
         <div class="badges">
@@ -505,7 +520,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0026-four-legged-fare-eating-up-the-void.png" alt="FOUR-LEGGED FARE: EATING UP THE VOID">
+      <img class="poster" loading="lazy" src="images/zimage/0026-four-legged-fare-eating-up-the-void.png" alt="FOUR-LEGGED FARE: EATING UP THE VOID">
       <div class="meta">
         <div class="title">FOUR-LEGGED FARE: EATING UP THE VOID</div>
         <div class="badges">
@@ -522,7 +537,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0027-hark-the-archive-melts-mid-flush.png" alt="HARK! THE ARCHIVE MELTS MID-FLUSH">
+      <img class="poster" loading="lazy" src="images/zimage/0027-hark-the-archive-melts-mid-flush.png" alt="HARK! THE ARCHIVE MELTS MID-FLUSH">
       <div class="meta">
         <div class="title">HARK! THE ARCHIVE MELTS MID-FLUSH</div>
         <div class="badges">
@@ -539,7 +554,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0028-the-youtube-werewolf-of-iron-harbor.png" alt="The YouTube Werewolf of Iron Harbor">
+      <img class="poster" loading="lazy" src="images/zimage/0028-the-youtube-werewolf-of-iron-harbor.png" alt="The YouTube Werewolf of Iron Harbor">
       <div class="meta">
         <div class="title">The YouTube Werewolf of Iron Harbor</div>
         <div class="badges">
@@ -556,7 +571,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0029-the-blender-deposition-a-cold-case-haunting.png" alt="The Blender Deposition: A Cold Case Haunting">
+      <img class="poster" loading="lazy" src="images/zimage/0029-the-blender-deposition-a-cold-case-haunting.png" alt="The Blender Deposition: A Cold Case Haunting">
       <div class="meta">
         <div class="title">The Blender Deposition: A Cold Case Haunting</div>
         <div class="badges">
@@ -573,7 +588,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0030-dust-bones-and-bylaws.png" alt="DUST, BONES AND BYLAWS">
+      <img class="poster" loading="lazy" src="images/zimage/0030-dust-bones-and-bylaws.png" alt="DUST, BONES AND BYLAWS">
       <div class="meta">
         <div class="title">DUST, BONES AND BYLAWS</div>
         <div class="badges">
@@ -590,7 +605,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0031-the-last-hive-of-christmas-gulch.png" alt="THE LAST HIVE OF CHRISTMAS GULCH">
+      <img class="poster" loading="lazy" src="images/zimage/0031-the-last-hive-of-christmas-gulch.png" alt="THE LAST HIVE OF CHRISTMAS GULCH">
       <div class="meta">
         <div class="title">THE LAST HIVE OF CHRISTMAS GULCH</div>
         <div class="badges">
@@ -607,7 +622,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0032-the-grim-grantor-trust-of-ghost-ridge.png" alt="THE GRIM GRANTOR TRUST OF GHOST RIDGE">
+      <img class="poster" loading="lazy" src="images/zimage/0032-the-grim-grantor-trust-of-ghost-ridge.png" alt="THE GRIM GRANTOR TRUST OF GHOST RIDGE">
       <div class="meta">
         <div class="title">THE GRIM GRANTOR TRUST OF GHOST RIDGE</div>
         <div class="badges">
@@ -624,7 +639,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0033-the-zoning-committee-of-drowning-suburbs.png" alt="The Zoning Committee of Drowning Suburbs">
+      <img class="poster" loading="lazy" src="images/zimage/0033-the-zoning-committee-of-drowning-suburbs.png" alt="The Zoning Committee of Drowning Suburbs">
       <div class="meta">
         <div class="title">The Zoning Committee of Drowning Suburbs</div>
         <div class="badges">
@@ -641,7 +656,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0034-per-my-last-prophecy.png" alt="Per My Last Prophecy">
+      <img class="poster" loading="lazy" src="images/zimage/0034-per-my-last-prophecy.png" alt="Per My Last Prophecy">
       <div class="meta">
         <div class="title">Per My Last Prophecy</div>
         <div class="badges">
@@ -658,7 +673,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0035-sanctum-scramble-the-seagull-syndrome.png" alt="Sanctum Scramble: The Seagull Syndrome">
+      <img class="poster" loading="lazy" src="images/zimage/0035-sanctum-scramble-the-seagull-syndrome.png" alt="Sanctum Scramble: The Seagull Syndrome">
       <div class="meta">
         <div class="title">Sanctum Scramble: The Seagull Syndrome</div>
         <div class="badges">
@@ -675,7 +690,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0036-tinfoil-therapy-the-caped-counselor-s-breakdown.png" alt="Tinfoil Therapy: The Caped Counselor&#x27;s Breakdown">
+      <img class="poster" loading="lazy" src="images/zimage/0036-tinfoil-therapy-the-caped-counselor-s-breakdown.png" alt="Tinfoil Therapy: The Caped Counselor&#x27;s Breakdown">
       <div class="meta">
         <div class="title">Tinfoil Therapy: The Caped Counselor&#x27;s Breakdown</div>
         <div class="badges">
@@ -692,7 +707,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0037-a-lament-for-leaky-roofs.png" alt="A Lament for Leaky Roofs">
+      <img class="poster" loading="lazy" src="images/zimage/0037-a-lament-for-leaky-roofs.png" alt="A Lament for Leaky Roofs">
       <div class="meta">
         <div class="title">A Lament for Leaky Roofs</div>
         <div class="badges">
@@ -709,7 +724,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0038-molar-mayhem-the-talking-horse-campaigns-for-squelch.png" alt="Molar Mayhem: The Talking Horse Campaigns for Squelch">
+      <img class="poster" loading="lazy" src="images/zimage/0038-molar-mayhem-the-talking-horse-campaigns-for-squelch.png" alt="Molar Mayhem: The Talking Horse Campaigns for Squelch">
       <div class="meta">
         <div class="title">Molar Mayhem: The Talking Horse Campaigns for Squelch</div>
         <div class="badges">
@@ -726,7 +741,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0039-the-beige-horizon.png" alt="THE BEIGE HORIZON">
+      <img class="poster" loading="lazy" src="images/zimage/0039-the-beige-horizon.png" alt="THE BEIGE HORIZON">
       <div class="meta">
         <div class="title">THE BEIGE HORIZON</div>
         <div class="badges">
@@ -743,7 +758,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0040-pop-quiz-covert-operations.png" alt="Pop Quiz: Covert Operations">
+      <img class="poster" loading="lazy" src="images/zimage/0040-pop-quiz-covert-operations.png" alt="Pop Quiz: Covert Operations">
       <div class="meta">
         <div class="title">Pop Quiz: Covert Operations</div>
         <div class="badges">
@@ -760,7 +775,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0041-the-thaumic-omega-forms-of-structural-ruin-and-ruined-lips.png" alt="THE THAUMIC OMEGA: FORMS OF STRUCTURAL RUIN AND RUINED LIPS">
+      <img class="poster" loading="lazy" src="images/zimage/0041-the-thaumic-omega-forms-of-structural-ruin-and-ruined-lips.png" alt="THE THAUMIC OMEGA: FORMS OF STRUCTURAL RUIN AND RUINED LIPS">
       <div class="meta">
         <div class="title">THE THAUMIC OMEGA: FORMS OF STRUCTURAL RUIN AND RUINED LIPS</div>
         <div class="badges">
@@ -777,7 +792,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0042-the-trembling-tracker-of-tin-canyon.png" alt="THE TREMBLING TRACKER OF TIN CANYON">
+      <img class="poster" loading="lazy" src="images/zimage/0042-the-trembling-tracker-of-tin-canyon.png" alt="THE TREMBLING TRACKER OF TIN CANYON">
       <div class="meta">
         <div class="title">THE TREMBLING TRACKER OF TIN CANYON</div>
         <div class="badges">
@@ -794,7 +809,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0043-neon-dust-and-the-mediocre-oracle.png" alt="Neon Dust and the Mediocre Oracle">
+      <img class="poster" loading="lazy" src="images/zimage/0043-neon-dust-and-the-mediocre-oracle.png" alt="Neon Dust and the Mediocre Oracle">
       <div class="meta">
         <div class="title">Neon Dust and the Mediocre Oracle</div>
         <div class="badges">
@@ -811,7 +826,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0044-rooted-in-red-tape.png" alt="Rooted in Red Tape">
+      <img class="poster" loading="lazy" src="images/zimage/0044-rooted-in-red-tape.png" alt="Rooted in Red Tape">
       <div class="meta">
         <div class="title">Rooted in Red Tape</div>
         <div class="badges">
@@ -828,7 +843,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/0045-a-taste-for-thunder-tunes.png" alt="A TASTE FOR THUNDER &amp; TUNES">
+      <img class="poster" loading="lazy" src="images/zimage/0045-a-taste-for-thunder-tunes.png" alt="A TASTE FOR THUNDER &amp; TUNES">
       <div class="meta">
         <div class="title">A TASTE FOR THUNDER &amp; TUNES</div>
         <div class="badges">
@@ -846,10 +861,9 @@
     </div>
   </div>
   <footer>
-    Generated by generate_mashups.py &middot; 45 pitches &middot; 2026-05-15 18:11:12<br>
+    Generated by generate_mashups.py &middot; 45 pitches &middot; 2026-06-26 14:14:23<br>
     Posters rendered with <a href="https://www.comfy.org/" target="_blank" rel="noopener">ComfyUI</a>
-    using a Z-Image art workflow by
-    <a href="https://www.patreon.com/c/aitrepreneur" target="_blank" rel="noopener">Aitrepreneur</a>.
+    using a Z-Image art workflow by <a href="https://www.patreon.com/c/aitrepreneur" target="_blank" rel="noopener">Aitrepreneur</a>.
   </footer>
 </body>
 </html>

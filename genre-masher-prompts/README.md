@@ -18,14 +18,20 @@ Two pieces:
 ├── comfy_art_workflow_api.json    # ComfyUI workflow (Z-Image art variant)
 ├── ideogram4_t2i_api.json         # ComfyUI workflow (Ideogram 4 structured-poster variant)
 ├── requirements.txt               # client deps (websocket-client, pillow)
-├── mashups.csv                    # last batch run output
-├── mashups.html                   # last batch gallery (open in a browser)
-└── images/                        # generated posters (PNG, ~3-6 MB each)
+├── mashups_zimage.csv / .html     # Z-Image batch + gallery
+├── mashups_ideogram4.csv / .html  # Ideogram 4 batch + gallery
+└── images/
+    ├── zimage/                     # Z-Image posters (PNG)
+    └── ideogram4/                  # Ideogram 4 posters (PNG, ~6-8 MB each)
 ```
+
+Each backend writes its own CSV, its own gallery, and its own `images/<backend>/`
+subdir. The galleries cross-link via a nav bar at the top, so you can flip
+between the Z-Image and Ideogram 4 batches.
 
 ## Browser game
 
-Just open `index.html` in any browser — no server required. Spacebar rerolls; lock buttons pin individual slots. The poster generator hits `image.pollinations.ai` (free, keyless) on demand. There's a link near the top to `mashups.html`, the gallery of pre-rendered batch pitches.
+Just open `index.html` in any browser — no server required. Spacebar rerolls; lock buttons pin individual slots. The poster generator hits `image.pollinations.ai` (free, keyless) on demand. There's a link near the top to the pre-rendered batch galleries (`mashups_ideogram4.html` / `mashups_zimage.html`).
 
 Combination space: 12 major genres × ~9 sub-genres each = 99 sub-genres, paired with 56 characters and 56 quirks. **Roughly 28 million distinct pitches.** Pre-generating them all would take about 4.5 years of continuous rendering, so on-demand it is.
 
@@ -50,9 +56,11 @@ uv pip install --python .venv -r requirements.txt
 
 ```bash
 # Default: ideogram4 backend, llama.cpp at 127.0.0.1:9503, ComfyUI at 127.0.0.1:8188
+# Writes mashups_ideogram4.csv/.html and images/ideogram4/
 python generate_mashups.py 30
 
 # Use the original Z-Image backend instead
+# Writes mashups_zimage.csv/.html and images/zimage/
 python generate_mashups.py 30 --backend zimage
 
 # Custom servers and paths
@@ -84,7 +92,7 @@ For each pitch:
      - **zimage**: a `<positive>` block — one long natural-language prompt with the title baked in as visible poster text.
 4. Patch the poster spec + a fresh seed into the matching ComfyUI workflow and render the PNG (1536×2304 for ideogram4, 1280×1664 for zimage).
 5. Save the PNG **as-is** (no transcoding, no resizing).
-6. Rewrite `mashups.csv` and `mashups.html` after every row, so partial runs are usable.
+6. Rewrite the backend's CSV and gallery (e.g. `mashups_ideogram4.csv` / `.html`) after every row, so partial runs are usable.
 
 ### Pipelining
 
@@ -110,7 +118,7 @@ CSV columns:
 | `title` | LLM-generated film title |
 | `synopsis` | LLM-generated 3–5 sentence synopsis |
 | `image_prompt` | LLM-generated poster spec — the Z-Image prompt string, or the Ideogram poster JSON (pretty-printed) |
-| `image_file` | filename of the saved PNG, relative to `images-dir` |
+| `image_file` | filename of the saved PNG (lives in `images/<backend>/`) |
 
 The HTML gallery shows poster + title + synopsis prominently, with a collapsible "Behind the scenes" panel exposing the seed pitch and image prompt.
 

@@ -814,6 +814,17 @@ HTML_HEAD = """<!DOCTYPE html>
     margin-right: 14px;
   }
   .breadcrumb a:hover { opacity: 1; border-bottom-color: #fff; }
+  .gallery-nav { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;
+                 margin: -34px 0 46px; }
+  .gallery-nav .nav-link {
+    font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 1px;
+    font-size: 0.85rem; padding: 7px 18px; border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.18); text-decoration: none;
+    color: #f4eafc; opacity: 0.7; transition: opacity 0.2s, background 0.2s; }
+  .gallery-nav a.nav-link:hover { opacity: 1; background: rgba(255,255,255,0.08); }
+  .gallery-nav .nav-link.active {
+    opacity: 1; color: #ffbe0b; border-color: rgba(255,190,11,0.6);
+    background: rgba(255,190,11,0.12); cursor: default; }
 </style>
 </head>
 <body>
@@ -823,6 +834,9 @@ HTML_HEAD = """<!DOCTYPE html>
   </div>
   <h1>Genre Masher 3000</h1>
   <div class="tagline">AI-generated pitches that nobody asked for</div>
+  <nav class="gallery-nav">
+    __GALLERY_NAV__
+  </nav>
   <div class="grid">
 """
 
@@ -836,22 +850,48 @@ HTML_FOOT = """  </div>
 </html>
 """
 
-# Per-backend credit line + poster aspect ratio for the gallery.
+# Per-backend gallery presentation: label, poster aspect ratio, default image
+# subdir, output gallery filename, and credit line. The `label`/`html` entries
+# also drive the cross-gallery navigation links, so adding a new backend's
+# gallery is a single entry here.
 GALLERY_META = {
     "zimage": {
+        "label": "Z-Image",
         "ratio": "3/4",
+        "images_dir": "images/zimage",
+        "html": "mashups_zimage.html",
         "credit": ('using a Z-Image art workflow by '
                    '<a href="https://www.patreon.com/c/aitrepreneur" target="_blank" '
                    'rel="noopener">Aitrepreneur</a>.'),
     },
     "ideogram4": {
+        "label": "Ideogram 4",
         "ratio": "2/3",
+        "images_dir": "images/ideogram4",
+        "html": "mashups_ideogram4.html",
         "credit": "using an Ideogram 4 text-to-image workflow.",
     },
 }
 
 
-def write_gallery(html_path, rows, images_subdir, backend_name="ideogram4"):
+def _gallery_nav(current_backend):
+    """Build the cross-gallery navigation links (one per backend gallery),
+    marking the current one as active."""
+    links = []
+    for name, meta in GALLERY_META.items():
+        if name == current_backend:
+            links.append(f'<span class="nav-link active">{html_escape(meta["label"])}</span>')
+        else:
+            links.append(
+                f'<a class="nav-link" href="{html_escape(meta["html"])}">'
+                f'{html_escape(meta["label"])}</a>'
+            )
+    return '\n    '.join(links)
+
+
+def write_gallery(html_path, rows, images_href, backend_name="ideogram4"):
+    """images_href is the relative path prefix from the gallery HTML to the
+    poster files, e.g. "images/ideogram4"."""
     cards = []
     for row in rows:
         title = row.get("title") or "(untitled)"
@@ -867,7 +907,7 @@ def write_gallery(html_path, rows, images_subdir, backend_name="ideogram4"):
         if image_file:
             poster_html = (
                 f'<img class="poster" loading="lazy" '
-                f'src="{html_escape(images_subdir)}/{html_escape(image_file)}" '
+                f'src="{html_escape(images_href)}/{html_escape(image_file)}" '
                 f'alt="{html_escape(title)}">'
             )
         else:
@@ -894,7 +934,9 @@ def write_gallery(html_path, rows, images_subdir, backend_name="ideogram4"):
     </div>""")
 
     meta = GALLERY_META.get(backend_name, GALLERY_META["ideogram4"])
-    head = HTML_HEAD.replace("__POSTER_RATIO__", meta["ratio"])
+    head = (HTML_HEAD
+            .replace("__POSTER_RATIO__", meta["ratio"])
+            .replace("__GALLERY_NAV__", _gallery_nav(backend_name)))
     html = head + "\n".join(cards) + "\n" + HTML_FOOT.format(
         count=len(rows),
         timestamp=time.strftime("%Y-%m-%d %H:%M:%S"),
@@ -921,18 +963,18 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument("count", type=int, help="Number of mashups to generate")
-    parser.add_argument("output", type=Path, nargs="?", default=Path("mashups.csv"),
-                        help="Output CSV path (default: mashups.csv)")
+    parser.add_argument("output", type=Path, nargs="?", default=None,
+                        help="Output CSV path (default: mashups_<backend>.csv)")
     parser.add_argument("--llm-server", default="http://127.0.0.1:9503",
                         help="llama.cpp server URL (default: http://127.0.0.1:9503)")
     parser.add_argument("--comfy-server", default="127.0.0.1:8188",
                         help="ComfyUI server host:port (default: 127.0.0.1:8188)")
     parser.add_argument("--backend", choices=sorted(BACKENDS), default="ideogram4",
                         help="Image backend / workflow (default: ideogram4)")
-    parser.add_argument("--images-dir", type=Path, default=Path("images"),
-                        help="Directory to write poster PNGs (default: ./images)")
-    parser.add_argument("--html", type=Path, default=Path("mashups.html"),
-                        help="Output HTML gallery path (default: mashups.html)")
+    parser.add_argument("--images-dir", type=Path, default=None,
+                        help="Directory to write poster PNGs (default: ./images/<backend>)")
+    parser.add_argument("--html", type=Path, default=None,
+                        help="Output HTML gallery path (default: mashups_<backend>.html)")
     parser.add_argument("--no-images", action="store_true",
                         help="Skip ComfyUI image generation")
     parser.add_argument("--no-llm", action="store_true",
@@ -945,6 +987,24 @@ def main():
 
     do_images = not args.no_images and not args.no_llm
     backend = BACKENDS[args.backend]
+    gallery_meta = GALLERY_META[backend.name]
+
+    # Resolve per-backend default paths (CSV / HTML / images dir) so each backend
+    # writes to its own files and its own images/<backend>/ subdir.
+    if args.output is None:
+        args.output = Path(f"mashups_{backend.name}.csv")
+    if args.html is None:
+        args.html = Path(gallery_meta["html"])
+    if args.images_dir is None:
+        args.images_dir = Path(gallery_meta["images_dir"])
+
+    # Relative path from the gallery HTML to the poster files. When the HTML and
+    # the images dir share a parent (the normal case), this is just the images
+    # dir relative to the HTML's directory.
+    try:
+        images_href = args.images_dir.relative_to(args.html.parent).as_posix()
+    except ValueError:
+        images_href = args.images_dir.as_posix()
 
     fieldnames = ["genre_1_major", "genre_1_sub", "genre_2_major",
                   "genre_2_sub", "character", "quirk", "pitch",
@@ -1005,7 +1065,7 @@ def main():
             writer.writeheader()
             for r in completed_rows:
                 writer.writerow({k: r.get(k, "") for k in fieldnames})
-        write_gallery(args.html, completed_rows, args.images_dir.name, backend.name)
+        write_gallery(args.html, completed_rows, images_href, backend.name)
 
     # Pipeline:
     #   While ComfyUI renders row N's poster, the LLM is already drafting row N+1.

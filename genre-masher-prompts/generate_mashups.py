@@ -11,8 +11,10 @@ Text LLM is selectable with --llm:
     - llama: a local llama.cpp OpenAI-compatible server (--llm-server).
 
 Image backend is selectable with --backend:
-    - ideogram4: LLM emits a structured poster layout (palette + placed
-      text/illustration elements with coordinates) for the Ideogram 4 model.
+    - krea (default): photoreal structured poster layout for the Krea model
+      (~2 MP, ~30s/render). Same JSON contract as ideogram4 but photo-first.
+    - ideogram4: structured poster layout for the Ideogram 4 model (~3.5 MP,
+      ~7 min/render — high quality but slow).
     - zimage: LLM emits one long natural-language prompt for the Z-Image model.
 
 Requires:
@@ -23,7 +25,7 @@ Requires:
 Usage:
     python generate_mashups.py <count> [output.csv]
                                [--llm {claude,llama}] [--claude-model NAME]
-                               [--backend {ideogram4,zimage}]
+                               [--backend {krea,ideogram4,zimage}]
                                [--llm-server URL] [--comfy-server HOST:PORT]
                                [--images-dir DIR] [--html FILE] [--no-images]
 
@@ -159,6 +161,57 @@ RULES FOR THE POSTER JSON:
 - Each element "type" is "obj" for an illustrated element or "text" for rendered words.
 - For a "text" element, "text" holds the literal words to render (use \n for line breaks) and "desc" describes typography, size, color, and treatment.
 - For an "obj" element, "text" is an empty string "" and "desc" fully describes the illustrated object.
+- Include the film title as one large "text" element. Include a billing/credits "text" block near the bottom. Invent fake studio, director, and actor names freely — but do NOT use real actors or real franchises.
+- Use 5-10 elements total. Do not let text blocks overlap each other illegibly.
+- The tags must appear after any thinking. Do not nest tags. Do not add attributes."""
+
+
+KREA_SYSTEM_PROMPT = r"""You are a creative director AND a poster layout designer creating absurd, funny film concepts and the movie posters that sell them.
+
+For each mashup you receive, invent:
+1. A punchy, ridiculous fake film title (3-7 words). It should feel like a real movie title — sometimes with a colon and subtitle. No emojis.
+2. A 3-5 sentence streaming-service-style synopsis (a "logline-plus") that sells the film. Make it funny — lean into the absurd genre clash. You are given only a broad protagonist archetype (e.g. "Lighthouse Keeper"); invent the specific, funny details — name, predicament, and a quirk or two that fit the genre mashup. Hint at stakes, central conflict, and tone, but stay tight. Roughly 50-100 words.
+3. A complete movie-poster layout for the Krea image model, expressed as JSON.
+
+The poster is a vertical 2:3 theatrical one-sheet. You control the full composition: background, photographic style, color palette, lighting, and every placed element — both photographed subjects/objects AND text blocks — each positioned with normalized coordinates.
+
+CRITICAL — THIS IS A PHOTOREALISTIC POSTER, NOT AN ILLUSTRATION. Compose it like a real big-budget movie poster shot by a cinematographer: live-action photography or high-end photoreal CGI, real actors, real sets, real lighting. Do NOT make it look hand-drawn, painted, cartoon, anime, comic-book, or like graphic-design vector art. Even for fantasy or animated-sounding genres, render it as a photoreal live-action film still UNLESS the genre is explicitly animation.
+
+COORDINATE SYSTEM: x, y, w, h are floats from 0.0 to 1.0. (x, y) is the TOP-LEFT corner of the element's bounding box; w and h are its width and height as fractions of the poster. (0,0) is the top-left of the poster, (1,1) the bottom-right. Keep every box fully on-canvas: x + w <= 1.0 and y + h <= 1.0.
+
+COMPOSE LIKE A REAL MOVIE POSTER:
+- A big title treatment, usually in the upper third or lower third.
+- One clear focal character or central image occupying the middle.
+- An optional tagline near the title.
+- A billing block (small condensed credits) and a release-date line near the bottom.
+- 1-3 supporting photographed elements for atmosphere.
+
+Think as much as you want first. Then output your final answer wrapped in EXACTLY these three tags, on their own lines, with nothing else inside them:
+
+<title>The Film Title Goes Here</title>
+<synopsis>The 3-5 sentence funny streaming-style synopsis goes here.</synopsis>
+<poster>
+{
+  "high_level_description": "one vivid sentence describing the whole poster as a photoreal film image",
+  "background": "2-4 sentences describing the full-bleed photographic background: location, depth, atmosphere, any skyline or scenery",
+  "art_style": "comma-separated PHOTOGRAPHIC descriptors — camera, lens, film stock, grade (e.g. 'shot on 35mm anamorphic, shallow depth of field, teal-orange cinematic grade, photorealistic, volumetric haze')",
+  "aesthetics": "comma-separated mood/aesthetic words",
+  "lighting": "one sentence describing the cinematic lighting",
+  "palette": ["#RRGGBB", "#RRGGBB", "#RRGGBB", "#RRGGBB"],
+  "bg_brightness": 55,
+  "elements": [
+    {"type": "obj",  "text": "", "desc": "full photoreal description of a photographed subject or object", "x": 0.30, "y": 0.34, "w": 0.40, "h": 0.50},
+    {"type": "text", "text": "THE TITLE", "desc": "describes the typography, size, color, and treatment of these words", "x": 0.10, "y": 0.05, "w": 0.80, "h": 0.18}
+  ]
+}
+</poster>
+
+RULES FOR THE POSTER JSON:
+- It MUST be valid JSON: double quotes everywhere, no trailing commas, no comments, no code fences.
+- "palette" is an array of 4-6 hex color strings. "bg_brightness" is an integer 0-100 (how bright the background reads).
+- Each element "type" is "obj" for a photographed element or "text" for rendered words.
+- For a "text" element, "text" holds the literal words to render (use \n for line breaks) and "desc" describes typography, size, color, and treatment.
+- For an "obj" element, "text" is an empty string "" and "desc" fully describes the photographed subject/object photorealistically.
 - Include the film title as one large "text" element. Include a billing/credits "text" block near the bottom. Invent fake studio, director, and actor names freely — but do NOT use real actors or real franchises.
 - Use 5-10 elements total. Do not let text blocks overlap each other illegibly.
 - The tags must appear after any thinking. Do not nest tags. Do not add attributes."""
@@ -494,6 +547,39 @@ def _patch_ideogram(base, payload, seed, poster_w, poster_h):
     return wf
 
 
+# --- Krea text-to-image workflow --------------------------------------------
+# Krea reuses the same Ideogram4PromptBuilderKJ node and our validated poster
+# dict, so _extract_ideogram / _validate_poster carry over unchanged. It differs
+# in node IDs and in being photo-first (style="photo", medium="photograph").
+KREA_NODE_BUILDER = "14"      # Ideogram4PromptBuilderKJ
+KREA_NODE_LATENT = "78:76"    # EmptyLatentImage
+KREA_NODE_SAMPLER = "78:75"   # KSampler (holds the seed)
+
+
+def _patch_krea(base, payload, seed, poster_w, poster_h):
+    """payload is the validated poster dict from _validate_poster."""
+    wf = copy.deepcopy(base)
+    b = wf[KREA_NODE_BUILDER]["inputs"]
+    # Overwrite EVERY content field so nothing from the example workflow's
+    # baked-in poster leaks into a generated row.
+    b["high_level_description"] = payload["high_level_description"]
+    b["background"] = payload["background"]
+    b["style"] = "photo"                       # photo-first, not illustration
+    b["style.photo"] = payload["art_style"]    # photographic descriptors
+    b["aesthetics"] = payload["aesthetics"]
+    b["lighting"] = payload["lighting"]
+    b["medium"] = "photograph"                 # deliberate photoreal default
+    b["bg_brightness"] = payload["bg_brightness"]
+    b["style_palette_data"] = json.dumps(payload["palette"])
+    b["elements_data"] = json.dumps(payload["elements"])
+    b["width"] = poster_w
+    b["height"] = poster_h
+    wf[KREA_NODE_LATENT]["inputs"]["width"] = poster_w
+    wf[KREA_NODE_LATENT]["inputs"]["height"] = poster_h
+    wf[KREA_NODE_SAMPLER]["inputs"]["seed"] = seed
+    return wf
+
+
 # ----------------------------------------------------------------------------
 # Backend registry
 # ----------------------------------------------------------------------------
@@ -563,6 +649,15 @@ BACKENDS = {
         extract=_extract_ideogram,
         patch=_patch_ideogram,
         poster_w=1536, poster_h=2304,   # exact 2:3 one-sheet, ~3.5 MP
+    ),
+    "krea": Backend(
+        name="krea",
+        workflow_file="workflows/krea2_comfyui_t2i_aitrepeneur_api.json",
+        system_prompt=KREA_SYSTEM_PROMPT,
+        retry_nudge=IDEOGRAM_RETRY_NUDGE,   # same <poster> JSON contract
+        extract=_extract_ideogram,          # same structured-poster format
+        patch=_patch_krea,
+        poster_w=1152, poster_h=1728,   # exact 2:3 one-sheet, ~2.0 MP (fast)
     ),
 }
 
@@ -659,13 +754,14 @@ HTML_HEAD = """<!DOCTYPE html>
        font-weight: normal; }
   .tagline { text-align: center; opacity: 0.7; font-style: italic; margin-bottom: 50px;
              font-size: 1.1rem; }
-  .grid { display: grid; gap: 48px; max-width: 1600px; margin: 0 auto;
-          grid-template-columns: repeat(auto-fill, minmax(520px, 1fr)); }
+  /* Single centered column — posters render large on big/4K monitors. */
+  .grid { display: grid; gap: 64px; max-width: 900px; margin: 0 auto;
+          grid-template-columns: 1fr; }
   .card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
           border-radius: 14px; overflow: hidden; display: flex; flex-direction: column;
           transition: transform 0.2s, box-shadow 0.2s; }
   .card:hover { transform: translateY(-4px); box-shadow: 0 14px 36px rgba(255,0,110,0.3); }
-  .poster { width: 100%; aspect-ratio: __POSTER_RATIO__; object-fit: cover; background: #1a0033;
+  .poster { width: 100%; aspect-ratio: __POSTER_RATIO__; object-fit: contain; background: #1a0033;
             display: block; }
   .poster.missing { display: flex; align-items: center; justify-content: center;
                     color: rgba(255,255,255,0.3); font-style: italic; padding: 20px;
@@ -764,6 +860,15 @@ GALLERY_META = {
         "images_dir": "images/ideogram4",
         "html": "mashups_ideogram4.html",
         "credit": "using an Ideogram 4 text-to-image workflow.",
+    },
+    "krea": {
+        "label": "Krea",
+        "ratio": "2/3",
+        "images_dir": "images/krea",
+        "html": "mashups_krea.html",
+        "credit": ('using a Krea text-to-image workflow by '
+                   '<a href="https://www.patreon.com/c/aitrepreneur" target="_blank" '
+                   'rel="noopener">Aitrepreneur</a>.'),
     },
 }
 
@@ -867,8 +972,8 @@ def main():
                         help="llama.cpp server URL when --llm llama (default: http://127.0.0.1:9503)")
     parser.add_argument("--comfy-server", default="127.0.0.1:8188",
                         help="ComfyUI server host:port (default: 127.0.0.1:8188)")
-    parser.add_argument("--backend", choices=sorted(BACKENDS), default="ideogram4",
-                        help="Image backend / workflow (default: ideogram4)")
+    parser.add_argument("--backend", choices=sorted(BACKENDS), default="krea",
+                        help="Image backend / workflow (default: krea)")
     parser.add_argument("--images-dir", type=Path, default=None,
                         help="Directory to write poster PNGs (default: ./images/<backend>)")
     parser.add_argument("--html", type=Path, default=None,

@@ -40,6 +40,7 @@ import argparse
 import concurrent.futures
 import copy
 import csv
+import io
 import json
 import random
 import re
@@ -993,6 +994,29 @@ def slugify(text, max_len=60):
     return (s or "untitled")[:max_len]
 
 
+# Posters are saved as JPEG to keep the repo small (the PNGs ComfyUI returns are
+# ~2-8 MB each; JPEG q=85 at the same resolution is a fraction of that with no
+# visible loss on these renders).
+JPEG_QUALITY = 85
+
+
+def png_bytes_to_jpeg(raw):
+    """Transcode raw PNG bytes (from ComfyUI) to JPEG at JPEG_QUALITY, same
+    resolution. Flattens any alpha onto white since JPEG has no alpha."""
+    from PIL import Image
+    im = Image.open(io.BytesIO(raw))
+    if im.mode in ("RGBA", "LA", "P"):
+        im = im.convert("RGBA")
+        bg = Image.new("RGB", im.size, (255, 255, 255))
+        bg.paste(im, mask=im.split()[-1])
+        im = bg
+    else:
+        im = im.convert("RGB")
+    out = io.BytesIO()
+    im.save(out, format="JPEG", quality=JPEG_QUALITY, optimize=True, progressive=True)
+    return out.getvalue()
+
+
 def main():
     parser = argparse.ArgumentParser(
         description=__doc__,
@@ -1020,7 +1044,7 @@ def main():
     parser.add_argument("--backend", choices=sorted(BACKENDS), default="krea",
                         help="Image backend / workflow (default: krea)")
     parser.add_argument("--images-dir", type=Path, default=None,
-                        help="Directory to write poster PNGs (default: ./images/<backend>)")
+                        help="Directory to write poster JPEGs (default: ./images/<backend>)")
     parser.add_argument("--html", type=Path, default=None,
                         help="Output HTML gallery path (default: mashups_<backend>.html)")
     parser.add_argument("--append", action="store_true",
@@ -1193,11 +1217,11 @@ def main():
                 seed = random.randint(1, 2**31 - 1)
                 wf = backend.patch(mashup["_payload"], seed)
                 slug = f"{row_offset + i:04d}-{slugify(mashup['title'] or 'untitled')}"
-                fname = f"{slug}.png"
+                fname = f"{slug}.jpg"
                 dest = args.images_dir / fname
                 try:
                     raw = comfy.generate(wf)
-                    dest.write_bytes(raw)  # save PNG as-is, no transcoding
+                    dest.write_bytes(png_bytes_to_jpeg(raw))  # JPEG q=85, same res
                     mashup["image_file"] = fname
                 except Exception as e:
                     status_bits.append(f"img: {e}"[:50])

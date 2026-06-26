@@ -26,9 +26,9 @@ Two pieces:
 ├── mashups_ideogram4.csv / .html / .json # Ideogram 4 batch + manifest
 ├── mashups_zimage.csv / .html / .json    # Z-Image batch + manifest
 └── images/
-    ├── krea/                       # Krea posters (PNG)
-    ├── ideogram4/                  # Ideogram 4 posters (PNG, ~6-8 MB each)
-    └── zimage/                     # Z-Image posters (PNG)
+    ├── krea/                       # Krea posters (JPEG)
+    ├── ideogram4/                  # Ideogram 4 posters (JPEG)
+    └── zimage/                     # Z-Image posters (JPEG)
 ```
 
 Each backend writes its own CSV, its own gallery, its own `images/<backend>/`
@@ -118,7 +118,7 @@ For each pitch:
      - **krea** / **ideogram4**: a `<poster>` block containing a JSON object — `high_level_description`, `background`, `art_style`, `aesthetics`, `lighting`, a hex `palette`, `bg_brightness`, and an `elements` array of placed text/illustration blocks each with normalized `x`/`y`/`w`/`h` coordinates. krea's prompt steers it toward photoreal/cinematic; ideogram4's allows stylized illustration. The JSON is validated and lightly repaired (code fences stripped, off-canvas boxes clamped) before use.
      - **zimage**: a `<positive>` block — one long natural-language prompt with the title baked in as visible poster text.
 4. Patch the poster spec + a fresh seed into the matching ComfyUI workflow and render the PNG (1152×1728 for krea, 1536×2304 for ideogram4, 1280×1664 for zimage).
-5. Save the PNG **as-is** (no transcoding, no resizing).
+5. Transcode the render to **JPEG (quality 85)** at the same resolution and save it — keeps the repo small with no visible loss on these posters.
 6. Rewrite the backend's CSV, gallery, and game manifest (e.g. `mashups_krea.csv` / `.html` / `.json`) after every row, so partial runs are usable. By default this **overwrites** any existing files for that backend; pass `--append` to keep the existing rows and posters and add the new ones after them (new poster filenames are numbered to continue past the existing ones).
 
 ### Pipelining
@@ -144,7 +144,7 @@ CSV columns:
 | `title` | LLM-generated film title |
 | `synopsis` | LLM-generated 3–5 sentence synopsis |
 | `image_prompt` | LLM-generated poster spec — the Z-Image prompt string, or the structured poster JSON (pretty-printed) for krea/ideogram4 |
-| `image_file` | filename of the saved PNG (lives in `images/<backend>/`) |
+| `image_file` | filename of the saved JPEG (lives in `images/<backend>/`) |
 
 The HTML gallery shows poster + title + synopsis prominently, with a collapsible "Behind the scenes" panel exposing the seed pitch and image prompt.
 

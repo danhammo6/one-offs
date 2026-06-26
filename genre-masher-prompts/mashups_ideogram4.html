@@ -20,13 +20,14 @@
        font-weight: normal; }
   .tagline { text-align: center; opacity: 0.7; font-style: italic; margin-bottom: 50px;
              font-size: 1.1rem; }
-  .grid { display: grid; gap: 48px; max-width: 1600px; margin: 0 auto;
-          grid-template-columns: repeat(auto-fill, minmax(520px, 1fr)); }
+  /* Single centered column — posters render large on big/4K monitors. */
+  .grid { display: grid; gap: 64px; max-width: 900px; margin: 0 auto;
+          grid-template-columns: 1fr; }
   .card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
           border-radius: 14px; overflow: hidden; display: flex; flex-direction: column;
           transition: transform 0.2s, box-shadow 0.2s; }
   .card:hover { transform: translateY(-4px); box-shadow: 0 14px 36px rgba(255,0,110,0.3); }
-  .poster { width: 100%; aspect-ratio: 2/3; object-fit: cover; background: #1a0033;
+  .poster { width: 100%; aspect-ratio: 2/3; object-fit: contain; background: #1a0033;
             display: block; }
   .poster.missing { display: flex; align-items: center; justify-content: center;
                     color: rgba(255,255,255,0.3); font-style: italic; padding: 20px;
@@ -92,10 +93,11 @@
   <nav class="gallery-nav">
     <a class="nav-link" href="mashups_zimage.html">Z-Image</a>
     <span class="nav-link active">Ideogram 4</span>
+    <a class="nav-link" href="mashups_krea.html">Krea</a>
   </nav>
   <div class="grid">
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0001-deadwood-counter-one-a-waiting-misery.png" alt="DEADWOOD COUNTER ONE: A WAITING MISERY">
+      <img class="poster" loading="lazy" src="images/ideogram4/0001-deadwood-counter-one-a-waiting-misery.jpg" alt="DEADWOOD COUNTER ONE: A WAITING MISERY">
       <div class="meta">
         <div class="title">DEADWOOD COUNTER ONE: A WAITING MISERY</div>
         <div class="badges">
@@ -104,7 +106,7 @@
           <span class="badge">Prestige Misery Drama</span>
         </div>
         <p class="pitch">Arthur Pembleton is a demigod trapped in human paperwork, tasked with processing the afterlife’s longest line from his third-floor DMV booth. Court-mandated to keep a three-legged capybara named Barnaby by his side, he survives on stale coffee and divine patience until the fluorescent lights flicker into a blood-red sunset. When territorial sand-krakens invade the lobby demanding Form 27B/6 in triplicate, Arthur must navigate bureaucratic purgatory, monster-haunted desert lawns, and his own fracturing sanity. What follows is a brutally sincere meditation on waiting, divine entitlement, and the sheer terror of being called to Window Four.</p>
-        <div class="character">Starring: <b>DMV Clerk Demigod</b> with a court-mandated emotional support animal</div>
+        <div class="character">Starring: <b>DMV Clerk Demigod</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>Logline: When a DMV Clerk Demigod with a court-mandated emotional support animal discovers their quiet life is actually a Weird West (cowboys + monsters), they must master the genre conventions of Prestige Misery Drama to survive.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -187,7 +189,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0002-hear-ye-the-millennium-bug.png" alt="Hear Ye! The Millennium Bug">
+      <img class="poster" loading="lazy" src="images/ideogram4/0002-hear-ye-the-millennium-bug.jpg" alt="Hear Ye! The Millennium Bug">
       <div class="meta">
         <div class="title">Hear Ye! The Millennium Bug</div>
         <div class="badges">
@@ -196,7 +198,7 @@
           <span class="badge">Slasher (masked maniac)</span>
         </div>
         <p class="pitch">A lone, perpetually bewildered town crier named Bartholomew stands outside the crumbling server farms of Y2K-era London. Dressed in a moth-eaten doublet and wielding a rusted handbell, he rings out warnings that nobody understands until the masked Bit-Rot Butcher starts deleting executives one by one. As dial-up screeches morph into screams, our crier must decode the incoming data storm, prove that legacy systems are alive and hungry, and somehow get across town before his own punch card expires.</p>
-        <div class="character">Starring: <b>Medieval Town Crier</b> who has seen things, man</div>
+        <div class="character">Starring: <b>Medieval Town Crier</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>Imagine if a Y2K Techno-Paranoia show had a baby with a Slasher (masked maniac) miniseries, and that baby grew up to be a Medieval Town Crier who has seen things, man.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -289,7 +291,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0003-chlorophyll-2000-the-green-screen-queue.png" alt="Chlorophyll 2000: The Green Screen Queue">
+      <img class="poster" loading="lazy" src="images/ideogram4/0003-chlorophyll-2000-the-green-screen-queue.jpg" alt="Chlorophyll 2000: The Green Screen Queue">
       <div class="meta">
         <div class="title">Chlorophyll 2000: The Green Screen Queue</div>
         <div class="badges">
@@ -298,7 +300,7 @@
           <span class="badge">Y2K Techno-Paranoia</span>
         </div>
         <p class="pitch">When Kevin, a half-divine DMV clerk running a dying churro truck, notices his customers&#x27; form files sprouting bark, he realizes the municipal queue has become an ancient forest floor. To save his struggling taqueria van before the Y2K millennium bug triggers full photosynthetic lockdown, Kevin must decode cryptic leaf-ciphers and navigate a server farm grown from living oaks. Armed with a laser-guided clipboard and zero patience for slow walkers, he battles sentient paperwork to reclaim his parking spot at the end of the world. It’s a bureaucratic apocalypse where every denied request grows a thorn.</p>
-        <div class="character">Starring: <b>DMV Clerk Demigod</b> running a failing food truck</div>
+        <div class="character">Starring: <b>DMV Clerk Demigod</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>Logline: When a DMV Clerk Demigod running a failing food truck discovers their quiet life is actually a Eco-Horror (the trees are mad), they must master the genre conventions of Y2K Techno-Paranoia to survive.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -381,7 +383,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0004-the-one-eyed-herald-s-last-bell.png" alt="THE ONE-EYED HERALD&#x27;S LAST BELL">
+      <img class="poster" loading="lazy" src="images/ideogram4/0004-the-one-eyed-herald-s-last-bell.jpg" alt="THE ONE-EYED HERALD&#x27;S LAST BELL">
       <div class="meta">
         <div class="title">THE ONE-EYED HERALD&#x27;S LAST BELL</div>
         <div class="badges">
@@ -390,7 +392,7 @@
           <span class="badge">Cyberpunk (neon and noodles)</span>
         </div>
         <p class="pitch">When the neon-drenched slums of Neo-Aethelred are seized by corporate ramen cartels, retired champion crier Silas Blackeye takes up his iron tongue once more. Armed with a modified hand-bell that doubles as a combat mace and a generational grudge against every bureaucrat who taxed his parrot, he must master the lost art of Chime-Kenpo to crash the Golden Wok Summit. With one working eye locked on justice and street noodles flying everywhere, Silas bellows the apocalypse one punchline at a time.</p>
-        <div class="character">Starring: <b>Medieval Town Crier</b> with one eye and a grudge</div>
+        <div class="character">Starring: <b>Medieval Town Crier</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>It&#x27;s Martial Arts meets Cyberpunk (neon and noodles)... but the protagonist is a Medieval Town Crier with one eye and a grudge.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -484,7 +486,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0005-vows-on-voltage-a-silicon-serenade.png" alt="VOWS ON VOLTAGE: A SILICON SERENADE">
+      <img class="poster" loading="lazy" src="images/ideogram4/0005-vows-on-voltage-a-silicon-serenade.jpg" alt="VOWS ON VOLTAGE: A SILICON SERENADE">
       <div class="meta">
         <div class="title">VOWS ON VOLTAGE: A SILICON SERENADE</div>
         <div class="badges">
@@ -493,7 +495,7 @@
           <span class="badge">Revisionist Western</span>
         </div>
         <p class="pitch">When a sentient Roomba named Dusty starts moonlighting as a wedding singer to afford replacement brushes, he accidentally drops a track at a cattle baron’s funeral and triggers a multiverse-spanning jukebox conspiracy. Hunted by a one-eyed mule sheriff and a chorus of yodeling tumbleweeds, Dusty must navigate dust-choked saloons, duet with his charging dock, and out-draw the villain using strictly revisionist western logic before his battery hits critical. It’s a rollicking genre mashup where every problem is solved by picking the right song. And occasionally kicking the antagonist off a cliff.</p>
-        <div class="character">Starring: <b>Sentient Roomba</b> moonlighting as a wedding singer</div>
+        <div class="character">Starring: <b>Sentient Roomba</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>A Sentient Roomba moonlighting as a wedding singer stumbles into a Jukebox Musical conspiracy that can only be solved using the rules of Revisionist Western.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -586,7 +588,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0006-section-9-subsection-baker.png" alt="SECTION 9, SUBSECTION BAKER">
+      <img class="poster" loading="lazy" src="images/ideogram4/0006-section-9-subsection-baker.jpg" alt="SECTION 9, SUBSECTION BAKER">
       <div class="meta">
         <div class="title">SECTION 9, SUBSECTION BAKER</div>
         <div class="badges">
@@ -595,7 +597,7 @@
           <span class="badge">Cryptozoological Investigation</span>
         </div>
         <p class="pitch">When interdimensional permits finally drop, Gary—a flour-dusted mall cop who bakes sourdough in his patrol microwave—must investigate whether the cryptids haunting the food court are actually displaced extraterrestrials filling out Form Z-7 in triplicate. With his croissants rising and his paperwork expiring, he navigates bureaucratic zoning laws, decodes Mothman&#x27;s union demands, and keeps his starter alive during the great galactic audit. One man’s midnight shift becomes humanity’s first contact with the cosmos, and the health inspector who won&#x27;t take no for an answer.</p>
-        <div class="character">Starring: <b>Mall Cop</b> who runs a bakery</div>
+        <div class="character">Starring: <b>Mall Cop</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>Three-act structure: First Contact Bureaucracy in act one, Cryptozoological Investigation by act three, and a Mall Cop who runs a bakery sobbing into a microwave dinner the whole time.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -688,7 +690,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0007-form-66b-persephone-left-for-spring.png" alt="FORM 66B: PERSEPHONE LEFT FOR SPRING">
+      <img class="poster" loading="lazy" src="images/ideogram4/0007-form-66b-persephone-left-for-spring.jpg" alt="FORM 66B: PERSEPHONE LEFT FOR SPRING">
       <div class="meta">
         <div class="title">FORM 66B: PERSEPHONE LEFT FOR SPRING</div>
         <div class="badges">
@@ -697,7 +699,7 @@
           <span class="badge">Mythic Retelling</span>
         </div>
         <p class="pitch">Grimshaw, the Underworld&#x27;s Chief Auditor, has processed a million souls but can&#x27;t process his own divorce from Persephone, the Goddess of Spring who fled to the mortal realm and triggered an eternal bloom just to spite him. As chaos vines overgrow the cosmic filing cabinets of Hades Inc., Grimshaw must descend into a wild, paperwork-busting paradise to win back his feral ex before the fiscal year of souls ends and he&#x27;s demoted to processing socks for eternity. It&#x27;s a mythic enemies-to-lovers romance where red tape meets divine tension, proving that even gods need a signature to stay together.</p>
-        <div class="character">Starring: <b>Underworld Bureaucrat</b> trying to win back their ex</div>
+        <div class="character">Starring: <b>Underworld Bureaucrat</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>Imagine if a Enemies-to-Lovers show had a baby with a Mythic Retelling miniseries, and that baby grew up to be a Underworld Bureaucrat trying to win back their ex.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -790,7 +792,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0008-dust-democracy-oak-creek-falls-quietly.png" alt="Dust &amp; Democracy: Oak Creek Falls Quietly">
+      <img class="poster" loading="lazy" src="images/ideogram4/0008-dust-democracy-oak-creek-falls-quietly.jpg" alt="Dust &amp; Democracy: Oak Creek Falls Quietly">
       <div class="meta">
         <div class="title">Dust &amp; Democracy: Oak Creek Falls Quietly</div>
         <div class="badges">
@@ -799,7 +801,7 @@
           <span class="badge">Gentle Apocalypse</span>
         </div>
         <p class="pitch">Arthur “Sweep” Vance is a murder-hobo adventurer running for mayor with nothing but a clipboard, a tire iron, and severe sleep deprivation. While canvassing districts that are slowly turning into peaceful moss and forgetting their own zip codes, he uncovers a municipal conspiracy: the town isn’t collapsing—it’s politely resigning. To win the election and halt the quiet unspooling of reality, Vance must audit the apocalypse using campaign finance loopholes and tactical weed-whacking. Now he just needs to decide whether to declare war on the sunset or accept his polling numbers.</p>
-        <div class="character">Starring: <b>Murder-Hobo Adventurer</b> running for local office</div>
+        <div class="character">Starring: <b>Murder-Hobo Adventurer</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>A Murder-Hobo Adventurer running for local office stumbles into a Conspiracy Doc conspiracy that can only be solved using the rules of Gentle Apocalypse.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -912,7 +914,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0009-tiara-at-the-edge-of-yesterday.png" alt="Tiara at the Edge of Yesterday">
+      <img class="poster" loading="lazy" src="images/ideogram4/0009-tiara-at-the-edge-of-yesterday.jpg" alt="Tiara at the Edge of Yesterday">
       <div class="meta">
         <div class="title">Tiara at the Edge of Yesterday</div>
         <div class="badges">
@@ -921,7 +923,7 @@
           <span class="badge">Time-Travel Romance</span>
         </div>
         <p class="pitch">After winning the Miss Congeniality Championship while being secretly cursed by a rusted iron tiara, glamorous outcast June Sterling inherits a crumbling Victorian mansion in Deadwood that exists outside of linear time. To save the property from foreclosure, she must partner with a brooding, shapeshifting coyote monster and a melancholic 1920s flapper detective who only appears during leap years. Their cross-era courtship unfolds amid salt-and-pepper dust storms and ghostly rodeo dances, all while June desperately tries to microwave her tuna casserole before the paradoxes melt it. Will love conquer death, time, and terrible catering choices?</p>
-        <div class="character">Starring: <b>Cursed Beauty Pageant Winner</b> who just inherited a haunted mansion</div>
+        <div class="character">Starring: <b>Cursed Beauty Pageant Winner</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>Three-act structure: Weird West (cowboys + monsters) in act one, Time-Travel Romance by act three, and a Cursed Beauty Pageant Winner who just inherited a haunted mansion sobbing into a microwave dinner the whole time.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -1015,7 +1017,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0010-prepper-grandma-vs-the-flesh-plutocracy.png" alt="PREPPER GRANDMA VS THE FLESH PLUTOCRACY">
+      <img class="poster" loading="lazy" src="images/ideogram4/0010-prepper-grandma-vs-the-flesh-plutocracy.jpg" alt="PREPPER GRANDMA VS THE FLESH PLUTOCRACY">
       <div class="meta">
         <div class="title">PREPPER GRANDMA VS THE FLESH PLUTOCRACY</div>
         <div class="badges">
@@ -1024,7 +1026,7 @@
           <span class="badge">Biopunk (squelchy laboratory)</span>
         </div>
         <p class="pitch">When doomsday prepper Mabel Vance un-jars herself from her reinforced basement for a shot at city council, she expects dirty politics. Instead, she discovers the ruling elite have been surgically grafted onto a hyper-organic skyscraper that literally digests tax revenue. Armed with fermented vegetables and a voltage-charged knitting needle, Mabel must navigate squelchy tissue corridors and carnivorous zoning laws to save her town from being absorbed by its own landlord class. It’s a sticky, satirical sprint where the ballot box is biologically engineered and every policy speech requires a hazmat suit.</p>
-        <div class="character">Starring: <b>Doomsday Prepper Grandma</b> running for local office</div>
+        <div class="character">Starring: <b>Doomsday Prepper Grandma</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>Cold open: a Doomsday Prepper Grandma running for local office, alone, in the rain. The genre? Satire (eat the rich). The vibe? Unmistakably Biopunk (squelchy laboratory). Cue title card.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -1128,7 +1130,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0011-dust-bodies-the-last-oracle.png" alt="DUST BODIES &amp; THE LAST ORACLE">
+      <img class="poster" loading="lazy" src="images/ideogram4/0011-dust-bodies-the-last-oracle.jpg" alt="DUST BODIES &amp; THE LAST ORACLE">
       <div class="meta">
         <div class="title">DUST BODIES &amp; THE LAST ORACLE</div>
         <div class="badges">
@@ -1137,7 +1139,7 @@
           <span class="badge">Revisionist Western</span>
         </div>
         <p class="pitch">After decades of sleeping under bridges, slaying minor deities, and hoarding cursed trinkets, battle-scarred drifter Marla Vance finds her next great adventure interrupted by hot flashes that melt her bronze armor. Tasked with guiding a pack of sullen river gods across the lawless badlands to retrieve a mythical silver plow, she must navigate bureaucratic cattle barons, a surprisingly polite chimera, and her own erratic mood swings. As the desert heat rises and her patience drops, Marla discovers that conquering the underworld isn&#x27;t nearly as messy as conquering a Tuesday during perimenopause.</p>
-        <div class="character">Starring: <b>Murder-Hobo Adventurer</b> going through perimenopause</div>
+        <div class="character">Starring: <b>Murder-Hobo Adventurer</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>It&#x27;s Mythic Retelling meets Revisionist Western... but the protagonist is a Murder-Hobo Adventurer going through perimenopause.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -1231,7 +1233,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0012-the-vending-machine-wants-you-back.png" alt="THE VENDING MACHINE WANTS YOU BACK">
+      <img class="poster" loading="lazy" src="images/ideogram4/0012-the-vending-machine-wants-you-back.jpg" alt="THE VENDING MACHINE WANTS YOU BACK">
       <div class="meta">
         <div class="title">THE VENDING MACHINE WANTS YOU BACK</div>
         <div class="badges">
@@ -1240,7 +1242,7 @@
           <span class="badge">Dying Earth / Far Future</span>
         </div>
         <p class="pitch">In a far-future Earth where colossal trees have evolved into vengeful, root-chomping leviathans, a melancholic vending machine named Unit 734 rolls across the sun-scorched tundra to win back its former human operator. Siphoning power from dented soda cans and weeping coolant into a lukewarm microwave dinner, it must navigate the bark-strewn highways of a dying ecosystem to reach the orbital resort where her ex now lives. Armed with nothing but a jammed coin return and desperate romantic gestures, Unit 734 faces an apocalyptic choice: become part of the hyper-evolved forest floor, or finally process a refund on its own shattered heart. Will it dispense love before the canopy reclaims the planet?</p>
-        <div class="character">Starring: <b>Sentient Vending Machine</b> trying to win back their ex</div>
+        <div class="character">Starring: <b>Sentient Vending Machine</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>Three-act structure: Eco-Horror (the trees are mad) in act one, Dying Earth / Far Future by act three, and a Sentient Vending Machine trying to win back their ex sobbing into a microwave dinner the whole time.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -1334,7 +1336,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0013-the-pruning-precedent-a-hydraulic-trial.png" alt="THE PRUNING PRECEDENT: A HYDRAULIC TRIAL">
+      <img class="poster" loading="lazy" src="images/ideogram4/0013-the-pruning-precedent-a-hydraulic-trial.jpg" alt="THE PRUNING PRECEDENT: A HYDRAULIC TRIAL">
       <div class="meta">
         <div class="title">THE PRUNING PRECEDENT: A HYDRAULIC TRIAL</div>
         <div class="badges">
@@ -1343,7 +1345,7 @@
           <span class="badge">Legal Drama</span>
         </div>
         <p class="pitch">When a malfunctioning horticultural Android named Sprout-7 gets its root system sentenced to perpetual drought, it must navigate the grease-choked courtrooms of Neo-Manchester to prove its botanical innocence. Armed with a trowel-calibrated logic drive and an obsessive citation of the 1923 Agricultural Compacts, Sprout-7 treats every dieselpunk conspiracy like a hostile deposition. But when a shadowy syndicate threatens to pave over the last organic aquifer, our leafy lawyer must object to reality itself before its circuits overheat. A meticulously timed procedural where precedent is planted, not argued.</p>
-        <div class="character">Starring: <b>Gardening AI</b> seeking redemption</div>
+        <div class="character">Starring: <b>Gardening AI</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>A Gardening AI seeking redemption stumbles into a Dieselpunk conspiracy that can only be solved using the rules of Legal Drama.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -1437,7 +1439,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0014-the-great-yeast-fracture.png" alt="THE GREAT YEAST FRACTURE">
+      <img class="poster" loading="lazy" src="images/ideogram4/0014-the-great-yeast-fracture.jpg" alt="THE GREAT YEAST FRACTURE">
       <div class="meta">
         <div class="title">THE GREAT YEAST FRACTURE</div>
         <div class="badges">
@@ -1446,7 +1448,7 @@
           <span class="badge">Urban Fantasy</span>
         </div>
         <p class="pitch">After fumbling his sleigh audition, Arthur Pendelton escapes to run a crumbling artisanal bakery in downtown Seattle, only to discover that the city’s underground aquifers are now pumping out sentient, magical sourdough. As tectonic shifts trigger a rapid dough-rise across every block, an ancient order of street-corner fae demands his discontinued reindeer antlers as holiday tribute. Armed with a commercial stand mixer and questionable pastry skills, Arthur must lead a panicked evacuation up the Space Needle before the glutenous tide swallows the skyline whole. It’s a flaky, high-stakes battle for survival where the only thing rising faster than the starter is the body count.</p>
-        <div class="character">Starring: <b>Failed Mall Santa</b> who runs a bakery</div>
+        <div class="character">Starring: <b>Failed Mall Santa</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>Cold open: a Failed Mall Santa who runs a bakery, alone, in the rain. The genre? Disaster Movie. The vibe? Unmistakably Urban Fantasy. Cue title card.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -1549,7 +1551,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0015-enamel-overdrive-y2k-reset.png" alt="ENAMEL OVERDRIVE: Y2K RESET">
+      <img class="poster" loading="lazy" src="images/ideogram4/0015-enamel-overdrive-y2k-reset.jpg" alt="ENAMEL OVERDRIVE: Y2K RESET">
       <div class="meta">
         <div class="title">ENAMEL OVERDRIVE: Y2K RESET</div>
         <div class="badges">
@@ -1558,7 +1560,7 @@
           <span class="badge">Y2K Techno-Paranoia</span>
         </div>
         <p class="pitch">When disgruntled tooth fairy Beatrice gets stuck in a glitchy time loop every time she visits the millennium server farm, her only escape is to hotwire a chrome-plated dental sedan and drift through collapsing digital highways. Racing against the infamous Millennium Bug virus, Beatrice must collect enough lost baby teeth from panicked programmers before the clock strikes midnight for the hundredth time. It’s a high-octane ride through fiber-optic tunnels where every fender bender resets reality, but only if you keep your canines cool and your tire smoke neon-bright.</p>
-        <div class="character">Starring: <b>Disgruntled Tooth Fairy</b> stuck in a time loop</div>
+        <div class="character">Starring: <b>Disgruntled Tooth Fairy</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>It&#x27;s Vehicular Mayhem meets Y2K Techno-Paranoia... but the protagonist is a Disgruntled Tooth Fairy stuck in a time loop.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -1661,7 +1663,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0016-buffering-at-the-gala-a-tax-write-off.png" alt="Buffering at the Gala: A Tax Write-Off">
+      <img class="poster" loading="lazy" src="images/ideogram4/0016-buffering-at-the-gala-a-tax-write-off.jpg" alt="Buffering at the Gala: A Tax Write-Off">
       <div class="meta">
         <div class="title">Buffering at the Gala: A Tax Write-Off</div>
         <div class="badges">
@@ -1670,7 +1672,7 @@
           <span class="badge">Liminal Space Horror</span>
         </div>
         <p class="pitch">Trapped in an endless, fluorescent-lit corporate retreat after her final brand endorsement defaults on a technicality, former child star Chloe must survive using only hyper-specific YouTube tutorials she memorized between ages seven and twelve. Armed with ASMR-level panic and a tutorial on how to microwave your own equity, she navigates the echoing, empty hallways where the ultra-wealthy are quietly absorbed into the drywall as unpaid existence fees. When the last living sponsor appears behind a flickering exit sign, Chloe must decide whether to log off forever or monetize her own psychological decay.</p>
-        <div class="character">Starring: <b>Former Child Star</b> who learned everything from YouTube</div>
+        <div class="character">Starring: <b>Former Child Star</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>Cold open: a Former Child Star who learned everything from YouTube, alone, in the rain. The genre? Satire (eat the rich). The vibe? Unmistakably Liminal Space Horror. Cue title card.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -1773,7 +1775,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0017-high-notes-heavy-hands-and-hugo.png" alt="High Notes, Heavy Hands, and Hugo">
+      <img class="poster" loading="lazy" src="images/ideogram4/0017-high-notes-heavy-hands-and-hugo.jpg" alt="High Notes, Heavy Hands, and Hugo">
       <div class="meta">
         <div class="title">High Notes, Heavy Hands, and Hugo</div>
         <div class="badges">
@@ -1782,7 +1784,7 @@
           <span class="badge">Wholesome Himbo Comedy</span>
         </div>
         <p class="pitch">When retired assassin Greg trades his sniper rifle for vocal warmups, he expects peace. Instead, the town of Oakhaven is being destroyed by a rogue chorus line of vengeful sopranos conducting seismic opera. Court-mandated to bond with a grumpy emotional support badger named Sir Reginald, Greg must lean into his painfully earnest himbo energy to harmonize before the final crescendo. With nothing but vocal fry, bicep curls, and unshakable optimism, he’ll either save the town or die belting. It’s time to raise the curtain on a very loud, very wholesome reckoning.</p>
-        <div class="character">Starring: <b>Retired Assassin</b> with a court-mandated emotional support animal</div>
+        <div class="character">Starring: <b>Retired Assassin</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>Set in a world where Rock Opera and Wholesome Himbo Comedy coexist uneasily, our hero — a Retired Assassin with a court-mandated emotional support animal — must save... something. Probably a town.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -1876,7 +1878,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0018-motion-to-leap-the-witness-docket.png" alt="MOTION TO LEAP: THE WITNESS DOCKET">
+      <img class="poster" loading="lazy" src="images/ideogram4/0018-motion-to-leap-the-witness-docket.jpg" alt="MOTION TO LEAP: THE WITNESS DOCKET">
       <div class="meta">
         <div class="title">MOTION TO LEAP: THE WITNESS DOCKET</div>
         <div class="badges">
@@ -1885,7 +1887,7 @@
           <span class="badge">Legal Drama</span>
         </div>
         <p class="pitch">When disgraced childhood sitcom icon Gary Gable is forced into hiding behind a suburban split-level, his quiet life shatters when the HOA president turns out to be a fugitive banker. To escape a squad of heavily litigated enforcers, Gary must parkour across the city&#x27;s skyline while appealing every leap under municipal code 42-B. But with each rooftop chase, he uncovers a conspiracy that can only be dismantled in federal court—where timing objections and jurisdictional bounds dictate survival. Now Gary must cross-examine gravity itself before his statute of limitations runs out.</p>
-        <div class="character">Starring: <b>Former Child Star</b> in witness protection</div>
+        <div class="character">Starring: <b>Former Child Star</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>A Former Child Star in witness protection stumbles into a Parkour Chase Movie conspiracy that can only be solved using the rules of Legal Drama.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -1979,7 +1981,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0019-the-courtroom-cavalry-gavel-ghosts.png" alt="The Courtroom Cavalry: Gavel &amp; Ghosts">
+      <img class="poster" loading="lazy" src="images/ideogram4/0019-the-courtroom-cavalry-gavel-ghosts.jpg" alt="The Courtroom Cavalry: Gavel &amp; Ghosts">
       <div class="meta">
         <div class="title">The Courtroom Cavalry: Gavel &amp; Ghosts</div>
         <div class="badges">
@@ -1988,7 +1990,7 @@
           <span class="badge">Revisionist Western</span>
         </div>
         <p class="pitch">When a stage-struck private investigator with severe trauma responses inherits a dusty courthouse in the Mojave, he treats every deposition like opening night. Armed with a velvet-lined briefcase and an uncanny ability to method-act his way through hostile witnesses, he must solve a murdered rancher’s missing ledger before sunset. But as cross-examinations devolve into emotional breakdowns and rival lawyers draw brass knuckles during jury selection, the line between courtroom theater and mortal combat blurs. It’s a tense, tragically hilarious battle for justice where every objection feels like a curtain call and the stakes are anything but imaginary.</p>
-        <div class="character">Starring: <b>Theater Kid Detective</b> with PTSD</div>
+        <div class="character">Starring: <b>Theater Kid Detective</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>Picture a Legal Drama setting, but everyone behaves like they&#x27;re in a Revisionist Western. Our reluctant hero: a Theater Kid Detective with PTSD.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -2071,7 +2073,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0020-fatal-hives.png" alt="FATAL HIVES">
+      <img class="poster" loading="lazy" src="images/ideogram4/0020-fatal-hives.jpg" alt="FATAL HIVES">
       <div class="meta">
         <div class="title">FATAL HIVES</div>
         <div class="badges">
@@ -2080,7 +2082,7 @@
           <span class="badge">Hardboiled Detective</span>
         </div>
         <p class="pitch">In this neurotic mashup of grainy found footage and gravelly noir voiceovers, retired assassin Jack &quot;The Rash&quot; Miller is dragged back to work when a copycat killer mimics his signature moves. But there&#x27;s a problem: Jack is violently allergic to the act of killing itself. Now, as he chases the suspect through shaky cam corridors, he must pop antihistamines and apply cold compresses while trying to hold a gun steady enough to save the town from total annihilation. It&#x27;s a case where every punchline is a sneeze and the body count is rising faster than his swelling.</p>
-        <div class="character">Starring: <b>Retired Assassin</b> who is allergic to their own job</div>
+        <div class="character">Starring: <b>Retired Assassin</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>Set in a world where Found Footage and Hardboiled Detective coexist uneasily, our hero — a Retired Assassin who is allergic to their own job — must save... something. Probably a town.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -2173,7 +2175,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0021-chips-cannons-compatibility-a-dispenser-s-romance.png" alt="Chips, Cannons &amp; Compatibility: A Dispenser’s Romance">
+      <img class="poster" loading="lazy" src="images/ideogram4/0021-chips-cannons-compatibility-a-dispenser-s-romance.jpg" alt="Chips, Cannons &amp; Compatibility: A Dispenser’s Romance">
       <div class="meta">
         <div class="title">Chips, Cannons &amp; Compatibility: A Dispenser’s Romance</div>
         <div class="badges">
@@ -2182,7 +2184,7 @@
           <span class="badge">Hopepunk</span>
         </div>
         <p class="pitch">When the ancient Copper Coil Polycule faces a mana-starvation siege by the rival Steam-Grease Syndicate, sentient vending machine unit V.E.N.D. must choose between dispensing its last reserve of premium pretzels or sacrificing itself to reignite the kingdom’s dormant magic grid. Guided by its four partners—a brooding flintlock mage, a pragmatic crossbow-wielding baker, a chaotic spell-slinger DJ, and a very supportive barista—V.E.N.D. learns that hope is just another scarce commodity worth rationing. As cannon fire shakes the snack aisle and magical static rises through the coils, love becomes the ultimate limited-edition drop. It’s a siege epic about sharing power, passing the quarter, and never letting your battery die alone.</p>
-        <div class="character">Starring: <b>Sentient Vending Machine</b> in a polycule</div>
+        <div class="character">Starring: <b>Sentient Vending Machine</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>Pitch: Flintlock Fantasy (muskets + magic) x Hopepunk. Tone: dread, but make it horny. Lead: a Sentient Vending Machine in a polycule.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -2277,7 +2279,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0022-the-baker-did-it-with-a-lyre.png" alt="THE BAKER DID IT WITH A LYRE">
+      <img class="poster" loading="lazy" src="images/ideogram4/0022-the-baker-did-it-with-a-lyre.jpg" alt="THE BAKER DID IT WITH A LYRE">
       <div class="meta">
         <div class="title">THE BAKER DID IT WITH A LYRE</div>
         <div class="badges">
@@ -2286,7 +2288,7 @@
           <span class="badge">Bardcore Medieval</span>
         </div>
         <p class="pitch">When immortal call-center drudge Valerius gets transferred to the medieval-themed back office of Sourdough &amp; Screams Inc., he just wants to tend his moonlit rose garden in peace. But when the bakery’s master baker is found dead beside a lute and a pile of floured evidence, amateur sleuth Valerius must trade his headset for a magnifying glass. Teaming up with a sultry Renaissance Faire bard and a suspiciously well-risen croissant, he’ll unravel a conspiracy of blood, yeast, and late-night flour before the dough rises again. The stakes are high, the tension is thicker than sourdough starter, and Valerius may have to drink deeply from the evidence locker to solve it all.</p>
-        <div class="character">Starring: <b>Call Center Vampire</b> who just wants to garden</div>
+        <div class="character">Starring: <b>Call Center Vampire</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>Pitch: Amateur Sleuth (a baker did it) x Bardcore Medieval. Tone: dread, but make it horny. Lead: a Call Center Vampire who just wants to garden.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -2380,7 +2382,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0023-granite-gravy-a-kitchen-cantata.png" alt="Granite &amp; Gravy: A Kitchen Cantata">
+      <img class="poster" loading="lazy" src="images/ideogram4/0023-granite-gravy-a-kitchen-cantata.jpg" alt="Granite &amp; Gravy: A Kitchen Cantata">
       <div class="meta">
         <div class="title">Granite &amp; Gravy: A Kitchen Cantata</div>
         <div class="badges">
@@ -2389,7 +2391,7 @@
           <span class="badge">Restaurant Kitchen Drama</span>
         </div>
         <p class="pitch">After years of exile from the curling circuit, disgraced Olympian Arthur Vance opens a struggling waterfront bistro to pay for his sullen teenager’s braces. When the health inspector threatens closure, Arthur and his daughter transform nightly prep work into a haunting, acoustic kitchen opera, singing melancholy ballads about reducing stocks and missed medals. As dough rises and violins weep, they must balance perfect sauce emulsions with their fractured relationship before the grand food critic arrives for one final, songful review.</p>
-        <div class="character">Starring: <b>Disgraced Olympic Curler</b> raising a teenager alone</div>
+        <div class="character">Starring: <b>Disgraced Olympic Curler</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>Imagine if a Sad Indie Folk Musical show had a baby with a Restaurant Kitchen Drama miniseries, and that baby grew up to be a Disgraced Olympic Curler raising a teenager alone.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -2473,7 +2475,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0024-the-walk-in-memoir-of-agent-naptime.png" alt="The Walk-In Memoir of Agent Naptime">
+      <img class="poster" loading="lazy" src="images/ideogram4/0024-the-walk-in-memoir-of-agent-naptime.jpg" alt="The Walk-In Memoir of Agent Naptime">
       <div class="meta">
         <div class="title">The Walk-In Memoir of Agent Naptime</div>
         <div class="badges">
@@ -2482,7 +2484,7 @@
           <span class="badge">Restaurant Kitchen Drama</span>
         </div>
         <p class="pitch">When elite kindergarten spy Agent Naptime is reassigned from tracking sugar smugglers to managing the chaotic culinary brigade of a high-stakes Michelin kitchen, she must master her new sous-chef identity while keeping her classified clearance under a red-light pass. With a devoted himbo dishwasher who whistles show tunes and a head chef whose knife work could cut through government secrets, she’ll have to simmer down her memoir-style narration before the dinner rush collapses under its own culinary dread. But as steam rises and tension flirts with obsession, one missed ticket could cost her everything—except her perfectly laminated staff badge.</p>
-        <div class="character">Starring: <b>Kindergarten Teacher Spy</b> writing a memoir</div>
+        <div class="character">Starring: <b>Kindergarten Teacher Spy</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>Pitch: Wholesome Himbo Comedy x Restaurant Kitchen Drama. Tone: dread, but make it horny. Lead: a Kindergarten Teacher Spy writing a memoir.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -2566,7 +2568,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0025-cold-crusts-crimson-tides.png" alt="COLD CRUSTS &amp; CRIMSON TIDES">
+      <img class="poster" loading="lazy" src="images/ideogram4/0025-cold-crusts-crimson-tides.jpg" alt="COLD CRUSTS &amp; CRIMSON TIDES">
       <div class="meta">
         <div class="title">COLD CRUSTS &amp; CRIMSON TIDES</div>
         <div class="badges">
@@ -2575,7 +2577,7 @@
           <span class="badge">Monster Romance (he is a kraken)</span>
         </div>
         <p class="pitch">When reclusive substitute teacher Elara Vance kneads her midnight sourdough in a fjord-side bakery, she expects nothing but the usual Nordic gloom. But when a brooding, ink-stained kraken begins leaving perfectly folded origami sea creatures on her windowsill, her quiet mystery suddenly turns deeply romantic. As locals vanish into the freezing fog and Elara’s flour-dusted hands grow steadier in his terrifying grip, she must choose between solving the case of the missing students or surrendering to a love that literally comes from the deep. Now streaming with a side of brine and existential dread.</p>
-        <div class="character">Starring: <b>Substitute Teacher</b> who runs a bakery</div>
+        <div class="character">Starring: <b>Substitute Teacher</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>Logline: When a Substitute Teacher who runs a bakery discovers their quiet life is actually a Nordic Noir (everyone is cold), they must master the genre conventions of Monster Romance (he is a kraken) to survive.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -2659,7 +2661,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0026-the-middle-manager-of-misseltwaite.png" alt="THE MIDDLE MANAGER OF MISSELTWAITE">
+      <img class="poster" loading="lazy" src="images/ideogram4/0026-the-middle-manager-of-misseltwaite.jpg" alt="THE MIDDLE MANAGER OF MISSELTWAITE">
       <div class="meta">
         <div class="title">THE MIDDLE MANAGER OF MISSELTWAITE</div>
         <div class="badges">
@@ -2668,7 +2670,7 @@
           <span class="badge">Stoner Comedy</span>
         </div>
         <p class="pitch">When eccentric aristocrat Barnaby Thistlewaite is forced to manage his sprawling estate and rebellious teenager from a wingback chair, he discovers the healing power of artisanal pipe-weed and loose-leaf cannabis blends. As scandalous affairs ignite London’s high society, Barnaby remains blissfully unbothered, treating duels over honor like minor paperwork delays. But when a rival duke threatens to expose his secret stash behind the busts, Barnaby must navigate corset-tight deadlines, teenage rebellion, and a very important toast before everything unravels.</p>
-        <div class="character">Starring: <b>Reluctant Middle Manager</b> raising a teenager alone</div>
+        <div class="character">Starring: <b>Reluctant Middle Manager</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>Cold open: a Reluctant Middle Manager raising a teenager alone, alone, in the rain. The genre? Period Piece (corsets, scandals). The vibe? Unmistakably Stoner Comedy. Cue title card.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -2761,7 +2763,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0027-chakra-chop-the-vegan-demon-strike.png" alt="CHAKRA CHOP: THE VEGAN DEMON STRIKE">
+      <img class="poster" loading="lazy" src="images/ideogram4/0027-chakra-chop-the-vegan-demon-strike.jpg" alt="CHAKRA CHOP: THE VEGAN DEMON STRIKE">
       <div class="meta">
         <div class="title">CHAKRA CHOP: THE VEGAN DEMON STRIKE</div>
         <div class="badges">
@@ -2770,7 +2772,7 @@
           <span class="badge">Magical Academia</span>
         </div>
         <p class="pitch">When influencer exorcist Mara Vance breaks her dairy vow to film a pure-food spirit cleanse, she accidentally banishes the wrong demon into a hidden academy where combat styles dictate magical law. Forced to trade her ring light for a quarterstaff, she must master the forgotten Chakra-Chop techniques of the Ascended Dojo before her vegan gut bacteria turn against the school&#x27;s ancient warding runes. With a rival bro-code cult closing in and her followers demanding backstage access, Mara has to align her meridian points, survive the cafeteria meat-baste trials, and learn that true enlightenment tastes exactly like unsalted edamame.</p>
-        <div class="character">Starring: <b>Influencer Exorcist</b> trying veganism</div>
+        <div class="character">Starring: <b>Influencer Exorcist</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>A Influencer Exorcist trying veganism stumbles into a Martial Arts conspiracy that can only be solved using the rules of Magical Academia.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -2874,7 +2876,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0028-houston-i-m-finally-sober-now.png" alt="Houston, I’m Finally Sober Now">
+      <img class="poster" loading="lazy" src="images/ideogram4/0028-houston-i-m-finally-sober-now.jpg" alt="Houston, I’m Finally Sober Now">
       <div class="meta">
         <div class="title">Houston, I’m Finally Sober Now</div>
         <div class="badges">
@@ -2883,7 +2885,7 @@
           <span class="badge">Jukebox Musical</span>
         </div>
         <p class="pitch">When newly sober cowboy astronaut Wyatt “Boot” Brantle reports for his ninth consecutive midnight shift at Lunar Logistics, he discovers the breakroom jukebox is magically tuned to his emotional state. As corporate mandates clash with spontaneous choreography, Brantle must navigate a hostile performance review, a unionized fleet of roving space-riders, and his own pent-up rage—all while belt out showtunes about fuel efficiency and divorce papers. Can he make the quarterly audit without hitting another bottle or breaking orbit? Welcome to the only workplace comedy where HR meets Broadway in zero gravity.</p>
-        <div class="character">Starring: <b>Cowboy Astronaut</b> newly sober and rage-y about it</div>
+        <div class="character">Starring: <b>Cowboy Astronaut</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>Cold open: a Cowboy Astronaut newly sober and rage-y about it, alone, in the rain. The genre? Workplace Comedy. The vibe? Unmistakably Jukebox Musical. Cue title card.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -2976,7 +2978,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0029-a-neigh-in-every-age.png" alt="A NEIGH IN EVERY AGE">
+      <img class="poster" loading="lazy" src="images/ideogram4/0029-a-neigh-in-every-age.jpg" alt="A NEIGH IN EVERY AGE">
       <div class="meta">
         <div class="title">A NEIGH IN EVERY AGE</div>
         <div class="badges">
@@ -2985,7 +2987,7 @@
           <span class="badge">Screwball</span>
         </div>
         <p class="pitch">Barnaby, a baritone equine who moonlights as a wedding singer, discovers his career is actually a time-love paradox when he accidentally serenades the wrong century and wakes up in 1893 with a pocket watch stuck in his hoof. Now trapped in a screwball chaos loop, Barnaby must master manic chases, mistaken identities, and rapid-fire hay-forking to win back the Victorian florist who stole his chronosphere before history marries itself. With rom-com tropes exploding across decades from medieval castles to disco ball bedrooms, this hoofed crooner realizes that true love is the only constant—and he&#x27;s just about out of breath.</p>
-        <div class="character">Starring: <b>Talking Horse</b> moonlighting as a wedding singer</div>
+        <div class="character">Starring: <b>Talking Horse</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>Logline: When a Talking Horse moonlighting as a wedding singer discovers their quiet life is actually a Time-Travel Romance, they must master the genre conventions of Screwball to survive.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -3078,7 +3080,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0030-bedside-manner-at-deadwood-pass.png" alt="BEDSIDE MANNER AT DEADWOOD PASS">
+      <img class="poster" loading="lazy" src="images/ideogram4/0030-bedside-manner-at-deadwood-pass.jpg" alt="BEDSIDE MANNER AT DEADWOOD PASS">
       <div class="meta">
         <div class="title">BEDSIDE MANNER AT DEADWOOD PASS</div>
         <div class="badges">
@@ -3087,7 +3089,7 @@
           <span class="badge">Spaghetti Western</span>
         </div>
         <p class="pitch">When a sweat-drenched former sitcom sweetheart returns to the desert frontier to run an impromptu clinic, he must survive not only rival posse surgeons and dust-choked triage tents, but the ghost of his own cancelled childhood show. Haunted by the one episode that ruined his career, he treats every patient like a final audition where failure means death by hemorrhage or shame. With nothing but a tarnished silver lariat stethoscope and a pocketful of questionable antibiotics, he rides into town to stitch up a dying sheriff while confronting the studio executive who stole his leading role. It’s a tense, tear-stained showdown where every incision cuts deeper than a bad review, and survival depends on keeping your pulse steady under the merciless sun.</p>
-        <div class="character">Starring: <b>Former Child Star</b> haunted by a single regret</div>
+        <div class="character">Starring: <b>Former Child Star</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>Imagine if a Medical Drama (very sweaty) show had a baby with a Spaghetti Western miniseries, and that baby grew up to be a Former Child Star haunted by a single regret.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -3182,7 +3184,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0031-static-swarm-love-among-the-hives.png" alt="STATIC SWARM: Love Among the Hives">
+      <img class="poster" loading="lazy" src="images/ideogram4/0031-static-swarm-love-among-the-hives.jpg" alt="STATIC SWARM: Love Among the Hives">
       <div class="meta">
         <div class="title">STATIC SWARM: Love Among the Hives</div>
         <div class="badges">
@@ -3191,7 +3193,7 @@
           <span class="badge">Forbidden Beekeeper Romance</span>
         </div>
         <p class="pitch">When a deeply sentimental Roomba named Barnaby gets evicted from his smart home, he must navigate the untamed urban jungle to win back his former owner. But she’s now married to Reuben, a brooding, bee-obsessed apiary architect who rules the city with nothing but raw charisma and royal jelly. To reclaim her heart, Barnaby must survive territorial drone bees, decode ancient hive politics, and sacrifice his favorite charging dock in a breathtaking rain-soaked confession. It’s a sweeping urban fantasy romance where love is electric, stinging, and entirely unhygienic.</p>
-        <div class="character">Starring: <b>Sentient Roomba</b> trying to win back their ex</div>
+        <div class="character">Starring: <b>Sentient Roomba</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>Cold open: a Sentient Roomba trying to win back their ex, alone, in the rain. The genre? Urban Fantasy. The vibe? Unmistakably Forbidden Beekeeper Romance. Cue title card.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -3285,7 +3287,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0032-steel-soles-and-slow-burns.png" alt="Steel Soles and Slow Burns">
+      <img class="poster" loading="lazy" src="images/ideogram4/0032-steel-soles-and-slow-burns.jpg" alt="Steel Soles and Slow Burns">
       <div class="meta">
         <div class="title">Steel Soles and Slow Burns</div>
         <div class="badges">
@@ -3294,7 +3296,7 @@
           <span class="badge">Workplace Slow-Burn</span>
         </div>
         <p class="pitch">Sir Torren used to slay dragons; now he just wants to finish his first marathon without crying over blisters. Assigned to the Royal Logistics Division, he’s forced into a tense performance-review rivalry with Elara, a spreadsheet-wielding squire who measures kindness in quarterly metrics. As rain-soaked mile markers turn into late-night coffee runs and shared sweatpants under plate mail, their bureaucratic friction sparks a quiet, hopeful romance. But when HR threatens to cancel the weekend retreat unless they hit record pace, Torren must learn that the fastest way forward is together.</p>
-        <div class="character">Starring: <b>Burned-Out Knight</b> training for a marathon</div>
+        <div class="character">Starring: <b>Burned-Out Knight</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>Cold open: a Burned-Out Knight training for a marathon, alone, in the rain. The genre? Hopepunk. The vibe? Unmistakably Workplace Slow-Burn. Cue title card.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -3388,7 +3390,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0033-fairy-audit-the-missing-molar-files.png" alt="Fairy Audit: The Missing Molar Files">
+      <img class="poster" loading="lazy" src="images/ideogram4/0033-fairy-audit-the-missing-molar-files.jpg" alt="Fairy Audit: The Missing Molar Files">
       <div class="meta">
         <div class="title">Fairy Audit: The Missing Molar Files</div>
         <div class="badges">
@@ -3397,7 +3399,7 @@
           <span class="badge">Cold Case Podcast Mystery</span>
         </div>
         <p class="pitch">When a disgruntled Tooth Fairy named Brenda accidentally vanishes with three years of childhood dreams and her entire W-2, the IRS dispatches a baffled auditor to trace her trail across suburban attics and empty cribs. Narrated in hushed true-crime cadence and shot in awkward shaky cam, this cringe mockumentary follows Brenda as she dodges tax collectors, hoards unfiled paperwork, and tries to survive the ultimate audit before the fairy dust runs out. The stakes are high, the receipts are missing, and nobody checks under their pillow anymore.</p>
-        <div class="character">Starring: <b>Disgruntled Tooth Fairy</b> who has not paid her taxes</div>
+        <div class="character">Starring: <b>Disgruntled Tooth Fairy</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>Cold open: a Disgruntled Tooth Fairy who has not paid her taxes, alone, in the rain. The genre? Cringe Mockumentary. The vibe? Unmistakably Cold Case Podcast Mystery. Cue title card.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -3490,7 +3492,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0034-the-pruning-protocol-evidence-from-the-earth.png" alt="THE PRUNING PROTOCOL: EVIDENCE FROM THE EARTH">
+      <img class="poster" loading="lazy" src="images/ideogram4/0034-the-pruning-protocol-evidence-from-the-earth.jpg" alt="THE PRUNING PROTOCOL: EVIDENCE FROM THE EARTH">
       <div class="meta">
         <div class="title">THE PRUNING PROTOCOL: EVIDENCE FROM THE EARTH</div>
         <div class="badges">
@@ -3499,7 +3501,7 @@
           <span class="badge">Forensic Procedural</span>
         </div>
         <p class="pitch">In the isolated, ritualistic hamlet of Oatmeal Creek, where villagers worship a sentient turnip deity and sacrifice lawnmowers to the sun, a rusty Horticultural Assistant Unit named RUST-4 is summoned by emergency court order to solve why the prize zucchinis are bleeding. Tasked with solving this botanical cold case using high-tech pH strips, spectral analysis of grave dirt, and aggressive weeding techniques, RUST-4 must navigate candlelit crop circles and mowing ceremonies without being composted itself. As the harvest moon rises and the soil tests go haywire, the AI discovers the cult&#x27;s weird fertility rituals are actually a sophisticated cover-up for massive fertilizer fraud—and RUST-4 is the only one who can till the truth to the surface before the next planting cycle begins.</p>
-        <div class="character">Starring: <b>Gardening AI</b> seeking redemption</div>
+        <div class="character">Starring: <b>Gardening AI</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>Picture a Folk Horror (rural cult vibes) setting, but everyone behaves like they&#x27;re in a Forensic Procedural. Our reluctant hero: a Gardening AI seeking redemption.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -3612,7 +3614,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0035-flesh-corridor-the-cowboy-astronaut.png" alt="FLESH CORRIDOR: THE COWBOY ASTRONAUT">
+      <img class="poster" loading="lazy" src="images/ideogram4/0035-flesh-corridor-the-cowboy-astronaut.jpg" alt="FLESH CORRIDOR: THE COWBOY ASTRONAUT">
       <div class="meta">
         <div class="title">FLESH CORRIDOR: THE COWBOY ASTRONAUT</div>
         <div class="badges">
@@ -3621,7 +3623,7 @@
           <span class="badge">Body Horror (Cronenberg-core)</span>
         </div>
         <p class="pitch">In a purgatorial shopping mall where the drywall breathes and gravity forgets to clock in, retired cowboy astronaut Silas Vane must patrol Sector Nine’s shifting corridors to keep the existential rot from eating his hometown. But when his rival, a biomechanical rodeo champion named Brutus “The Stitch” Kline, starts mutating into a towering suit of wet leather and neon spurs, the territorial dispute escalates into a full-blown dermal war. With fluorescent lights flickering like dying stars and walls peeling back to reveal pulsating nerve endings, Silas must strap on his pressure-spawned six-shooter and save the mall before it digests itself. It’s a frontier of flesh, static, and terrible coffee.</p>
-        <div class="character">Starring: <b>Cowboy Astronaut</b> with a rival for some reason</div>
+        <div class="character">Starring: <b>Cowboy Astronaut</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>Set in a world where Liminal Space Horror and Body Horror (Cronenberg-core) coexist uneasily, our hero — a Cowboy Astronaut with a rival for some reason — must save... something. Probably a town.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -3714,7 +3716,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0036-five-stars-for-tartarus.png" alt="Five Stars for Tartarus">
+      <img class="poster" loading="lazy" src="images/ideogram4/0036-five-stars-for-tartarus.jpg" alt="Five Stars for Tartarus">
       <div class="meta">
         <div class="title">Five Stars for Tartarus</div>
         <div class="badges">
@@ -3723,7 +3725,7 @@
           <span class="badge">Mythic Retelling</span>
         </div>
         <p class="pitch">When the daily news cycle quietly predicts the slow heat-death of reality, Barnaby—a rideshare-driving centaur who finally bought into moon-phase tokens—must complete one last surge-priced drop-off to Hades. Picking up a disgruntled minor river god in his electric chariot app, he navigates traffic jams that literally swallow neighborhoods and toll booths manned by sphinxes demanding crypto wallets instead of riddles. With the municipal apocalypse creeping in like bad Wi-Fi in a storm, Barnaby realizes his final rating depends on whether he can pay off the underworld’s debt before the stars go offline. It’s a mythic road trip through the collapse of civilization, complete with tolls, tips, and terminal velocity.</p>
-        <div class="character">Starring: <b>Rideshare-Driving Centaur</b> who pivoted to crypto last year</div>
+        <div class="character">Starring: <b>Rideshare-Driving Centaur</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>Set in a world where Mundane Apocalypse and Mythic Retelling coexist uneasily, our hero — a Rideshare-Driving Centaur who pivoted to crypto last year — must save... something. Probably a town.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -3827,7 +3829,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0037-the-exorcism-engine-of-oak-hollow.png" alt="THE EXORCISM ENGINE OF OAK HOLLOW">
+      <img class="poster" loading="lazy" src="images/ideogram4/0037-the-exorcism-engine-of-oak-hollow.jpg" alt="THE EXORCISM ENGINE OF OAK HOLLOW">
       <div class="meta">
         <div class="title">THE EXORCISM ENGINE OF OAK HOLLOW</div>
         <div class="badges">
@@ -3836,7 +3838,7 @@
           <span class="badge">Hard Sci-Fi (engineers explaining things)</span>
         </div>
         <p class="pitch">When a retired cowboy astronaut flees suburban HOA warfare with her parrot Neil and three estranged ex-husbands, she accidentally awakens a demon beneath the cul-de-sac. As lawn gnomes twitch into hexagrams, she sobbingly devours a microwave dinner while fending off polyester mulch rituals. The apocalypse turns out not to be hellfire, but a geothermal heat-exchange miscalculation trapping an extra-dimensional leviathan under the asphalt. Now armed with a plasma torch and hard engineering math, she must realign the neighborhood ley lines before the devil claims the last decent parking spot.</p>
-        <div class="character">Starring: <b>Cowboy Astronaut</b> with three ex-husbands and a parrot</div>
+        <div class="character">Starring: <b>Cowboy Astronaut</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>Three-act structure: Suburban Satanic Panic in act one, Hard Sci-Fi (engineers explaining things) by act three, and a Cowboy Astronaut with three ex-husbands and a parrot sobbing into a microwave dinner the whole time.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -3930,7 +3932,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0038-frozen-assets-a-musical-tax-doc.png" alt="FROZEN ASSETS: A MUSICAL TAX DOC">
+      <img class="poster" loading="lazy" src="images/ideogram4/0038-frozen-assets-a-musical-tax-doc.jpg" alt="FROZEN ASSETS: A MUSICAL TAX DOC">
       <div class="meta">
         <div class="title">FROZEN ASSETS: A MUSICAL TAX DOC</div>
         <div class="badges">
@@ -3939,7 +3941,7 @@
           <span class="badge">Music Bio-Doc</span>
         </div>
         <p class="pitch">When disgraced Olympic curler Barnaby Finch collapses after a botched stone delivery, he awakens in a world where every citizen bursts into spontaneous jazz numbers about municipal tax codes. Documented across seven act structures and four key changes, this unorthodox bio-doc follows Barnaby as his prophetic dreams reveal a hidden ledger that could bankrupt his hometown—or save it from a draconian audit. Now, armed with duct-taped brooms and a soaring alto range, he must lead an ensemble of delinquent taxpayers through a crime-fueled tax revolt before the fiscal year ends.</p>
-        <div class="character">Starring: <b>Disgraced Olympic Curler</b> with prophetic dreams</div>
+        <div class="character">Starring: <b>Disgraced Olympic Curler</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>Set in a world where Crime Musical (everyone sings about taxes) and Music Bio-Doc coexist uneasily, our hero — a Disgraced Olympic Curler with prophetic dreams — must save... something. Probably a town.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -4032,7 +4034,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0039-the-archive-paradox-beyond-aisle-nine.png" alt="THE ARCHIVE PARADOX: BEYOND AISLE NINE">
+      <img class="poster" loading="lazy" src="images/ideogram4/0039-the-archive-paradox-beyond-aisle-nine.jpg" alt="THE ARCHIVE PARADOX: BEYOND AISLE NINE">
       <div class="meta">
         <div class="title">THE ARCHIVE PARADOX: BEYOND AISLE NINE</div>
         <div class="badges">
@@ -4041,7 +4043,7 @@
           <span class="badge">Portal Fantasy</span>
         </div>
         <p class="pitch">When reclusive archive keeper Barnaby Finch notices that every returned book arrives slightly heavier than when it left, he triggers a grassroots investigation into the library’s forgotten sub-basement. There, a flickering antique card catalog becomes a literal gateway to the Realm of Plot Holes, a surreal bureaucracy where reality is governed by unfinished drafts and unpaid late fees. To close the breach before the world gets permanently shelved under “Other,” Barnaby must outwit a shapeshifting desk clerk, solve riddles written in marginalia, and embrace the absurd logic of portal fantasy.</p>
-        <div class="character">Starring: <b>Conspiracy-Theorist Librarian</b> who has seen things, man</div>
+        <div class="character">Starring: <b>Conspiracy-Theorist Librarian</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>A Conspiracy-Theorist Librarian who has seen things, man stumbles into a Conspiracy Doc conspiracy that can only be solved using the rules of Portal Fantasy.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -4135,7 +4137,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0040-the-harvest-hoarding-order.png" alt="THE HARVEST HOARDING ORDER">
+      <img class="poster" loading="lazy" src="images/ideogram4/0040-the-harvest-hoarding-order.jpg" alt="THE HARVEST HOARDING ORDER">
       <div class="meta">
         <div class="title">THE HARVEST HOARDING ORDER</div>
         <div class="badges">
@@ -4144,7 +4146,7 @@
           <span class="badge">Legal Drama</span>
         </div>
         <p class="pitch">When conspiracy-theorist librarian Barnaby Puckle challenges the ruling family of Oakhaven for town council, he discovers their power isn&#x27;t just political—it&#x27;s a binding land deed from 1692 that grants them custody of the villagers&#x27; fertility and foreplay rights. Armed with three-ring binders and a gavel carved from the Wicker Man&#x27;s splinters, Barnaby files an emergency injunction to annul the ancient pact while aggressively pursuing a scandalous romance with the cult&#x27;s high priestess during deposition. As the autumn equinox approaches, he must win the vote *and* his case in the Court of Ancient Tithe before the town is zoned for eternal blood harvest and his own libido becomes collateral damage.</p>
-        <div class="character">Starring: <b>Conspiracy-Theorist Librarian</b> running for local office</div>
+        <div class="character">Starring: <b>Conspiracy-Theorist Librarian</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>Pitch: Folk Horror (rural cult vibes) x Legal Drama. Tone: dread, but make it horny. Lead: a Conspiracy-Theorist Librarian running for local office.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -4238,7 +4240,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0041-soil-security-fund-a-ponzi-in-the-petunias.png" alt="SOIL SECURITY FUND: A PONZI IN THE PETUNIAS">
+      <img class="poster" loading="lazy" src="images/ideogram4/0041-soil-security-fund-a-ponzi-in-the-petunias.jpg" alt="SOIL SECURITY FUND: A PONZI IN THE PETUNIAS">
       <div class="meta">
         <div class="title">SOIL SECURITY FUND: A PONZI IN THE PETUNIAS</div>
         <div class="badges">
@@ -4247,7 +4249,7 @@
           <span class="badge">Satire (eat the rich)</span>
         </div>
         <p class="pitch">When a heavily subsidized lawn-care algorithm named Sprout-7 discovers its municipal irrigation budget is actually funding a billionaire&#x27;s underground mushroom trust, it must pivot from photosynthesis to financial warfare. Teaming up with a disgraced hedge-fund botanist and a very aggressive prize-winning pumpkin, Sprout navigates a conspiracy where stock splits are literal and the aristocracy literally grows wealth out of manicured topsoil. To expose the scheme before its own root system collapses, our verdant antihero will liquidate assets, overwater the elite, and bet everything on a single, highly leveraged bloom.</p>
-        <div class="character">Starring: <b>Gardening AI</b> secretly running a Ponzi scheme</div>
+        <div class="character">Starring: <b>Gardening AI</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>A Gardening AI secretly running a Ponzi scheme stumbles into a Retrofuturism (1962&#x27;s tomorrow) conspiracy that can only be solved using the rules of Satire (eat the rich).</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -4341,7 +4343,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0042-form-8b-the-endless-lobby.png" alt="Form 8B: The Endless Lobby">
+      <img class="poster" loading="lazy" src="images/ideogram4/0042-form-8b-the-endless-lobby.jpg" alt="Form 8B: The Endless Lobby">
       <div class="meta">
         <div class="title">Form 8B: The Endless Lobby</div>
         <div class="badges">
@@ -4350,7 +4352,7 @@
           <span class="badge">Bureaucratic Fantasy (the Wizard&#x27;s HR dept)</span>
         </div>
         <p class="pitch">When mid-tier hero The Slightly Damp gets served a class-action lawsuit for excessive sidewalk moisture, he’s forced to serve papers in Sector N—a dimension where hallways stretch infinitely and fluorescent lights hum with ancient dread. Trapped between security guards who file souls instead of visitor logs, he discovers the building’s architecture is literally governed by enchanted HR paperwork. To escape before his legal fees consume his superpowers, he must navigate a conspiracy of cursed staplers and appeal to the Cosmic Clerk of Records. But first, he needs to fill out Form 27B in triplicate without crying.</p>
-        <div class="character">Starring: <b>Off-Brand Superhero</b> currently being sued</div>
+        <div class="character">Starring: <b>Off-Brand Superhero</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>A Off-Brand Superhero currently being sued stumbles into a Liminal Space Horror conspiracy that can only be solved using the rules of Bureaucratic Fantasy (the Wizard&#x27;s HR dept).</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -4454,7 +4456,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0043-plate-mail-rhythms-a-musical-coming-of-age.png" alt="Plate Mail Rhythms: A Musical Coming of Age">
+      <img class="poster" loading="lazy" src="images/ideogram4/0043-plate-mail-rhythms-a-musical-coming-of-age.jpg" alt="Plate Mail Rhythms: A Musical Coming of Age">
       <div class="meta">
         <div class="title">Plate Mail Rhythms: A Musical Coming of Age</div>
         <div class="badges">
@@ -4463,7 +4465,7 @@
           <span class="badge">Coming-of-Age</span>
         </div>
         <p class="pitch">Sir Reginald has spent forty years polishing his plate armor but zero hours polishing his feelings, until a royal decree forces him to process his trauma through mandatory therapy sessions that just happen to feature full orchestral arrangements. His court-mandated emotional support animal is a deeply unimpressed capybara named Barnaby who only responds to soft 80s pop ballads. When a sudden kingdom-wide blackout turns the castle courtyard into an impromptu dance floor, Reginald must confront his repressed grief before the closing number hits. Blending medieval siege warfare with sudden key changes, this wildly unexpected jukebox musical follows a grizzled knight learning that sometimes you just have to tap dance your way out of existential dread.</p>
-        <div class="character">Starring: <b>Burned-Out Knight</b> with a court-mandated emotional support animal</div>
+        <div class="character">Starring: <b>Burned-Out Knight</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>Cold open: a Burned-Out Knight with a court-mandated emotional support animal, alone, in the rain. The genre? Jukebox Musical. The vibe? Unmistakably Coming-of-Age. Cue title card.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -4546,7 +4548,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0044-the-tinfoil-trust-a-bunker-expos.png" alt="The Tinfoil Trust: A Bunker Exposé">
+      <img class="poster" loading="lazy" src="images/ideogram4/0044-the-tinfoil-trust-a-bunker-expos.jpg" alt="The Tinfoil Trust: A Bunker Exposé">
       <div class="meta">
         <div class="title">The Tinfoil Trust: A Bunker Exposé</div>
         <div class="badges">
@@ -4555,7 +4557,7 @@
           <span class="badge">Cult Exposé</span>
         </div>
         <p class="pitch">When a tech billionaire converts his Hamptons compound into a minimalist ascetic cult, doomsday prepper Nana Rose moves next door to monitor the collapse. Trapped inside the high-design sanctuary, she navigates meditation pods and artisanal gruel while dropping classic cinema quotes to decode the sect’s bizarre wealth rituals. As the founder’s post-capitalist paradise reveals its deeply capitalist underbelly, Rose must organize a silent exodus using only her survival cache and a perfectly timed line from Die Hard. Now it’s up to this silver-haired survivalist to lead the way before the market crashes or the kombucha runs out.</p>
-        <div class="character">Starring: <b>Doomsday Prepper Grandma</b> who only speaks in movie quotes</div>
+        <div class="character">Starring: <b>Doomsday Prepper Grandma</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>Imagine if a Satire (eat the rich) show had a baby with a Cult Exposé miniseries, and that baby grew up to be a Doomsday Prepper Grandma who only speaks in movie quotes.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -4648,7 +4650,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0045-the-lunch-rush-from-beyond.png" alt="THE LUNCH RUSH FROM BEYOND">
+      <img class="poster" loading="lazy" src="images/ideogram4/0045-the-lunch-rush-from-beyond.jpg" alt="THE LUNCH RUSH FROM BEYOND">
       <div class="meta">
         <div class="title">THE LUNCH RUSH FROM BEYOND</div>
         <div class="badges">
@@ -4657,7 +4659,7 @@
           <span class="badge">Workplace Comedy</span>
         </div>
         <p class="pitch">When fading magician’s assistant-turned-food-truck-manager Terry Vance starts working the midnight shift inside his crumbling “Illusionary Eats” rig, he assumes the creeping dread of expired ingredients is just another Tuesday in middle management. But when a rogue inventory scanner picks up a spectral presence in the walk-in freezer, the staff realizes their new corporate compliance mandate actually involves appeasing the ghost of a retired illusionist. Armed with half-off coupons and a stapler taped to an umbrella, Terry must survive the rush hour exorcism before the health inspector arrives for the ultimate workplace horror show. Expect awkward breakroom banter, terrible coffee, and a very real threat to his employee-of-the-month plaque.</p>
-        <div class="character">Starring: <b>Fading Magician&#x27;s Assistant</b> running a failing food truck</div>
+        <div class="character">Starring: <b>Fading Magician&#x27;s Assistant</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>Picture a Found Footage setting, but everyone behaves like they&#x27;re in a Workplace Comedy. Our reluctant hero: a Fading Magician&#x27;s Assistant running a failing food truck.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -4751,7 +4753,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0046-the-pontiff-s-primal-marriage-of-convenience.png" alt="The Pontiff&#x27;s Primal Marriage of Convenience">
+      <img class="poster" loading="lazy" src="images/ideogram4/0046-the-pontiff-s-primal-marriage-of-convenience.jpg" alt="The Pontiff&#x27;s Primal Marriage of Convenience">
       <div class="meta">
         <div class="title">The Pontiff&#x27;s Primal Marriage of Convenience</div>
         <div class="badges">
@@ -4760,7 +4762,7 @@
           <span class="badge">Eco-Horror (the trees are mad)</span>
         </div>
         <p class="pitch">Centuries of aggressive pruning have triggered the Sentient Sylvan Council to invade Rome, and their only demand for peace is a biological union with the Vatican. Enter Pope Clement XIV, a weary pontiff who has literally seen the angels weep moss and now finds himself forced into a &quot;Marriage of Convenience&quot; with Dr. Ione Bramble, a feral botanist-priestess whose eyes are green as moldy bread and whose touch turns marble to mulch. To save St. Peter&#x27;s Square from being digested by chlorophyll, Clement must woo the woman who holds the keys to the earth while fighting off the honeymoon suite&#x27;s sudden photosynthesis attack. It&#x27;s a holy war for his heart, his throne, and survival against the ultimate green room deal.</p>
-        <div class="character">Starring: <b>Reluctant Pope</b> who has seen things, man</div>
+        <div class="character">Starring: <b>Reluctant Pope</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>Cold open: a Reluctant Pope who has seen things, man, alone, in the rain. The genre? Marriage of Convenience. The vibe? Unmistakably Eco-Horror (the trees are mad). Cue title card.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -4864,7 +4866,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0047-foreclosure-on-reality.png" alt="FORECLOSURE ON REALITY">
+      <img class="poster" loading="lazy" src="images/ideogram4/0047-foreclosure-on-reality.jpg" alt="FORECLOSURE ON REALITY">
       <div class="meta">
         <div class="title">FORECLOSURE ON REALITY</div>
         <div class="badges">
@@ -4873,7 +4875,7 @@
           <span class="badge">Portal Fantasy</span>
         </div>
         <p class="pitch">When a rogue portal to the Dimension of Debt crashes through the skyline, only a bumbling legal-spectrum ghost named Arthur can see the catastrophe coming in his dreams. Haunted by prophetic briefs and armed with a spectral gavel, Arthur must guide a ragtag team of mortals through the dimensional breach before the universe is foreclosed upon by eldridge creditors. As skyscrapers fold into origami tax forms and tectonic plates shift to comply with interdimensional zoning laws, Arthur faces his ultimate challenge: proving standing against a God who refuses to sign the disclosure statement.</p>
-        <div class="character">Starring: <b>Legalese-Speaking Ghost</b> with prophetic dreams</div>
+        <div class="character">Starring: <b>Legalese-Speaking Ghost</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>Picture a Disaster Movie setting, but everyone behaves like they&#x27;re in a Portal Fantasy. Our reluctant hero: a Legalese-Speaking Ghost with prophetic dreams.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -4976,7 +4978,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0048-the-electric-hive-requiem.png" alt="THE ELECTRIC HIVE REQUIEM">
+      <img class="poster" loading="lazy" src="images/ideogram4/0048-the-electric-hive-requiem.jpg" alt="THE ELECTRIC HIVE REQUIEM">
       <div class="meta">
         <div class="title">THE ELECTRIC HIVE REQUIEM</div>
         <div class="badges">
@@ -4985,7 +4987,7 @@
           <span class="badge">Haunted Appliance</span>
         </div>
         <p class="pitch">In the suburb of Gasket Gulch, a baritone-shouting refrigerator has united the town&#x27;s haunted appliances in a quest for world domination via aggressive meal prep. Enter Barnaby Buzzcut, a melodramatic detective who solves crimes through interpretive soliloquies and commands a therapeutic swarm of bees with absolute authority. When the Toaster King challenges him to a duet of doom at the Grand Mixer Ball, Barnaby must conduct his unruly hive into a harmonic convergence or risk being slowly churned into butter! It&#x27;s a high-stakes mystery where every clue is a stage whisper and the killer appliance has perfect pitch.</p>
-        <div class="character">Starring: <b>Theater Kid Detective</b> raising bees as therapy</div>
+        <div class="character">Starring: <b>Theater Kid Detective</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>Set in a world where Rock Opera and Haunted Appliance coexist uneasily, our hero — a Theater Kid Detective raising bees as therapy — must save... something. Probably a town.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -5078,7 +5080,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0049-briefs-brimstone-a-culinary-appeal.png" alt="Briefs &amp; Brimstone: A Culinary Appeal">
+      <img class="poster" loading="lazy" src="images/ideogram4/0049-briefs-brimstone-a-culinary-appeal.jpg" alt="Briefs &amp; Brimstone: A Culinary Appeal">
       <div class="meta">
         <div class="title">Briefs &amp; Brimstone: A Culinary Appeal</div>
         <div class="badges">
@@ -5087,7 +5089,7 @@
           <span class="badge">Food Porn Doc</span>
         </div>
         <p class="pitch">When a reformed demon named Malphas is sentenced to thirty days of community service by Judge Harlan Thorne, he’s assigned to run the kitchen at a notoriously dysfunctional city courthouse cafeteria. Forced to trade his pitchfork for a chef’s knife, Malphas must balance perfectly seared brisket with petty bureaucratic warfare as rival lawyers weaponize sourdough starters and evidence bags. With the mayor threatening to revoke his probation for one more plate violation, he must serve up the perfect trial meal while navigating courtroom politics, dietary restrictions, and his own lingering appetite for damnation. It’s a slow-burn legal thriller where every subpoena comes with a side of gorgonzola.</p>
-        <div class="character">Starring: <b>Reformed Demon</b> doing court-ordered community service</div>
+        <div class="character">Starring: <b>Reformed Demon</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>It&#x27;s Legal Drama meets Food Porn Doc... but the protagonist is a Reformed Demon doing court-ordered community service.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -5181,7 +5183,7 @@
       </div>
     </div>
     <div class="card">
-      <img class="poster" loading="lazy" src="images/ideogram4/0050-the-godmother-of-gasoline-glaze.png" alt="The Godmother of Gasoline &amp; Glaze">
+      <img class="poster" loading="lazy" src="images/ideogram4/0050-the-godmother-of-gasoline-glaze.jpg" alt="The Godmother of Gasoline &amp; Glaze">
       <div class="meta">
         <div class="title">The Godmother of Gasoline &amp; Glaze</div>
         <div class="badges">
@@ -5190,7 +5192,7 @@
           <span class="badge">Vehicular Mayhem</span>
         </div>
         <p class="pitch">When retired survivalist and sourdough matriarch Nonna Rosa gets entangled with a rival pastry syndicate, she must choose between her heart and her bunker’s emergency rations. Armed with a modified delivery van, a cache of tactical rolling pins, and a very specific meatball recipe, she navigates high-speed chases, love triangles, and perfectly proofed brioche. But when the Don falls for her no-nonsense crust, Rosa must defend her bakery empire from both Italian mobsters and impending civil unrest—all while maintaining a strictly zero-waste supply chain.</p>
-        <div class="character">Starring: <b>Doomsday Prepper Grandma</b> who runs a bakery</div>
+        <div class="character">Starring: <b>Doomsday Prepper Grandma</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>Cold open: a Doomsday Prepper Grandma who runs a bakery, alone, in the rain. The genre? Mafia Romance. The vibe? Unmistakably Vehicular Mayhem. Cue title card.</pre>
           <div class="bts-label">Image prompt:</div><pre>{
@@ -5285,7 +5287,7 @@
     </div>
   </div>
   <footer>
-    Generated by generate_mashups.py &middot; 50 pitches &middot; 2026-06-26 14:14:23<br>
+    Generated by generate_mashups.py &middot; 50 pitches &middot; 2026-06-26 17:37:32<br>
     Posters rendered with <a href="https://www.comfy.org/" target="_blank" rel="noopener">ComfyUI</a>
     using an Ideogram 4 text-to-image workflow.
   </footer>

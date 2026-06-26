@@ -1,0 +1,307 @@
+{
+  "backend": "krea",
+  "label": "Krea",
+  "ratio": "2/3",
+  "films": [
+    {
+      "title": "The Last Honest Thief of Thistlewick",
+      "synopsis": "Barnaby Quick has spent forty years lifting purses, pocketing pies, and disappointing three generations of his enchantment-prone family. But when a foreclosure goblin from the Ministry of Tidy Endings threatens to repossess the cozy hamlet of Thistlewick — and the family teashop hides a deed sealed by ancestral magic — Barnaby must pull off the gentlest heist of his life. Aided by a judgmental hedgehog familiar and an estranged daughter who runs the local potion-and-scone bar, he learns that the hardest thing to steal back is your own family's respect. Warm, woolly, and lightly criminal.",
+      "genre_1_major": "Drama",
+      "genre_1_sub": "Family Saga",
+      "genre_2_major": "Fantasy",
+      "genre_2_sub": "Cozy Fantasy",
+      "character": "Small-Time Crook",
+      "image": "images/krea/0001-the-last-honest-thief-of-thistlewick.png"
+    },
+    {
+      "title": "The Last Brushstroke",
+      "synopsis": "Wilbur \"Whit\" Calloway is a broke, chain-smoking portrait painter in 1948 who hasn't sold a canvas since his muse — and ex-fiancée — Dolores vanished seven years ago. When she walks back into his rain-soaked studio asking him to paint a dead man's face from memory, Whit realizes his second chance at love comes wrapped in a homicide. As bodies and bad debts pile up, he must decide whether Dolores is the woman he never stopped loving or the dame framing him for murder. Either way, his hands won't stop shaking long enough to finish the painting.",
+      "genre_1_major": "Mystery",
+      "genre_1_sub": "Noir",
+      "genre_2_major": "Romance",
+      "genre_2_sub": "Second-Chance Romance",
+      "character": "Struggling Artist",
+      "image": "images/krea/0002-the-last-brushstroke.png"
+    },
+    {
+      "title": "The Drift: A True Story Nobody Will Believe",
+      "synopsis": "Disgraced rally driver Marco \"Slipstream\" Vasquez was banned for a turn he swears defied physics — and now a leaked dashcam suggests he was right. As a chain-smoking documentarian films his \"redemption,\" black SUVs start tailing them through three time zones, and everyone Marco kisses goes mysteriously missing the next morning. He insists the cars are following the conspiracy; the conspiracy insists it's following him. Equal parts grainy expose and 140mph fever dream, it's the only documentary where the cameraman has to do a handbrake turn.",
+      "genre_1_major": "Documentary-style",
+      "genre_1_sub": "Conspiracy Doc",
+      "genre_2_major": "Action",
+      "genre_2_sub": "Car-Chase Thriller",
+      "character": "Disgraced Athlete",
+      "image": "images/krea/0003-the-drift-a-true-story-nobody-will-believe.png"
+    },
+    {
+      "title": "Madame Zelda's Last Supper Saloon",
+      "synopsis": "Madame Zelda Pinch has read palms in the dusty town of Gristle Gulch for thirty years, until the day her tea leaves start narrating themselves in the smug voice of a celebrity food critic. Cursed to survive only by filming a five-star documentary about her own cooking, Zelda must plate prophetic stews for ghost-gunslingers, demon ranchers, and one increasingly skeptical phantom restaurant inspector. Each dish she predicts comes true — including the one where she's the main course. Part séance, part slow-roast, fully doomed.",
+      "genre_1_major": "Western",
+      "genre_1_sub": "Weird West",
+      "genre_2_major": "Documentary-style",
+      "genre_2_sub": "Food Doc",
+      "character": "Fortune Teller",
+      "image": "images/krea/0004-madame-zelda-s-last-supper-saloon.png"
+    },
+    {
+      "title": "Swing State: A Portal to the Polls",
+      "synopsis": "State Senator Dale Brimworth wants ONE thing: to be governor. But when a glowing rift opens inside his campaign-office vending machine, he tumbles into Veloria — a kingdom where political power is decided not by votes, but by competitive synchronized dance-offs. Trapped, mocked, and dangerously off-beat, Dale must master the forbidden Triple Pivot if he ever wants to go home (and, honestly, win that primary back on Earth). Between musical numbers he sobs into a lukewarm microwave lasagna, whispering \"just one more term.\" It's the feel-good portal-fantasy tap-spectacular that puts the \"jazz hands\" back in democracy.",
+      "genre_1_major": "Fantasy",
+      "genre_1_sub": "Portal Fantasy",
+      "genre_2_major": "Musical",
+      "genre_2_sub": "Dance Musical",
+      "character": "Ambitious Politician",
+      "image": "images/krea/0005-swing-state-a-portal-to-the-polls.png"
+    },
+    {
+      "title": "The Last Sermon of Neon Gulch",
+      "synopsis": "Father Augustin Reyes lost his faith somewhere between the last working chapel and the data-cartels that bought the desert. Now he rides a half-dead cyber-mule through Neon Gulch, trading bootleg confessions for water credits and tracking the corporate gunslingers who turned his congregation into server racks. When a mute girl with a sacred memory chip stumbles into his ruined mission, the disillusioned priest has to decide whether one more bullet — or one more prayer — can buy back a soul the market already foreclosed on. It's high noon, but the sun is a billboard.",
+      "genre_1_major": "Western",
+      "genre_1_sub": "Revisionist Western",
+      "genre_2_major": "Sci-Fi",
+      "genre_2_sub": "Cyberpunk",
+      "character": "Disillusioned Priest",
+      "image": "images/krea/0006-the-last-sermon-of-neon-gulch.png"
+    },
+    {
+      "title": "Sutures & Spite: A Love Story in Three Acts",
+      "synopsis": "Penniless installation artist Mabel Crieg builds emotionally devastating sculptures out of expired ramen, and she despises Dr. Theo Vance, the smug ER surgeon who keeps suing her for blocking the hospital loading dock with art. When Theo collapses mid-shift from a mystery cardiac condition only Mabel's microwave-dinner intuition can decode, hatred curdles into something dangerously tender. Now she must finish her gallery show, save his failing heart, and stop crying into a Salisbury steak tray — possibly all at once. A romance about wounds, both surgical and emotional.",
+      "genre_1_major": "Romance",
+      "genre_1_sub": "Enemies-to-Lovers",
+      "genre_2_major": "Drama",
+      "genre_2_sub": "Medical Drama",
+      "character": "Struggling Artist",
+      "image": "images/krea/0007-sutures-spite-a-love-story-in-three-acts.png"
+    },
+    {
+      "title": "Once Upon a Stakeout",
+      "synopsis": "Hard-boiled gumshoe Sal Mercanti thought he was tailing a cheating husband — until the husband turned into a frog and three talking ravens slipped a manila folder under his door. As Sal digs deeper, archival footage and shaky-cam interviews reveal his entire grim little city is a cursed kingdom, and someone very powerful is editing the timeline to keep it that way. To survive, the chain-smoking cynic must learn the rules he's spent his whole career mocking: speak in threes, never trust a stepmother, and always finish the riddle. The truth is out there. So is a wolf in a trench coat.",
+      "genre_1_major": "Documentary-style",
+      "genre_1_sub": "Conspiracy Doc",
+      "genre_2_major": "Fantasy",
+      "genre_2_sub": "Fairy Tale",
+      "character": "Private Investigator",
+      "image": "images/krea/0008-once-upon-a-stakeout.png"
+    },
+    {
+      "title": "My Best Friend Is the Footage",
+      "synopsis": "Hermit novelist Bartholomew Crane hasn't left his fog-drowned cabin in eleven years — until the camcorder he bought to \"document his process\" starts narrating his life back to him, laughing at his jokes, and refusing to power down. As the timestamp-stamped nights pile up, Bart and his clingy, possibly-haunted camera become inseparable: it edits his manuscript, hides his bourbon, and films things in the dark he absolutely did not ask it to film. Part odd-couple road trip to the mailbox, part shrieking nocturnal nightmare, it's the buddy comedy where one of the buddies has no body. Some friendships are forever. This one has a red recording light.",
+      "genre_1_major": "Comedy",
+      "genre_1_sub": "Buddy Comedy",
+      "genre_2_major": "Horror",
+      "genre_2_sub": "Found Footage",
+      "character": "Reclusive Author",
+      "image": "images/krea/0009-my-best-friend-is-the-footage.png"
+    },
+    {
+      "title": "Conservatory of the Damned",
+      "synopsis": "Petty pickpocket Dezzy Vane lifts the wrong enchanted lute and gets blackmailed into enrolling at Nocturne Hall, a glamorous magical conservatory where every graduate signs their soul in the recital hall basement. Filmed documentary-style by a crew that keeps mysteriously dwindling, the film follows Dezzy as he cons his way through ensorcelled exams, seduces a tenured demon adjunct, and discovers the school's \"alumni\" are bottled inside the pipe organ. Equal parts breathy candlelit longing and creeping institutional terror. Tuition is non-refundable. So is your blood.",
+      "genre_1_major": "Fantasy",
+      "genre_1_sub": "Magical Academia",
+      "genre_2_major": "Documentary-style",
+      "genre_2_sub": "Music Bio-Doc",
+      "character": "Small-Time Crook",
+      "image": "images/krea/0010-conservatory-of-the-damned.png"
+    },
+    {
+      "title": "Lawfully Wedded Nemesis",
+      "synopsis": "Sheriff Dale Pickett runs Bumblewick County with a ticket book and zero patience for chaos — until newly transferred Deputy Marshal Roxanne Cobb arrives to \"modernize\" his department and reorganize his evidence locker alphabetically. They bicker through every stakeout, sabotage each other's casework, and argue about who gets the good squad car. But when a goat-rustling ring threatens the annual chili cook-off, these sworn rivals must share one motel room, one walkie-talkie, and a growing suspicion that hating each other has started to feel suspiciously like the opposite. Backup is not coming.",
+      "genre_1_major": "Comedy",
+      "genre_1_sub": "Buddy Comedy",
+      "genre_2_major": "Romance",
+      "genre_2_sub": "Enemies-to-Lovers",
+      "character": "Small-Town Sheriff",
+      "image": "images/krea/0011-lawfully-wedded-nemesis.png"
+    },
+    {
+      "title": "The Quiet Hands of Dorian Vale",
+      "synopsis": "Burned-out intelligence officer Dorian Vale retires to a dust-choked town called Mercy to \"process his feelings,\" which mostly means narrating his trauma to a beige microwave. But Mercy keeps glitching: the saloon piano plays itself in a dead colleague's voice, the sheriff casts two shadows, and the desert sunsets loop like a corrupted memory. As Dorian's therapy journal starts predicting murders before they happen, he must decide whether he's healing — or simply the last sane man in a town that stopped being real years ago. Equal parts whispered confession and high-noon hallucination.",
+      "genre_1_major": "Drama",
+      "genre_1_sub": "Psychological Drama",
+      "genre_2_major": "Western",
+      "genre_2_sub": "Weird West",
+      "character": "Ex-Spy",
+      "image": "images/krea/0012-the-quiet-hands-of-dorian-vale.png"
+    },
+    {
+      "title": "Last Encore at the End of the World",
+      "synopsis": "Indie singer-songwriter Margo Vane survived the apocalypse with nothing but a half-busted acoustic guitar, an unfinished concept album, and the world's worst case of unresolved sexual tension toward a fellow scavenger named Dust. As irradiated ash falls like glitter, she stages doomed open-mic nights in a drowned shopping mall, belting torch songs to an audience of feral mannequins and one weeping mutant. But every ballad she finishes seems to summon something hungry from the dark. To save the last living humans, Margo must write the one song she's terrified to sing — the breakup anthem that ends everything.",
+      "genre_1_major": "Sci-Fi",
+      "genre_1_sub": "Post-Apocalyptic",
+      "genre_2_major": "Musical",
+      "genre_2_sub": "Tragic Musical",
+      "character": "Struggling Artist",
+      "image": "images/krea/0013-last-encore-at-the-end-of-the-world.png"
+    },
+    {
+      "title": "Personal Worst: A Disqualified Body Horror",
+      "synopsis": "Eight months after testing positive for a substance that turns out to be slowly fusing his bones into a single continuous ribcage, disgraced sprinter Donny \"False Start\" Pavlich discovers his old training clinic is harvesting Olympic hopefuls into a writhing meat-relay-team. To survive, Donny must rely on the only skill he has left: lying his way through a series of escalating misunderstandings involving mistaken twins, a sentient gym towel, and a doping inspector hiding in a locker. Doors slam. Tendons slam harder. It's a farce where the running gag is literally running on legs that keep growing extra knees.",
+      "genre_1_major": "Horror",
+      "genre_1_sub": "Body Horror",
+      "genre_2_major": "Comedy",
+      "genre_2_sub": "Farce",
+      "character": "Disgraced Athlete",
+      "image": "images/krea/0014-personal-worst-a-disqualified-body-horror.png"
+    },
+    {
+      "title": "Encore: The Halfpipe Murders",
+      "synopsis": "Twenty years after his last platinum record, glam-metal burnout Dax Vandermint trades stage dives for a high school skateboarding team in foggy Oregon, chasing one last shot at relevance and a documentary crew that won't stop filming. But when his star half-pipe prodigy turns up dead beneath the bowl, Dax becomes both prime suspect and obsessive amateur sleuth, narrating the case in sweaty, leather-panted voiceover. As the true-crime cameras roll and the championship looms, every clue smells faintly of hairspray. Did the comeback kill someone — or is someone killing the comeback?",
+      "genre_1_major": "Drama",
+      "genre_1_sub": "Sports Drama",
+      "genre_2_major": "Documentary-style",
+      "genre_2_sub": "True Crime",
+      "character": "Washed-Up Rock Star",
+      "image": "images/krea/0015-encore-the-halfpipe-murders.png"
+    },
+    {
+      "title": "The Reluctant One vs. The Sky Worms of Ohio",
+      "synopsis": "Dale Brungard, a 34-year-old assistant manager at a Dayton tire outlet, would very much like to NOT be humanity's prophesied savior, thank you. But when a fleet of slug-shaped invaders cracks open the sky and unleashes building-sized parasitic worms that digest entire cul-de-sacs, an ancient mark glows on his forearm at the worst possible time. Armed with a haunted nail gun and a deep aversion to leaving his recliner, Dale must accept his destiny before the Sky Worms harvest the planet for its rich deposits of regret. The fate of Earth rests on a man who just wanted to finish his nachos.",
+      "genre_1_major": "Horror",
+      "genre_1_sub": "Creature Feature",
+      "genre_2_major": "Sci-Fi",
+      "genre_2_sub": "Alien Invasion",
+      "character": "Reluctant Chosen One",
+      "image": "images/krea/0016-the-reluctant-one-vs-the-sky-worms-of-ohio.png"
+    },
+    {
+      "title": "The Patient Will See You Now",
+      "synopsis": "Dr. Marlo Vance hasn't slept in four days and is fairly sure his hospital doesn't exist. When a documentary crew shows up to film \"the truth about St. Asphodel General,\" Marlo realizes his entire burned-out life is footage in someone else's conspiracy — and the only way out is to play by the rules of the city's hidden magic. Now he's trading scalpels for sigils, suturing a wounded gargoyle in the ER, and dodging a goblin cabal that owns the parking garage. To survive the final reveal, he must master a genre he never auditioned for. Caffeine will not be enough.",
+      "genre_1_major": "Documentary-style",
+      "genre_1_sub": "Conspiracy Doc",
+      "genre_2_major": "Fantasy",
+      "genre_2_sub": "Urban Fantasy",
+      "character": "Burned-Out Surgeon",
+      "image": "images/krea/0017-the-patient-will-see-you-now.png"
+    },
+    {
+      "title": "The Encore That Never Ended",
+      "synopsis": "Burnout glam-rocker Desmond \"Dez\" Vail wakes every morning to the same drizzly cottage, the same lukewarm tea, the same adoring fan at the gate — until he notices the fan never blinks and the calendar hasn't moved in eleven years. As Dez digs through his own forgotten case file, he learns the quiet retirement he \"chose\" may be a crime scene he's been looped inside since the night his band vanished. The walls breathe in 4/4 time, his platinum records whisper setlists, and the only detective on the case is the version of himself he tried hardest to forget. To survive, Dez must solve who silenced the music — before the song that's playing turns out to be his own.",
+      "genre_1_major": "Mystery",
+      "genre_1_sub": "Cold Case",
+      "genre_2_major": "Horror",
+      "genre_2_sub": "Psychological Horror",
+      "character": "Washed-Up Rock Star",
+      "image": "images/krea/0018-the-encore-that-never-ended.png"
+    },
+    {
+      "title": "Sing Me Back My Bones",
+      "synopsis": "Wandering folk singer Della Marrow rolls into the cursed mining town of Hollow Verse with a guitar made from her dead lover's ribs and a voice that makes the buried sit up and listen. Trouble is, every ballad she performs drags one more soul out of the earth — and they all remember exactly how she sold them out. As the saloon fills with dusty, lovesick revenants slow-dancing toward her, Della must write the one true song that ends the haunting before her encore becomes her funeral. Dread, harmonies, and a deeply ill-advised duet with a corpse.",
+      "genre_1_major": "Western",
+      "genre_1_sub": "Weird West",
+      "genre_2_major": "Musical",
+      "genre_2_sub": "Indie Folk Musical",
+      "character": "Folk Musician",
+      "image": "images/krea/0019-sing-me-back-my-bones.png"
+    },
+    {
+      "title": "The Last Recluse of Dust Holler",
+      "synopsis": "Bartholomew Quill, an agoraphobic literary genius who hasn't left his porch in eleven years, accidentally signs a saloon lease instead of a book contract. Now the whole crooked town of Dust Holler believes the trembling, ink-stained hermit is the legendary gunslinger \"The Quiet Pen.\" As rival outlaws, a corrupt mayor, and his own overdue editor descend at high noon, Bartholomew must talk, stammer, and faint his way through a showdown using nothing but footnotes and a loaded thesaurus. It's a meditation on violence — narrated by a man who desperately wants to go back inside.",
+      "genre_1_major": "Comedy",
+      "genre_1_sub": "Farce",
+      "genre_2_major": "Western",
+      "genre_2_sub": "Revisionist Western",
+      "character": "Reclusive Author",
+      "image": "images/krea/0020-the-last-recluse-of-dust-holler.png"
+    },
+    {
+      "title": "Quorum: A Close Encounter",
+      "synopsis": "Three days before a knife-edge election, junior Senator Delia Vance trades a vote for a body bag's worth of silence — then a velvet-skinned envoy named ORRO descends from a craft above the Capitol dome, having read every wiretap, every bribe, every 2 a.m. text. ORRO doesn't want to expose her. ORRO wants to negotiate, and its idea of diplomacy is alarmingly intimate. As bodies and pheromones pile up, Delia must decide whether first contact is a coverup, a courtship, or a hostile takeover of the human heart. Dread has never been this turned on.",
+      "genre_1_major": "Drama",
+      "genre_1_sub": "Crime Drama",
+      "genre_2_major": "Sci-Fi",
+      "genre_2_sub": "First Contact",
+      "character": "Ambitious Politician",
+      "image": "images/krea/0021-quorum-a-close-encounter.png"
+    },
+    {
+      "title": "The Salesman of Fates",
+      "synopsis": "Gus Mallory peddles enchanted vacuum cleaners door-to-door across a rain-drowned city where the gods owe back rent and the Oracle works the night shift at a diner. When the Goddess of Memory hires him to find her stolen final prophecy, Gus follows a trail of broken sirens, double-crossing minotaurs, and one very chatty river of the dead. He's got a busted lighter, a sample case full of myth, and a hunch the gods are running a long con. Trouble is, in this town, even destiny comes with a thirty-day warranty.",
+      "genre_1_major": "Fantasy",
+      "genre_1_sub": "Mythic Retelling",
+      "genre_2_major": "Mystery",
+      "genre_2_sub": "Hardboiled Detective",
+      "character": "Traveling Salesman",
+      "image": "images/krea/0022-the-salesman-of-fates.png"
+    },
+    {
+      "title": "Death by Cold Call",
+      "synopsis": "Gary Pelmeni sells laminating machines door-to-door, weeps into a salisbury-steak microwave dinner nightly, and accidentally photographs a senator burying a body while pitching to the wrong cul-de-sac. As shadowy \"regional managers\" erase everyone on his route, Gary discovers his late mentor secretly trained him in an ancient close-the-deal combat style: Aggressive Handshake Kung Fu. Now armed with a briefcase, a stapler, and devastating eye contact, he must karate-chop his way up a conspiracy that goes all the way to corporate. The territory has never been more hostile.",
+      "genre_1_major": "Mystery",
+      "genre_1_sub": "Conspiracy Thriller",
+      "genre_2_major": "Action",
+      "genre_2_sub": "Martial Arts",
+      "character": "Traveling Salesman",
+      "image": "images/krea/0023-death-by-cold-call.png"
+    },
+    {
+      "title": "The Honest Mistake",
+      "synopsis": "Vinnie \"The Calculator\" Pugliese is the mob's most reliable enforcer until he accidentally breaks the wrong kneecap and stumbles into a citywide conspiracy. To crack it, he must master the only weapon he's never used: irony. Partnered with a chain-smoking PI who narrates his own life in voiceover and a city council that holds press conferences about its own corruption, Vinnie learns the awful truth — in this town, the only crime that gets punished is sincerity. A noir comedy where the real racket is everyone pretending not to run one.",
+      "genre_1_major": "Mystery",
+      "genre_1_sub": "Hardboiled Detective",
+      "genre_2_major": "Comedy",
+      "genre_2_sub": "Satire",
+      "character": "Mob Enforcer",
+      "image": "images/krea/0024-the-honest-mistake.png"
+    },
+    {
+      "title": "The Last Gumshoe at the End of the World",
+      "synopsis": "Private investigator Dutch Calloway thought he was working a routine missing-persons case in a sleepy desert town — until he realized the town's been dust and rust for forty years, and so has he. Now the only PI in a cracked, sun-blasted wasteland, Dutch trades his trench coat for a duster and his pistol for whatever still fires, hunting a vanished water baron across irradiated badlands. His client is a talking jukebox. His only lead is a coyote who owes him money. Justice is dead out here, and Dutch is starting to think he might be too.",
+      "genre_1_major": "Sci-Fi",
+      "genre_1_sub": "Post-Apocalyptic",
+      "genre_2_major": "Western",
+      "genre_2_sub": "Revisionist Western",
+      "character": "Private Investigator",
+      "image": "images/krea/0025-the-last-gumshoe-at-the-end-of-the-world.png"
+    },
+    {
+      "title": "The Last Encore at Dusty Creek",
+      "synopsis": "Decades after burning out as the frontman of glam-metal legends Coyote Venom, Cyrus \"Snakebite\" Holloway returns to the family cattle ranch to bury his father and claim his third of the dirt. But his estranged siblings — a tight-lipped accountant and a rodeo-circuit gambler — treat the will reading like a high-noon standoff, spurs and all. As bank vultures circle the foreclosed homestead, Cyrus must trade his studded leather jacket for a saddle and settle a generation of grudges before sundown. Family is the only band that never breaks up — even when it should.",
+      "genre_1_major": "Drama",
+      "genre_1_sub": "Family Saga",
+      "genre_2_major": "Western",
+      "genre_2_sub": "Neo-Western",
+      "character": "Washed-Up Rock Star",
+      "image": "images/krea/0026-the-last-encore-at-dusty-creek.png"
+    },
+    {
+      "title": "The Constable's Lament",
+      "synopsis": "Disgraced Inspector Bartholomew Quill, drummed out of Scotland Yard for \"excessive yearning,\" wanders rain-soaked 1840s London the only way he knows how — by belting power ballads at lampposts. When a murder rocks the manor of icy heiress Lady Eveline Ashcombe, the two are forced into a duet of suspicion, longing, and impossibly high notes. Can Bartholomew solve the crime before the third-act key change? More importantly, can he confess his feelings in a way that rhymes? Crank the corsets, cue the pyrotechnics, and weep.",
+      "genre_1_major": "Musical",
+      "genre_1_sub": "Rock Opera",
+      "genre_2_major": "Romance",
+      "genre_2_sub": "Period Romance",
+      "character": "Disgraced Detective",
+      "image": "images/krea/0027-the-constable-s-lament.png"
+    },
+    {
+      "title": "The Cottage at the End of Everything",
+      "synopsis": "Agoraphobic novelist Edwina Pricklethorn hasn't left her cottage in eleven years, which is unfortunate, because the cottage has decided to start digesting her. As floorboards weep blood and her teakettle whispers the names of the dead, Edwina realizes the only beings willing to help are a tea-obsessed hedgehog familiar and a retired hearth spirit who insists everything is \"perfectly fine, dear.\" To survive the entity in the walls, she must abandon her thriller instincts and embrace the gentle arts of jam-making, friendship, and aggressively pleasant hospitality. The horror is real. So is the chamomile.",
+      "genre_1_major": "Horror",
+      "genre_1_sub": "Supernatural Horror",
+      "genre_2_major": "Fantasy",
+      "genre_2_sub": "Cozy Fantasy",
+      "character": "Reclusive Author",
+      "image": "images/krea/0028-the-cottage-at-the-end-of-everything.png"
+    },
+    {
+      "title": "Six Feet Under Cover",
+      "synopsis": "Mortician Mort Pallbright runs the quietest funeral home in town — until a corpse on his slab coughs up a microfilm and a final request: \"Avenge me, but only on the downbeat.\" Now the deadpan undertaker is the last asset standing in a global spy conspiracy that can only be decoded through jukebox standards, where every coded message hides in a chart-topping oldie and a missed key change means a missed assassination. With a quartet of mysterious widows harmonizing in the wings, Mort must follow the music to the truth before the bad guys cue the encore. He's dead serious. Mostly.",
+      "genre_1_major": "Mystery",
+      "genre_1_sub": "Spy Mystery",
+      "genre_2_major": "Musical",
+      "genre_2_sub": "Jukebox Musical",
+      "character": "Undertaker",
+      "image": "images/krea/0029-six-feet-under-cover.png"
+    },
+    {
+      "title": "The Otter Did It",
+      "synopsis": "Disgraced Olympic swimmer Brock \"Two-Lane\" Halvorsen — banned from competition for an incident involving a contraband emotional-support pommel horse — moves to a foggy lake town to vanish. When his neighbor turns up missing, Brock appoints himself lead detective, armed with nothing but a laminated tide chart and unresolved rage. His investigation slowly, inexplicably, becomes a four-hour meditation on river otters, narrated in a hushed British baritone he didn't authorize. Somewhere between accusing the mailman and weeping into a microwaved lasagna, Brock learns the only true predator was disappointment.",
+      "genre_1_major": "Mystery",
+      "genre_1_sub": "Amateur Sleuth",
+      "genre_2_major": "Documentary-style",
+      "genre_2_sub": "Nature Doc",
+      "character": "Disgraced Athlete",
+      "image": "images/krea/0030-the-otter-did-it.png"
+    }
+  ]
+}

@@ -1,0 +1,3327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Genre Masher: AI-Generated Pitches</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Lora:ital,wght@0,400;0,600;1,400&family=Oswald:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Lora', Georgia, 'Times New Roman', serif;
+    background: #0e0a1a;
+    color: #f4eafc;
+    margin: 0; padding: 40px 20px;
+  }
+  h1 { font-family: 'Abril Fatface', 'Playfair Display', Georgia, serif;
+       font-size: clamp(2.5rem, 6vw, 4.5rem); text-align: center; margin: 0 0 6px;
+       text-shadow: 4px 4px 0 #000, -2px -2px 0 #ff006e; letter-spacing: 1px;
+       font-weight: normal; }
+  .tagline { text-align: center; opacity: 0.7; font-style: italic; margin-bottom: 50px;
+             font-size: 1.1rem; }
+  /* Single centered column — posters render large on big/4K monitors. */
+  .grid { display: grid; gap: 64px; max-width: 900px; margin: 0 auto;
+          grid-template-columns: 1fr; }
+  .card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 14px; overflow: hidden; display: flex; flex-direction: column;
+          transition: transform 0.2s, box-shadow 0.2s; }
+  .card:hover { transform: translateY(-4px); box-shadow: 0 14px 36px rgba(255,0,110,0.3); }
+  .poster { width: 100%; aspect-ratio: 2/3; object-fit: contain; background: #1a0033;
+            display: block; }
+  .poster.missing { display: flex; align-items: center; justify-content: center;
+                    color: rgba(255,255,255,0.3); font-style: italic; padding: 20px;
+                    text-align: center; aspect-ratio: 2/3; }
+  .meta { padding: 26px 30px 28px; }
+  .title { font-family: 'Oswald', 'Helvetica Neue', sans-serif;
+           font-size: 1.7rem; font-weight: 700; margin: 0 0 12px; line-height: 1.15;
+           letter-spacing: 0.5px; text-transform: uppercase; }
+  .badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .badge { font-family: 'Oswald', sans-serif; font-size: 0.75rem; padding: 4px 12px;
+           border-radius: 12px; background: rgba(255,190,11,0.2); color: #ffbe0b;
+           letter-spacing: 1px; text-transform: uppercase; }
+  .pitch { font-family: 'Lora', Georgia, serif; font-size: 1.05rem; line-height: 1.6;
+           opacity: 0.92; margin: 0 0 14px; }
+  .character { font-family: 'Lora', Georgia, serif; font-size: 0.95rem; opacity: 0.75;
+                font-style: italic; }
+  details { margin-top: 14px; font-size: 0.9rem; opacity: 0.65; }
+  details summary { cursor: pointer; font-family: 'Oswald', sans-serif;
+                    text-transform: uppercase; letter-spacing: 1px; font-size: 0.8rem; }
+  details pre { white-space: pre-wrap; word-break: break-word; margin: 4px 0 12px;
+                font-family: 'Lora', Georgia, serif; font-size: 0.9rem; line-height: 1.55; }
+  .bts-label { font-family: 'Oswald', sans-serif; font-weight: bold; margin-top: 10px;
+                opacity: 0.85; text-transform: uppercase; letter-spacing: 0.5px;
+                font-size: 0.8rem; }
+  footer { text-align: center; opacity: 0.55; margin-top: 60px; font-size: 0.9rem;
+            font-style: italic; line-height: 1.7; }
+  footer a { color: #ffbe0b; text-decoration: none;
+              border-bottom: 1px dashed rgba(255,190,11,0.5); }
+  footer a:hover { color: #fff; border-bottom-color: #fff; }
+  .breadcrumb {
+    position: absolute;
+    top: 16px; left: 20px;
+    font-size: 0.85rem;
+    opacity: 0.65;
+  }
+  .breadcrumb a {
+    color: #fff;
+    text-decoration: none;
+    border-bottom: 1px dashed rgba(255,255,255,0.4);
+    margin-right: 14px;
+  }
+  .breadcrumb a:hover { opacity: 1; border-bottom-color: #fff; }
+  .gallery-nav { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;
+                 margin: -34px 0 46px; }
+  .gallery-nav .nav-link {
+    font-family: 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: 1px;
+    font-size: 0.85rem; padding: 7px 18px; border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.18); text-decoration: none;
+    color: #f4eafc; opacity: 0.7; transition: opacity 0.2s, background 0.2s; }
+  .gallery-nav a.nav-link:hover { opacity: 1; background: rgba(255,255,255,0.08); }
+  .gallery-nav .nav-link.active {
+    opacity: 1; color: #ffbe0b; border-color: rgba(255,190,11,0.6);
+    background: rgba(255,190,11,0.12); cursor: default; }
+</style>
+</head>
+<body>
+  <div class="breadcrumb">
+    <a href="../">&larr; one-offs</a>
+    <a href="index.html">&larr; play the game</a>
+  </div>
+  <h1>Genre Masher 3000</h1>
+  <div class="tagline">AI-generated pitches that nobody asked for</div>
+  <nav class="gallery-nav">
+    <a class="nav-link" href="mashups_zimage.html">Z-Image</a>
+    <a class="nav-link" href="mashups_ideogram4.html">Ideogram 4</a>
+    <span class="nav-link active">Krea</span>
+  </nav>
+  <div class="grid">
+    <div class="card">
+      <img class="poster" loading="lazy" src="images/krea/0001-the-last-honest-thief-of-thistlewick.png" alt="The Last Honest Thief of Thistlewick">
+      <div class="meta">
+        <div class="title">The Last Honest Thief of Thistlewick</div>
+        <div class="badges">
+          <span class="badge">Family Saga</span>
+          <span class="badge">x</span>
+          <span class="badge">Cozy Fantasy</span>
+        </div>
+        <p class="pitch">Barnaby Quick has spent forty years lifting purses, pocketing pies, and disappointing three generations of his enchantment-prone family. But when a foreclosure goblin from the Ministry of Tidy Endings threatens to repossess the cozy hamlet of Thistlewick — and the family teashop hides a deed sealed by ancestral magic — Barnaby must pull off the gentlest heist of his life. Aided by a judgmental hedgehog familiar and an estranged daughter who runs the local potion-and-scone bar, he learns that the hardest thing to steal back is your own family&#x27;s respect. Warm, woolly, and lightly criminal.</p>
+        <div class="character">Starring: <b>Small-Time Crook</b></div>
+        <details><summary>Behind the scenes</summary>
+          <div class="bts-label">Seed pitch:</div><pre>Set in a world where Family Saga and Cozy Fantasy coexist uneasily, our hero — a Small-Time Crook — must save... something. Probably a town.</pre>
+          <div class="bts-label">Image prompt:</div><pre>{
+  &quot;high_level_description&quot;: &quot;A weathered, kindly old crook in a patched tweed coat clutches a glowing brass deed inside a cozy lamplit village square, a tiny hedgehog perched on his shoulder, framed by warm cottage windows at dusk.&quot;,
+  &quot;background&quot;: &quot;A storybook-real cobblestone village square at golden dusk, crooked timber-framed cottages with warm glowing windows leaning over narrow lanes. Soft woodsmoke drifts between the rooftops and a faint magical shimmer hangs in the air like floating dust motes. The depth recedes to a small candlelit teashop with a hand-painted sign, fog pooling at the far end of the street.&quot;,
+  &quot;art_style&quot;: &quot;shot on 35mm, 40mm lens, shallow depth of field, warm amber cinematic grade, photorealistic, gentle volumetric haze, fine film grain&quot;,
+  &quot;aesthetics&quot;: &quot;cozy, whimsical, bittersweet, lantern-lit, heartwarming, mischievous&quot;,
+  &quot;lighting&quot;: &quot;warm practical light from cottage windows and a brass street lantern wraps the subject in soft amber rim light against cool blue dusk shadows.&quot;,
+  &quot;palette&quot;: [
+    &quot;#E8A94B&quot;,
+    &quot;#7A4A2B&quot;,
+    &quot;#2E4159&quot;,
+    &quot;#D9C7A3&quot;,
+    &quot;#3A6B4C&quot;
+  ],
+  &quot;bg_brightness&quot;: 48,
+  &quot;elements&quot;: [
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A weathered seventy-year-old man with a kind, crinkled face and silver stubble, wearing a patched brown tweed coat and fingerless gloves, cradling a small ornate glowing brass deed scroll to his chest with sheepish guilt, soft amber lamplight on his face&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.28,
+      &quot;y&quot;: 0.3,
+      &quot;w&quot;: 0.46,
+      &quot;h&quot;: 0.52
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A small fluffy hedgehog with an unimpressed, judgmental expression perched on the man&#x27;s shoulder, tiny eyes catching the lantern glow, photorealistic fur detail&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.56,
+      &quot;y&quot;: 0.3,
+      &quot;w&quot;: 0.16,
+      &quot;h&quot;: 0.16
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;An ornate cast-iron street lantern with a flickering warm flame, foreground left, softly out of focus&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.04,
+      &quot;y&quot;: 0.46,
+      &quot;w&quot;: 0.16,
+      &quot;h&quot;: 0.34
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A small glowing teashop window with a hand-painted potion-and-scone sign, warm light spilling onto wet cobblestones, background right, soft focus&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.72,
+      &quot;y&quot;: 0.52,
+      &quot;w&quot;: 0.24,
+      &quot;h&quot;: 0.22
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;THE LAST HONEST THIEF\nOF THISTLEWICK&quot;,
+      &quot;desc&quot;: &quot;large warm gold serif title with hand-lettered storybook flourishes, slightly weathered gold-leaf texture, gentle drop shadow, centered upper area&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.08,
+      &quot;y&quot;: 0.06,
+      &quot;w&quot;: 0.84,
+      &quot;h&quot;: 0.2
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;He stole everything but their trust. Now he wants it back.&quot;,
+      &quot;desc&quot;: &quot;small italic cream-colored serif tagline, softly glowing, centered&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.14,
+      &quot;y&quot;: 0.27,
+      &quot;w&quot;: 0.72,
+      &quot;h&quot;: 0.05
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;HOLLOWMOSS PICTURES PRESENTS  A BRAMBLEKETTLE FILM  \&quot;THE LAST HONEST THIEF OF THISTLEWICK\&quot;  EDWIN GALLOWAY  MAEVE PINNICK  WITH PIPPIN THE HEDGEHOG  CASTING BY ROWAN ASHE  MUSIC BY CLEMENTINE VOSS  DIRECTED BY ALOYSIUS FERN&quot;,
+      &quot;desc&quot;: &quot;tiny condensed all-caps cream billing block, classic theatrical credit spacing, centered at bottom&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.12,
+      &quot;y&quot;: 0.9,
+      &quot;w&quot;: 0.76,
+      &quot;h&quot;: 0.06
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;A COZY HEIST THIS WINTER&quot;,
+      &quot;desc&quot;: &quot;small spaced gold all-caps release line above the billing block, centered&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.24,
+      &quot;y&quot;: 0.86,
+      &quot;w&quot;: 0.52,
+      &quot;h&quot;: 0.03
+    }
+  ]
+}</pre>
+        </details>
+      </div>
+    </div>
+    <div class="card">
+      <img class="poster" loading="lazy" src="images/krea/0002-the-last-brushstroke.png" alt="The Last Brushstroke">
+      <div class="meta">
+        <div class="title">The Last Brushstroke</div>
+        <div class="badges">
+          <span class="badge">Noir</span>
+          <span class="badge">x</span>
+          <span class="badge">Second-Chance Romance</span>
+        </div>
+        <p class="pitch">Wilbur &quot;Whit&quot; Calloway is a broke, chain-smoking portrait painter in 1948 who hasn&#x27;t sold a canvas since his muse — and ex-fiancée — Dolores vanished seven years ago. When she walks back into his rain-soaked studio asking him to paint a dead man&#x27;s face from memory, Whit realizes his second chance at love comes wrapped in a homicide. As bodies and bad debts pile up, he must decide whether Dolores is the woman he never stopped loving or the dame framing him for murder. Either way, his hands won&#x27;t stop shaking long enough to finish the painting.</p>
+        <div class="character">Starring: <b>Struggling Artist</b></div>
+        <details><summary>Behind the scenes</summary>
+          <div class="bts-label">Seed pitch:</div><pre>It&#x27;s Noir meets Second-Chance Romance... but the protagonist is a Struggling Artist.</pre>
+          <div class="bts-label">Image prompt:</div><pre>{
+  &quot;high_level_description&quot;: &quot;A photoreal 1940s noir one-sheet of a haggard male painter in a shadow-striped studio, a glamorous femme fatale framed in the doorway behind him, rain streaking the window.&quot;,
+  &quot;background&quot;: &quot;A cramped 1948 attic art studio at night, walls cluttered with half-finished portraits and stacked canvases fading into deep shadow. A tall rain-lashed window throws hard venetian-blind stripes across the floor and the back wall. The space recedes into smoky blackness with a single warm bulb glowing in the gloom.&quot;,
+  &quot;art_style&quot;: &quot;shot on 35mm black-and-white film with selective warm amber tint, anamorphic lens, shallow depth of field, high-contrast chiaroscuro, heavy film grain, photorealistic, volumetric cigarette haze&quot;,
+  &quot;aesthetics&quot;: &quot;classic film noir, rain-soaked melancholy, romantic tension, smoky, vintage 1940s&quot;,
+  &quot;lighting&quot;: &quot;a single hard key light rakes across the painter from the side while venetian-blind shadows cut the frame, the femme fatale backlit and silhouetted in the doorway.&quot;,
+  &quot;palette&quot;: [
+    &quot;#0c0a08&quot;,
+    &quot;#3a2f24&quot;,
+    &quot;#c8a45c&quot;,
+    &quot;#8a1a1a&quot;,
+    &quot;#e8e2d4&quot;
+  ],
+  &quot;bg_brightness&quot;: 28,
+  &quot;elements&quot;: [
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A weary 1940s male painter in his late 30s, loosened tie and paint-smeared rolled shirtsleeves, a cigarette dangling from his lips, gripping a fine brush in a trembling hand before an easel, dramatic side-lit face half in shadow, photorealistic&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.2,
+      &quot;y&quot;: 0.3,
+      &quot;w&quot;: 0.46,
+      &quot;h&quot;: 0.52
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A glamorous femme fatale in a fitted 1940s dress and wide-brim hat, backlit and half-silhouetted in the studio doorway, smoke curling around her, photorealistic&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.6,
+      &quot;y&quot;: 0.34,
+      &quot;w&quot;: 0.3,
+      &quot;h&quot;: 0.46
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A half-finished oil portrait on an easel showing a faceless man&#x27;s blank visage, paint glistening wet, dramatic raking light, photorealistic&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.06,
+      &quot;y&quot;: 0.46,
+      &quot;w&quot;: 0.22,
+      &quot;h&quot;: 0.3
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;THE LAST\nBRUSHSTROKE&quot;,
+      &quot;desc&quot;: &quot;Large condensed serif title in distressed cream-gold lettering with subtle ink-bleed texture, stacked two lines, dramatic noir styling&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.08,
+      &quot;y&quot;: 0.06,
+      &quot;w&quot;: 0.84,
+      &quot;h&quot;: 0.2
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;Some portraits are painted in blood.&quot;,
+      &quot;desc&quot;: &quot;Italic small-caps tagline in muted ivory, thin elegant serif, single line&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.12,
+      &quot;y&quot;: 0.27,
+      &quot;w&quot;: 0.76,
+      &quot;h&quot;: 0.05
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;MERIDIAN PICTURES PRESENTS  A RANSOM J. HALE FILM  \&quot;THE LAST BRUSHSTROKE\&quot;  VICTOR ELLROY  CLEMENTINE FROST  EDITH MARLOW  MUSIC BY HAROLD CASTELLANE  DIRECTED BY RANSOM J. HALE&quot;,
+      &quot;desc&quot;: &quot;Tiny condensed all-caps billing block in faded ivory, centered, classic credits styling&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.14,
+      &quot;y&quot;: 0.9,
+      &quot;w&quot;: 0.72,
+      &quot;h&quot;: 0.05
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;IN THEATERS THIS WINTER&quot;,
+      &quot;desc&quot;: &quot;Small spaced all-caps release line in gold, centered above billing&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.3,
+      &quot;y&quot;: 0.86,
+      &quot;w&quot;: 0.4,
+      &quot;h&quot;: 0.03
+    }
+  ]
+}</pre>
+        </details>
+      </div>
+    </div>
+    <div class="card">
+      <img class="poster" loading="lazy" src="images/krea/0003-the-drift-a-true-story-nobody-will-believe.png" alt="The Drift: A True Story Nobody Will Believe">
+      <div class="meta">
+        <div class="title">The Drift: A True Story Nobody Will Believe</div>
+        <div class="badges">
+          <span class="badge">Conspiracy Doc</span>
+          <span class="badge">x</span>
+          <span class="badge">Car-Chase Thriller</span>
+        </div>
+        <p class="pitch">Disgraced rally driver Marco &quot;Slipstream&quot; Vasquez was banned for a turn he swears defied physics — and now a leaked dashcam suggests he was right. As a chain-smoking documentarian films his &quot;redemption,&quot; black SUVs start tailing them through three time zones, and everyone Marco kisses goes mysteriously missing the next morning. He insists the cars are following the conspiracy; the conspiracy insists it&#x27;s following him. Equal parts grainy expose and 140mph fever dream, it&#x27;s the only documentary where the cameraman has to do a handbrake turn.</p>
+        <div class="character">Starring: <b>Disgraced Athlete</b></div>
+        <details><summary>Behind the scenes</summary>
+          <div class="bts-label">Seed pitch:</div><pre>Pitch: Conspiracy Doc x Car-Chase Thriller. Tone: dread, but make it horny. Lead: a Disgraced Athlete.</pre>
+          <div class="bts-label">Image prompt:</div><pre>{
+  &quot;high_level_description&quot;: &quot;A sweaty, unshaven racing driver leans against a battered muscle car at night, half-lit by a single streetlight while black SUVs blur past, shot like a tense true-crime documentary one-sheet.&quot;,
+  &quot;background&quot;: &quot;A deserted multi-level concrete parking structure at 3am, wet asphalt reflecting sodium lights, with the orange smear of a distant city skyline through the open side. Two blacked-out SUVs streak past in long motion-blur, headlights flaring. Faint surveillance camera mounted on a pillar in the upper background, watching.&quot;,
+  &quot;art_style&quot;: &quot;shot on 35mm anamorphic, shallow depth of field, motion-blur on background vehicles, teal-and-amber cinematic grade, fine film grain, photorealistic, volumetric haze&quot;,
+  &quot;aesthetics&quot;: &quot;paranoid, sweaty, neo-noir, true-crime dread, smoldering tension&quot;,
+  &quot;lighting&quot;: &quot;single hard sodium streetlight from above-left carving deep shadows, cold blue ambient fill, hot taillight-red rim from behind.&quot;,
+  &quot;palette&quot;: [
+    &quot;#0E1418&quot;,
+    &quot;#E07B22&quot;,
+    &quot;#1F3A45&quot;,
+    &quot;#C2161B&quot;,
+    &quot;#D7C9A8&quot;
+  ],
+  &quot;bg_brightness&quot;: 38,
+  &quot;elements&quot;: [
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;a ruggedly handsome late-30s Latino man, three-day stubble, sweat-sheened brow, half-unzipped fireproof racing suit revealing a tank top, leaning one forearm on the roof of a dented matte-black muscle car, glancing warily over his shoulder, photoreal, dramatic shadow across half his face&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.26,
+      &quot;y&quot;: 0.3,
+      &quot;w&quot;: 0.5,
+      &quot;h&quot;: 0.55
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;the front quarter of a scarred matte-black muscle car with a cracked windshield and a dash-mounted camera glowing red, photoreal, lower foreground&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.0,
+      &quot;y&quot;: 0.66,
+      &quot;w&quot;: 0.62,
+      &quot;h&quot;: 0.3
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;a blacked-out SUV in heavy horizontal motion blur with bright flaring headlights, mid-background&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.58,
+      &quot;y&quot;: 0.4,
+      &quot;w&quot;: 0.42,
+      &quot;h&quot;: 0.18
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;a small wall-mounted CCTV surveillance camera on a concrete pillar, lens catching a glint of light, photoreal, upper background&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.04,
+      &quot;y&quot;: 0.2,
+      &quot;w&quot;: 0.12,
+      &quot;h&quot;: 0.1
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;THE DRIFT&quot;,
+      &quot;desc&quot;: &quot;massive heavy condensed sans-serif in distressed bone-white, slightly skewed as if reflected in a windshield, faint motion-blur streak trailing the letters, occupying lower third&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.07,
+      &quot;y&quot;: 0.74,
+      &quot;w&quot;: 0.86,
+      &quot;h&quot;: 0.13
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;A TRUE STORY NOBODY WILL BELIEVE&quot;,
+      &quot;desc&quot;: &quot;small uppercase amber serif, letter-spaced tagline directly under the title&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.13,
+      &quot;y&quot;: 0.875,
+      &quot;w&quot;: 0.74,
+      &quot;h&quot;: 0.035
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;THE TRUTH IS GAINING ON HIM&quot;,
+      &quot;desc&quot;: &quot;thin italic white tagline near the top, slightly transparent, cinematic&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.18,
+      &quot;y&quot;: 0.07,
+      &quot;w&quot;: 0.64,
+      &quot;h&quot;: 0.05
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;MERIDIAN VAULT FILMS PRESENTS  A DESMOND OKARA PICTURE  \&quot;THE DRIFT\&quot;  RAFAEL CRUZ-MENDES  LENA VOSS  THEO BARROW  CASTING BY P. DELACROIX  MUSIC BY HOLLIS REINE  DIRECTED BY DESMOND OKARA&quot;,
+      &quot;desc&quot;: &quot;tiny condensed all-caps billing block in pale grey, centered, standard credit-block density&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.16,
+      &quot;y&quot;: 0.93,
+      &quot;w&quot;: 0.68,
+      &quot;h&quot;: 0.045
+    }
+  ]
+}</pre>
+        </details>
+      </div>
+    </div>
+    <div class="card">
+      <img class="poster" loading="lazy" src="images/krea/0004-madame-zelda-s-last-supper-saloon.png" alt="Madame Zelda&#x27;s Last Supper Saloon">
+      <div class="meta">
+        <div class="title">Madame Zelda&#x27;s Last Supper Saloon</div>
+        <div class="badges">
+          <span class="badge">Weird West</span>
+          <span class="badge">x</span>
+          <span class="badge">Food Doc</span>
+        </div>
+        <p class="pitch">Madame Zelda Pinch has read palms in the dusty town of Gristle Gulch for thirty years, until the day her tea leaves start narrating themselves in the smug voice of a celebrity food critic. Cursed to survive only by filming a five-star documentary about her own cooking, Zelda must plate prophetic stews for ghost-gunslingers, demon ranchers, and one increasingly skeptical phantom restaurant inspector. Each dish she predicts comes true — including the one where she&#x27;s the main course. Part séance, part slow-roast, fully doomed.</p>
+        <div class="character">Starring: <b>Fortune Teller</b></div>
+        <details><summary>Behind the scenes</summary>
+          <div class="bts-label">Seed pitch:</div><pre>Logline: When a Fortune Teller discovers their quiet life is actually a Weird West, they must master the genre conventions of Food Doc to survive.</pre>
+          <div class="bts-label">Image prompt:</div><pre>{
+  &quot;high_level_description&quot;: &quot;A weathered fortune teller stands behind a candlelit saloon table plating a glowing stew, framed like a moody prestige food documentary with eerie Western dusk light.&quot;,
+  &quot;background&quot;: &quot;The interior of a decaying frontier saloon at dusk, batwing doors hanging open to a blood-orange desert horizon beyond. Dust motes drift through long shafts of light; dim hanging oil lamps glow amber against shadowed wooden walls lined with tarot cards and hanging dried chiles. Deep, smoky atmospheric haze gives the room cinematic depth.&quot;,
+  &quot;art_style&quot;: &quot;shot on 35mm anamorphic, shallow depth of field, warm candle-amber and dusty teal grade, photorealistic, volumetric haze, fine film grain&quot;,
+  &quot;aesthetics&quot;: &quot;occult Western, prestige food-doc moodiness, eerie, sumptuous, dusty, candlelit&quot;,
+  &quot;lighting&quot;: &quot;warm flickering candle and oil-lamp light pooling on the table while cool desert dusk seeps through the doors, casting long dramatic shadows.&quot;,
+  &quot;palette&quot;: [
+    &quot;#2A1A12&quot;,
+    &quot;#D9892F&quot;,
+    &quot;#E8C27A&quot;,
+    &quot;#6E8B86&quot;,
+    &quot;#8C2A1E&quot;
+  ],
+  &quot;bg_brightness&quot;: 38,
+  &quot;elements&quot;: [
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A weather-beaten woman in her late fifties, Madame Zelda, draped in a frayed velvet shawl and tarnished coin jewelry, sitting behind a candlelit wooden table, hands hovering over a steaming clay bowl, eyes closed in trance, photoreal skin texture and tear-tracked makeup&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.27,
+      &quot;y&quot;: 0.3,
+      &quot;w&quot;: 0.46,
+      &quot;h&quot;: 0.46
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A rustic clay bowl of glowing prophetic stew on the table, ghostly green steam rising and forming faint skull shapes, lit from within, photoreal liquid and rising vapor&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.34,
+      &quot;y&quot;: 0.62,
+      &quot;w&quot;: 0.32,
+      &quot;h&quot;: 0.2
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A spread of worn tarot cards and a small documentary film camera on a tripod barely visible in the smoky background shadows to the left, photoreal&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.04,
+      &quot;y&quot;: 0.4,
+      &quot;w&quot;: 0.2,
+      &quot;h&quot;: 0.3
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A translucent ghostly gunslinger in a duster coat and hat seated faintly at a back saloon table, holding a fork, semi-transparent and eerie, photoreal spectral effect&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.7,
+      &quot;y&quot;: 0.34,
+      &quot;w&quot;: 0.24,
+      &quot;h&quot;: 0.34
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;MADAME ZELDA&#x27;S\nLAST SUPPER SALOON&quot;,
+      &quot;desc&quot;: &quot;large weathered Western slab-serif title in tarnished gold with cracked edges, stacked two lines, centered, faint candlelit glow and dust&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.08,
+      &quot;y&quot;: 0.04,
+      &quot;w&quot;: 0.84,
+      &quot;h&quot;: 0.2
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;She read the future. Now she has to plate it.&quot;,
+      &quot;desc&quot;: &quot;small italic serif tagline in dusty cream, single line centered&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.16,
+      &quot;y&quot;: 0.25,
+      &quot;w&quot;: 0.68,
+      &quot;h&quot;: 0.05
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;FIVE FORKS PRODUCTIONS PRESENTS  A SILAS QUILL FILM  \&quot;MADAME ZELDA&#x27;S LAST SUPPER SALOON\&quot;  CORA MAEVE FONTAINE  AUGUST REDD  ELOISE VANTERPOOL  CASTING BY DRY GULCH CASTING  MUSIC BY THE LANTERN TRIO  DIRECTED BY SILAS QUILL&quot;,
+      &quot;desc&quot;: &quot;tiny condensed all-caps billing block in pale gray, centered, standard movie-poster credit styling&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.12,
+      &quot;y&quot;: 0.88,
+      &quot;w&quot;: 0.76,
+      &quot;h&quot;: 0.06
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;SERVED COLD THIS AUTUMN&quot;,
+      &quot;desc&quot;: &quot;small spaced all-caps release line in amber above the billing block, centered&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.26,
+      &quot;y&quot;: 0.835,
+      &quot;w&quot;: 0.48,
+      &quot;h&quot;: 0.035
+    }
+  ]
+}</pre>
+        </details>
+      </div>
+    </div>
+    <div class="card">
+      <img class="poster" loading="lazy" src="images/krea/0005-swing-state-a-portal-to-the-polls.png" alt="Swing State: A Portal to the Polls">
+      <div class="meta">
+        <div class="title">Swing State: A Portal to the Polls</div>
+        <div class="badges">
+          <span class="badge">Portal Fantasy</span>
+          <span class="badge">x</span>
+          <span class="badge">Dance Musical</span>
+        </div>
+        <p class="pitch">State Senator Dale Brimworth wants ONE thing: to be governor. But when a glowing rift opens inside his campaign-office vending machine, he tumbles into Veloria — a kingdom where political power is decided not by votes, but by competitive synchronized dance-offs. Trapped, mocked, and dangerously off-beat, Dale must master the forbidden Triple Pivot if he ever wants to go home (and, honestly, win that primary back on Earth). Between musical numbers he sobs into a lukewarm microwave lasagna, whispering &quot;just one more term.&quot; It&#x27;s the feel-good portal-fantasy tap-spectacular that puts the &quot;jazz hands&quot; back in democracy.</p>
+        <div class="character">Starring: <b>Ambitious Politician</b></div>
+        <details><summary>Behind the scenes</summary>
+          <div class="bts-label">Seed pitch:</div><pre>Three-act structure: Portal Fantasy in act one, Dance Musical by act three, and a Ambitious Politician sobbing into a microwave dinner the whole time.</pre>
+          <div class="bts-label">Image prompt:</div><pre>{
+  &quot;high_level_description&quot;: &quot;A sweaty middle-aged politician in a dishevelled suit mid-dance-leap through a swirling magical portal of light, photoreal theatrical one-sheet bursting with stage smoke and golden sparks.&quot;,
+  &quot;background&quot;: &quot;A grand floating fantasy throne-amphitheater carved from luminous marble, suspended in a violet starlit sky with cascading ribbons of golden portal energy spiraling inward. Tiered crowds of cloaked Velorian nobles blur into bokeh on either side. Deep atmospheric haze gives epic theatrical depth, with a glowing campaign-office vending machine half-dissolving into the rift at lower left.&quot;,
+  &quot;art_style&quot;: &quot;shot on 35mm anamorphic, shallow depth of field, volumetric stage haze, photorealistic, magenta-and-gold cinematic grade, lens flares, fine film grain&quot;,
+  &quot;aesthetics&quot;: &quot;epic, absurd, glittery, theatrical, triumphant-yet-pathetic, broadway-meets-sword-and-sorcery&quot;,
+  &quot;lighting&quot;: &quot;warm golden key light raking across the leaping figure while cool violet rim light and bursting portal sparks separate him from the smoky background.&quot;,
+  &quot;palette&quot;: [
+    &quot;#3A1A5E&quot;,
+    &quot;#E8B23A&quot;,
+    &quot;#C9417C&quot;,
+    &quot;#1A1030&quot;,
+    &quot;#F4E6C0&quot;
+  ],
+  &quot;bg_brightness&quot;: 45,
+  &quot;elements&quot;: [
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A balding 50-year-old politician in a rumpled navy suit with a loosened red tie and a &#x27;BRIMWORTH FOR GOVERNOR&#x27; lapel pin, caught mid-air in an awkward but committed jazz-hands leap, one wingtip shoe flying off, sweat gleaming, face a mix of terror and showbiz determination, photoreal&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.27,
+      &quot;y&quot;: 0.3,
+      &quot;w&quot;: 0.46,
+      &quot;h&quot;: 0.5
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A glowing swirling magical portal of golden and magenta energy ribbons spiraling behind the figure, sparks and embers flung outward, photoreal volumetric light&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.1,
+      &quot;y&quot;: 0.18,
+      &quot;w&quot;: 0.8,
+      &quot;h&quot;: 0.62
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A half-eaten steaming microwave lasagna tray on a flimsy plastic fork tumbling through the air at lower left, photoreal with rising steam wisps&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.08,
+      &quot;y&quot;: 0.7,
+      &quot;w&quot;: 0.2,
+      &quot;h&quot;: 0.16
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;Silhouetted Velorian nobles in glittering ceremonial robes raising scorecards, softly blurred in golden bokeh along the right edge&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.72,
+      &quot;y&quot;: 0.55,
+      &quot;w&quot;: 0.24,
+      &quot;h&quot;: 0.3
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;SWING STATE&quot;,
+      &quot;desc&quot;: &quot;Massive bold theatrical serif title in polished gold with magenta inner glow and faint stage-spotlight sheen, slightly arched, dominating the lower third&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.06,
+      &quot;y&quot;: 0.78,
+      &quot;w&quot;: 0.88,
+      &quot;h&quot;: 0.13
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;A PORTAL TO THE POLLS&quot;,
+      &quot;desc&quot;: &quot;Slim elegant uppercase subtitle in cream with thin letter-spacing, centered directly beneath the main title&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.2,
+      &quot;y&quot;: 0.905,
+      &quot;w&quot;: 0.6,
+      &quot;h&quot;: 0.03
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;HE CAMPAIGNED ON CHANGE. HE GOT CHOREOGRAPHY.&quot;,
+      &quot;desc&quot;: &quot;Small italic cream tagline tucked just above the main title, centered&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.14,
+      &quot;y&quot;: 0.745,
+      &quot;w&quot;: 0.72,
+      &quot;h&quot;: 0.03
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;MERIDIAN HEARTH PICTURES PRESENTS  A BARNABY QUILL FILM  \&quot;SWING STATE: A PORTAL TO THE POLLS\&quot;  ROLAND FENWICK  TAMSIN OYELARAN-VOSS  GRETCHEN MABLE  CASTING BY DELLA PRUITT  MUSIC BY THE OFFICE OF SCORE &amp; SONG  CHOREOGRAPHY BY VIKTOR PLISÉ  DIRECTED BY BARNABY QUILL&quot;,
+      &quot;desc&quot;: &quot;Tiny condensed all-caps cream billing block, tightly tracked, centered at very bottom in classic credits style&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.1,
+      &quot;y&quot;: 0.95,
+      &quot;w&quot;: 0.8,
+      &quot;h&quot;: 0.04
+    }
+  ]
+}</pre>
+        </details>
+      </div>
+    </div>
+    <div class="card">
+      <img class="poster" loading="lazy" src="images/krea/0006-the-last-sermon-of-neon-gulch.png" alt="The Last Sermon of Neon Gulch">
+      <div class="meta">
+        <div class="title">The Last Sermon of Neon Gulch</div>
+        <div class="badges">
+          <span class="badge">Revisionist Western</span>
+          <span class="badge">x</span>
+          <span class="badge">Cyberpunk</span>
+        </div>
+        <p class="pitch">Father Augustin Reyes lost his faith somewhere between the last working chapel and the data-cartels that bought the desert. Now he rides a half-dead cyber-mule through Neon Gulch, trading bootleg confessions for water credits and tracking the corporate gunslingers who turned his congregation into server racks. When a mute girl with a sacred memory chip stumbles into his ruined mission, the disillusioned priest has to decide whether one more bullet — or one more prayer — can buy back a soul the market already foreclosed on. It&#x27;s high noon, but the sun is a billboard.</p>
+        <div class="character">Starring: <b>Disillusioned Priest</b></div>
+        <details><summary>Behind the scenes</summary>
+          <div class="bts-label">Seed pitch:</div><pre>Imagine if a Revisionist Western show had a baby with a Cyberpunk miniseries, and that baby grew up to follow a Disillusioned Priest.</pre>
+          <div class="bts-label">Image prompt:</div><pre>{
+  &quot;high_level_description&quot;: &quot;A weathered priest in a dust-caked cassock and mechanical augmented arm stands in a neon-drenched desert frontier town, holstered revolver glinting against holographic signage.&quot;,
+  &quot;background&quot;: &quot;A dilapidated frontier main street at dusk, wooden saloons fused with corroded chrome data-towers and flickering Chinese-and-English neon signage bleeding pink and cyan into a dust storm. The street recedes in deep one-point perspective toward a colossal cracked digital billboard sun on the horizon. Volumetric haze and drifting sand catch the neon, blending Old West silhouette with cyberpunk decay.&quot;,
+  &quot;art_style&quot;: &quot;shot on 35mm anamorphic, shallow depth of field, teal-and-magenta cyberpunk grade with dusty desert warmth, photorealistic, volumetric haze, fine film grain&quot;,
+  &quot;aesthetics&quot;: &quot;gritty, melancholic, neon-noir, frontier decay, spiritual exhaustion&quot;,
+  &quot;lighting&quot;: &quot;low-angle dusk key light from a glowing billboard sun mixed with hard neon rim light slicing through blowing dust.&quot;,
+  &quot;palette&quot;: [
+    &quot;#0c1b2a&quot;,
+    &quot;#ff2e88&quot;,
+    &quot;#16c6d6&quot;,
+    &quot;#caa46a&quot;,
+    &quot;#1a1010&quot;
+  ],
+  &quot;bg_brightness&quot;: 42,
+  &quot;elements&quot;: [
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A gaunt middle-aged priest with a graying beard and hollow eyes, wearing a torn black cassock layered with a dust-covered leather duster, a tarnished crucifix at his throat; his right arm is a battered chrome cybernetic prosthetic resting on a holstered revolver, standing center frame facing camera in defiant weariness, photorealistic&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.3,
+      &quot;y&quot;: 0.3,
+      &quot;w&quot;: 0.4,
+      &quot;h&quot;: 0.55
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A worn cyber-mule with exposed mechanical leg joints and glowing sensor eyes standing in the dusty street behind and to the left of the priest, partially silhouetted, photorealistic&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.04,
+      &quot;y&quot;: 0.5,
+      &quot;w&quot;: 0.26,
+      &quot;h&quot;: 0.3
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A small mute girl in a hooded poncho clutching a glowing blue memory chip, half-hidden in the neon haze to the right, soft focus, photorealistic&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.7,
+      &quot;y&quot;: 0.52,
+      &quot;w&quot;: 0.2,
+      &quot;h&quot;: 0.3
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;THE LAST SERMON\nOF NEON GULCH&quot;,
+      &quot;desc&quot;: &quot;Large weathered slab-serif Western title type with subtle chrome edge and a faint magenta neon glow, distressed sandblasted texture, stacked two lines, occupying lower third&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.08,
+      &quot;y&quot;: 0.74,
+      &quot;w&quot;: 0.84,
+      &quot;h&quot;: 0.16
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;HIGH NOON. NO MERCY. NO SIGNAL.&quot;,
+      &quot;desc&quot;: &quot;Thin condensed uppercase cyan tagline, letter-spaced, faint neon glow, single line above the title&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.14,
+      &quot;y&quot;: 0.7,
+      &quot;w&quot;: 0.72,
+      &quot;h&quot;: 0.04
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;VOLTGRAVE STUDIOS PRESENTS  A SILAS CORTEZ FILM  \&quot;THE LAST SERMON OF NEON GULCH\&quot;  MARCUS DELANE  RIO HALLOWAY  EZRA VANCE  CASTING BY P. OKONKWO  MUSIC BY THE WASTELINE CHOIR  DIRECTED BY SILAS CORTEZ&quot;,
+      &quot;desc&quot;: &quot;Tiny centered condensed sans-serif billing block in pale dusty white, standard movie credits formatting&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.12,
+      &quot;y&quot;: 0.92,
+      &quot;w&quot;: 0.76,
+      &quot;h&quot;: 0.05
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;IN THEATERS AUTUMN&quot;,
+      &quot;desc&quot;: &quot;Small centered uppercase amber release line, letter-spaced, between title and billing&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.3,
+      &quot;y&quot;: 0.905,
+      &quot;w&quot;: 0.4,
+      &quot;h&quot;: 0.02
+    }
+  ]
+}</pre>
+        </details>
+      </div>
+    </div>
+    <div class="card">
+      <img class="poster" loading="lazy" src="images/krea/0007-sutures-spite-a-love-story-in-three-acts.png" alt="Sutures &amp; Spite: A Love Story in Three Acts">
+      <div class="meta">
+        <div class="title">Sutures &amp; Spite: A Love Story in Three Acts</div>
+        <div class="badges">
+          <span class="badge">Enemies-to-Lovers</span>
+          <span class="badge">x</span>
+          <span class="badge">Medical Drama</span>
+        </div>
+        <p class="pitch">Penniless installation artist Mabel Crieg builds emotionally devastating sculptures out of expired ramen, and she despises Dr. Theo Vance, the smug ER surgeon who keeps suing her for blocking the hospital loading dock with art. When Theo collapses mid-shift from a mystery cardiac condition only Mabel&#x27;s microwave-dinner intuition can decode, hatred curdles into something dangerously tender. Now she must finish her gallery show, save his failing heart, and stop crying into a Salisbury steak tray — possibly all at once. A romance about wounds, both surgical and emotional.</p>
+        <div class="character">Starring: <b>Struggling Artist</b></div>
+        <details><summary>Behind the scenes</summary>
+          <div class="bts-label">Seed pitch:</div><pre>Three-act structure: Enemies-to-Lovers in act one, Medical Drama by act three, and a Struggling Artist sobbing into a microwave dinner the whole time.</pre>
+          <div class="bts-label">Image prompt:</div><pre>{
+  &quot;high_level_description&quot;: &quot;A photoreal one-sheet of a paint-smeared woman artist and a scrubs-clad surgeon glaring at each other across a flickering hospital corridor, a glowing microwave between them.&quot;,
+  &quot;background&quot;: &quot;A dim hospital corridor at 3am, fluorescent tubes buzzing and half-failing into the deep distance, gurneys and an abandoned art easel lining the walls. Soft volumetric haze hangs in the air, with a green EXIT sign glowing far down the hall. The floor is reflective polished linoleum catching cold institutional light.&quot;,
+  &quot;art_style&quot;: &quot;shot on 35mm anamorphic, shallow depth of field, teal-and-amber cinematic grade, photorealistic, subtle film grain, volumetric haze&quot;,
+  &quot;aesthetics&quot;: &quot;tense, romantic, tragicomic, sterile-meets-messy, prestige-drama gloss&quot;,
+  &quot;lighting&quot;: &quot;cold overhead fluorescent key light on the surgeon side, warm microwave glow rim-lighting the artist, deep teal shadows pooling in the corridor.&quot;,
+  &quot;palette&quot;: [
+    &quot;#0E2A33&quot;,
+    &quot;#E8A14B&quot;,
+    &quot;#C9CDD0&quot;,
+    &quot;#7A1F2B&quot;,
+    &quot;#F2EEE6&quot;
+  ],
+  &quot;bg_brightness&quot;: 38,
+  &quot;elements&quot;: [
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A defiant woman in her early 30s with paint-streaked overalls and a smudge of blue oil paint across one cheek, arms crossed, glaring left; messy bun, expressive tired eyes, holding a sculpting knife, photorealistic&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.06,
+      &quot;y&quot;: 0.34,
+      &quot;w&quot;: 0.42,
+      &quot;h&quot;: 0.52
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A smug, handsome ER surgeon in teal scrubs with a stethoscope, one hand pressed to his chest as if in subtle pain, glaring right back, sweat-sheened forehead under fluorescent light, photorealistic&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.52,
+      &quot;y&quot;: 0.34,
+      &quot;w&quot;: 0.42,
+      &quot;h&quot;: 0.52
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A battered microwave on a steel hospital cart glowing warm orange through its door, a sad Salisbury-steak TV dinner rotating inside, casting light upward, photorealistic&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.36,
+      &quot;y&quot;: 0.62,
+      &quot;w&quot;: 0.3,
+      &quot;h&quot;: 0.26
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;SUTURES\n&amp; SPITE&quot;,
+      &quot;desc&quot;: &quot;Massive bold condensed serif title in cracked porcelain white with a thin surgical-red hairline crack running through the letters, centered, dominating the upper third&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.08,
+      &quot;y&quot;: 0.06,
+      &quot;w&quot;: 0.84,
+      &quot;h&quot;: 0.22
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;A Love Story in Three Acts&quot;,
+      &quot;desc&quot;: &quot;Elegant thin italic serif subtitle in warm cream, letter-spaced, just below the main title&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.2,
+      &quot;y&quot;: 0.275,
+      &quot;w&quot;: 0.6,
+      &quot;h&quot;: 0.05
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;She hated his guts. Now she&#x27;s the only one who can fix his heart.&quot;,
+      &quot;desc&quot;: &quot;Small refined italic tagline in soft white, centered near the bottom above the billing block&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.14,
+      &quot;y&quot;: 0.86,
+      &quot;w&quot;: 0.72,
+      &quot;h&quot;: 0.05
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;HOLLOWPINE PICTURES PRESENTS  A BRENNA QUIST FILM  \&quot;SUTURES &amp; SPITE\&quot;  DELPHINE RAU  AUGUST KELLERMAN  COSTUMES BY IVO SANTORO  MUSIC BY MARGOT ESPER  DIRECTED BY BRENNA QUIST&quot;,
+      &quot;desc&quot;: &quot;Tiny condensed all-caps billing block in pale grey, centered, standard credit-block typography&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.12,
+      &quot;y&quot;: 0.925,
+      &quot;w&quot;: 0.76,
+      &quot;h&quot;: 0.05
+    }
+  ]
+}</pre>
+        </details>
+      </div>
+    </div>
+    <div class="card">
+      <img class="poster" loading="lazy" src="images/krea/0008-once-upon-a-stakeout.png" alt="Once Upon a Stakeout">
+      <div class="meta">
+        <div class="title">Once Upon a Stakeout</div>
+        <div class="badges">
+          <span class="badge">Conspiracy Doc</span>
+          <span class="badge">x</span>
+          <span class="badge">Fairy Tale</span>
+        </div>
+        <p class="pitch">Hard-boiled gumshoe Sal Mercanti thought he was tailing a cheating husband — until the husband turned into a frog and three talking ravens slipped a manila folder under his door. As Sal digs deeper, archival footage and shaky-cam interviews reveal his entire grim little city is a cursed kingdom, and someone very powerful is editing the timeline to keep it that way. To survive, the chain-smoking cynic must learn the rules he&#x27;s spent his whole career mocking: speak in threes, never trust a stepmother, and always finish the riddle. The truth is out there. So is a wolf in a trench coat.</p>
+        <div class="character">Starring: <b>Private Investigator</b></div>
+        <details><summary>Behind the scenes</summary>
+          <div class="bts-label">Seed pitch:</div><pre>Logline: When a Private Investigator discovers their quiet life is actually a Conspiracy Doc, they must master the genre conventions of Fairy Tale to survive.</pre>
+          <div class="bts-label">Image prompt:</div><pre>{
+  &quot;high_level_description&quot;: &quot;A weathered private investigator in a trench coat stands in a rain-slick fairy-tale alley pinning red string between mugshots of woodland creatures on a conspiracy corkboard, shot like a gritty documentary one-sheet.&quot;,
+  &quot;background&quot;: &quot;A narrow cobblestone alley at night in a crooked medieval-storybook city, but photographed like a true-crime documentary with cold practical streetlamps and a flickering neon apothecary sign. Deep perspective leads to a fog-choked castle silhouette glowing faint green on the horizon. Wet stone, drifting mist, and scattered torn parchment flyers on the ground add grime and depth.&quot;,
+  &quot;art_style&quot;: &quot;shot on 35mm anamorphic, shallow depth of field, desaturated true-crime documentary grade with sickly green highlights, photorealistic, volumetric fog, fine film grain&quot;,
+  &quot;aesthetics&quot;: &quot;noir, conspiratorial, eerie, grimy storybook, paranoid, cinematic&quot;,
+  &quot;lighting&quot;: &quot;low-key cold lighting from a single buzzing streetlamp with a sickly green spill from a distant castle, hard shadows and rain reflections.&quot;,
+  &quot;palette&quot;: [
+    &quot;#0E1512&quot;,
+    &quot;#3B4A3A&quot;,
+    &quot;#9AA77F&quot;,
+    &quot;#C8412B&quot;,
+    &quot;#E8E2C9&quot;
+  ],
+  &quot;bg_brightness&quot;: 32,
+  &quot;elements&quot;: [
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A grizzled middle-aged male private investigator in a damp rumpled trench coat and loosened tie, a cigarette dangling, holding a spool of red string, mid-stride and looking warily over his shoulder, photoreal live-action, sharp focus, rain droplets on his shoulders&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.28,
+      &quot;y&quot;: 0.4,
+      &quot;w&quot;: 0.46,
+      &quot;h&quot;: 0.52
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A cluttered corkboard mounted on the alley wall covered in pinned photographs of a frog, a wolf in a tiny coat, and a crowned woman, connected by tangled red string, with scrawled notes and pins, photoreal&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.04,
+      &quot;y&quot;: 0.3,
+      &quot;w&quot;: 0.3,
+      &quot;h&quot;: 0.34
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A glossy black raven perched on a rusted lamppost arm, head tilted, clutching a small folded manila document in its beak, photoreal feather detail&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.68,
+      &quot;y&quot;: 0.26,
+      &quot;w&quot;: 0.26,
+      &quot;h&quot;: 0.22
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;ONCE UPON\nA STAKEOUT&quot;,
+      &quot;desc&quot;: &quot;Large condensed slab-serif title in distressed cream lettering with a faint typewriter-stamp texture, slight red-string motif underlining the words, positioned across the lower third&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.08,
+      &quot;y&quot;: 0.74,
+      &quot;w&quot;: 0.84,
+      &quot;h&quot;: 0.16
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;THE TRUTH IS OUT THERE. SO IS THE WOLF.&quot;,
+      &quot;desc&quot;: &quot;Small uppercase condensed sans-serif tagline in pale green, letter-spaced, centered above the title&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.14,
+      &quot;y&quot;: 0.69,
+      &quot;w&quot;: 0.72,
+      &quot;h&quot;: 0.04
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;A GRIMMWALD PICTURES INVESTIGATION    DIRECTED BY CORA VANTERPOOL    STARRING DASH MORROWAY  ELENA QUILL  THEO BRANNICK    MUSIC BY OSWALD FENN    DECEMBER&quot;,
+      &quot;desc&quot;: &quot;Tiny condensed all-caps billing block in faded cream, evenly spaced, centered at the very bottom&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.1,
+      &quot;y&quot;: 0.93,
+      &quot;w&quot;: 0.8,
+      &quot;h&quot;: 0.05
+    }
+  ]
+}</pre>
+        </details>
+      </div>
+    </div>
+    <div class="card">
+      <img class="poster" loading="lazy" src="images/krea/0009-my-best-friend-is-the-footage.png" alt="My Best Friend Is the Footage">
+      <div class="meta">
+        <div class="title">My Best Friend Is the Footage</div>
+        <div class="badges">
+          <span class="badge">Buddy Comedy</span>
+          <span class="badge">x</span>
+          <span class="badge">Found Footage</span>
+        </div>
+        <p class="pitch">Hermit novelist Bartholomew Crane hasn&#x27;t left his fog-drowned cabin in eleven years — until the camcorder he bought to &quot;document his process&quot; starts narrating his life back to him, laughing at his jokes, and refusing to power down. As the timestamp-stamped nights pile up, Bart and his clingy, possibly-haunted camera become inseparable: it edits his manuscript, hides his bourbon, and films things in the dark he absolutely did not ask it to film. Part odd-couple road trip to the mailbox, part shrieking nocturnal nightmare, it&#x27;s the buddy comedy where one of the buddies has no body. Some friendships are forever. This one has a red recording light.</p>
+        <div class="character">Starring: <b>Reclusive Author</b></div>
+        <details><summary>Behind the scenes</summary>
+          <div class="bts-label">Seed pitch:</div><pre>Cold open: a Reclusive Author, alone, in the rain. The genre? Buddy Comedy. The vibe? Unmistakably Found Footage. Cue title card.</pre>
+          <div class="bts-label">Image prompt:</div><pre>{
+  &quot;high_level_description&quot;: &quot;A drenched reclusive author clutches a glowing handheld camcorder like a buddy in the rain outside a derelict cabin, the whole frame framed as raw nightvision found footage with a timestamp burned in.&quot;,
+  &quot;background&quot;: &quot;A remote woodland cabin at night, slick with torrential rain, half-swallowed by black pines and rolling fog. The porch light flickers sickly amber while the deep background dissolves into impenetrable green-black forest. Shallow puddles throw fractured reflections of a single bulb.&quot;,
+  &quot;art_style&quot;: &quot;shot on a consumer camcorder, handheld nightvision green cast bleeding into raw flash photography, heavy digital grain, motion-blur smear, lens fogging, photorealistic found-footage aesthetic, slight fisheye distortion at edges&quot;,
+  &quot;aesthetics&quot;: &quot;grimy, intimate, dread-soaked, accidentally comedic, lo-fi VHS unease, wet and cold&quot;,
+  &quot;lighting&quot;: &quot;harsh on-camera flash blowing out the foreground against a pitch-black rainy void, with eerie green nightvision glow rimming the trees.&quot;,
+  &quot;palette&quot;: [
+    &quot;#0c1410&quot;,
+    &quot;#1f3a2a&quot;,
+    &quot;#86b27a&quot;,
+    &quot;#d8d2bf&quot;,
+    &quot;#c43b2a&quot;
+  ],
+  &quot;bg_brightness&quot;: 22,
+  &quot;elements&quot;: [
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A gaunt, soaked middle-aged author in a sodden cardigan and crooked glasses, rain streaming off his beard, hugging a chunky black 90s camcorder to his chest like a frightened pet, eyes wide staring just past the lens, photorealistic, flash-lit&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.27,
+      &quot;y&quot;: 0.3,
+      &quot;w&quot;: 0.46,
+      &quot;h&quot;: 0.52
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A glowing red REC dot and tiny green battery icon hovering in the upper-left corner as if from the camera&#x27;s own HUD overlay, slightly pixelated&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.06,
+      &quot;y&quot;: 0.07,
+      &quot;w&quot;: 0.16,
+      &quot;h&quot;: 0.06
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A pale blurred face barely visible in the dark cabin window behind him, out of focus, photorealistic creeping dread&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.62,
+      &quot;y&quot;: 0.22,
+      &quot;w&quot;: 0.14,
+      &quot;h&quot;: 0.16
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;REC  ●  06-26  03:17:42&quot;,
+      &quot;desc&quot;: &quot;small monospaced camcorder overlay font in glowing green, slight scanline jitter, lower-left timestamp burn-in&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.05,
+      &quot;y&quot;: 0.86,
+      &quot;w&quot;: 0.42,
+      &quot;h&quot;: 0.05
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;MY BEST FRIEND\nIS THE FOOTAGE&quot;,
+      &quot;desc&quot;: &quot;large distressed sans-serif title in bone white with a flickering green glitch duplicate behind it, condensed and bold, dominating the lower third&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.08,
+      &quot;y&quot;: 0.62,
+      &quot;w&quot;: 0.84,
+      &quot;h&quot;: 0.2
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;some friendships are caught on tape&quot;,
+      &quot;desc&quot;: &quot;small italic tagline in pale grey, slight VHS smear, centered above billing&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.18,
+      &quot;y&quot;: 0.83,
+      &quot;w&quot;: 0.64,
+      &quot;h&quot;: 0.04
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;HOLLOWREEL PICTURES PRESENTS  A GRENVILLE OAKES FILM  \&quot;MY BEST FRIEND IS THE FOOTAGE\&quot;  DESMOND PRYCE  MARGOT VELLANI  EDITED BY THE CAMERA ITSELF  MUSIC BY OTTO HANE  DIRECTED BY GRENVILLE OAKES&quot;,
+      &quot;desc&quot;: &quot;tiny condensed all-caps billing block in faint grey, centered, standard one-sheet credits styling&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.12,
+      &quot;y&quot;: 0.92,
+      &quot;w&quot;: 0.76,
+      &quot;h&quot;: 0.05
+    }
+  ]
+}</pre>
+        </details>
+      </div>
+    </div>
+    <div class="card">
+      <img class="poster" loading="lazy" src="images/krea/0010-conservatory-of-the-damned.png" alt="Conservatory of the Damned">
+      <div class="meta">
+        <div class="title">Conservatory of the Damned</div>
+        <div class="badges">
+          <span class="badge">Magical Academia</span>
+          <span class="badge">x</span>
+          <span class="badge">Music Bio-Doc</span>
+        </div>
+        <p class="pitch">Petty pickpocket Dezzy Vane lifts the wrong enchanted lute and gets blackmailed into enrolling at Nocturne Hall, a glamorous magical conservatory where every graduate signs their soul in the recital hall basement. Filmed documentary-style by a crew that keeps mysteriously dwindling, the film follows Dezzy as he cons his way through ensorcelled exams, seduces a tenured demon adjunct, and discovers the school&#x27;s &quot;alumni&quot; are bottled inside the pipe organ. Equal parts breathy candlelit longing and creeping institutional terror. Tuition is non-refundable. So is your blood.</p>
+        <div class="character">Starring: <b>Small-Time Crook</b></div>
+        <details><summary>Behind the scenes</summary>
+          <div class="bts-label">Seed pitch:</div><pre>Pitch: Magical Academia x Music Bio-Doc. Tone: dread, but make it horny. Lead: a Small-Time Crook.</pre>
+          <div class="bts-label">Image prompt:</div><pre>{
+  &quot;high_level_description&quot;: &quot;A photoreal one-sheet of a sweaty, charming young con artist clutching a glowing antique lute on the steps of a vast gothic music conservatory at dusk, documentary-style framing with looming dread.&quot;,
+  &quot;background&quot;: &quot;A towering candle-lit gothic conservatory interior bleeding into a moonlit stone courtyard, ribbed vaults and a colossal pipe organ receding into darkness behind the figure. Faint translucent faces are trapped within the organ pipes, barely visible in the gloom. Volumetric haze drifts through shafts of cold moonlight and warm candle glow, deep architectural perspective pulling the eye toward the unseen basement recital hall.&quot;,
+  &quot;art_style&quot;: &quot;shot on 35mm anamorphic, shallow depth of field, fly-on-the-wall documentary handheld framing, photorealistic, naturalistic film grain, warm-candle and cold-moon split grade, volumetric haze&quot;,
+  &quot;aesthetics&quot;: &quot;sensual dread, gothic academia, candlelit chiaroscuro, sweat and velvet, ominous elegance&quot;,
+  &quot;lighting&quot;: &quot;low-key chiaroscuro with a single warm candle key raking across the protagonist&#x27;s face and a cold blue moonlight rim, deep falloff into shadow.&quot;,
+  &quot;palette&quot;: [
+    &quot;#0E0A14&quot;,
+    &quot;#C7962F&quot;,
+    &quot;#5A2330&quot;,
+    &quot;#2A3F55&quot;,
+    &quot;#E6D6B8&quot;
+  ],
+  &quot;bg_brightness&quot;: 28,
+  &quot;elements&quot;: [
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;a lean, roguish young man in his late twenties with stubble, tousled dark hair and an unbuttoned period waistcoat slick with sweat, clutching a glowing ornate enchanted lute to his chest, half-smirking with nervous wide eyes, dramatic candlelight on his collarbone and jaw, photoreal&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.28,
+      &quot;y&quot;: 0.3,
+      &quot;w&quot;: 0.46,
+      &quot;h&quot;: 0.56
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;the enchanted antique lute emitting a soft golden inner light with faint glowing runes carved along its neck, wisps of smoke curling from the soundhole, photoreal close detail&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.34,
+      &quot;y&quot;: 0.52,
+      &quot;w&quot;: 0.3,
+      &quot;h&quot;: 0.3
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;a colossal gothic pipe organ in deep background shadow with ghostly translucent human faces faintly pressed inside the brass pipes, eerie and barely lit, photoreal&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.04,
+      &quot;y&quot;: 0.18,
+      &quot;w&quot;: 0.3,
+      &quot;h&quot;: 0.4
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;a single tall dripping black candle with a tall flame in soft foreground bokeh, lower right, photoreal&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.72,
+      &quot;y&quot;: 0.62,
+      &quot;w&quot;: 0.18,
+      &quot;h&quot;: 0.26
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;CONSERVATORY\nOF THE DAMNED&quot;,
+      &quot;desc&quot;: &quot;large engraved gothic serif title in tarnished gold with subtle candlelight glow, slightly weathered metallic texture, centered, upper third&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.08,
+      &quot;y&quot;: 0.05,
+      &quot;w&quot;: 0.84,
+      &quot;h&quot;: 0.2
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;Some scholarships cost everything.&quot;,
+      &quot;desc&quot;: &quot;small elegant italic serif tagline in warm cream, letter-spaced, centered just below the title&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.18,
+      &quot;y&quot;: 0.26,
+      &quot;w&quot;: 0.64,
+      &quot;h&quot;: 0.05
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;HALLOWED PIPE STUDIOS PRESENTS  A MIREN VOSS FILM  \&quot;CONSERVATORY OF THE DAMNED\&quot;  DEZMOND KAINE  ELODIE FARROW  THADDEUS BRINE  CASTING BY VERA OKONKWO  MUSIC BY THE NOCTURNE CHOIR  DIRECTED BY MIREN VOSS&quot;,
+      &quot;desc&quot;: &quot;tiny condensed all-caps sans-serif billing block in pale cream, tightly justified, centered near bottom&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.12,
+      &quot;y&quot;: 0.88,
+      &quot;w&quot;: 0.76,
+      &quot;h&quot;: 0.06
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;ENROLLMENT BEGINS THIS AUTUMN&quot;,
+      &quot;desc&quot;: &quot;small letter-spaced all-caps sans-serif release line in muted gold, centered above billing&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.22,
+      &quot;y&quot;: 0.84,
+      &quot;w&quot;: 0.56,
+      &quot;h&quot;: 0.03
+    }
+  ]
+}</pre>
+        </details>
+      </div>
+    </div>
+    <div class="card">
+      <img class="poster" loading="lazy" src="images/krea/0011-lawfully-wedded-nemesis.png" alt="Lawfully Wedded Nemesis">
+      <div class="meta">
+        <div class="title">Lawfully Wedded Nemesis</div>
+        <div class="badges">
+          <span class="badge">Buddy Comedy</span>
+          <span class="badge">x</span>
+          <span class="badge">Enemies-to-Lovers</span>
+        </div>
+        <p class="pitch">Sheriff Dale Pickett runs Bumblewick County with a ticket book and zero patience for chaos — until newly transferred Deputy Marshal Roxanne Cobb arrives to &quot;modernize&quot; his department and reorganize his evidence locker alphabetically. They bicker through every stakeout, sabotage each other&#x27;s casework, and argue about who gets the good squad car. But when a goat-rustling ring threatens the annual chili cook-off, these sworn rivals must share one motel room, one walkie-talkie, and a growing suspicion that hating each other has started to feel suspiciously like the opposite. Backup is not coming.</p>
+        <div class="character">Starring: <b>Small-Town Sheriff</b></div>
+        <details><summary>Behind the scenes</summary>
+          <div class="bts-label">Seed pitch:</div><pre>Picture a Buddy Comedy setting, but everyone behaves like they&#x27;re in a Enemies-to-Lovers. Our reluctant hero: a Small-Town Sheriff.</pre>
+          <div class="bts-label">Image prompt:</div><pre>{
+  &quot;high_level_description&quot;: &quot;A photoreal small-town sheriff and deputy stand back-to-back in front of a dusty patrol car, arms crossed and glaring in opposite directions while sparks of reluctant attraction crackle in the golden light.&quot;,
+  &quot;background&quot;: &quot;A sleepy sun-baked Main Street in a tiny rural American town at late-afternoon golden hour, with a faded diner, a hardware store, and bunting strung across the road for a chili cook-off. Shallow depth of field melts the storefronts into warm bokeh. A dusty haze hangs in the air and long shadows stretch across cracked asphalt.&quot;,
+  &quot;art_style&quot;: &quot;shot on 35mm anamorphic, shallow depth of field, warm teal-orange cinematic grade, photorealistic, fine film grain, volumetric dust haze&quot;,
+  &quot;aesthetics&quot;: &quot;sun-bleached, comedic tension, romantic-comedy warmth, dusty Americana, golden-hour glow&quot;,
+  &quot;lighting&quot;: &quot;low golden-hour sun raking from the left, rimlighting both characters and flaring softly off the patrol car chrome.&quot;,
+  &quot;palette&quot;: [
+    &quot;#E8A33D&quot;,
+    &quot;#3C6E71&quot;,
+    &quot;#D9531E&quot;,
+    &quot;#F5E6C8&quot;,
+    &quot;#2A2118&quot;
+  ],
+  &quot;bg_brightness&quot;: 62,
+  &quot;elements&quot;: [
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A grumpy middle-aged small-town sheriff in a tan uniform, mirrored aviators pushed up on a sweat-stained cowboy hat, arms tightly crossed, scowling to the left, a chili cook-off ribbon pinned crookedly to his chest, photoreal&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.1,
+      &quot;y&quot;: 0.3,
+      &quot;w&quot;: 0.42,
+      &quot;h&quot;: 0.55
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A sharp confident female deputy marshal in a crisp navy uniform standing back-to-back with the sheriff, arms crossed, glaring to the right with a smirk, clipboard tucked under one arm, photoreal&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.48,
+      &quot;y&quot;: 0.3,
+      &quot;w&quot;: 0.42,
+      &quot;h&quot;: 0.55
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A dusty vintage sheriff&#x27;s patrol car with light-bar and faded county star decal parked diagonally behind the two figures, chrome catching golden light, photoreal&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.0,
+      &quot;y&quot;: 0.55,
+      &quot;w&quot;: 1.0,
+      &quot;h&quot;: 0.35
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;LAWFULLY WEDDED\nNEMESIS&quot;,
+      &quot;desc&quot;: &quot;Bold condensed sans-serif title in distressed sun-faded cream and burnt-orange, stamped like a sheriff&#x27;s badge engraving, large, occupying the lower third, slight gritty texture&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.08,
+      &quot;y&quot;: 0.74,
+      &quot;w&quot;: 0.84,
+      &quot;h&quot;: 0.16
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;They swore to uphold the law. And to destroy each other.&quot;,
+      &quot;desc&quot;: &quot;Small italic serif tagline in warm cream, centered just above the title&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.15,
+      &quot;y&quot;: 0.69,
+      &quot;w&quot;: 0.7,
+      &quot;h&quot;: 0.04
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;A SAGEBRUSH PICTURES PRESENTATION  A FILM BY MARGOT REINHOLT  \&quot;LAWFULLY WEDDED NEMESIS\&quot;  HANK DOOLEY  PRISCILLA VANCE  CASTING BY ELOISE TRAMMEL  MUSIC BY BUCK ALDRIDGE  DIRECTED BY MARGOT REINHOLT&quot;,
+      &quot;desc&quot;: &quot;Tiny condensed all-caps billing block in pale cream, centered at the very bottom edge&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.12,
+      &quot;y&quot;: 0.95,
+      &quot;w&quot;: 0.76,
+      &quot;h&quot;: 0.035
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;BACKUP IS NOT COMING — THIS SUMMER&quot;,
+      &quot;desc&quot;: &quot;Small bold all-caps release line in burnt-orange, centered between title and billing block&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.2,
+      &quot;y&quot;: 0.915,
+      &quot;w&quot;: 0.6,
+      &quot;h&quot;: 0.025
+    }
+  ]
+}</pre>
+        </details>
+      </div>
+    </div>
+    <div class="card">
+      <img class="poster" loading="lazy" src="images/krea/0012-the-quiet-hands-of-dorian-vale.png" alt="The Quiet Hands of Dorian Vale">
+      <div class="meta">
+        <div class="title">The Quiet Hands of Dorian Vale</div>
+        <div class="badges">
+          <span class="badge">Psychological Drama</span>
+          <span class="badge">x</span>
+          <span class="badge">Weird West</span>
+        </div>
+        <p class="pitch">Burned-out intelligence officer Dorian Vale retires to a dust-choked town called Mercy to &quot;process his feelings,&quot; which mostly means narrating his trauma to a beige microwave. But Mercy keeps glitching: the saloon piano plays itself in a dead colleague&#x27;s voice, the sheriff casts two shadows, and the desert sunsets loop like a corrupted memory. As Dorian&#x27;s therapy journal starts predicting murders before they happen, he must decide whether he&#x27;s healing — or simply the last sane man in a town that stopped being real years ago. Equal parts whispered confession and high-noon hallucination.</p>
+        <div class="character">Starring: <b>Ex-Spy</b></div>
+        <details><summary>Behind the scenes</summary>
+          <div class="bts-label">Seed pitch:</div><pre>Three-act structure: Psychological Drama in act one, Weird West by act three, and a Ex-Spy sobbing into a microwave dinner the whole time.</pre>
+          <div class="bts-label">Image prompt:</div><pre>{
+  &quot;high_level_description&quot;: &quot;A weary ex-spy in a dusty tailored coat stands at a microwave on a saloon bar while the desert town behind him warps into an impossible double-sunset, shot as a moody photoreal one-sheet.&quot;,
+  &quot;background&quot;: &quot;A widescreen Weird West main street at dusk, weathered wooden saloons and telegraph poles receding into a heat-shimmered horizon. Two suns hang low in a bruised violet sky, one slightly out of register like a memory error, casting long doubled shadows down the dirt road. Fine dust and dry static hang in the air, with a faint smear of impossible aurora at the edges.&quot;,
+  &quot;art_style&quot;: &quot;shot on 35mm anamorphic, shallow depth of field, desaturated dusty grade with violet undertones, photorealistic, volumetric dust haze, subtle film grain&quot;,
+  &quot;aesthetics&quot;: &quot;melancholic, uncanny, slow-burn psychological, surreal frontier, intimate dread&quot;,
+  &quot;lighting&quot;: &quot;low warm key from the microwave glow on the foreground face, cold violet ambient from the doubled suns behind, long raking shadows across the dirt.&quot;,
+  &quot;palette&quot;: [
+    &quot;#2C2336&quot;,
+    &quot;#7A5B47&quot;,
+    &quot;#C98B5A&quot;,
+    &quot;#E6D2B5&quot;,
+    &quot;#5A4A6B&quot;,
+    &quot;#1A1620&quot;
+  ],
+  &quot;bg_brightness&quot;: 42,
+  &quot;elements&quot;: [
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A gaunt middle-aged man with tired eyes and three-day stubble, wearing a dust-coated tailored long coat over a worn shirt, standing in three-quarter profile hunched toward a small grimy 1980s-looking microwave perched incongruously on a saloon bar, his face lit by its sickly interior glow, a single tear catching the light, holstered revolver at his hip&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.24,
+      &quot;y&quot;: 0.3,
+      &quot;w&quot;: 0.52,
+      &quot;h&quot;: 0.55
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A beige vintage microwave on the weathered wooden bar, door ajar with a steaming foil tray of frontier-rationed dinner inside, glowing warm against the dusk, photoreal&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.3,
+      &quot;y&quot;: 0.58,
+      &quot;w&quot;: 0.3,
+      &quot;h&quot;: 0.22
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A faint translucent ghostly figure in old western coat reflected in a cracked saloon mirror at the right edge, barely visible, eerie photoreal double-exposure effect&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.74,
+      &quot;y&quot;: 0.34,
+      &quot;w&quot;: 0.2,
+      &quot;h&quot;: 0.34
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;THE QUIET HANDS\nOF DORIAN VALE&quot;,
+      &quot;desc&quot;: &quot;large condensed serif title in weathered bone-white with subtle dust texture and a faint doubled ghost outline, centered, occupying upper third, cinematic letter-spacing&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.1,
+      &quot;y&quot;: 0.06,
+      &quot;w&quot;: 0.8,
+      &quot;h&quot;: 0.18
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;He came west to forget. The town remembers everything.&quot;,
+      &quot;desc&quot;: &quot;thin italic serif tagline in pale violet-grey, single line, understated&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.14,
+      &quot;y&quot;: 0.255,
+      &quot;w&quot;: 0.72,
+      &quot;h&quot;: 0.04
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;MERIDIAN HOLLOW PICTURES   presents   a CASS OTERO film   \&quot;THE QUIET HANDS OF DORIAN VALE\&quot;   ELLIOT WREN   MARISOL DUPREE   THADDEUS KO   casting by RAE BENNICK   music by OSWALD FENN   director of photography LIO MARCH   written by JUNE HALLORAN   directed by CASS OTERO&quot;,
+      &quot;desc&quot;: &quot;tiny condensed all-caps billing block in dusty off-white, tightly tracked, centered at very bottom&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.12,
+      &quot;y&quot;: 0.93,
+      &quot;w&quot;: 0.76,
+      &quot;h&quot;: 0.05
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;IN THEATERS THIS FALL&quot;,
+      &quot;desc&quot;: &quot;small spaced all-caps release line in muted amber above the billing block&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.3,
+      &quot;y&quot;: 0.885,
+      &quot;w&quot;: 0.4,
+      &quot;h&quot;: 0.03
+    }
+  ]
+}</pre>
+        </details>
+      </div>
+    </div>
+    <div class="card">
+      <img class="poster" loading="lazy" src="images/krea/0013-last-encore-at-the-end-of-the-world.png" alt="Last Encore at the End of the World">
+      <div class="meta">
+        <div class="title">Last Encore at the End of the World</div>
+        <div class="badges">
+          <span class="badge">Post-Apocalyptic</span>
+          <span class="badge">x</span>
+          <span class="badge">Tragic Musical</span>
+        </div>
+        <p class="pitch">Indie singer-songwriter Margo Vane survived the apocalypse with nothing but a half-busted acoustic guitar, an unfinished concept album, and the world&#x27;s worst case of unresolved sexual tension toward a fellow scavenger named Dust. As irradiated ash falls like glitter, she stages doomed open-mic nights in a drowned shopping mall, belting torch songs to an audience of feral mannequins and one weeping mutant. But every ballad she finishes seems to summon something hungry from the dark. To save the last living humans, Margo must write the one song she&#x27;s terrified to sing — the breakup anthem that ends everything.</p>
+        <div class="character">Starring: <b>Struggling Artist</b></div>
+        <details><summary>Behind the scenes</summary>
+          <div class="bts-label">Seed pitch:</div><pre>Pitch: Post-Apocalyptic x Tragic Musical. Tone: dread, but make it horny. Lead: a Struggling Artist.</pre>
+          <div class="bts-label">Image prompt:</div><pre>{
+  &quot;high_level_description&quot;: &quot;A soot-streaked woman clutches a battered acoustic guitar atop a flooded ruined mall stage, lit by a single salvaged spotlight as ash drifts through the air like a tragic spotlight ballad frozen mid-note.&quot;,
+  &quot;background&quot;: &quot;The cavernous interior of a half-collapsed shopping mall, escalators frozen and choked with vines, skylights shattered overhead letting in a sick orange dusk. Knee-deep black water mirrors the wreckage, with toppled storefront signs glowing faintly behind drifting smoke. Deep haze pushes the ruined balconies into soft, melancholy focus far in the distance.&quot;,
+  &quot;art_style&quot;: &quot;shot on 35mm anamorphic, shallow depth of field, desaturated amber-and-ash grade, volumetric dust, photorealistic, fine film grain, cinematic key lighting&quot;,
+  &quot;aesthetics&quot;: &quot;post-apocalyptic dread, theatrical melancholy, smoldering romance, decayed grandeur, lonely spotlight glamour&quot;,
+  &quot;lighting&quot;: &quot;a single hard salvaged spotlight from above carves the figure out of surrounding gloom while warm ember-glow flickers from ruined neon below.&quot;,
+  &quot;palette&quot;: [
+    &quot;#1A1410&quot;,
+    &quot;#C46A2A&quot;,
+    &quot;#E8C27A&quot;,
+    &quot;#5A4030&quot;,
+    &quot;#8A2B1E&quot;
+  ],
+  &quot;bg_brightness&quot;: 32,
+  &quot;elements&quot;: [
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A weary beautiful woman in her early thirties, ash smeared across her cheekbones and collarbone, wearing a torn sequined slip dress over scavenged combat boots, standing center stage gripping a cracked acoustic guitar against her chest, head tilted back mid-song with eyes closed, single tear cutting through soot, photorealistic&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.3,
+      &quot;y&quot;: 0.3,
+      &quot;w&quot;: 0.4,
+      &quot;h&quot;: 0.55
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A vintage chrome microphone on a bent stand catching the spotlight, slightly rusted, beads of condensation on the grille, foreground left&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.16,
+      &quot;y&quot;: 0.5,
+      &quot;w&quot;: 0.14,
+      &quot;h&quot;: 0.3
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A row of cracked, weathered storefront mannequins half-submerged in black water facing the stage like a silent audience, blurred and eerie in the background haze&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.04,
+      &quot;y&quot;: 0.62,
+      &quot;w&quot;: 0.92,
+      &quot;h&quot;: 0.2
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;Drifting flakes of pale gray ash falling like glitter through the spotlight beam, photorealistic particles&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.2,
+      &quot;y&quot;: 0.2,
+      &quot;w&quot;: 0.55,
+      &quot;h&quot;: 0.4
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;LAST ENCORE\nAT THE END OF THE WORLD&quot;,
+      &quot;desc&quot;: &quot;Large distressed serif title in tarnished gold and ash-white, slightly cracked metallic texture, letterpress weight, stacked across two lines, occupying the lower third&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.08,
+      &quot;y&quot;: 0.72,
+      &quot;w&quot;: 0.84,
+      &quot;h&quot;: 0.15
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;Every song she finishes is the last thing someone hears.&quot;,
+      &quot;desc&quot;: &quot;Small italic tagline in dusty cream, condensed serif, centered just above the title&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.14,
+      &quot;y&quot;: 0.665,
+      &quot;w&quot;: 0.72,
+      &quot;h&quot;: 0.04
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;ASHGROVE PICTURES PRESENTS  A REN COLVERA FILM  \&quot;LAST ENCORE AT THE END OF THE WORLD\&quot;  MARGUERITE SAEL  DEKKER VOSS  THEO LARRAINE  CASTING BY MIRA ODUYA  MUSIC BY THE SILT CHOIR  DIRECTED BY REN COLVERA&quot;,
+      &quot;desc&quot;: &quot;Tiny condensed all-caps billing block in faded white, standard one-sheet credit styling, centered at very bottom&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.1,
+      &quot;y&quot;: 0.93,
+      &quot;w&quot;: 0.8,
+      &quot;h&quot;: 0.05
+    }
+  ]
+}</pre>
+        </details>
+      </div>
+    </div>
+    <div class="card">
+      <img class="poster" loading="lazy" src="images/krea/0014-personal-worst-a-disqualified-body-horror.png" alt="Personal Worst: A Disqualified Body Horror">
+      <div class="meta">
+        <div class="title">Personal Worst: A Disqualified Body Horror</div>
+        <div class="badges">
+          <span class="badge">Body Horror</span>
+          <span class="badge">x</span>
+          <span class="badge">Farce</span>
+        </div>
+        <p class="pitch">Eight months after testing positive for a substance that turns out to be slowly fusing his bones into a single continuous ribcage, disgraced sprinter Donny &quot;False Start&quot; Pavlich discovers his old training clinic is harvesting Olympic hopefuls into a writhing meat-relay-team. To survive, Donny must rely on the only skill he has left: lying his way through a series of escalating misunderstandings involving mistaken twins, a sentient gym towel, and a doping inspector hiding in a locker. Doors slam. Tendons slam harder. It&#x27;s a farce where the running gag is literally running on legs that keep growing extra knees.</p>
+        <div class="character">Starring: <b>Disgraced Athlete</b></div>
+        <details><summary>Behind the scenes</summary>
+          <div class="bts-label">Seed pitch:</div><pre>A Disgraced Athlete stumbles into a Body Horror conspiracy that can only be solved using the rules of Farce.</pre>
+          <div class="bts-label">Image prompt:</div><pre>{
+  &quot;high_level_description&quot;: &quot;A sweat-drenched former track star sprints down a fluorescent-lit clinic corridor, his own grotesquely over-jointed legs splitting his tracksuit, while doors fly open behind him in classic farce chaos.&quot;,
+  &quot;background&quot;: &quot;A long, sickly fluorescent locker-room corridor stretching to a vanishing point, rows of identical clinic doors lining both walls. Several doors burst open at once, spilling green light and shadowy figures mid-comic-collision. The far end dissolves into wet biological haze where the walls appear faintly veined and breathing.&quot;,
+  &quot;art_style&quot;: &quot;shot on 35mm anamorphic, shallow depth of field, clinical fluorescent green-and-amber grade, photorealistic, volumetric haze, fine film grain&quot;,
+  &quot;aesthetics&quot;: &quot;grotesque, frantic, glossy, sweaty, absurd, queasy comedy-horror&quot;,
+  &quot;lighting&quot;: &quot;harsh overhead fluorescent tubes flickering cold green, with a sickly amber bounce from the corridor floor and a single hard rim light catching the runner&#x27;s wet shoulders&quot;,
+  &quot;palette&quot;: [
+    &quot;#3B5D3A&quot;,
+    &quot;#C8A24B&quot;,
+    &quot;#1A1F1B&quot;,
+    &quot;#D8D2B8&quot;,
+    &quot;#7A1F1F&quot;
+  ],
+  &quot;bg_brightness&quot;: 42,
+  &quot;elements&quot;: [
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;a muscular 40-year-old man mid-sprint toward camera, drenched in sweat, terrified comic grimace, wearing a torn retro tracksuit; his legs are horrifically over-jointed with three extra bending knees each, skin stretched and shiny, fused bone visible — photoreal practical-effects body horror, motion-blurred arms&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.28,
+      &quot;y&quot;: 0.3,
+      &quot;w&quot;: 0.46,
+      &quot;h&quot;: 0.55
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;a clinic door swinging open mid-frame on the left, a confused doping inspector in a lab coat tumbling out clutching a clipboard, photoreal slapstick collision lit by green spill&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.02,
+      &quot;y&quot;: 0.4,
+      &quot;w&quot;: 0.24,
+      &quot;h&quot;: 0.34
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;a wet gym towel with a faint suggestion of a screaming face pressed into the fabric, draped over a chrome locker handle in the foreground right, photorealistic, glistening&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.74,
+      &quot;y&quot;: 0.52,
+      &quot;w&quot;: 0.22,
+      &quot;h&quot;: 0.26
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;PERSONAL WORST&quot;,
+      &quot;desc&quot;: &quot;huge bold condensed athletic-jersey lettering in chipped gold, slightly warped as if the letters are growing extra serifs, heavy black outline, spanning the upper third&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.06,
+      &quot;y&quot;: 0.07,
+      &quot;w&quot;: 0.88,
+      &quot;h&quot;: 0.16
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;A DISQUALIFIED BODY HORROR&quot;,
+      &quot;desc&quot;: &quot;smaller clinical sans-serif subtitle in sickly green, stamped like a medical label beneath the title&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.18,
+      &quot;y&quot;: 0.235,
+      &quot;w&quot;: 0.64,
+      &quot;h&quot;: 0.045
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;He broke the record. Now the record is breaking out of him.&quot;,
+      &quot;desc&quot;: &quot;italic white tagline in a thin condensed serif, centered, subtle drop shadow&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.14,
+      &quot;y&quot;: 0.85,
+      &quot;w&quot;: 0.72,
+      &quot;h&quot;: 0.05
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;MELTWATER PICTURES PRESENTS  A REGGIE FONTAINE-VOSS FILM  \&quot;PERSONAL WORST\&quot;  DARNELL CRUZE-OKAFOR  BIBI HALVORSEN  WALT TREMBLE  CASTING BY MONA DREW  MUSIC BY THE OSSIFY COLLECTIVE  WRITTEN BY P.J. LANTERMANN  DIRECTED BY REGGIE FONTAINE-VOSS&quot;,
+      &quot;desc&quot;: &quot;tiny condensed all-caps billing block in pale grey, standard movie-poster credit spacing, centered at the very bottom&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.12,
+      &quot;y&quot;: 0.915,
+      &quot;w&quot;: 0.76,
+      &quot;h&quot;: 0.06
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;IN THEATERS THIS OFF-SEASON&quot;,
+      &quot;desc&quot;: &quot;small bold gold release line above the billing block&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.3,
+      &quot;y&quot;: 0.905,
+      &quot;w&quot;: 0.4,
+      &quot;h&quot;: 0.025
+    }
+  ]
+}</pre>
+        </details>
+      </div>
+    </div>
+    <div class="card">
+      <img class="poster" loading="lazy" src="images/krea/0015-encore-the-halfpipe-murders.png" alt="Encore: The Halfpipe Murders">
+      <div class="meta">
+        <div class="title">Encore: The Halfpipe Murders</div>
+        <div class="badges">
+          <span class="badge">Sports Drama</span>
+          <span class="badge">x</span>
+          <span class="badge">True Crime</span>
+        </div>
+        <p class="pitch">Twenty years after his last platinum record, glam-metal burnout Dax Vandermint trades stage dives for a high school skateboarding team in foggy Oregon, chasing one last shot at relevance and a documentary crew that won&#x27;t stop filming. But when his star half-pipe prodigy turns up dead beneath the bowl, Dax becomes both prime suspect and obsessive amateur sleuth, narrating the case in sweaty, leather-panted voiceover. As the true-crime cameras roll and the championship looms, every clue smells faintly of hairspray. Did the comeback kill someone — or is someone killing the comeback?</p>
+        <div class="character">Starring: <b>Washed-Up Rock Star</b></div>
+        <details><summary>Behind the scenes</summary>
+          <div class="bts-label">Seed pitch:</div><pre>Pitch: Sports Drama x True Crime. Tone: dread, but make it horny. Lead: a Washed-Up Rock Star.</pre>
+          <div class="bts-label">Image prompt:</div><pre>{
+  &quot;high_level_description&quot;: &quot;A photoreal one-sheet of a sweaty aging rock star standing at the lip of a fog-drenched concrete skate bowl at dusk, police tape and a chalk outline below him, lit like a true-crime docudrama.&quot;,
+  &quot;background&quot;: &quot;A derelict outdoor concrete skatepark at blue-hour dusk, mist pooling in the deep bowl, distant chain-link fence and a single buzzing stadium floodlight. Pine-forest silhouette and a bruised purple sky bleed into the upper third. Faint police tape flutters along the rim and a chalk body outline glows pale at the bottom of the bowl, shot with deep documentary depth.&quot;,
+  &quot;art_style&quot;: &quot;shot on 35mm anamorphic, shallow depth of field, true-crime docudrama grade, desaturated cool shadows with warm sodium-vapor highlights, fine film grain, photorealistic, volumetric fog&quot;,
+  &quot;aesthetics&quot;: &quot;dread, sleazy glamour, neo-noir, sweaty, ominous, faded rockstar decadence&quot;,
+  &quot;lighting&quot;: &quot;a single harsh floodlight rakes across the subject from camera-left, throwing long ominous shadows into the misty bowl while cold dusk fills the rest.&quot;,
+  &quot;palette&quot;: [
+    &quot;#1B1E2B&quot;,
+    &quot;#6E3A57&quot;,
+    &quot;#C8923A&quot;,
+    &quot;#2E4A4F&quot;,
+    &quot;#E7D8B8&quot;
+  ],
+  &quot;bg_brightness&quot;: 38,
+  &quot;elements&quot;: [
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A weathered 50-year-old rock star in cracked leather pants, an open studded vest over a bare sweat-sheened chest, smudged eyeliner and graying teased hair, balancing a skateboard under one boot at the lip of the bowl, holding a wireless microphone like a clue, lit dramatically&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.3,
+      &quot;y&quot;: 0.3,
+      &quot;w&quot;: 0.42,
+      &quot;h&quot;: 0.52
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;yellow police tape stretched diagonally across the lower foreground, slightly out of focus, reading faint generic caution lettering, fluttering in mist&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.0,
+      &quot;y&quot;: 0.7,
+      &quot;w&quot;: 1.0,
+      &quot;h&quot;: 0.14
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;a pale chalk body outline at the bottom of the dim concrete skate bowl, a single dropped skateboard wheel beside it, eerie&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.12,
+      &quot;y&quot;: 0.8,
+      &quot;w&quot;: 0.4,
+      &quot;h&quot;: 0.13
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;ENCORE&quot;,
+      &quot;desc&quot;: &quot;huge distressed metal-band logo typeface in tarnished gold foil with chrome edges, slightly cracked texture, centered upper area, dominant&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.1,
+      &quot;y&quot;: 0.07,
+      &quot;w&quot;: 0.8,
+      &quot;h&quot;: 0.16
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;THE HALFPIPE MURDERS&quot;,
+      &quot;desc&quot;: &quot;condensed bold true-crime sans-serif in dirty bone-white, letter-spaced wide, placed under the main logo&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.14,
+      &quot;y&quot;: 0.235,
+      &quot;w&quot;: 0.72,
+      &quot;h&quot;: 0.05
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;Every comeback has a body count.&quot;,
+      &quot;desc&quot;: &quot;small italic tagline in muted gold, single line, just above the billing block&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.18,
+      &quot;y&quot;: 0.86,
+      &quot;w&quot;: 0.64,
+      &quot;h&quot;: 0.035
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;VELVET NOOSE PICTURES PRESENTS A RORY SLATTERN FILM \&quot;ENCORE: THE HALFPIPE MURDERS\&quot; DEX MARLOWE  PRIYA VANCE  CASS HOLLOWAY  EDITED BY M. KREEL  MUSIC BY THE LATE-NIGHT SESSIONS  DIRECTED BY RORY SLATTERN&quot;,
+      &quot;desc&quot;: &quot;tiny condensed all-caps billing block in pale gray, centered, standard credit-block treatment&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.16,
+      &quot;y&quot;: 0.905,
+      &quot;w&quot;: 0.68,
+      &quot;h&quot;: 0.05
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;STREAMING THIS FALL&quot;,
+      &quot;desc&quot;: &quot;small bold spaced sans-serif in cold white, centered at very bottom&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.3,
+      &quot;y&quot;: 0.96,
+      &quot;w&quot;: 0.4,
+      &quot;h&quot;: 0.025
+    }
+  ]
+}</pre>
+        </details>
+      </div>
+    </div>
+    <div class="card">
+      <img class="poster" loading="lazy" src="images/krea/0016-the-reluctant-one-vs-the-sky-worms-of-ohio.png" alt="The Reluctant One vs. The Sky Worms of Ohio">
+      <div class="meta">
+        <div class="title">The Reluctant One vs. The Sky Worms of Ohio</div>
+        <div class="badges">
+          <span class="badge">Creature Feature</span>
+          <span class="badge">x</span>
+          <span class="badge">Alien Invasion</span>
+        </div>
+        <p class="pitch">Dale Brungard, a 34-year-old assistant manager at a Dayton tire outlet, would very much like to NOT be humanity&#x27;s prophesied savior, thank you. But when a fleet of slug-shaped invaders cracks open the sky and unleashes building-sized parasitic worms that digest entire cul-de-sacs, an ancient mark glows on his forearm at the worst possible time. Armed with a haunted nail gun and a deep aversion to leaving his recliner, Dale must accept his destiny before the Sky Worms harvest the planet for its rich deposits of regret. The fate of Earth rests on a man who just wanted to finish his nachos.</p>
+        <div class="character">Starring: <b>Reluctant Chosen One</b></div>
+        <details><summary>Behind the scenes</summary>
+          <div class="bts-label">Seed pitch:</div><pre>It&#x27;s Creature Feature meets Alien Invasion... but the protagonist is a Reluctant Chosen One.</pre>
+          <div class="bts-label">Image prompt:</div><pre>{
+  &quot;high_level_description&quot;: &quot;A photoreal one-sheet of an ordinary middle-aged man in a tire-shop polo standing terrified in a suburban street as colossal glowing alien worms descend from a cracked, ship-filled sky, a faint glyph burning on his raised forearm.&quot;,
+  &quot;background&quot;: &quot;A wide cul-de-sac of identical beige Ohio houses at dusk, lawns scorched and cars overturned. Above, the sky has split into a vast purple wound disgorging segmented bio-mechanical alien worms that coil between low clouds, lit from within. A monolithic slug-shaped mothership hovers in the deep background, casting a long shadow across the suburb.&quot;,
+  &quot;art_style&quot;: &quot;shot on 35mm anamorphic, shallow depth of field, teal-and-amber cinematic grade, photorealistic, volumetric haze, fine film grain, practical lens flares&quot;,
+  &quot;aesthetics&quot;: &quot;ominous, awe-struck, blockbuster horror-scifi, suburban dread, epic scale against mundane setting&quot;,
+  &quot;lighting&quot;: &quot;eerie magenta glow pouring down from the sky wound mixed with warm sodium streetlight on the protagonist, deep shadows and rim-lit silhouettes throughout.&quot;,
+  &quot;palette&quot;: [
+    &quot;#1B1230&quot;,
+    &quot;#8A2BE2&quot;,
+    &quot;#E0762B&quot;,
+    &quot;#3FB6A8&quot;,
+    &quot;#0C0A14&quot;
+  ],
+  &quot;bg_brightness&quot;: 38,
+  &quot;elements&quot;: [
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;a 34-year-old everyman in a wrinkled navy tire-shop polo with a name patch, jeans, and worn sneakers, standing in the foreground center-low, one arm raised in alarm with a glowing turquoise glyph burning on the forearm, mouth open mid-shout, terrified yet absurdly ordinary, photoreal&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.32,
+      &quot;y&quot;: 0.46,
+      &quot;w&quot;: 0.36,
+      &quot;h&quot;: 0.46
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;a colossal segmented bio-mechanical alien sky worm descending from the upper sky, glistening wet armored plates with bioluminescent purple seams and a circular toothed maw, immense scale dwarfing the houses, photoreal CGI integrated with the photography&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.05,
+      &quot;y&quot;: 0.1,
+      &quot;w&quot;: 0.55,
+      &quot;h&quot;: 0.4
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;a second smaller alien worm coiling out of a crack in the sky on the right, lit from within, motion-blurred clouds around it, photoreal&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.62,
+      &quot;y&quot;: 0.16,
+      &quot;w&quot;: 0.33,
+      &quot;h&quot;: 0.28
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;an overturned suburban minivan in the lower-left foreground, headlights still glowing, debris and a scattered plate of nachos on the asphalt, photoreal&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.0,
+      &quot;y&quot;: 0.74,
+      &quot;w&quot;: 0.34,
+      &quot;h&quot;: 0.22
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;THE RELUCTANT ONE\nvs. THE SKY WORMS\nOF OHIO&quot;,
+      &quot;desc&quot;: &quot;massive bold condensed sans-serif title in cracked chrome with a faint turquoise inner glow, stacked across three lines, weathered metallic texture, dominating the lower third&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.06,
+      &quot;y&quot;: 0.62,
+      &quot;w&quot;: 0.88,
+      &quot;h&quot;: 0.2
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;HE NEVER ASKED TO SAVE THE WORLD. HE WAS ON HIS LUNCH BREAK.&quot;,
+      &quot;desc&quot;: &quot;small italic uppercase tagline in pale amber, letter-spaced, centered directly above the title&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.12,
+      &quot;y&quot;: 0.57,
+      &quot;w&quot;: 0.76,
+      &quot;h&quot;: 0.04
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;VANTAGE COLOSSUS PICTURES PRESENTS  A REGGIE MALARKEY FILM  \&quot;THE RELUCTANT ONE VS. THE SKY WORMS OF OHIO\&quot;  DALE TORVANGER  PRISCILLA HEMM  BUDDY OKAFOR-LANE  CASTING BY M. SQUINT  MUSIC BY THE LATE-NIGHT ORCHESTRA  DIRECTED BY REGGIE MALARKEY&quot;,
+      &quot;desc&quot;: &quot;tiny condensed all-caps billing block in pale grey, tightly tracked, centered at the very bottom&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.1,
+      &quot;y&quot;: 0.92,
+      &quot;w&quot;: 0.8,
+      &quot;h&quot;: 0.05
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;EARTH&#x27;S LAST CHANCE ARRIVES THIS SUMMER&quot;,
+      &quot;desc&quot;: &quot;small bold uppercase release line in turquoise, centered just above the billing block&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.18,
+      &quot;y&quot;: 0.87,
+      &quot;w&quot;: 0.64,
+      &quot;h&quot;: 0.03
+    }
+  ]
+}</pre>
+        </details>
+      </div>
+    </div>
+    <div class="card">
+      <img class="poster" loading="lazy" src="images/krea/0017-the-patient-will-see-you-now.png" alt="The Patient Will See You Now">
+      <div class="meta">
+        <div class="title">The Patient Will See You Now</div>
+        <div class="badges">
+          <span class="badge">Conspiracy Doc</span>
+          <span class="badge">x</span>
+          <span class="badge">Urban Fantasy</span>
+        </div>
+        <p class="pitch">Dr. Marlo Vance hasn&#x27;t slept in four days and is fairly sure his hospital doesn&#x27;t exist. When a documentary crew shows up to film &quot;the truth about St. Asphodel General,&quot; Marlo realizes his entire burned-out life is footage in someone else&#x27;s conspiracy — and the only way out is to play by the rules of the city&#x27;s hidden magic. Now he&#x27;s trading scalpels for sigils, suturing a wounded gargoyle in the ER, and dodging a goblin cabal that owns the parking garage. To survive the final reveal, he must master a genre he never auditioned for. Caffeine will not be enough.</p>
+        <div class="character">Starring: <b>Burned-Out Surgeon</b></div>
+        <details><summary>Behind the scenes</summary>
+          <div class="bts-label">Seed pitch:</div><pre>Logline: When a Burned-Out Surgeon discovers their quiet life is actually a Conspiracy Doc, they must master the genre conventions of Urban Fantasy to survive.</pre>
+          <div class="bts-label">Image prompt:</div><pre>{
+  &quot;high_level_description&quot;: &quot;A haggard surgeon in bloodstained scrubs stands in a rain-slicked city alley glowing with impossible runes, lit by the red dot of a documentary camera light, framed like a paranoid thriller one-sheet.&quot;,
+  &quot;background&quot;: &quot;A narrow downtown alley at 3am, wet asphalt mirroring neon, fire escapes climbing into fog above. Faint glowing arcane symbols are etched into brick walls and steam vents like graffiti only he can see. Deep haze gives layered depth, with a blurred hospital tower and a single circling helicopter searchlight far behind.&quot;,
+  &quot;art_style&quot;: &quot;shot on 35mm anamorphic, shallow depth of field, desaturated teal shadows with sickly magenta neon accents, photorealistic, heavy volumetric haze, fine film grain&quot;,
+  &quot;aesthetics&quot;: &quot;paranoid, occult, sleep-deprived, clinical-meets-mystical, grimy urban noir&quot;,
+  &quot;lighting&quot;: &quot;low-key practical neon and steam-lit, a hard red camera tally light raking across his exhausted face against cold blue shadows.&quot;,
+  &quot;palette&quot;: [
+    &quot;#0E1A22&quot;,
+    &quot;#16444F&quot;,
+    &quot;#C0306B&quot;,
+    &quot;#E8E2D4&quot;,
+    &quot;#7A1422&quot;
+  ],
+  &quot;bg_brightness&quot;: 32,
+  &quot;elements&quot;: [
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;a gaunt 40s male surgeon in crumpled blood-flecked teal scrubs, surgical mask pulled below chin, dark circles under bloodshot eyes, holding a glowing scalpel that drips faint blue light, staring warily off-camera, photorealistic&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.28,
+      &quot;y&quot;: 0.3,
+      &quot;w&quot;: 0.44,
+      &quot;h&quot;: 0.55
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;a small red documentary camera tally light and out-of-focus camera lens intruding from the bottom-left foreground, photoreal bokeh&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.02,
+      &quot;y&quot;: 0.74,
+      &quot;w&quot;: 0.2,
+      &quot;h&quot;: 0.16
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;glowing carved arcane sigils on wet brick wall behind the figure, faint magenta luminescence, photoreal&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.66,
+      &quot;y&quot;: 0.34,
+      &quot;w&quot;: 0.3,
+      &quot;h&quot;: 0.34
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;THE PATIENT\nWILL SEE YOU NOW&quot;,
+      &quot;desc&quot;: &quot;bold condensed sans-serif in cracked bone-white, slight chromatic glitch and surveillance-redacted bar under one word, large, lower third&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.08,
+      &quot;y&quot;: 0.7,
+      &quot;w&quot;: 0.84,
+      &quot;h&quot;: 0.16
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;HE THOUGHT HE WAS BURNED OUT. HE WAS BEING EDITED.&quot;,
+      &quot;desc&quot;: &quot;thin italic uppercase tagline in pale teal, small, single line above the title&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.12,
+      &quot;y&quot;: 0.65,
+      &quot;w&quot;: 0.76,
+      &quot;h&quot;: 0.04
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;BASED ON FOOTAGE THAT SHOULDN&#x27;T EXIST&quot;,
+      &quot;desc&quot;: &quot;tiny distressed typewriter-style caption near top, glowing red, like a leaked-tape stamp&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.2,
+      &quot;y&quot;: 0.07,
+      &quot;w&quot;: 0.6,
+      &quot;h&quot;: 0.04
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;HOLLOWREEL PICTURES PRESENTS  A SEBASTIAN KORR FILM  \&quot;THE PATIENT WILL SEE YOU NOW\&quot;  DALE FENWICK  MARISOL QUAYE  THEO ABERNATHY-WU  CASTING BY R. PELLINGTON  MUSIC BY IVO STRAND  DIRECTED BY SEBASTIAN KORR&quot;,
+      &quot;desc&quot;: &quot;condensed all-caps billing block, tight tracking, pale grey, centered, very small&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.12,
+      &quot;y&quot;: 0.9,
+      &quot;w&quot;: 0.76,
+      &quot;h&quot;: 0.05
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;IN THEATERS OCTOBER&quot;,
+      &quot;desc&quot;: &quot;small bold uppercase release line in white, centered just below title&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.3,
+      &quot;y&quot;: 0.86,
+      &quot;w&quot;: 0.4,
+      &quot;h&quot;: 0.03
+    }
+  ]
+}</pre>
+        </details>
+      </div>
+    </div>
+    <div class="card">
+      <img class="poster" loading="lazy" src="images/krea/0018-the-encore-that-never-ended.png" alt="The Encore That Never Ended">
+      <div class="meta">
+        <div class="title">The Encore That Never Ended</div>
+        <div class="badges">
+          <span class="badge">Cold Case</span>
+          <span class="badge">x</span>
+          <span class="badge">Psychological Horror</span>
+        </div>
+        <p class="pitch">Burnout glam-rocker Desmond &quot;Dez&quot; Vail wakes every morning to the same drizzly cottage, the same lukewarm tea, the same adoring fan at the gate — until he notices the fan never blinks and the calendar hasn&#x27;t moved in eleven years. As Dez digs through his own forgotten case file, he learns the quiet retirement he &quot;chose&quot; may be a crime scene he&#x27;s been looped inside since the night his band vanished. The walls breathe in 4/4 time, his platinum records whisper setlists, and the only detective on the case is the version of himself he tried hardest to forget. To survive, Dez must solve who silenced the music — before the song that&#x27;s playing turns out to be his own.</p>
+        <div class="character">Starring: <b>Washed-Up Rock Star</b></div>
+        <details><summary>Behind the scenes</summary>
+          <div class="bts-label">Seed pitch:</div><pre>Logline: When a Washed-Up Rock Star discovers their quiet life is actually a Cold Case, they must master the genre conventions of Psychological Horror to survive.</pre>
+          <div class="bts-label">Image prompt:</div><pre>{
+  &quot;high_level_description&quot;: &quot;A haunted, gaunt former rock star stands in a decaying cottage hallway clutching a cracked guitar as a faceless &#x27;fan&#x27; watches from a doorway, rendered as a photoreal psychological-horror one-sheet.&quot;,
+  &quot;background&quot;: &quot;A narrow, water-stained Victorian cottage hallway receding into shadow, peeling floral wallpaper curling like dead skin. Framed platinum records line the walls, their faces fogged and unreadable. Cold grey daylight bleeds through a distant window while the far end of the corridor dissolves into impenetrable black, suggesting depth that shouldn&#x27;t exist.&quot;,
+  &quot;art_style&quot;: &quot;shot on 35mm anamorphic, shallow depth of field, desaturated cold grade with sickly green undertones, photorealistic, fine film grain, volumetric haze&quot;,
+  &quot;aesthetics&quot;: &quot;dread, melancholy, faded rock-star glamour, decay, uncanny stillness&quot;,
+  &quot;lighting&quot;: &quot;low-key naturalist daylight from a single side window carving harsh shadows across the figure while the corridor behind sinks into murk.&quot;,
+  &quot;palette&quot;: [
+    &quot;#1B1E1C&quot;,
+    &quot;#4A5A4E&quot;,
+    &quot;#8C8478&quot;,
+    &quot;#C9B07A&quot;,
+    &quot;#2A0E12&quot;
+  ],
+  &quot;bg_brightness&quot;: 32,
+  &quot;elements&quot;: [
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A haggard 50-something former rock star, gaunt cheeks, smudged guyliner, greying long hair, wearing a faded vintage tour jacket over a bare chest, gripping a cracked sunburst electric guitar by the neck like a weapon, eyes wide with dawning horror, photoreal&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.28,
+      &quot;y&quot;: 0.3,
+      &quot;w&quot;: 0.46,
+      &quot;h&quot;: 0.55
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A motionless &#x27;fan&#x27; figure half-lit in a distant doorway, smiling too widely with smooth featureless eyes, holding a vinyl record, blurred by shallow focus, deeply unsettling, photoreal&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.06,
+      &quot;y&quot;: 0.4,
+      &quot;w&quot;: 0.18,
+      &quot;h&quot;: 0.3
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A wall-mounted framed platinum record with fogged, blank silver surface and cracked glass, hung slightly crooked, photoreal&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.7,
+      &quot;y&quot;: 0.34,
+      &quot;w&quot;: 0.2,
+      &quot;h&quot;: 0.18
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;THE ENCORE\nTHAT NEVER ENDED&quot;,
+      &quot;desc&quot;: &quot;large distressed condensed serif title in tarnished silver with chipped paint texture, stacked two lines, faint reverb-like ghost duplication, centered&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.08,
+      &quot;y&quot;: 0.06,
+      &quot;w&quot;: 0.84,
+      &quot;h&quot;: 0.2
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;the show is over. nobody told the audience.&quot;,
+      &quot;desc&quot;: &quot;small italic lowercase tagline in pale grey, letter-spaced, just beneath the title&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.16,
+      &quot;y&quot;: 0.27,
+      &quot;w&quot;: 0.68,
+      &quot;h&quot;: 0.04
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;HOLLOWLIGHT PICTURES PRESENTS  A BARNABY VOSS FILM  \&quot;THE ENCORE THAT NEVER ENDED\&quot;  REED CALLOWAY  MIRA OKONKWO  SILAS DREW  CASTING BY P. HALVERSEN  MUSIC BY THE LATE ORCHESTRA  DIRECTED BY BARNABY VOSS&quot;,
+      &quot;desc&quot;: &quot;tiny condensed all-caps billing block in faded silver, tightly tracked, centered, standard credit-line typography&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.12,
+      &quot;y&quot;: 0.9,
+      &quot;w&quot;: 0.76,
+      &quot;h&quot;: 0.05
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;PLAYING FOREVER THIS WINTER&quot;,
+      &quot;desc&quot;: &quot;small spaced all-caps release line in tarnished gold above the billing block, centered&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.22,
+      &quot;y&quot;: 0.86,
+      &quot;w&quot;: 0.56,
+      &quot;h&quot;: 0.03
+    }
+  ]
+}</pre>
+        </details>
+      </div>
+    </div>
+    <div class="card">
+      <img class="poster" loading="lazy" src="images/krea/0019-sing-me-back-my-bones.png" alt="Sing Me Back My Bones">
+      <div class="meta">
+        <div class="title">Sing Me Back My Bones</div>
+        <div class="badges">
+          <span class="badge">Weird West</span>
+          <span class="badge">x</span>
+          <span class="badge">Indie Folk Musical</span>
+        </div>
+        <p class="pitch">Wandering folk singer Della Marrow rolls into the cursed mining town of Hollow Verse with a guitar made from her dead lover&#x27;s ribs and a voice that makes the buried sit up and listen. Trouble is, every ballad she performs drags one more soul out of the earth — and they all remember exactly how she sold them out. As the saloon fills with dusty, lovesick revenants slow-dancing toward her, Della must write the one true song that ends the haunting before her encore becomes her funeral. Dread, harmonies, and a deeply ill-advised duet with a corpse.</p>
+        <div class="character">Starring: <b>Folk Musician</b></div>
+        <details><summary>Behind the scenes</summary>
+          <div class="bts-label">Seed pitch:</div><pre>Pitch: Weird West x Indie Folk Musical. Tone: dread, but make it horny. Lead: a Folk Musician.</pre>
+          <div class="bts-label">Image prompt:</div><pre>{
+  &quot;high_level_description&quot;: &quot;A weathered folk singer stands in a moonlit ghost-town saloon doorway clutching a bone-inlaid guitar while pale revenants rise from the dust behind her, shot like a prestige horror-western one-sheet.&quot;,
+  &quot;background&quot;: &quot;A derelict frontier saloon interior bleeding out into a moonlit dust-blown main street, warped floorboards and overturned chairs in the foreground. Faint silhouettes of gaunt townsfolk emerge from drifting dust and lantern smoke in the mid-ground. The far background shows a jagged desert ridge and a swollen blood-orange moon low on the horizon.&quot;,
+  &quot;art_style&quot;: &quot;shot on 35mm anamorphic, shallow depth of field, fine film grain, desaturated amber-and-bone color grade, photorealistic, volumetric dust haze, naturalistic skin texture&quot;,
+  &quot;aesthetics&quot;: &quot;gothic western, dread, sultry melancholy, candlelit decay, folk-horror sensuality&quot;,
+  &quot;lighting&quot;: &quot;low warm lantern light raking across the singer&#x27;s face from below while cold blue moonlight silhouettes the rising dead behind her.&quot;,
+  &quot;palette&quot;: [
+    &quot;#1c1308&quot;,
+    &quot;#6b3d1a&quot;,
+    &quot;#c9892f&quot;,
+    &quot;#e8d6a8&quot;,
+    &quot;#3a4a5c&quot;
+  ],
+  &quot;bg_brightness&quot;: 38,
+  &quot;elements&quot;: [
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;a striking weathered woman in her thirties, dust-streaked face, long dark trail coat over a worn lace dress, cradling a guitar inlaid with pale carved bone and ribcage motifs, standing in a saloon doorway, head tilted as she sings, lit from below by lantern glow, photorealistic&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.27,
+      &quot;y&quot;: 0.3,
+      &quot;w&quot;: 0.46,
+      &quot;h&quot;: 0.52
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;two gaunt pale revenants in tattered 1880s miners&#x27; clothes rising from drifting dust in the dim background, hollow longing eyes fixed forward, lit cold blue, soft focus, photoreal&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.04,
+      &quot;y&quot;: 0.4,
+      &quot;w&quot;: 0.24,
+      &quot;h&quot;: 0.4
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;a single guttering brass oil lantern hanging at frame edge casting warm flickering light, photoreal&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.74,
+      &quot;y&quot;: 0.34,
+      &quot;w&quot;: 0.18,
+      &quot;h&quot;: 0.22
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;SING ME BACK\nMY BONES&quot;,
+      &quot;desc&quot;: &quot;large distressed letterpress serif title in bone-white with cracked weathered texture, slight warm glow, stacked two lines, occupying lower third, cinematic kerning&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.08,
+      &quot;y&quot;: 0.7,
+      &quot;w&quot;: 0.84,
+      &quot;h&quot;: 0.16
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;every song she sings, the dead remember&quot;,
+      &quot;desc&quot;: &quot;small italic serif tagline in dusty amber, centered, just above the title&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.14,
+      &quot;y&quot;: 0.655,
+      &quot;w&quot;: 0.72,
+      &quot;h&quot;: 0.04
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;HOLLOW VERSE PICTURES PRESENTS  A MARLA QUILL FILM  \&quot;SING ME BACK MY BONES\&quot;  DELPHINE RHODE  AUGUST CRANE  SILAS BOWMAN  MUSIC BY THE WIDOW STRINGS  DIRECTED BY MARLA QUILL&quot;,
+      &quot;desc&quot;: &quot;tiny condensed all-caps billing block in pale gray, centered, standard credit-block spacing&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.16,
+      &quot;y&quot;: 0.9,
+      &quot;w&quot;: 0.68,
+      &quot;h&quot;: 0.05
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;IN THEATERS THIS FALL&quot;,
+      &quot;desc&quot;: &quot;small spaced all-caps bone-white release line, centered&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.3,
+      &quot;y&quot;: 0.865,
+      &quot;w&quot;: 0.4,
+      &quot;h&quot;: 0.025
+    }
+  ]
+}</pre>
+        </details>
+      </div>
+    </div>
+    <div class="card">
+      <img class="poster" loading="lazy" src="images/krea/0020-the-last-recluse-of-dust-holler.png" alt="The Last Recluse of Dust Holler">
+      <div class="meta">
+        <div class="title">The Last Recluse of Dust Holler</div>
+        <div class="badges">
+          <span class="badge">Farce</span>
+          <span class="badge">x</span>
+          <span class="badge">Revisionist Western</span>
+        </div>
+        <p class="pitch">Bartholomew Quill, an agoraphobic literary genius who hasn&#x27;t left his porch in eleven years, accidentally signs a saloon lease instead of a book contract. Now the whole crooked town of Dust Holler believes the trembling, ink-stained hermit is the legendary gunslinger &quot;The Quiet Pen.&quot; As rival outlaws, a corrupt mayor, and his own overdue editor descend at high noon, Bartholomew must talk, stammer, and faint his way through a showdown using nothing but footnotes and a loaded thesaurus. It&#x27;s a meditation on violence — narrated by a man who desperately wants to go back inside.</p>
+        <div class="character">Starring: <b>Reclusive Author</b></div>
+        <details><summary>Behind the scenes</summary>
+          <div class="bts-label">Seed pitch:</div><pre>Picture a Farce setting, but everyone behaves like they&#x27;re in a Revisionist Western. Our reluctant hero: a Reclusive Author.</pre>
+          <div class="bts-label">Image prompt:</div><pre>{
+  &quot;high_level_description&quot;: &quot;A photoreal Western one-sheet of a nervous, cardigan-wearing author clutching a typewriter like a six-shooter in a dusty main street showdown at golden hour.&quot;,
+  &quot;background&quot;: &quot;A wide, sun-bleached frontier main street at dusty golden hour, weathered timber storefronts and a sagging saloon facade receding into a heat-hazed vanishing point. Tumbleweed and floating dust catch low backlight; distant mesa silhouettes sit under an enormous bruised-orange sky. Deep shallow-focus perspective draws the eye to the lone figure standing center-street.&quot;,
+  &quot;art_style&quot;: &quot;shot on 35mm anamorphic, shallow depth of field, teal-orange revisionist-western grade, fine film grain, volumetric dust haze, photorealistic&quot;,
+  &quot;aesthetics&quot;: &quot;gritty, ironic, sun-scorched, deadpan, epic-yet-pathetic&quot;,
+  &quot;lighting&quot;: &quot;low raking golden-hour sun from screen-left casting a long dramatic shadow while warm rim light haloes the trembling hero against cool shadowed storefronts.&quot;,
+  &quot;palette&quot;: [
+    &quot;#C9772F&quot;,
+    &quot;#E8C48A&quot;,
+    &quot;#3B4A52&quot;,
+    &quot;#1E140C&quot;,
+    &quot;#F2E6C8&quot;
+  ],
+  &quot;bg_brightness&quot;: 58,
+  &quot;elements&quot;: [
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A skinny, anxious middle-aged author in a dust-covered tweed cardigan, ink-stained fingers, round spectacles and wild hair, standing in a wide-legged gunslinger stance in the middle of the street but visibly cringing, holding a heavy black antique typewriter at hip level like a drawn weapon, knuckles white, photorealistic&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.3,
+      &quot;y&quot;: 0.34,
+      &quot;w&quot;: 0.4,
+      &quot;h&quot;: 0.5
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A weathered wooden saloon swinging-door and hitching post to the left, sun-blasted paint peeling, a single quill pen stuck upright in the dirt like a planted blade, photoreal detail&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.02,
+      &quot;y&quot;: 0.5,
+      &quot;w&quot;: 0.22,
+      &quot;h&quot;: 0.34
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A scattering of crumpled manuscript pages tumbling across the dusty street like tumbleweed, ink smudged, caught in golden backlight, photorealistic&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.66,
+      &quot;y&quot;: 0.62,
+      &quot;w&quot;: 0.3,
+      &quot;h&quot;: 0.2
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;THE LAST RECLUSE\nOF DUST HOLLER&quot;,
+      &quot;desc&quot;: &quot;Large weathered Western slab-serif title, cracked gold-and-bone lettering with sun-bleached texture, stacked two lines, centered, dramatic&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.08,
+      &quot;y&quot;: 0.06,
+      &quot;w&quot;: 0.84,
+      &quot;h&quot;: 0.2
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;He never wanted a fight. He just wanted to finish chapter nine.&quot;,
+      &quot;desc&quot;: &quot;Small italic dusty-cream tagline serif, single line, subtle drop shadow&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.14,
+      &quot;y&quot;: 0.27,
+      &quot;w&quot;: 0.72,
+      &quot;h&quot;: 0.05
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;MERIDIAN GULCH PICTURES PRESENTS  A SILAS REDFORD-MOORE FILM  \&quot;THE LAST RECLUSE OF DUST HOLLER\&quot;  CORMAC ABERNATHY  DELLA WAINWRIGHT  THEO BUCKMINSTER  CASTING JUNO PELL  MUSIC BY HORACE TANNER  WRITTEN AND DIRECTED BY SILAS REDFORD-MOORE&quot;,
+      &quot;desc&quot;: &quot;Tiny condensed sans-serif billing block, pale bone color, centered, tightly tracked credits&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.12,
+      &quot;y&quot;: 0.9,
+      &quot;w&quot;: 0.76,
+      &quot;h&quot;: 0.05
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;DRAWN THIS AUTUMN&quot;,
+      &quot;desc&quot;: &quot;Small bold uppercase release line in dusty gold, letter-spaced, centered above billing&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.3,
+      &quot;y&quot;: 0.86,
+      &quot;w&quot;: 0.4,
+      &quot;h&quot;: 0.03
+    }
+  ]
+}</pre>
+        </details>
+      </div>
+    </div>
+    <div class="card">
+      <img class="poster" loading="lazy" src="images/krea/0021-quorum-a-close-encounter.png" alt="Quorum: A Close Encounter">
+      <div class="meta">
+        <div class="title">Quorum: A Close Encounter</div>
+        <div class="badges">
+          <span class="badge">Crime Drama</span>
+          <span class="badge">x</span>
+          <span class="badge">First Contact</span>
+        </div>
+        <p class="pitch">Three days before a knife-edge election, junior Senator Delia Vance trades a vote for a body bag&#x27;s worth of silence — then a velvet-skinned envoy named ORRO descends from a craft above the Capitol dome, having read every wiretap, every bribe, every 2 a.m. text. ORRO doesn&#x27;t want to expose her. ORRO wants to negotiate, and its idea of diplomacy is alarmingly intimate. As bodies and pheromones pile up, Delia must decide whether first contact is a coverup, a courtship, or a hostile takeover of the human heart. Dread has never been this turned on.</p>
+        <div class="character">Starring: <b>Ambitious Politician</b></div>
+        <details><summary>Behind the scenes</summary>
+          <div class="bts-label">Seed pitch:</div><pre>Pitch: Crime Drama x First Contact. Tone: dread, but make it horny. Lead: a Ambitious Politician.</pre>
+          <div class="bts-label">Image prompt:</div><pre>{
+  &quot;high_level_description&quot;: &quot;A poised politician in a tailored suit stands on the floodlit Capitol steps at night while a glowing alien silhouette and a hovering craft loom behind her, photoreal and cinematic.&quot;,
+  &quot;background&quot;: &quot;The marble steps of a grand domed capitol building at night, slick with rain and reflecting cold light. Above and behind the dome hovers an enormous smooth obsidian craft emitting a single shaft of warm amber light down onto the plaza. Distant city lights and press-pool flashbulbs sparkle in deep haze, giving immense depth and a sense of dread-soaked spectacle.&quot;,
+  &quot;art_style&quot;: &quot;shot on 35mm anamorphic, shallow depth of field, teal-and-amber cinematic grade, photorealistic, volumetric haze, subtle film grain&quot;,
+  &quot;aesthetics&quot;: &quot;ominous, sensual, political thriller, sleek extraterrestrial, glossy noir&quot;,
+  &quot;lighting&quot;: &quot;cold blue key light on the politician contrasted with a seductive warm amber beam descending from the alien craft, hard rim light separating subjects from the dark sky&quot;,
+  &quot;palette&quot;: [
+    &quot;#0B1B2B&quot;,
+    &quot;#16384F&quot;,
+    &quot;#E8A04B&quot;,
+    &quot;#C9D6DF&quot;,
+    &quot;#2A0F12&quot;
+  ],
+  &quot;bg_brightness&quot;: 38,
+  &quot;elements&quot;: [
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;a striking 40-year-old woman, Senator-elegant, in a sharply tailored charcoal pantsuit with a small flag pin, hair pulled back, standing confident but tense at three-quarter turn, lit by cold blue light, rain beading on her shoulders, glancing back over her shoulder&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.3,
+      &quot;y&quot;: 0.34,
+      &quot;w&quot;: 0.42,
+      &quot;h&quot;: 0.52
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;a tall slender humanoid alien silhouette with smooth iridescent violet skin and faintly glowing seams along its body, standing in the amber beam several steps above her, elegant and unsettling, partially obscured by haze&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.58,
+      &quot;y&quot;: 0.26,
+      &quot;w&quot;: 0.3,
+      &quot;h&quot;: 0.5
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;a thick stack of leaked manila dossiers and a single dropped voice recorder lying on the wet marble steps in the foreground, glistening&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.1,
+      &quot;y&quot;: 0.74,
+      &quot;w&quot;: 0.26,
+      &quot;h&quot;: 0.14
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;QUORUM&quot;,
+      &quot;desc&quot;: &quot;massive bold condensed sans-serif title in brushed-chrome silver with a thin amber glow edge, centered, dominating the lower third&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.1,
+      &quot;y&quot;: 0.78,
+      &quot;w&quot;: 0.8,
+      &quot;h&quot;: 0.12
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;A CLOSE ENCOUNTER&quot;,
+      &quot;desc&quot;: &quot;thin widely-tracked uppercase serif subtitle in pale steel-blue directly beneath the main title&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.22,
+      &quot;y&quot;: 0.9,
+      &quot;w&quot;: 0.56,
+      &quot;h&quot;: 0.035
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;SHE TRADED A VOTE. IT WANTS HER SOUL — AND HER NUMBER.&quot;,
+      &quot;desc&quot;: &quot;small italic uppercase tagline in warm amber, single line, set just above the title&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.14,
+      &quot;y&quot;: 0.72,
+      &quot;w&quot;: 0.72,
+      &quot;h&quot;: 0.03
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;HOLLOWMARK PICTURES PRESENTS  A VESPER LANDRY FILM  \&quot;QUORUM: A CLOSE ENCOUNTER\&quot;  MARISOL ADAIR  THEO BRANNIGAN  ELIAS VOSS  CASTING BY R. NAKAMURA  MUSIC BY J. PELLEGRINO  DIRECTED BY VESPER LANDRY&quot;,
+      &quot;desc&quot;: &quot;tiny condensed all-caps billing block in pale gray, justified center, classic credit-line spacing&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.14,
+      &quot;y&quot;: 0.945,
+      &quot;w&quot;: 0.72,
+      &quot;h&quot;: 0.04
+    }
+  ]
+}</pre>
+        </details>
+      </div>
+    </div>
+    <div class="card">
+      <img class="poster" loading="lazy" src="images/krea/0022-the-salesman-of-fates.png" alt="The Salesman of Fates">
+      <div class="meta">
+        <div class="title">The Salesman of Fates</div>
+        <div class="badges">
+          <span class="badge">Mythic Retelling</span>
+          <span class="badge">x</span>
+          <span class="badge">Hardboiled Detective</span>
+        </div>
+        <p class="pitch">Gus Mallory peddles enchanted vacuum cleaners door-to-door across a rain-drowned city where the gods owe back rent and the Oracle works the night shift at a diner. When the Goddess of Memory hires him to find her stolen final prophecy, Gus follows a trail of broken sirens, double-crossing minotaurs, and one very chatty river of the dead. He&#x27;s got a busted lighter, a sample case full of myth, and a hunch the gods are running a long con. Trouble is, in this town, even destiny comes with a thirty-day warranty.</p>
+        <div class="character">Starring: <b>Traveling Salesman</b></div>
+        <details><summary>Behind the scenes</summary>
+          <div class="bts-label">Seed pitch:</div><pre>Cold open: a Traveling Salesman, alone, in the rain. The genre? Mythic Retelling. The vibe? Unmistakably Hardboiled Detective. Cue title card.</pre>
+          <div class="bts-label">Image prompt:</div><pre>{
+  &quot;high_level_description&quot;: &quot;A trench-coated traveling salesman stands under a flickering neon sign in a rain-soaked mythic city street, clutching a battered sample case while a colossal marble god&#x27;s hand looms in the fog behind him.&quot;,
+  &quot;background&quot;: &quot;A narrow, slick-with-rain city alley at night, cobblestones reflecting smeared neon, classical Greek columns fused with grimy art-deco tenements rising into fog. Deep in the haze a vast cracked marble statue of a god leans down out of the mist, one enormous hand reaching toward the street. Steam curls from a sewer grate and distant traffic light bleeds red and gold across the wet pavement.&quot;,
+  &quot;art_style&quot;: &quot;shot on 35mm anamorphic, shallow depth of field, heavy film grain, noir teal-and-amber grade, volumetric rain and haze, photorealistic, cinematic&quot;,
+  &quot;aesthetics&quot;: &quot;rain-soaked, smoky, melancholic, mythic noir, shadow-heavy, hardboiled&quot;,
+  &quot;lighting&quot;: &quot;low-key chiaroscuro lighting from a single buzzing neon sign and a hard backlit fog beam, rim-lighting the rain and carving deep shadows across the salesman&#x27;s face.&quot;,
+  &quot;palette&quot;: [
+    &quot;#0e1418&quot;,
+    &quot;#1c3640&quot;,
+    &quot;#caa24a&quot;,
+    &quot;#7d1f1c&quot;,
+    &quot;#d7d2c4&quot;
+  ],
+  &quot;bg_brightness&quot;: 32,
+  &quot;elements&quot;: [
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A weary middle-aged traveling salesman in a soaked, rumpled trench coat and loosened tie, fedora dripping rain, five o&#x27;clock shadow, cigarette dangling, gripping a worn leather sample case that glows faintly gold at its seams, standing center frame lit hard from the side&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.3,
+      &quot;y&quot;: 0.34,
+      &quot;w&quot;: 0.42,
+      &quot;h&quot;: 0.52
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A colossal cracked marble god&#x27;s hand and forearm emerging from background fog, weathered and mossy, reaching down toward the street, slightly out of focus&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.55,
+      &quot;y&quot;: 0.18,
+      &quot;w&quot;: 0.42,
+      &quot;h&quot;: 0.4
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A flickering vintage neon sign reading &#x27;ORACLE DINER&#x27; in cursive, half its letters dead, casting a wet red-gold glow on the pavement, mounted on the alley wall&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.04,
+      &quot;y&quot;: 0.22,
+      &quot;w&quot;: 0.26,
+      &quot;h&quot;: 0.16
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;THE SALESMAN\nOF FATES&quot;,
+      &quot;desc&quot;: &quot;Large bold condensed serif title in tarnished gold with subtle wet sheen and slight noir shadow, stacked two lines, weathered metallic texture, lower third of poster&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.08,
+      &quot;y&quot;: 0.7,
+      &quot;w&quot;: 0.84,
+      &quot;h&quot;: 0.16
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;Every prophecy comes with a thirty-day warranty.&quot;,
+      &quot;desc&quot;: &quot;Small italic condensed serif tagline in pale cream, single line, letter-spaced, placed just above the title&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.14,
+      &quot;y&quot;: 0.65,
+      &quot;w&quot;: 0.72,
+      &quot;h&quot;: 0.04
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;VESPER PICTURES PRESENTS  A RAIN &amp; MARBLE PRODUCTION  \&quot;THE SALESMAN OF FATES\&quot;  HALLORAN VOSS  IMMA DELACROIX  THEO BRANNICK  CASTING BY M. PELLER  MUSIC BY A. KORVASH  DIRECTED BY SILAS RENNICK&quot;,
+      &quot;desc&quot;: &quot;Tiny condensed all-caps billing block in muted grey-cream, tightly tracked, centered, classic credits styling&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.12,
+      &quot;y&quot;: 0.92,
+      &quot;w&quot;: 0.76,
+      &quot;h&quot;: 0.05
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;IN THEATERS THIS FALL&quot;,
+      &quot;desc&quot;: &quot;Small spaced all-caps gold sans-serif release line, centered above billing block&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.3,
+      &quot;y&quot;: 0.88,
+      &quot;w&quot;: 0.4,
+      &quot;h&quot;: 0.03
+    }
+  ]
+}</pre>
+        </details>
+      </div>
+    </div>
+    <div class="card">
+      <img class="poster" loading="lazy" src="images/krea/0023-death-by-cold-call.png" alt="Death by Cold Call">
+      <div class="meta">
+        <div class="title">Death by Cold Call</div>
+        <div class="badges">
+          <span class="badge">Conspiracy Thriller</span>
+          <span class="badge">x</span>
+          <span class="badge">Martial Arts</span>
+        </div>
+        <p class="pitch">Gary Pelmeni sells laminating machines door-to-door, weeps into a salisbury-steak microwave dinner nightly, and accidentally photographs a senator burying a body while pitching to the wrong cul-de-sac. As shadowy &quot;regional managers&quot; erase everyone on his route, Gary discovers his late mentor secretly trained him in an ancient close-the-deal combat style: Aggressive Handshake Kung Fu. Now armed with a briefcase, a stapler, and devastating eye contact, he must karate-chop his way up a conspiracy that goes all the way to corporate. The territory has never been more hostile.</p>
+        <div class="character">Starring: <b>Traveling Salesman</b></div>
+        <details><summary>Behind the scenes</summary>
+          <div class="bts-label">Seed pitch:</div><pre>Three-act structure: Conspiracy Thriller in act one, Martial Arts by act three, and a Traveling Salesman sobbing into a microwave dinner the whole time.</pre>
+          <div class="bts-label">Image prompt:</div><pre>{
+  &quot;high_level_description&quot;: &quot;A sweaty middle-aged salesman in a rumpled gray suit drops into a fighting stance with an open briefcase, papers exploding around him in a fog-lit suburban cul-de-sac at dusk.&quot;,
+  &quot;background&quot;: &quot;A bleak American suburban cul-de-sac at blue-hour dusk, identical beige houses curving away into mist, a single flickering streetlight throwing wet sheen onto the asphalt. Deep behind, a black government SUV idles with headlights cutting through low fog. Telephone wires crisscross an overcast violet sky, lending paranoid surveillance-thriller depth.&quot;,
+  &quot;art_style&quot;: &quot;shot on 35mm anamorphic, shallow depth of field, teal-and-amber cinematic grade, photorealistic, volumetric haze, subtle film grain&quot;,
+  &quot;aesthetics&quot;: &quot;paranoid conspiracy thriller, gritty martial-arts energy, melancholic suburban dread, deadpan absurd&quot;,
+  &quot;lighting&quot;: &quot;moody low-key key light raking across the salesman&#x27;s face with a cold cyan rim from the SUV headlights and a warm sodium streetlamp glow behind him.&quot;,
+  &quot;palette&quot;: [
+    &quot;#1B2B33&quot;,
+    &quot;#D98E2B&quot;,
+    &quot;#3F5A66&quot;,
+    &quot;#E8E2D0&quot;,
+    &quot;#0C1418&quot;
+  ],
+  &quot;bg_brightness&quot;: 38,
+  &quot;elements&quot;: [
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A tired 50-year-old salesman with a receding hairline, loosened tie and rumpled gray off-the-rack suit, sweat on his brow, dropping into a tense kung-fu stance, one hand flat in a karate chop, the other clutching the handle of an open brown leather briefcase, jaw clenched with desperate determination, photoreal full body&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.26,
+      &quot;y&quot;: 0.3,
+      &quot;w&quot;: 0.48,
+      &quot;h&quot;: 0.55
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;Loose white sales contracts and product brochures frozen mid-air swirling around the man, motion-blurred, catching the streetlight glow, photoreal&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.12,
+      &quot;y&quot;: 0.34,
+      &quot;w&quot;: 0.76,
+      &quot;h&quot;: 0.4
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A steaming microwave salisbury-steak TV dinner tray sitting incongruously on the wet asphalt in the lower foreground, plastic film peeled back, faint wisp of steam, shallow focus, photoreal&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.06,
+      &quot;y&quot;: 0.8,
+      &quot;w&quot;: 0.24,
+      &quot;h&quot;: 0.14
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A black government SUV idling in deep background fog, headlights flaring, two silhouetted men in suits beside it, slightly out of focus, photoreal&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.62,
+      &quot;y&quot;: 0.58,
+      &quot;w&quot;: 0.32,
+      &quot;h&quot;: 0.18
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;DEATH BY\nCOLD CALL&quot;,
+      &quot;desc&quot;: &quot;Massive bold condensed sans-serif title in distressed metallic silver with subtle cyan edge glow, slight grime texture, stacked two lines, dominating the lower third&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.08,
+      &quot;y&quot;: 0.66,
+      &quot;w&quot;: 0.84,
+      &quot;h&quot;: 0.16
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;He always closes. Permanently.&quot;,
+      &quot;desc&quot;: &quot;Small italic amber serif tagline, letter-spaced, sitting just above the title&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.18,
+      &quot;y&quot;: 0.61,
+      &quot;w&quot;: 0.64,
+      &quot;h&quot;: 0.04
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;MERIDIAN VAULT PICTURES PRESENTS  A LELAND OKONKWO FILM  \&quot;DEATH BY COLD CALL\&quot;  ROD VANTRESS  MAYA DELACROIX  HARLAN BOOTHE  CASTING BY P. SUNDQVIST  MUSIC BY THEO RAMOS  DIRECTED BY LELAND OKONKWO&quot;,
+      &quot;desc&quot;: &quot;Tiny condensed all-caps credit billing block in pale gray, centered, standard one-sheet typography&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.14,
+      &quot;y&quot;: 0.92,
+      &quot;w&quot;: 0.72,
+      &quot;h&quot;: 0.05
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;IN THEATERS THIS FALL&quot;,
+      &quot;desc&quot;: &quot;Small bold all-caps off-white release line, letter-spaced, centered&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.3,
+      &quot;y&quot;: 0.88,
+      &quot;w&quot;: 0.4,
+      &quot;h&quot;: 0.03
+    }
+  ]
+}</pre>
+        </details>
+      </div>
+    </div>
+    <div class="card">
+      <img class="poster" loading="lazy" src="images/krea/0024-the-honest-mistake.png" alt="The Honest Mistake">
+      <div class="meta">
+        <div class="title">The Honest Mistake</div>
+        <div class="badges">
+          <span class="badge">Hardboiled Detective</span>
+          <span class="badge">x</span>
+          <span class="badge">Satire</span>
+        </div>
+        <p class="pitch">Vinnie &quot;The Calculator&quot; Pugliese is the mob&#x27;s most reliable enforcer until he accidentally breaks the wrong kneecap and stumbles into a citywide conspiracy. To crack it, he must master the only weapon he&#x27;s never used: irony. Partnered with a chain-smoking PI who narrates his own life in voiceover and a city council that holds press conferences about its own corruption, Vinnie learns the awful truth — in this town, the only crime that gets punished is sincerity. A noir comedy where the real racket is everyone pretending not to run one.</p>
+        <div class="character">Starring: <b>Mob Enforcer</b></div>
+        <details><summary>Behind the scenes</summary>
+          <div class="bts-label">Seed pitch:</div><pre>A Mob Enforcer stumbles into a Hardboiled Detective conspiracy that can only be solved using the rules of Satire.</pre>
+          <div class="bts-label">Image prompt:</div><pre>{
+  &quot;high_level_description&quot;: &quot;A heavy-set mob enforcer in a rumpled suit stands under a flickering streetlamp clutching a manila folder, looking baffled, while a satirical neon city smirks behind him.&quot;,
+  &quot;background&quot;: &quot;A rain-slicked downtown alley at 2 a.m., wet asphalt mirroring greasy neon signs that read things like &#x27;CITY HALL — NOW 40% HONEST&#x27;. Deep one-point perspective down the street toward a hazy skyline of cynical skyscrapers. Steam curls from a manhole and a tipped-over campaign poster floats in a gutter puddle.&quot;,
+  &quot;art_style&quot;: &quot;shot on 35mm anamorphic, shallow depth of field, classic film-noir grade with neon spill, photorealistic, volumetric haze, subtle film grain&quot;,
+  &quot;aesthetics&quot;: &quot;hardboiled noir, deadpan satire, smoky, ironic, glossy theatrical one-sheet&quot;,
+  &quot;lighting&quot;: &quot;hard single streetlamp key from above-left throwing long shadows, cyan and magenta neon rim light, deep crushed blacks&quot;,
+  &quot;palette&quot;: [
+    &quot;#0c1418&quot;,
+    &quot;#e7c14c&quot;,
+    &quot;#9b1d2b&quot;,
+    &quot;#1f6f7a&quot;,
+    &quot;#d8d2c4&quot;
+  ],
+  &quot;bg_brightness&quot;: 32,
+  &quot;elements&quot;: [
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;a burly middle-aged Italian-American mob enforcer in a too-tight pinstripe suit and loosened skinny tie, brass knuckles in one fist, the other hand clutching a bulging manila evidence folder, brow furrowed in genuine confusion, faint rain on his shoulders, photoreal&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.28,
+      &quot;y&quot;: 0.3,
+      &quot;w&quot;: 0.46,
+      &quot;h&quot;: 0.55
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;a glowing red-and-blue neon sign mounted on the brick wall reading &#x27;CITY HALL NOW 40% HONEST&#x27; with one letter flickering, reflected in wet pavement, photoreal&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.04,
+      &quot;y&quot;: 0.16,
+      &quot;w&quot;: 0.34,
+      &quot;h&quot;: 0.12
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;a smoldering cigarette resting on the wet asphalt foreground with a thin curl of smoke catching the light, shallow focus, photoreal&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.66,
+      &quot;y&quot;: 0.8,
+      &quot;w&quot;: 0.2,
+      &quot;h&quot;: 0.1
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;THE HONEST\nMISTAKE&quot;,
+      &quot;desc&quot;: &quot;huge condensed noir serif title in distressed cream-white with a faint neon-cyan edge glow, stacked two lines, slightly tilted, dominating the lower third&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.08,
+      &quot;y&quot;: 0.62,
+      &quot;w&quot;: 0.84,
+      &quot;h&quot;: 0.2
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;He broke the wrong guy. Now he&#x27;s gotta break the case.&quot;,
+      &quot;desc&quot;: &quot;small italic tagline in muted gold, single line just above the title&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.12,
+      &quot;y&quot;: 0.57,
+      &quot;w&quot;: 0.76,
+      &quot;h&quot;: 0.04
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;MERIDIAN VAULT PICTURES PRESENTS  A SALVO DeLUCA FILM  \&quot;THE HONEST MISTAKE\&quot;  RICO BELLANTONI  MARGOT FENNIMORE  HAROLD QUICK  CASTING BY DENA POOLE  MUSIC BY THE LATE-NIGHT TRIO  DIRECTED BY SALVO DeLUCA&quot;,
+      &quot;desc&quot;: &quot;tiny condensed all-caps billing block in pale gray, centered, classic credit-block spacing&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.14,
+      &quot;y&quot;: 0.9,
+      &quot;w&quot;: 0.72,
+      &quot;h&quot;: 0.05
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;IN THEATERS THIS FALL&quot;,
+      &quot;desc&quot;: &quot;small spaced-out cream caps release line centered above the billing block&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.3,
+      &quot;y&quot;: 0.86,
+      &quot;w&quot;: 0.4,
+      &quot;h&quot;: 0.03
+    }
+  ]
+}</pre>
+        </details>
+      </div>
+    </div>
+    <div class="card">
+      <img class="poster" loading="lazy" src="images/krea/0025-the-last-gumshoe-at-the-end-of-the-world.png" alt="The Last Gumshoe at the End of the World">
+      <div class="meta">
+        <div class="title">The Last Gumshoe at the End of the World</div>
+        <div class="badges">
+          <span class="badge">Post-Apocalyptic</span>
+          <span class="badge">x</span>
+          <span class="badge">Revisionist Western</span>
+        </div>
+        <p class="pitch">Private investigator Dutch Calloway thought he was working a routine missing-persons case in a sleepy desert town — until he realized the town&#x27;s been dust and rust for forty years, and so has he. Now the only PI in a cracked, sun-blasted wasteland, Dutch trades his trench coat for a duster and his pistol for whatever still fires, hunting a vanished water baron across irradiated badlands. His client is a talking jukebox. His only lead is a coyote who owes him money. Justice is dead out here, and Dutch is starting to think he might be too.</p>
+        <div class="character">Starring: <b>Private Investigator</b></div>
+        <details><summary>Behind the scenes</summary>
+          <div class="bts-label">Seed pitch:</div><pre>Logline: When a Private Investigator discovers their quiet life is actually a Post-Apocalyptic, they must master the genre conventions of Revisionist Western to survive.</pre>
+          <div class="bts-label">Image prompt:</div><pre>{
+  &quot;high_level_description&quot;: &quot;A weathered detective in a trench coat and cowboy hat stands alone on a cracked desert highway under a blood-orange post-apocalyptic sky, ruined skyscrapers crumbling on the horizon.&quot;,
+  &quot;background&quot;: &quot;A vast sun-scorched wasteland of cracked asphalt and bone-dry riverbeds stretching to a hazy horizon. Skeletal remains of a collapsed city skyline lean and crumble in the far distance, half-swallowed by dust. The sky burns a toxic orange-amber, streaked with thin clouds and drifting particulate haze, with a faded relentless sun low over the rubble.&quot;,
+  &quot;art_style&quot;: &quot;shot on 35mm anamorphic, shallow depth of field, dusty teal-and-amber cinematic grade, photorealistic, heavy volumetric haze, fine film grain&quot;,
+  &quot;aesthetics&quot;: &quot;gritty, sun-baked, noir-western, desolate, melancholic, hard-boiled&quot;,
+  &quot;lighting&quot;: &quot;low golden-hour backlight rimming the figure through thick dust, with hard side light carving deep shadows across the cracked ground.&quot;,
+  &quot;palette&quot;: [
+    &quot;#C9772E&quot;,
+    &quot;#E0A857&quot;,
+    &quot;#3B2A1E&quot;,
+    &quot;#8A9BA0&quot;,
+    &quot;#1C1410&quot;
+  ],
+  &quot;bg_brightness&quot;: 58,
+  &quot;elements&quot;: [
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A grizzled middle-aged male detective standing center frame, weather-beaten leather trench coat over a faded vest, dust-caked cowboy hat low over tired eyes, a holstered revolver on one hip and a battered notebook in his fist, three-day stubble, photoreal skin texture, backlit by the dying sun&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.31,
+      &quot;y&quot;: 0.3,
+      &quot;w&quot;: 0.4,
+      &quot;h&quot;: 0.55
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A mangy desert coyote sitting patiently in the dust to the lower left, head tilted, photoreal fur catching amber rimlight, small and weary-looking&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.08,
+      &quot;y&quot;: 0.66,
+      &quot;w&quot;: 0.2,
+      &quot;h&quot;: 0.18
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A rusted vintage jukebox half-buried in sand on the lower right, glass cracked, faint glowing bulbs still flickering, wires trailing into the dirt, photoreal weathered chrome&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.7,
+      &quot;y&quot;: 0.62,
+      &quot;w&quot;: 0.24,
+      &quot;h&quot;: 0.24
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;THE LAST GUMSHOE\nAT THE END OF THE WORLD&quot;,
+      &quot;desc&quot;: &quot;large weathered slab-serif title in cracked dusty cream and burnt-orange, distressed letterpress texture, slight perspective, stacked across two lines, dominating the lower third&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.07,
+      &quot;y&quot;: 0.74,
+      &quot;w&quot;: 0.86,
+      &quot;h&quot;: 0.16
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;JUSTICE WAS THE FIRST THING TO DIE OUT HERE.&quot;,
+      &quot;desc&quot;: &quot;thin condensed uppercase tagline in dusty pale grey, letter-spaced, centered near the top&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.12,
+      &quot;y&quot;: 0.07,
+      &quot;w&quot;: 0.76,
+      &quot;h&quot;: 0.05
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;DUSTPAN PICTURES PRESENTS  A RORY MCKELVANE FILM  \&quot;THE LAST GUMSHOE AT THE END OF THE WORLD\&quot;  HOLLIS REDFERN  MARGO DELACROIX  CASTING BY VERA OKONKWO  MUSIC BY THE FERAL STRINGS  DIRECTED BY RORY MCKELVANE&quot;,
+      &quot;desc&quot;: &quot;tiny condensed sans-serif billing block, pale weathered cream, centered, classic single-line credits styling&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.1,
+      &quot;y&quot;: 0.92,
+      &quot;w&quot;: 0.8,
+      &quot;h&quot;: 0.045
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;IN RUINED THEATERS THIS FALL&quot;,
+      &quot;desc&quot;: &quot;small spaced uppercase release line in burnt orange just above the billing block, centered&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.22,
+      &quot;y&quot;: 0.905,
+      &quot;w&quot;: 0.56,
+      &quot;h&quot;: 0.02
+    }
+  ]
+}</pre>
+        </details>
+      </div>
+    </div>
+    <div class="card">
+      <img class="poster" loading="lazy" src="images/krea/0026-the-last-encore-at-dusty-creek.png" alt="The Last Encore at Dusty Creek">
+      <div class="meta">
+        <div class="title">The Last Encore at Dusty Creek</div>
+        <div class="badges">
+          <span class="badge">Family Saga</span>
+          <span class="badge">x</span>
+          <span class="badge">Neo-Western</span>
+        </div>
+        <p class="pitch">Decades after burning out as the frontman of glam-metal legends Coyote Venom, Cyrus &quot;Snakebite&quot; Holloway returns to the family cattle ranch to bury his father and claim his third of the dirt. But his estranged siblings — a tight-lipped accountant and a rodeo-circuit gambler — treat the will reading like a high-noon standoff, spurs and all. As bank vultures circle the foreclosed homestead, Cyrus must trade his studded leather jacket for a saddle and settle a generation of grudges before sundown. Family is the only band that never breaks up — even when it should.</p>
+        <div class="character">Starring: <b>Washed-Up Rock Star</b></div>
+        <details><summary>Behind the scenes</summary>
+          <div class="bts-label">Seed pitch:</div><pre>Picture a Family Saga setting, but everyone behaves like they&#x27;re in a Neo-Western. Our reluctant hero: a Washed-Up Rock Star.</pre>
+          <div class="bts-label">Image prompt:</div><pre>{
+  &quot;high_level_description&quot;: &quot;A weathered aging rock star in a fringed leather jacket stands at a dusty desert crossroads holding a guitar like a rifle, his estranged family silhouetted behind him at golden hour, photoreal cinematic one-sheet.&quot;,
+  &quot;background&quot;: &quot;A sun-scorched high-desert ranch at golden hour, cracked earth and dry sagebrush stretching to distant mesas under a vast burnt-orange sky. A leaning wooden homestead and a tilting windmill sit in the mid-distance, heat shimmer rising off the dirt road. Long shadows rake across the foreground and dust hangs in the low light.&quot;,
+  &quot;art_style&quot;: &quot;shot on 35mm anamorphic, shallow depth of field, warm dusty teal-orange cinematic grade, photorealistic, volumetric haze, fine film grain&quot;,
+  &quot;aesthetics&quot;: &quot;elegiac, sun-baked, melancholic, rugged, weathered grandeur, lonesome&quot;,
+  &quot;lighting&quot;: &quot;low golden-hour sun raking from camera-left, rim-lighting the hero with glowing dust and casting long dramatic shadows across the cracked earth.&quot;,
+  &quot;palette&quot;: [
+    &quot;#C8702A&quot;,
+    &quot;#E6B45C&quot;,
+    &quot;#3E2A1C&quot;,
+    &quot;#7A8B7E&quot;,
+    &quot;#F2D9A8&quot;
+  ],
+  &quot;bg_brightness&quot;: 58,
+  &quot;elements&quot;: [
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A weathered 60-year-old man with long greying hair, deep wrinkles and a salt-and-pepper goatee, wearing a faded studded black leather fringe jacket over a sweat-stained tank top, holding a battered electric guitar across his chest like a rifle, squinting into the low sun, dust on his boots, photorealistic&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.3,
+      &quot;y&quot;: 0.3,
+      &quot;w&quot;: 0.42,
+      &quot;h&quot;: 0.55
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;Two distant silhouetted figures standing apart on the dirt road behind the hero — a stiff figure in a buttoned vest and a lean figure in a cowboy hat — backlit by golden haze, photorealistic&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.1,
+      &quot;y&quot;: 0.45,
+      &quot;w&quot;: 0.3,
+      &quot;h&quot;: 0.3
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A tilting wooden windmill and a leaning weathered homestead barn in the mid-distance, paint peeling, against the burnt-orange sky, photorealistic&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.62,
+      &quot;y&quot;: 0.4,
+      &quot;w&quot;: 0.3,
+      &quot;h&quot;: 0.28
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A coiled rattlesnake and a tarnished silver guitar slide resting together in the dry cracked dirt in the foreground, sharp focus, photorealistic&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.08,
+      &quot;y&quot;: 0.78,
+      &quot;w&quot;: 0.22,
+      &quot;h&quot;: 0.12
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;THE LAST ENCORE\nAT DUSTY CREEK&quot;,
+      &quot;desc&quot;: &quot;Large weathered Western slab-serif title in distressed bone-white with subtle gold metallic edge, slightly tilted, dusty grit texture, dominating the lower third&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.08,
+      &quot;y&quot;: 0.62,
+      &quot;w&quot;: 0.84,
+      &quot;h&quot;: 0.18
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;Family is the only band that never breaks up.&quot;,
+      &quot;desc&quot;: &quot;Small italic serif tagline in pale amber, centered, letter-spaced, just above the title&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.15,
+      &quot;y&quot;: 0.57,
+      &quot;w&quot;: 0.7,
+      &quot;h&quot;: 0.04
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;DUST &amp; STRINGS PICTURES   A FILM BY MARLO QUINTANA   \&quot;THE LAST ENCORE AT DUSTY CREEK\&quot;   RANDALL VOSS   DELPHINE ARCHER   BUCK HEMSLEY   CASSIDY ROAM   MUSIC BY THE COYOTE VENOM ESTATE   PRODUCED BY HOLLIS DRAKE&quot;,
+      &quot;desc&quot;: &quot;Tiny condensed all-caps billing block in faded cream, centered, standard credit-block spacing&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.12,
+      &quot;y&quot;: 0.9,
+      &quot;w&quot;: 0.76,
+      &quot;h&quot;: 0.05
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;IN THEATERS THIS FALL&quot;,
+      &quot;desc&quot;: &quot;Small bold condensed all-caps release line in warm gold, centered&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.3,
+      &quot;y&quot;: 0.85,
+      &quot;w&quot;: 0.4,
+      &quot;h&quot;: 0.03
+    }
+  ]
+}</pre>
+        </details>
+      </div>
+    </div>
+    <div class="card">
+      <img class="poster" loading="lazy" src="images/krea/0027-the-constable-s-lament.png" alt="The Constable&#x27;s Lament">
+      <div class="meta">
+        <div class="title">The Constable&#x27;s Lament</div>
+        <div class="badges">
+          <span class="badge">Rock Opera</span>
+          <span class="badge">x</span>
+          <span class="badge">Period Romance</span>
+        </div>
+        <p class="pitch">Disgraced Inspector Bartholomew Quill, drummed out of Scotland Yard for &quot;excessive yearning,&quot; wanders rain-soaked 1840s London the only way he knows how — by belting power ballads at lampposts. When a murder rocks the manor of icy heiress Lady Eveline Ashcombe, the two are forced into a duet of suspicion, longing, and impossibly high notes. Can Bartholomew solve the crime before the third-act key change? More importantly, can he confess his feelings in a way that rhymes? Crank the corsets, cue the pyrotechnics, and weep.</p>
+        <div class="character">Starring: <b>Disgraced Detective</b></div>
+        <details><summary>Behind the scenes</summary>
+          <div class="bts-label">Seed pitch:</div><pre>Cold open: a Disgraced Detective, alone, in the rain. The genre? Rock Opera. The vibe? Unmistakably Period Romance. Cue title card.</pre>
+          <div class="bts-label">Image prompt:</div><pre>{
+  &quot;high_level_description&quot;: &quot;A rain-drenched Victorian detective stands mid-power-ballad beneath a flickering gas lamp while a gowned aristocrat watches from a glowing manor doorway, all rendered as a moody photoreal film still&quot;,
+  &quot;background&quot;: &quot;A narrow cobblestone London street at night in the 1840s, slick with rain and reflecting amber gaslight. In the deep background a grand manor house glows warmly with an open lit doorway and tall fogged windows. Heavy atmospheric mist and falling rain streak through the air, creating layered depth from foreground puddles to distant rooftops.&quot;,
+  &quot;art_style&quot;: &quot;shot on 35mm anamorphic, shallow depth of field, teal-and-amber cinematic grade, photorealistic, volumetric rain and haze, fine film grain&quot;,
+  &quot;aesthetics&quot;: &quot;operatic, melodramatic, gothic romance, rain-soaked grandeur, theatrical spotlight drama&quot;,
+  &quot;lighting&quot;: &quot;a hard amber gaslight key from above carves the detective from the dark while cool blue moonlight rims the rain and a warm glow spills from the distant manor door&quot;,
+  &quot;palette&quot;: [
+    &quot;#1a2733&quot;,
+    &quot;#d68a2e&quot;,
+    &quot;#7a1f28&quot;,
+    &quot;#e6d2a8&quot;,
+    &quot;#0c1116&quot;
+  ],
+  &quot;bg_brightness&quot;: 38,
+  &quot;elements&quot;: [
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A handsome but haggard Victorian detective in a soaked dark wool greatcoat and loosened cravat, mid-thirties with rain-plastered hair, throwing his head back and arms outward as if belting a passionate ballad, one hand clutching his chest, gas lamp glinting off the wet fabric, photorealistic&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.28,
+      &quot;y&quot;: 0.3,
+      &quot;w&quot;: 0.46,
+      &quot;h&quot;: 0.52
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A tall ornate cast-iron Victorian gas lamp post with a flickering warm flame, wet with rain, positioned to the upper left as a glowing light source, photorealistic&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.05,
+      &quot;y&quot;: 0.18,
+      &quot;w&quot;: 0.16,
+      &quot;h&quot;: 0.4
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;An elegant aristocratic woman in a deep crimson silk period gown standing small in a distant glowing manor doorway, silhouetted against warm interior light, gazing toward the detective, photorealistic and softly out of focus&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.7,
+      &quot;y&quot;: 0.46,
+      &quot;w&quot;: 0.18,
+      &quot;h&quot;: 0.3
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;THE CONSTABLE&#x27;S\nLAMENT&quot;,
+      &quot;desc&quot;: &quot;Large ornate Victorian serif title with metallic gold letterpress texture and subtle wet sheen, centered, distressed engraved edges, dominating the lower-upper third&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.08,
+      &quot;y&quot;: 0.06,
+      &quot;w&quot;: 0.84,
+      &quot;h&quot;: 0.2
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;Every clue has a chorus. Every heart, a key change.&quot;,
+      &quot;desc&quot;: &quot;Slim italic ivory serif tagline, small, softly glowing, single line centered beneath the title&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.12,
+      &quot;y&quot;: 0.27,
+      &quot;w&quot;: 0.76,
+      &quot;h&quot;: 0.05
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;A GASLIGHT PICTURES PRESENTATION  A FINNIAN ROARKE FILM  \&quot;THE CONSTABLE&#x27;S LAMENT\&quot;  EWAN HALLORAN  SERAPHINA VOSS  MUSIC BY THE LAMPLIGHT CHOIR  COSTUMES BORROWED FROM A REAL DUKE  DIRECTED BY FINNIAN ROARKE&quot;,
+      &quot;desc&quot;: &quot;Tiny condensed all-caps credits billing block in muted ivory, justified center, classic one-sheet style&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.14,
+      &quot;y&quot;: 0.9,
+      &quot;w&quot;: 0.72,
+      &quot;h&quot;: 0.05
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;IN THEATRES THIS AUTUMN&quot;,
+      &quot;desc&quot;: &quot;Small spaced-out gold serif caps release line centered above the billing block&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.28,
+      &quot;y&quot;: 0.85,
+      &quot;w&quot;: 0.44,
+      &quot;h&quot;: 0.035
+    }
+  ]
+}</pre>
+        </details>
+      </div>
+    </div>
+    <div class="card">
+      <img class="poster" loading="lazy" src="images/krea/0028-the-cottage-at-the-end-of-everything.png" alt="The Cottage at the End of Everything">
+      <div class="meta">
+        <div class="title">The Cottage at the End of Everything</div>
+        <div class="badges">
+          <span class="badge">Supernatural Horror</span>
+          <span class="badge">x</span>
+          <span class="badge">Cozy Fantasy</span>
+        </div>
+        <p class="pitch">Agoraphobic novelist Edwina Pricklethorn hasn&#x27;t left her cottage in eleven years, which is unfortunate, because the cottage has decided to start digesting her. As floorboards weep blood and her teakettle whispers the names of the dead, Edwina realizes the only beings willing to help are a tea-obsessed hedgehog familiar and a retired hearth spirit who insists everything is &quot;perfectly fine, dear.&quot; To survive the entity in the walls, she must abandon her thriller instincts and embrace the gentle arts of jam-making, friendship, and aggressively pleasant hospitality. The horror is real. So is the chamomile.</p>
+        <div class="character">Starring: <b>Reclusive Author</b></div>
+        <details><summary>Behind the scenes</summary>
+          <div class="bts-label">Seed pitch:</div><pre>Logline: When a Reclusive Author discovers their quiet life is actually a Supernatural Horror, they must master the genre conventions of Cozy Fantasy to survive.</pre>
+          <div class="bts-label">Image prompt:</div><pre>{
+  &quot;high_level_description&quot;: &quot;A reclusive author stands in the warm doorway of a glowing cottage while a vast shadowy horror coils in the dark woods behind her, half-cozy half-terrifying photoreal one-sheet.&quot;,
+  &quot;background&quot;: &quot;A storybook stone cottage sits in a misty forest clearing at dusk, its windows glowing amber and welcoming. Behind and above it, the trees twist into an enormous looming shadow-shape with faintly glowing eyes, swallowing the deep blue sky. Tendrils of unnatural black mist creep along the ground toward the warm light, creating a sharp contrast between safety and dread.&quot;,
+  &quot;art_style&quot;: &quot;shot on 35mm anamorphic, shallow depth of field, photorealistic, warm-cottage-vs-cold-dread color contrast, volumetric fog, fine film grain, cinematic&quot;,
+  &quot;aesthetics&quot;: &quot;cozy dread, fairytale horror, candlelit warmth, encroaching darkness, whimsical menace&quot;,
+  &quot;lighting&quot;: &quot;warm golden lantern light spilling from the cottage windows clashing against cold blue moonlight and the eerie glow of the shadow-entity&#x27;s eyes.&quot;,
+  &quot;palette&quot;: [
+    &quot;#F4B860&quot;,
+    &quot;#2B1A3A&quot;,
+    &quot;#7A2E2E&quot;,
+    &quot;#1B2A36&quot;,
+    &quot;#D8C9A3&quot;
+  ],
+  &quot;bg_brightness&quot;: 38,
+  &quot;elements&quot;: [
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;a middle-aged woman in a knitted cardigan and reading glasses standing in the glowing cottage doorway holding a steaming teacup, looking nervously over her shoulder, warm light haloing her wild grey-streaked hair, photorealistic&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.34,
+      &quot;y&quot;: 0.4,
+      &quot;w&quot;: 0.32,
+      &quot;h&quot;: 0.42
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;a small fluffy hedgehog wearing a tiny apron sitting on a stone step beside a teapot, lit by warm cottage light, photoreal and adorable&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.16,
+      &quot;y&quot;: 0.66,
+      &quot;w&quot;: 0.18,
+      &quot;h&quot;: 0.16
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;an enormous translucent shadow creature looming in the dark forest above the cottage, made of writhing smoke with two faint glowing pale eyes, menacing and photoreal&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.1,
+      &quot;y&quot;: 0.16,
+      &quot;w&quot;: 0.8,
+      &quot;h&quot;: 0.4
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;creeping tendrils of black supernatural mist crawling across the foreground grass toward the warm light, photorealistic atmospheric haze&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.0,
+      &quot;y&quot;: 0.78,
+      &quot;w&quot;: 1.0,
+      &quot;h&quot;: 0.14
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;THE COTTAGE\nAT THE END OF\nEVERYTHING&quot;,
+      &quot;desc&quot;: &quot;large elegant serif title with hand-painted storybook texture, warm cream lettering with subtle cracked-charcoal shadow edges, centered, dramatic&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.1,
+      &quot;y&quot;: 0.04,
+      &quot;w&quot;: 0.8,
+      &quot;h&quot;: 0.22
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;Hospitality is the only thing that can save her now.&quot;,
+      &quot;desc&quot;: &quot;small italic serif tagline in soft gold, centered&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.16,
+      &quot;y&quot;: 0.27,
+      &quot;w&quot;: 0.68,
+      &quot;h&quot;: 0.05
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;HOLLOWHEARTH PICTURES PRESENTS  A MARGUERITE FENN FILM  \&quot;THE COTTAGE AT THE END OF EVERYTHING\&quot;  CORA ASHWORTH-DELL  BENEDICT QUAYLE  WITH THE VOICE OF PIP THE HEDGEHOG  CASTING BY OLWEN BREE  MUSIC BY THADDEUS HOLLOWAY  DIRECTED BY MARGUERITE FENN&quot;,
+      &quot;desc&quot;: &quot;tiny condensed all-caps billing block in pale cream, centered, standard credit spacing&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.12,
+      &quot;y&quot;: 0.9,
+      &quot;w&quot;: 0.76,
+      &quot;h&quot;: 0.05
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;STEEP YOUR TEA — OCTOBER 31&quot;,
+      &quot;desc&quot;: &quot;small bold spaced caps release line in warm gold above the billing block, centered&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.22,
+      &quot;y&quot;: 0.855,
+      &quot;w&quot;: 0.56,
+      &quot;h&quot;: 0.035
+    }
+  ]
+}</pre>
+        </details>
+      </div>
+    </div>
+    <div class="card">
+      <img class="poster" loading="lazy" src="images/krea/0029-six-feet-under-cover.png" alt="Six Feet Under Cover">
+      <div class="meta">
+        <div class="title">Six Feet Under Cover</div>
+        <div class="badges">
+          <span class="badge">Spy Mystery</span>
+          <span class="badge">x</span>
+          <span class="badge">Jukebox Musical</span>
+        </div>
+        <p class="pitch">Mortician Mort Pallbright runs the quietest funeral home in town — until a corpse on his slab coughs up a microfilm and a final request: &quot;Avenge me, but only on the downbeat.&quot; Now the deadpan undertaker is the last asset standing in a global spy conspiracy that can only be decoded through jukebox standards, where every coded message hides in a chart-topping oldie and a missed key change means a missed assassination. With a quartet of mysterious widows harmonizing in the wings, Mort must follow the music to the truth before the bad guys cue the encore. He&#x27;s dead serious. Mostly.</p>
+        <div class="character">Starring: <b>Undertaker</b></div>
+        <details><summary>Behind the scenes</summary>
+          <div class="bts-label">Seed pitch:</div><pre>A Undertaker stumbles into a Spy Mystery conspiracy that can only be solved using the rules of Jukebox Musical.</pre>
+          <div class="bts-label">Image prompt:</div><pre>{
+  &quot;high_level_description&quot;: &quot;A solemn undertaker in a black suit stands beside a glowing 1950s jukebox in a moody embalming parlor, clutching a microfilm reel like a secret, lit like a sleek espionage thriller.&quot;,
+  &quot;background&quot;: &quot;Interior of a dimly lit funeral parlor at night, mahogany paneling and velvet drapes receding into shadow. A single brass casket gleams faintly in the deep background while smoke curls through a shaft of light. The space feels cavernous, secretive, and theatrically staged.&quot;,
+  &quot;art_style&quot;: &quot;shot on 35mm anamorphic, shallow depth of field, teal-and-amber noir grade, photorealistic, volumetric haze, fine film grain&quot;,
+  &quot;aesthetics&quot;: &quot;spy-noir elegance, melancholic, glamorous, retro-cool, deadpan&quot;,
+  &quot;lighting&quot;: &quot;low-key chiaroscuro with a warm jukebox glow from below and a cold key light raking across the undertaker&#x27;s face.&quot;,
+  &quot;palette&quot;: [
+    &quot;#0d1418&quot;,
+    &quot;#1f3a3f&quot;,
+    &quot;#c9821f&quot;,
+    &quot;#e8d6a8&quot;,
+    &quot;#7a1f1f&quot;
+  ],
+  &quot;bg_brightness&quot;: 28,
+  &quot;elements&quot;: [
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;a tall lean undertaker in his 50s, pale solemn face, slicked dark hair, immaculate black mortician&#x27;s suit and gloves, holding a small reel of microfilm up to the light with a knowing expression, photoreal, cinematic&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.3,
+      &quot;y&quot;: 0.3,
+      &quot;w&quot;: 0.42,
+      &quot;h&quot;: 0.55
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;a glowing chrome-and-neon 1957 jukebox spilling warm amber light, vinyl 45 records hovering mid-air around it, photoreal product detail&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.04,
+      &quot;y&quot;: 0.4,
+      &quot;w&quot;: 0.3,
+      &quot;h&quot;: 0.4
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;a silenced pistol resting on a black velvet pillow beside a single white lily, dramatic rim light, photoreal still life&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.66,
+      &quot;y&quot;: 0.66,
+      &quot;w&quot;: 0.3,
+      &quot;h&quot;: 0.22
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;SIX FEET\nUNDER COVER&quot;,
+      &quot;desc&quot;: &quot;huge condensed serif title in tarnished gold with subtle engraved metal texture, stacked two lines, centered, cinematic embossing&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.08,
+      &quot;y&quot;: 0.04,
+      &quot;w&quot;: 0.84,
+      &quot;h&quot;: 0.2
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;He buries secrets for a living. Now he&#x27;s digging one up.&quot;,
+      &quot;desc&quot;: &quot;slim italic serif tagline in warm cream, single line, letter-spaced&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.12,
+      &quot;y&quot;: 0.25,
+      &quot;w&quot;: 0.76,
+      &quot;h&quot;: 0.05
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;EVERY CLUE HIDES IN A SONG&quot;,
+      &quot;desc&quot;: &quot;small bold condensed sans, amber, all caps, widely tracked, near lower third&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.2,
+      &quot;y&quot;: 0.86,
+      &quot;w&quot;: 0.6,
+      &quot;h&quot;: 0.035
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;GRAVELIGHT PICTURES PRESENTS  A DESMOND VAULE FILM  \&quot;SIX FEET UNDER COVER\&quot;  HARLAN COFFREY  VIVIAN LAROUX  EDDIE STRANG  CASTING BY M. THORNE  MUSIC BY THE B-SIDE QUARTET  DIRECTED BY DESMOND VAULE&quot;,
+      &quot;desc&quot;: &quot;tiny condensed sans-serif billing block in pale grey, fully justified, classic credits styling&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.14,
+      &quot;y&quot;: 0.91,
+      &quot;w&quot;: 0.72,
+      &quot;h&quot;: 0.06
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;IN THEATERS THIS FALL&quot;,
+      &quot;desc&quot;: &quot;small clean sans, cream, centered, letter-spaced&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.3,
+      &quot;y&quot;: 0.975,
+      &quot;w&quot;: 0.4,
+      &quot;h&quot;: 0.02
+    }
+  ]
+}</pre>
+        </details>
+      </div>
+    </div>
+    <div class="card">
+      <img class="poster" loading="lazy" src="images/krea/0030-the-otter-did-it.png" alt="The Otter Did It">
+      <div class="meta">
+        <div class="title">The Otter Did It</div>
+        <div class="badges">
+          <span class="badge">Amateur Sleuth</span>
+          <span class="badge">x</span>
+          <span class="badge">Nature Doc</span>
+        </div>
+        <p class="pitch">Disgraced Olympic swimmer Brock &quot;Two-Lane&quot; Halvorsen — banned from competition for an incident involving a contraband emotional-support pommel horse — moves to a foggy lake town to vanish. When his neighbor turns up missing, Brock appoints himself lead detective, armed with nothing but a laminated tide chart and unresolved rage. His investigation slowly, inexplicably, becomes a four-hour meditation on river otters, narrated in a hushed British baritone he didn&#x27;t authorize. Somewhere between accusing the mailman and weeping into a microwaved lasagna, Brock learns the only true predator was disappointment.</p>
+        <div class="character">Starring: <b>Disgraced Athlete</b></div>
+        <details><summary>Behind the scenes</summary>
+          <div class="bts-label">Seed pitch:</div><pre>Three-act structure: Amateur Sleuth in act one, Nature Doc by act three, and a Disgraced Athlete sobbing into a microwave dinner the whole time.</pre>
+          <div class="bts-label">Image prompt:</div><pre>{
+  &quot;high_level_description&quot;: &quot;A photoreal one-sheet of a haggard ex-athlete crouched detective-style on a misty dock at dawn while a smug river otter watches from the water, framed by a nature-doc serenity colliding with a noir mystery vibe.&quot;,
+  &quot;background&quot;: &quot;A still alpine lake at first light, glassy water dissolving into thick low-lying fog that swallows a distant pine shoreline. A weathered wooden dock juts from the lower foreground into the mist, dew clinging to the planks. The sky is a pale bruised lavender, with faint silhouettes of waterfowl frozen mid-flight in the haze.&quot;,
+  &quot;art_style&quot;: &quot;shot on 35mm anamorphic, shallow depth of field, naturalistic cool morning grade with muted greens, photorealistic, volumetric fog, fine film grain&quot;,
+  &quot;aesthetics&quot;: &quot;melancholy, deadpan-comic, prestige nature-doc serenity, faded-glory noir&quot;,
+  &quot;lighting&quot;: &quot;soft diffused dawn light raking low across the fog, cool blue shadows with a thin gold rim on the subject&#x27;s wet hair.&quot;,
+  &quot;palette&quot;: [
+    &quot;#2E3F45&quot;,
+    &quot;#6E8C84&quot;,
+    &quot;#C9D6CE&quot;,
+    &quot;#A6845C&quot;,
+    &quot;#1A2226&quot;
+  ],
+  &quot;bg_brightness&quot;: 48,
+  &quot;elements&quot;: [
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A burly disgraced ex-Olympic swimmer in his late 30s, damp tracksuit half-zipped over a swim singlet, kneeling on the dock in an exaggerated TV-detective pose with a magnifying glass, stubble, red puffy eyes, a single foil microwave lasagna tray balanced beside his knee, photoreal, sharp focus&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.22,
+      &quot;y&quot;: 0.4,
+      &quot;w&quot;: 0.5,
+      &quot;h&quot;: 0.46
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A glossy wet river otter floating upright in the lake water at the dock&#x27;s edge, staring directly at the camera with a knowing, faintly smug expression, water droplets on its whiskers, photoreal wildlife detail&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.6,
+      &quot;y&quot;: 0.62,
+      &quot;w&quot;: 0.3,
+      &quot;h&quot;: 0.24
+    },
+    {
+      &quot;type&quot;: &quot;obj&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;desc&quot;: &quot;A boom microphone in a fuzzy grey windshield dipping into frame from the top edge, slightly out of focus, suggesting a documentary crew just off camera&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.05,
+      &quot;y&quot;: 0.02,
+      &quot;w&quot;: 0.3,
+      &quot;h&quot;: 0.18
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;THE OTTER\nDID IT&quot;,
+      &quot;desc&quot;: &quot;Massive bold condensed serif title in fogged off-white, stacked two lines, slight wet condensation texture on the letterforms, centered&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.1,
+      &quot;y&quot;: 0.06,
+      &quot;w&quot;: 0.8,
+      &quot;h&quot;: 0.22
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;He lost everything. He will solve nothing.&quot;,
+      &quot;desc&quot;: &quot;Small italic tagline in pale grey-green, single line, letter-spaced, just under the title&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.14,
+      &quot;y&quot;: 0.3,
+      &quot;w&quot;: 0.72,
+      &quot;h&quot;: 0.05
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;NARRATED, AGAINST HIS WILL, IN SOOTHING WHISPERS&quot;,
+      &quot;desc&quot;: &quot;Tiny uppercase nature-doc style caption in thin white, letter-spaced, near the otter&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.18,
+      &quot;y&quot;: 0.88,
+      &quot;w&quot;: 0.64,
+      &quot;h&quot;: 0.035
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;DRIFTWOOD PICTURES PRESENTS  A MARGOT VELLANCOURT FILM  \&quot;THE OTTER DID IT\&quot;  BRICK HALLORAN  PRISCILLA NDIAYE  DUSTIN OKONKWO  CASTING BY R. PFEIFER  MUSIC BY THE QUIET LAKE ENSEMBLE  DIRECTED BY MARGOT VELLANCOURT&quot;,
+      &quot;desc&quot;: &quot;Standard condensed sans-serif billing block in small pale grey caps, centered, tightly leaded&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.12,
+      &quot;y&quot;: 0.925,
+      &quot;w&quot;: 0.76,
+      &quot;h&quot;: 0.05
+    },
+    {
+      &quot;type&quot;: &quot;text&quot;,
+      &quot;text&quot;: &quot;WADING INTO THEATERS THIS FALL&quot;,
+      &quot;desc&quot;: &quot;Small bold uppercase release line in off-white, centered above the billing block&quot;,
+      &quot;palette&quot;: [],
+      &quot;x&quot;: 0.25,
+      &quot;y&quot;: 0.905,
+      &quot;w&quot;: 0.5,
+      &quot;h&quot;: 0.025
+    }
+  ]
+}</pre>
+        </details>
+      </div>
+    </div>
+  </div>
+  <footer>
+    Generated by generate_mashups.py &middot; 30 pitches &middot; 2026-06-26 16:40:13<br>
+    Posters rendered with <a href="https://www.comfy.org/" target="_blank" rel="noopener">ComfyUI</a>
+    using a Krea text-to-image workflow by <a href="https://www.patreon.com/c/aitrepreneur" target="_blank" rel="noopener">Aitrepreneur</a>.
+  </footer>
+</body>
+</html>

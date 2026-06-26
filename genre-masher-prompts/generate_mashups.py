@@ -45,194 +45,24 @@ import uuid
 from html import escape as html_escape
 from pathlib import Path
 
-GENRES = {
-    "Horror": [
-        "Folk Horror (rural cult vibes)",
-        "Body Horror (Cronenberg-core)",
-        "Found Footage",
-        "Cosmic / Lovecraftian",
-        "Slasher (masked maniac)",
-        "Haunted Appliance",
-        "Suburban Satanic Panic",
-        "Eco-Horror (the trees are mad)",
-        "Dental Horror",
-    ],
-    "Romance": [
-        "Regency Bodice-Ripper",
-        "Enemies-to-Lovers",
-        "Monster Romance (he is a kraken)",
-        "Mafia Romance",
-        "Small-Town Christmas Romance",
-        "Time-Travel Romance",
-        "Workplace Slow-Burn",
-        "Marriage of Convenience",
-        "Forbidden Beekeeper Romance",
-    ],
-    "Sci-Fi": [
-        "Cyberpunk (neon and noodles)",
-        "Solarpunk (gay agrarian future)",
-        "Space Western",
-        "Hard Sci-Fi (engineers explaining things)",
-        "Biopunk (squelchy laboratory)",
-        "Retrofuturism (1962's tomorrow)",
-        "Dying Earth / Far Future",
-        "First Contact Bureaucracy",
-        "Mundane Apocalypse",
-    ],
-    "Fantasy": [
-        "Grimdark (everyone's sad and damp)",
-        "Cozy Fantasy (tea and dragons)",
-        "Urban Fantasy",
-        "Sword & Sorcery",
-        "Portal Fantasy",
-        "Magical Academia",
-        "Flintlock Fantasy (muskets + magic)",
-        "Mythic Retelling",
-        "Bureaucratic Fantasy (the Wizard's HR dept)",
-    ],
-    "Mystery": [
-        "Cozy Village Whodunit",
-        "Hardboiled Detective",
-        "Locked Room Mystery",
-        "Nordic Noir (everyone is cold)",
-        "Amateur Sleuth (a baker did it)",
-        "Forensic Procedural",
-        "Conspiracy Thriller",
-        "Cold Case Podcast Mystery",
-        "Cryptozoological Investigation",
-    ],
-    "Comedy": [
-        "Cringe Mockumentary",
-        "Screwball",
-        "Stoner Comedy",
-        "Satire (eat the rich)",
-        "Workplace Comedy",
-        "Gross-Out",
-        "Surreal Anti-Humor",
-        "Farce (so many doors)",
-        "Wholesome Himbo Comedy",
-    ],
-    "Drama": [
-        "Prestige Misery Drama",
-        "Coming-of-Age",
-        "Legal Drama",
-        "Medical Drama (very sweaty)",
-        "Family Saga",
-        "Sports Underdog",
-        "Period Piece (corsets, scandals)",
-        "Slow Cinema (a man stares at a lake)",
-        "Restaurant Kitchen Drama",
-    ],
-    "Action": [
-        "Heist",
-        "Spy Thriller",
-        "Martial Arts",
-        "Disaster Movie",
-        "Revenge Thriller (he killed my dog)",
-        "Buddy Cop",
-        "Military Sci-Fi",
-        "Parkour Chase Movie",
-        "Vehicular Mayhem",
-    ],
-    "Documentary-style": [
-        "True Crime (let me look at this map)",
-        "Nature Documentary (gentle British narrator)",
-        "Sports Doc",
-        "Cult Exposé",
-        "Food Porn Doc",
-        "Music Bio-Doc",
-        "Conspiracy Doc",
-        "Reality Competition",
-    ],
-    "Weird Niche": [
-        "Liminal Space Horror",
-        "Hauntology (lost media core)",
-        "Hopepunk",
-        "Dieselpunk",
-        "Mall Mythology",
-        "Y2K Techno-Paranoia",
-        "Gentle Apocalypse",
-        "Bardcore Medieval",
-        "Backrooms Bureaucracy",
-    ],
-    "Western": [
-        "Acid Western (peyote-fueled)",
-        "Spaghetti Western",
-        "Weird West (cowboys + monsters)",
-        "Modern Neo-Western",
-        "Revisionist Western",
-    ],
-    "Musical": [
-        "Jukebox Musical",
-        "Rock Opera",
-        "Sad Indie Folk Musical",
-        "Crime Musical (everyone sings about taxes)",
-        "Surrealist Dance Musical",
-    ],
-}
-
-CHARACTERS = [
-    "Disgraced Sommelier", "Sentient Roomba", "Retired Assassin",
-    "Conspiracy-Theorist Librarian", "Goth Accountant", "Himbo Pirate",
-    "Tax-Dodging Witch", "Time-Traveling Plumber", "Cursed Beauty Pageant Winner",
-    "Bog Witch", "Disillusioned Cult Defector", "Call Center Vampire",
-    "Talking Horse", "Reluctant Middle Manager", "Former Child Star",
-    "Doomsday Prepper Grandma", "Legalese-Speaking Ghost", "Influencer Exorcist",
-    "Spare Royal Twin", "Mall Cop", "Anxious Cryptozoologist", "Gardening AI",
-    "Fading Magician's Assistant", "Mediocre Knight", "Superhero Therapist",
-    "Stand-Up Plague Doctor", "Disgraced Olympic Curler", "Union-Rep Fairy Godmother",
-    "Cowboy Astronaut", "Reformed Demon", "Substitute Teacher",
-    "Polite Cannibal Food Critic", "Anxious Werewolf", "Ex-Pop-Star Goat Farmer",
-    "Underworld Bureaucrat", "Failed Wizard", "Disgruntled Tooth Fairy",
-    "Sentient Houseplant", "Medieval Town Crier", "Murder-Hobo Adventurer",
-    "Mediocre Oracle", "Burned-Out Knight", "Rideshare-Driving Centaur",
-    "Theater Kid Detective", "Failed Mall Santa", "Disgraced Bee Inspector",
-    "HOA-President Lich", "Reluctant Pope", "Off-Brand Superhero",
-    "Suburban Dad Necromancer", "Gen-Z Pirate", "Kindergarten Teacher Spy",
-    "Sentient Vending Machine", "Aging Boy Band Member", "Renaissance Fair Champion",
-    "DMV Clerk Demigod",
-]
-
-QUIRKS = [
-    "with a heart of gold", "seeking redemption", "with PTSD",
-    "who runs a bakery", "who has not paid her taxes",
-    "with strong opinions about jazz", "in a polycule",
-    "doing court-ordered community service", "going through a messy divorce",
-    "training for a marathon", "with prophetic dreams", "with crippling anxiety",
-    "who just wants to garden", "with a podcast nobody listens to",
-    "haunted by a single regret", "who is allergic to their own job",
-    "writing a memoir", "with three ex-husbands and a parrot",
-    "who learned everything from YouTube", "secretly running a Ponzi scheme",
-    "raising a teenager alone", "who only speaks in movie quotes",
-    "competing on a reality show", "with a vendetta against a specific seagull",
-    "in their flop era", "who pivoted to crypto last year", "trying veganism",
-    "in witness protection", "with a doctorate in medieval poetry",
-    "who is also a twin (it's relevant)", "running for local office",
-    "stuck in a time loop", "with a court-mandated emotional support animal",
-    "going through perimenopause", "newly sober and rage-y about it",
-    "who just inherited a haunted mansion", "afraid of birds (specifically)",
-    "moonlighting as a wedding singer", "with one eye and a grudge",
-    "who has been replaced by a doppelgänger and nobody noticed",
-    "currently being sued", "trying to win back their ex",
-    "secretly the chosen one (don't tell them)", "with golden retriever energy",
-    "who has seen things, man", "in deep with the wrong people",
-    "doing a TED Talk circuit", "raising bees as therapy",
-    "who never finished their PhD", "with a mysterious birthmark",
-    "currently ghosting their family group chat", "two weeks from retirement",
-    "obsessed with a single Wikipedia article", "running a failing food truck",
-    "who married into a cult by accident", "with a rival for some reason",
-]
+# GENRES and CHARACTERS live in genres.json — the single source of truth shared
+# with the browser game (index.html). Sub-genres and characters are deliberately
+# broad anchors; the LLM supplies the absurd specificity in the title/synopsis.
+_GENRES_PATH = Path(__file__).parent / "genres.json"
+_genre_data = json.loads(_GENRES_PATH.read_text(encoding="utf-8"))
+GENRES = _genre_data["genres"]
+CHARACTERS = _genre_data["characters"]
 
 PITCH_TEMPLATES = [
-    "It's {g1} meets {g2}... but the protagonist is a {c} {q}.",
-    "Imagine if a {g1} show had a baby with a {g2} miniseries, and that baby grew up to be a {c} {q}.",
-    "Set in a world where {g1} and {g2} coexist uneasily, our hero — a {c} {q} — must save... something. Probably a town.",
-    "Pitch: {g1} x {g2}. Tone: dread, but make it horny. Lead: a {c} {q}.",
-    "A {c} {q} stumbles into a {g1} conspiracy that can only be solved using the rules of {g2}.",
-    "Picture a {g1} setting, but everyone behaves like they're in a {g2}. Our reluctant hero: a {c} {q}.",
-    "Logline: When a {c} {q} discovers their quiet life is actually a {g1}, they must master the genre conventions of {g2} to survive.",
-    "Three-act structure: {g1} in act one, {g2} by act three, and a {c} {q} sobbing into a microwave dinner the whole time.",
-    "Cold open: a {c} {q}, alone, in the rain. The genre? {g1}. The vibe? Unmistakably {g2}. Cue title card.",
+    "It's {g1} meets {g2}... but the protagonist is a {c}.",
+    "Imagine if a {g1} show had a baby with a {g2} miniseries, and that baby grew up to follow a {c}.",
+    "Set in a world where {g1} and {g2} coexist uneasily, our hero — a {c} — must save... something. Probably a town.",
+    "Pitch: {g1} x {g2}. Tone: dread, but make it horny. Lead: a {c}.",
+    "A {c} stumbles into a {g1} conspiracy that can only be solved using the rules of {g2}.",
+    "Picture a {g1} setting, but everyone behaves like they're in a {g2}. Our reluctant hero: a {c}.",
+    "Logline: When a {c} discovers their quiet life is actually a {g1}, they must master the genre conventions of {g2} to survive.",
+    "Three-act structure: {g1} in act one, {g2} by act three, and a {c} sobbing into a microwave dinner the whole time.",
+    "Cold open: a {c}, alone, in the rain. The genre? {g1}. The vibe? Unmistakably {g2}. Cue title card.",
 ]
 
 
@@ -242,16 +72,14 @@ def generate_mashup():
     sub1 = random.choice(GENRES[major1])
     sub2 = random.choice(GENRES[major2])
     character = random.choice(CHARACTERS)
-    quirk = random.choice(QUIRKS)
     template = random.choice(PITCH_TEMPLATES)
-    pitch = template.format(g1=sub1, g2=sub2, c=character, q=quirk)
+    pitch = template.format(g1=sub1, g2=sub2, c=character)
     return {
         "genre_1_major": major1,
         "genre_1_sub": sub1,
         "genre_2_major": major2,
         "genre_2_sub": sub2,
         "character": character,
-        "quirk": quirk,
         "pitch": pitch,
     }
 
@@ -260,7 +88,7 @@ ZIMAGE_SYSTEM_PROMPT = """You are a creative director writing absurd, funny film
 
 For each mashup you receive, invent:
 1. A punchy, ridiculous fake film title (3-7 words). It should feel like a real movie title — sometimes with a colon and subtitle. No emojis.
-2. A 3-5 sentence streaming-service-style synopsis (a "logline-plus") that sells the film. Make it funny — lean into the absurd genre clash and protagonist quirk. Hint at stakes, central conflict, and tone, but stay tight. Roughly 50-100 words.
+2. A 3-5 sentence streaming-service-style synopsis (a "logline-plus") that sells the film. Make it funny — lean into the absurd genre clash. You are given only a broad protagonist archetype (e.g. "Lighthouse Keeper"); invent the specific, funny details — name, predicament, and a quirk or two that fit the genre mashup. Hint at stakes, central conflict, and tone, but stay tight. Roughly 50-100 words.
 3. A detailed prompt for the Z-Image stable diffusion model to generate a movie poster.
 
 Rules for the image prompt:
@@ -284,7 +112,7 @@ IDEOGRAM4_SYSTEM_PROMPT = r"""You are a creative director AND a poster layout de
 
 For each mashup you receive, invent:
 1. A punchy, ridiculous fake film title (3-7 words). It should feel like a real movie title — sometimes with a colon and subtitle. No emojis.
-2. A 3-5 sentence streaming-service-style synopsis (a "logline-plus") that sells the film. Make it funny — lean into the absurd genre clash and protagonist quirk. Hint at stakes, central conflict, and tone, but stay tight. Roughly 50-100 words.
+2. A 3-5 sentence streaming-service-style synopsis (a "logline-plus") that sells the film. Make it funny — lean into the absurd genre clash. You are given only a broad protagonist archetype (e.g. "Lighthouse Keeper"); invent the specific, funny details — name, predicament, and a quirk or two that fit the genre mashup. Hint at stakes, central conflict, and tone, but stay tight. Roughly 50-100 words.
 3. A complete movie-poster layout for the Ideogram 4 image model, expressed as JSON.
 
 The poster is a vertical 2:3 theatrical one-sheet. You control the full composition: background, art style, color palette, lighting, and every placed element — both illustrated objects AND text blocks — each positioned with normalized coordinates.
@@ -333,7 +161,7 @@ def build_user_prompt(mashup):
     return (
         f"Genre 1: {mashup['genre_1_sub']} (a {mashup['genre_1_major']} subgenre)\n"
         f"Genre 2: {mashup['genre_2_sub']} (a {mashup['genre_2_major']} subgenre)\n"
-        f"Protagonist: {mashup['character']} {mashup['quirk']}\n"
+        f"Protagonist archetype: {mashup['character']}\n"
         f"Throwaway pitch (for inspiration only — do not just rewrite it): {mashup['pitch']}\n\n"
         f"Now produce the title, synopsis, and image prompt in the required tag format."
     )
@@ -900,7 +728,6 @@ def write_gallery(html_path, rows, images_href, backend_name="ideogram4"):
         g1 = row.get("genre_1_sub") or ""
         g2 = row.get("genre_2_sub") or ""
         character = row.get("character") or ""
-        quirk = row.get("quirk") or ""
         image_prompt = row.get("image_prompt") or ""
         image_file = row.get("image_file") or ""
 
@@ -925,7 +752,7 @@ def write_gallery(html_path, rows, images_href, backend_name="ideogram4"):
           <span class="badge">{html_escape(g2)}</span>
         </div>
         <p class="pitch">{html_escape(body_text)}</p>
-        <div class="character">Starring: <b>{html_escape(character)}</b> {html_escape(quirk)}</div>
+        <div class="character">Starring: <b>{html_escape(character)}</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>{html_escape(seed_pitch)}</pre>
           <div class="bts-label">Image prompt:</div><pre>{html_escape(image_prompt)}</pre>
@@ -1007,7 +834,7 @@ def main():
         images_href = args.images_dir.as_posix()
 
     fieldnames = ["genre_1_major", "genre_1_sub", "genre_2_major",
-                  "genre_2_sub", "character", "quirk", "pitch",
+                  "genre_2_sub", "character", "pitch",
                   "title", "synopsis", "image_prompt", "image_file"]
 
     print(f"Generating {args.count} mashup{'s' if args.count != 1 else ''}")

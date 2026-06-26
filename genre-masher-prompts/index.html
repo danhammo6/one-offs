@@ -57,7 +57,7 @@
     .slots { grid-template-columns: 1fr 1fr; }
   }
   @media (min-width: 1000px) {
-    .slots { grid-template-columns: 1fr 1fr 1fr 1fr; }
+    .slots { grid-template-columns: 1fr 1fr 1fr; }
   }
   .slot {
     background: rgba(255,255,255,0.08);
@@ -269,15 +269,6 @@
         </div>
         <button class="lock" data-slot="3">🔓 Lock</button>
       </div>
-      <div class="slot" id="slot4">
-        <div>
-          <div class="slot-label">Who Is...</div>
-        </div>
-        <div class="slot-content">
-          <div class="slot-value" id="quirk">???</div>
-        </div>
-        <button class="lock" data-slot="4">🔓 Lock</button>
-      </div>
     </div>
 
     <div class="pitch empty" id="pitch">Hit the button to generate your unhinged pitch...</div>
@@ -294,267 +285,39 @@
   </div>
 
 <script>
-const GENRES = {
-  "Horror": [
-    "Folk Horror (rural cult vibes)",
-    "Body Horror (Cronenberg-core)",
-    "Found Footage",
-    "Cosmic / Lovecraftian",
-    "Slasher (masked maniac)",
-    "Haunted Appliance",
-    "Suburban Satanic Panic",
-    "Eco-Horror (the trees are mad)",
-    "Dental Horror"
-  ],
-  "Romance": [
-    "Regency Bodice-Ripper",
-    "Enemies-to-Lovers",
-    "Monster Romance (he is a kraken)",
-    "Mafia Romance",
-    "Small-Town Christmas Romance",
-    "Time-Travel Romance",
-    "Workplace Slow-Burn",
-    "Marriage of Convenience",
-    "Forbidden Beekeeper Romance"
-  ],
-  "Sci-Fi": [
-    "Cyberpunk (neon and noodles)",
-    "Solarpunk (gay agrarian future)",
-    "Space Western",
-    "Hard Sci-Fi (engineers explaining things)",
-    "Biopunk (squelchy laboratory)",
-    "Retrofuturism (1962's tomorrow)",
-    "Dying Earth / Far Future",
-    "First Contact Bureaucracy",
-    "Mundane Apocalypse"
-  ],
-  "Fantasy": [
-    "Grimdark (everyone's sad and damp)",
-    "Cozy Fantasy (tea and dragons)",
-    "Urban Fantasy",
-    "Sword & Sorcery",
-    "Portal Fantasy",
-    "Magical Academia",
-    "Flintlock Fantasy (muskets + magic)",
-    "Mythic Retelling",
-    "Bureaucratic Fantasy (the Wizard's HR dept)"
-  ],
-  "Mystery": [
-    "Cozy Village Whodunit",
-    "Hardboiled Detective",
-    "Locked Room Mystery",
-    "Nordic Noir (everyone is cold)",
-    "Amateur Sleuth (a baker did it)",
-    "Forensic Procedural",
-    "Conspiracy Thriller",
-    "Cold Case Podcast Mystery",
-    "Cryptozoological Investigation"
-  ],
-  "Comedy": [
-    "Cringe Mockumentary",
-    "Screwball",
-    "Stoner Comedy",
-    "Satire (eat the rich)",
-    "Workplace Comedy",
-    "Gross-Out",
-    "Surreal Anti-Humor",
-    "Farce (so many doors)",
-    "Wholesome Himbo Comedy"
-  ],
-  "Drama": [
-    "Prestige Misery Drama",
-    "Coming-of-Age",
-    "Legal Drama",
-    "Medical Drama (very sweaty)",
-    "Family Saga",
-    "Sports Underdog",
-    "Period Piece (corsets, scandals)",
-    "Slow Cinema (a man stares at a lake)",
-    "Restaurant Kitchen Drama"
-  ],
-  "Action": [
-    "Heist",
-    "Spy Thriller",
-    "Martial Arts",
-    "Disaster Movie",
-    "Revenge Thriller (he killed my dog)",
-    "Buddy Cop",
-    "Military Sci-Fi",
-    "Parkour Chase Movie",
-    "Vehicular Mayhem"
-  ],
-  "Documentary-style": [
-    "True Crime (let me look at this map)",
-    "Nature Documentary (gentle British narrator)",
-    "Sports Doc",
-    "Cult Exposé",
-    "Food Porn Doc",
-    "Music Bio-Doc",
-    "Conspiracy Doc",
-    "Reality Competition"
-  ],
-  "Weird Niche": [
-    "Liminal Space Horror",
-    "Hauntology (lost media core)",
-    "Hopepunk",
-    "Dieselpunk",
-    "Mall Mythology",
-    "Y2K Techno-Paranoia",
-    "Gentle Apocalypse",
-    "Bardcore Medieval",
-    "Backrooms Bureaucracy"
-  ],
-  "Western": [
-    "Acid Western (peyote-fueled)",
-    "Spaghetti Western",
-    "Weird West (cowboys + monsters)",
-    "Modern Neo-Western",
-    "Revisionist Western"
-  ],
-  "Musical": [
-    "Jukebox Musical",
-    "Rock Opera",
-    "Sad Indie Folk Musical",
-    "Crime Musical (everyone sings about taxes)",
-    "Surrealist Dance Musical"
-  ]
-};
+// Genre + character data is loaded from genres.json (shared with the
+// Python generator). NOTE: browsers block fetch() over file:// — serve
+// this folder (e.g. `python -m http.server`) rather than double-clicking.
+let GENRES = {};
+let CHARACTERS = [];
+let DATA_READY = false;
 
-const CHARACTERS = [
-  "Disgraced Sommelier",
-  "Sentient Roomba",
-  "Retired Assassin",
-  "Conspiracy-Theorist Librarian",
-  "Goth Accountant",
-  "Himbo Pirate",
-  "Tax-Dodging Witch",
-  "Time-Traveling Plumber",
-  "Cursed Beauty Pageant Winner",
-  "Bog Witch",
-  "Disillusioned Cult Defector",
-  "Call Center Vampire",
-  "Talking Horse",
-  "Reluctant Middle Manager",
-  "Former Child Star",
-  "Doomsday Prepper Grandma",
-  "Legalese-Speaking Ghost",
-  "Influencer Exorcist",
-  "Spare Royal Twin",
-  "Mall Cop",
-  "Anxious Cryptozoologist",
-  "Gardening AI",
-  "Fading Magician's Assistant",
-  "Mediocre Knight",
-  "Superhero Therapist",
-  "Stand-Up Plague Doctor",
-  "Disgraced Olympic Curler",
-  "Union-Rep Fairy Godmother",
-  "Cowboy Astronaut",
-  "Reformed Demon",
-  "Substitute Teacher",
-  "Polite Cannibal Food Critic",
-  "Anxious Werewolf",
-  "Ex-Pop-Star Goat Farmer",
-  "Underworld Bureaucrat",
-  "Failed Wizard",
-  "Disgruntled Tooth Fairy",
-  "Sentient Houseplant",
-  "Medieval Town Crier",
-  "Murder-Hobo Adventurer",
-  "Mediocre Oracle",
-  "Burned-Out Knight",
-  "Rideshare-Driving Centaur",
-  "Theater Kid Detective",
-  "Failed Mall Santa",
-  "Disgraced Bee Inspector",
-  "HOA-President Lich",
-  "Reluctant Pope",
-  "Off-Brand Superhero",
-  "Suburban Dad Necromancer",
-  "Gen-Z Pirate",
-  "Kindergarten Teacher Spy",
-  "Sentient Vending Machine",
-  "Aging Boy Band Member",
-  "Renaissance Fair Champion",
-  "DMV Clerk Demigod"
-];
-
-const QUIRKS = [
-  "with a heart of gold",
-  "seeking redemption",
-  "with PTSD",
-  "who runs a bakery",
-  "who has not paid her taxes",
-  "with strong opinions about jazz",
-  "in a polycule",
-  "doing court-ordered community service",
-  "going through a messy divorce",
-  "training for a marathon",
-  "with prophetic dreams",
-  "with crippling anxiety",
-  "who just wants to garden",
-  "with a podcast nobody listens to",
-  "haunted by a single regret",
-  "who is allergic to their own job",
-  "writing a memoir",
-  "with three ex-husbands and a parrot",
-  "who learned everything from YouTube",
-  "secretly running a Ponzi scheme",
-  "raising a teenager alone",
-  "who only speaks in movie quotes",
-  "competing on a reality show",
-  "with a vendetta against a specific seagull",
-  "in their flop era",
-  "who pivoted to crypto last year",
-  "trying veganism",
-  "in witness protection",
-  "with a doctorate in medieval poetry",
-  "who is also a twin (it's relevant)",
-  "running for local office",
-  "stuck in a time loop",
-  "with a court-mandated emotional support animal",
-  "going through perimenopause",
-  "newly sober and rage-y about it",
-  "who just inherited a haunted mansion",
-  "afraid of birds (specifically)",
-  "moonlighting as a wedding singer",
-  "with one eye and a grudge",
-  "who has been replaced by a doppelgänger and nobody noticed",
-  "currently being sued",
-  "trying to win back their ex",
-  "secretly the chosen one (don't tell them)",
-  "with golden retriever energy",
-  "who has seen things, man",
-  "in deep with the wrong people",
-  "doing a TED Talk circuit",
-  "raising bees as therapy",
-  "who never finished their PhD",
-  "with a mysterious birthmark",
-  "currently ghosting their family group chat",
-  "two weeks from retirement",
-  "obsessed with a single Wikipedia article",
-  "running a failing food truck",
-  "who married into a cult by accident",
-  "with a rival for some reason"
-];
+async function loadGenreData() {
+  const res = await fetch('genres.json');
+  if (!res.ok) throw new Error('genres.json HTTP ' + res.status);
+  const data = await res.json();
+  GENRES = data.genres;
+  CHARACTERS = data.characters;
+  DATA_READY = true;
+}
 
 const PITCH_TEMPLATES = [
-  (g1, g2, c, q) => `It's <b>${g1}</b> meets <b>${g2}</b>... but the protagonist is a <b>${c}</b> ${q}. Studio notes say "lean into the weird".`,
-  (g1, g2, c, q) => `Imagine if a <b>${g1}</b> show had a baby with a <b>${g2}</b> miniseries, and that baby grew up to be a <b>${c}</b> ${q}.`,
-  (g1, g2, c, q) => `Set in a world where <b>${g1}</b> and <b>${g2}</b> coexist uneasily, our hero — a <b>${c}</b> ${q} — must save... something. Probably a town.`,
-  (g1, g2, c, q) => `Pitch: <b>${g1}</b> × <b>${g2}</b>. Tone: dread, but make it horny. Lead: a <b>${c}</b> ${q}. Six episodes. We're calling it Emmy bait.`,
-  (g1, g2, c, q) => `A <b>${c}</b> ${q} stumbles into a <b>${g1}</b> conspiracy that can only be solved using the rules of <b>${g2}</b>. The streaming service is "intrigued".`,
-  (g1, g2, c, q) => `Four words: <b>${g1}</b>. <b>${g2}</b>. <b>${c}</b>. ${q}. The trailer drops Tuesday. There will be a sad needle-drop cover of a 2003 hit.`,
-  (g1, g2, c, q) => `Picture a <b>${g1}</b> setting, but everyone behaves like they're in a <b>${g2}</b>. Our reluctant hero: a <b>${c}</b> ${q}. There is a dance scene.`,
-  (g1, g2, c, q) => `Logline: When a <b>${c}</b> ${q} discovers their quiet life is actually a <b>${g1}</b>, they must master the genre conventions of <b>${g2}</b> to survive.`,
-  (g1, g2, c, q) => `Three-act structure: <b>${g1}</b> in act one, <b>${g2}</b> by act three, and a <b>${c}</b> ${q} sobbing into a microwave dinner the whole time. Critics will call it "brave".`,
-  (g1, g2, c, q) => `Cold open: a <b>${c}</b> ${q}, alone, in the rain. The genre? <b>${g1}</b>. The vibe? Unmistakably <b>${g2}</b>. Cue title card.`
+  (g1, g2, c) => `It's <b>${g1}</b> meets <b>${g2}</b>... but the protagonist is a <b>${c}</b>. Studio notes say "lean into the weird".`,
+  (g1, g2, c) => `Imagine if a <b>${g1}</b> show had a baby with a <b>${g2}</b> miniseries, and that baby grew up to follow a <b>${c}</b>.`,
+  (g1, g2, c) => `Set in a world where <b>${g1}</b> and <b>${g2}</b> coexist uneasily, our hero — a <b>${c}</b> — must save... something. Probably a town.`,
+  (g1, g2, c) => `Pitch: <b>${g1}</b> × <b>${g2}</b>. Tone: dread, but make it horny. Lead: a <b>${c}</b>. Six episodes. We're calling it Emmy bait.`,
+  (g1, g2, c) => `A <b>${c}</b> stumbles into a <b>${g1}</b> conspiracy that can only be solved using the rules of <b>${g2}</b>. The streaming service is "intrigued".`,
+  (g1, g2, c) => `Three words: <b>${g1}</b>. <b>${g2}</b>. <b>${c}</b>. The trailer drops Tuesday. There will be a sad needle-drop cover of a 2003 hit.`,
+  (g1, g2, c) => `Picture a <b>${g1}</b> setting, but everyone behaves like they're in a <b>${g2}</b>. Our reluctant hero: a <b>${c}</b>. There is a dance scene.`,
+  (g1, g2, c) => `Logline: When a <b>${c}</b> discovers their quiet life is actually a <b>${g1}</b>, they must master the genre conventions of <b>${g2}</b> to survive.`,
+  (g1, g2, c) => `Three-act structure: <b>${g1}</b> in act one, <b>${g2}</b> by act three, and a <b>${c}</b> sobbing into a microwave dinner the whole time. Critics will call it "brave".`,
+  (g1, g2, c) => `Cold open: a <b>${c}</b>, alone, in the rain. The genre? <b>${g1}</b>. The vibe? Unmistakably <b>${g2}</b>. Cue title card.`
 ];
 
 const state = {
   count: 0,
-  locked: { 1: false, 2: false, 3: false, 4: false },
-  current: { 1: null, 2: null, 3: null, 4: null }
+  locked: { 1: false, 2: false, 3: false },
+  current: { 1: null, 2: null, 3: null }
 };
 
 function pickGenreWithSub(excludeMajor) {
@@ -603,9 +366,8 @@ async function smash() {
     g2 = pickGenreWithSub(g1.major);
   }
   let character = state.locked[3] && state.current[3] ? state.current[3] : pick(CHARACTERS);
-  let quirk = state.locked[4] && state.current[4] ? state.current[4] : pick(QUIRKS);
 
-  state.current = { 1: g1, 2: g2, 3: character, 4: quirk };
+  state.current = { 1: g1, 2: g2, 3: character };
 
   const genrePool = Object.keys(GENRES).flatMap(m => GENRES[m].map(s => ({ major: m, sub: s })));
 
@@ -619,15 +381,12 @@ async function smash() {
   if (!state.locked[3]) promises.push(rollSlot(document.getElementById('slot3'), character, '', CHARACTERS, 1150, false));
   else { document.getElementById('character').textContent = character; }
 
-  if (!state.locked[4]) promises.push(rollSlot(document.getElementById('slot4'), quirk, '', QUIRKS, 1350, false));
-  else { document.getElementById('quirk').textContent = quirk; }
-
   await Promise.all(promises);
 
   const tpl = PITCH_TEMPLATES[Math.floor(Math.random() * PITCH_TEMPLATES.length)];
   const pitchEl = document.getElementById('pitch');
   pitchEl.classList.remove('empty');
-  pitchEl.innerHTML = tpl(g1.sub, g2.sub, character, quirk);
+  pitchEl.innerHTML = tpl(g1.sub, g2.sub, character);
 
   state.count++;
   document.getElementById('stats').textContent = `Pitches generated: ${state.count}`;
@@ -638,11 +397,10 @@ async function smash() {
 
 function generatePoster() {
   const g1 = state.current[1], g2 = state.current[2];
-  const character = state.current[3], quirk = state.current[4];
-  if (!g1 || !g2 || !character || !quirk) return;
+  const character = state.current[3];
+  if (!g1 || !g2 || !character) return;
 
-  const stripParens = s => s.replace(/\s*\([^)]*\)\s*/g, '').trim();
-  const prompt = `Movie poster for a ${stripParens(g1.sub)} meets ${stripParens(g2.sub)} film, starring a ${character} ${quirk}, dramatic cinematic lighting, bold typography, fake film title visible, vintage poster style`;
+  const prompt = `Movie poster for a ${g1.sub} meets ${g2.sub} film, starring a ${character}, dramatic cinematic lighting, bold typography, fake film title visible, photorealistic cinematic style`;
   const seed = Math.floor(Math.random() * 1000000);
   const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=768&height=1024&nologo=true&seed=${seed}`;
 
@@ -672,9 +430,21 @@ document.querySelectorAll('.lock').forEach(btn => {
 window.addEventListener('keydown', e => {
   if (e.code === 'Space' && document.activeElement.tagName !== 'BUTTON') {
     e.preventDefault();
-    smash();
+    if (DATA_READY) smash();
   }
 });
+
+// Load shared genre data before enabling the game.
+const smashBtn = document.getElementById('smashBtn');
+smashBtn.disabled = true;
+loadGenreData()
+  .then(() => { smashBtn.disabled = false; })
+  .catch(err => {
+    console.error(err);
+    document.getElementById('pitch').innerHTML =
+      "Couldn't load <code>genres.json</code>. This page must be <b>served over HTTP</b> " +
+      "(e.g. run <code>python&nbsp;-m&nbsp;http.server</code> in this folder), not opened directly as a file.";
+  });
 </script>
 </body>
 </html>

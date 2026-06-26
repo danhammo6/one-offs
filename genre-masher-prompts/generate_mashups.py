@@ -966,8 +966,15 @@ def main():
     parser.add_argument("--llm", choices=["claude", "llama"], default="claude",
                         help="Text LLM: 'claude' (Claude Code CLI, default) or "
                              "'llama' (local llama.cpp server)")
-    parser.add_argument("--claude-model", default="sonnet",
-                        help="Model for the Claude Code CLI (default: sonnet)")
+    parser.add_argument("--claude-model", default="opus",
+                        help="Model for the Claude Code CLI (default: opus). opus is the "
+                             "fastest AND cheapest here — it writes tight responses, while "
+                             "sonnet/haiku pad to ~5x the output tokens for no quality gain.")
+    parser.add_argument("--llm-workers", type=int, default=3,
+                        help="LLM calls to run concurrently, drafting ahead of the image "
+                             "renderer (default: 3). Each Claude call is an independent "
+                             "subprocess; ComfyUI renders serially (~30s), so a few workers "
+                             "keep it fed and more just queue up.")
     parser.add_argument("--llm-server", default="http://127.0.0.1:9503",
                         help="llama.cpp server URL when --llm llama (default: http://127.0.0.1:9503)")
     parser.add_argument("--comfy-server", default="127.0.0.1:8188",
@@ -1029,7 +1036,8 @@ def main():
     print(f"  CSV:     {args.output}")
     print(f"  HTML:    {args.html}")
     if not args.no_llm:
-        print(f"  LLM:     {llm.describe()}")
+        workers_note = f" ×{args.llm_workers} concurrent" if args.llm == "claude" else ""
+        print(f"  LLM:     {llm.describe()}{workers_note}")
     if do_images:
         print(f"  Backend: {backend.name} ({backend.poster_w}x{backend.poster_h})")
         print(f"  Comfy:   {args.comfy_server}")
@@ -1083,24 +1091,34 @@ def main():
         write_gallery(args.html, completed_rows, images_href, backend.name)
 
     # Pipeline:
-    #   While ComfyUI renders row N's poster, the LLM is already drafting row N+1.
-    #   We use a single-worker pool for the LLM so we always have at most one
-    #   LLM call in flight ahead of the current row.
-    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as llm_pool:
-        # Kick off the first LLM job
-        next_future = llm_pool.submit(llm_task, 1) if args.count > 0 else None
+    #   The LLM is the long pole per row (Claude writes the title + synopsis +
+    #   structured poster JSON), while ComfyUI renders serially in ~30s. We keep
+    #   up to --llm-workers LLM calls in flight, drafting ahead of the renderer,
+    #   so the renderer is never starved. Results are still consumed strictly in
+    #   row order (we await future i, render it, then submit future i+workers).
+    # Each Claude call is its own subprocess, so they parallelize cleanly. A
+    # local llama.cpp server serves one request at a time, so concurrency there
+    # buys nothing and can stall — keep llama single-in-flight.
+    n_workers = max(1, args.llm_workers) if args.llm == "claude" else 1
+    with concurrent.futures.ThreadPoolExecutor(max_workers=n_workers) as llm_pool:
+        # Prime the window: submit the first n_workers rows up front.
+        futures = {
+            idx: llm_pool.submit(llm_task, idx)
+            for idx in range(1, min(n_workers, args.count) + 1)
+        }
 
         for i in range(1, args.count + 1):
             row_start = time.monotonic()
 
             # Wait for the LLM job for THIS row to finish.
-            mashup, llm_err = next_future.result()
+            mashup, llm_err = futures.pop(i).result()
             llm_done = time.monotonic()
 
-            # Immediately queue the LLM job for the NEXT row so it runs
-            # alongside this row's image render.
-            if i < args.count:
-                next_future = llm_pool.submit(llm_task, i + 1)
+            # Keep the window full: queue the row n_workers ahead so the next
+            # batch of LLM calls runs alongside this row's image render.
+            ahead = i + n_workers
+            if ahead <= args.count:
+                futures[ahead] = llm_pool.submit(llm_task, ahead)
 
             status_bits = []
             if llm_err:

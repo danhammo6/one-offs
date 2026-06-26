@@ -46,7 +46,7 @@ Combination space: 11 major genres × ~8 sub-genres each = 90 sub-genres, paired
 ### Requirements
 
 - A text LLM, selected with `--llm`:
-  - **`claude`** (default) — the [Claude Code CLI](https://docs.claude.com/en/docs/claude-code) on your `PATH`. Each pitch is a fresh `claude -p` invocation with tools disabled (pure generation). Much higher quality than a local model.
+  - **`claude`** (default) — the [Claude Code CLI](https://docs.claude.com/en/docs/claude-code) on your `PATH`. Each pitch is a fresh `claude -p` invocation with tools disabled (pure generation). Much higher quality than a local model. Defaults to the `opus` model (`--claude-model`) — counterintuitively it's both the fastest *and* the cheapest here, because it writes tight, ~1.9K-token responses while sonnet/haiku pad to ~9K tokens for no quality gain. Claude calls run concurrently (`--llm-workers`, default 3) so the image renderer is never starved.
   - **`llama`** — any llama.cpp-compatible OpenAI-style `/v1/chat/completions` server (`--llm-server`). The system prompts are tuned for reasoning models like Qwen3 — they let the model think, then emit tags after the reasoning.
   - Either way the model emits tags after any reasoning: `<title>`/`<synopsis>`/`<poster>` (ideogram4) or `<title>`/`<synopsis>`/`<positive>` (zimage).
 - A ComfyUI server with the matching workflow loaded (`workflows/krea2_comfyui_t2i_aitrepeneur_api.json`, `workflows/ideogram4_t2i_api.json`, or `workflows/comfy_art_workflow_api.json`).
@@ -64,8 +64,8 @@ uv pip install --python .venv -r requirements.txt
 ### Usage
 
 ```bash
-# Default: Claude Code LLM, ideogram4 backend, ComfyUI at 127.0.0.1:8188
-# Writes mashups_ideogram4.csv/.html and images/ideogram4/
+# Default: Claude Code LLM (opus, 3 concurrent), krea backend, ComfyUI at 127.0.0.1:8188
+# Writes mashups_krea.csv/.html and images/krea/
 python generate_mashups.py 30
 
 # Use the local llama.cpp server instead of Claude Code
@@ -107,7 +107,7 @@ For each pitch:
 
 ### Pipelining
 
-LLM and image generation run concurrently. While ComfyUI renders row N's poster, the LLM is already drafting row N+1's title and synopsis. In steady state, log rows show `llm 0.0s` because the next row's text was ready before the current image finished. A 45-row run averaged ~67s per pitch end-to-end.
+LLM and image generation run concurrently. The pipeline keeps up to `--llm-workers` (default 3) Claude calls in flight, drafting ahead of the image renderer, but consumes results in strict row order. Because each `claude -p` is an independent subprocess, the LLM calls genuinely parallelize; ComfyUI renders serially (~27s per krea poster), so a few workers are enough to keep it fed — more than that just queue up. In steady state, log rows show `llm 0.0s` because the next row's text was ready before the current image finished, and the whole batch runs at ComfyUI's ~27s-per-poster floor. (With a single worker, the LLM would be the long pole at ~30s–2min per call depending on model.)
 
 ### Resilience
 
@@ -140,4 +140,5 @@ The HTML gallery shows poster + title + synopsis prominently, with a collapsible
 - **Different aspect ratio or size?** Change `poster_w`/`poster_h` for the backend in the `BACKENDS` registry. ComfyUI expects multiples of 64.
 - **More variety in titles (llama)?** Bump `temperature` in `LlamaLLM.chat` (currently 0.95).
 - **A new image backend?** Add an entry to the `BACKENDS` registry (system prompt, `<tag>` extractor, workflow-patch function, dimensions) and a matching `GALLERY_META` entry (label, ratio, paths, credit). The pipeline, CSV, and gallery are backend-agnostic.
-- **A different Claude model?** Pass `--claude-model` (e.g. `opus`, `haiku`). For llama, point `--llm-server` at any OpenAI-compatible endpoint.
+- **A different Claude model?** Pass `--claude-model` (default `opus`; `sonnet` and `haiku` also work). For llama, point `--llm-server` at any OpenAI-compatible endpoint.
+- **Batch too slow / hammering the LLM?** Tune `--llm-workers` (default 3). Raise it only if your LLM is slower than the renderer; lowering to 1 restores the old single-in-flight behavior. (Ignored for `--llm llama`, which serves one request at a time.)

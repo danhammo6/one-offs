@@ -888,6 +888,41 @@ def _gallery_nav(current_backend):
     return '\n    '.join(links)
 
 
+def build_manifest(rows, backend_name, images_href):
+    """Build the browser game's JSON manifest for one backend: only rows that
+    rendered a poster, each with its genres/character/title/synopsis and the
+    relative poster path. images_href is the path prefix from the manifest to
+    the poster files (same as the gallery's), e.g. "images/krea"."""
+    meta = GALLERY_META.get(backend_name, GALLERY_META["ideogram4"])
+    films = []
+    for r in rows:
+        if not r.get("image_file"):
+            continue  # no poster -> not usable by the game
+        films.append({
+            "title": r.get("title") or "",
+            "synopsis": r.get("synopsis") or "",
+            "genre_1_major": r.get("genre_1_major") or "",
+            "genre_1_sub": r.get("genre_1_sub") or "",
+            "genre_2_major": r.get("genre_2_major") or "",
+            "genre_2_sub": r.get("genre_2_sub") or "",
+            "character": r.get("character") or "",
+            "image": f"{images_href}/{r['image_file']}",
+        })
+    return {
+        "backend": backend_name,
+        "label": meta["label"],
+        "ratio": meta["ratio"],
+        "films": films,
+    }
+
+
+def write_manifest(manifest_path, rows, backend_name, images_href):
+    manifest = build_manifest(rows, backend_name, images_href)
+    Path(manifest_path).write_text(
+        json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
+    return len(manifest["films"])
+
+
 def write_gallery(html_path, rows, images_href, backend_name="ideogram4"):
     """images_href is the relative path prefix from the gallery HTML to the
     poster files, e.g. "images/ideogram4"."""
@@ -1099,6 +1134,11 @@ def main():
         except Exception as e:
             return m, f"llm: {e}"
 
+    # The browser game (index.html) reads pre-generated films from a per-backend
+    # JSON manifest (mashups_<backend>.json, sibling to the CSV). Only rows that
+    # actually rendered a poster are included.
+    manifest_path = args.output.with_suffix(".json")
+
     def write_outputs():
         with args.output.open("w", newline="", encoding="utf-8") as f:
             writer = csv.DictWriter(f, fieldnames=fieldnames)
@@ -1106,6 +1146,8 @@ def main():
             for r in completed_rows:
                 writer.writerow({k: r.get(k, "") for k in fieldnames})
         write_gallery(args.html, completed_rows, images_href, backend.name)
+        if do_images:  # game manifest only matters when posters exist
+            write_manifest(manifest_path, completed_rows, backend.name, images_href)
 
     # Pipeline:
     #   The LLM is the long pole per row (Claude writes the title + synopsis +
@@ -1189,6 +1231,8 @@ def main():
     print(f"Done in {format_eta(total)}. {args.count - failures}/{args.count} succeeded.")
     print(f"  CSV:  {args.output}")
     print(f"  HTML: {args.html}")
+    if do_images:
+        print(f"  JSON: {manifest_path}  (game manifest)")
     if failures:
         print(f"  ⚠  {failures} row{'s' if failures != 1 else ''} had errors.")
 

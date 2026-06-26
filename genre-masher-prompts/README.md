@@ -4,7 +4,7 @@ Generate absurd genre mashup pitches — with AI-rendered movie posters and syno
 
 Two pieces:
 
-1. **`index.html`** — a single-page browser game. Click "Smash Genres!" to roll two sub-genres + a character archetype, get a randomized pitch, and optionally generate an AI poster via Pollinations.ai. (Loads `genres.json`, so serve it over HTTP — see below.)
+1. **`index.html`** — a single-page browser game. Click "Smash Genres!" and the reels spin and land on a **real pre-generated film** pulled from the batches below — its actual genres, character, title, rendered poster, and synopsis. (Loads the `mashups_<backend>.json` manifests, so serve it over HTTP — see below.)
 2. **`generate_mashups.py`** — batch generator that, for each mashup, asks an LLM for a film title + synopsis + poster spec, drives ComfyUI to render a poster, and produces a static HTML gallery. The text LLM is selectable via `--llm` (Claude Code CLI by default; a local llama.cpp server otherwise). The image model is selectable via `--backend`:
    - **`krea`** (default) — the LLM emits a full structured, **photoreal** poster layout (palette + placed title/tagline/billing/photographed elements with normalized coordinates) for the **Krea** text-to-image model. Renders a 1152×1728 (2:3 one-sheet, ~2 MP) poster in ~30s.
    - **`ideogram4`** — same structured contract for the **Ideogram 4** model. Renders a 1536×2304 (~3.5 MP) poster with crisp text, but ~7 min each — high quality, slow.
@@ -14,32 +14,42 @@ Two pieces:
 
 ```
 .
-├── index.html                     # browser game (serve over HTTP — loads genres.json)
-├── genres.json                    # shared genre + character data (script AND game)
-├── generate_mashups.py            # batch CSV + HTML + image pipeline
+├── index.html                     # browser game (serve over HTTP — loads the JSON manifests)
+├── genres.json                    # shared genre + character data (script AND game reels)
+├── generate_mashups.py            # batch CSV + HTML + image + manifest pipeline
 ├── workflows/                     # ComfyUI API workflows, one per backend
 │   ├── comfy_art_workflow_api.json            # Z-Image art variant
 │   ├── ideogram4_t2i_api.json                 # Ideogram 4 structured-poster variant
 │   └── krea2_comfyui_t2i_aitrepeneur_api.json # Krea structured-poster variant
 ├── requirements.txt               # client deps (websocket-client, pillow)
-├── mashups_krea.csv / .html       # Krea batch + gallery
-├── mashups_ideogram4.csv / .html  # Ideogram 4 batch + gallery
-├── mashups_zimage.csv / .html     # Z-Image batch + gallery
+├── mashups_krea.csv / .html / .json      # Krea batch: gallery + game manifest
+├── mashups_ideogram4.csv / .html / .json # Ideogram 4 batch + manifest
+├── mashups_zimage.csv / .html / .json    # Z-Image batch + manifest
 └── images/
     ├── krea/                       # Krea posters (PNG)
     ├── ideogram4/                  # Ideogram 4 posters (PNG, ~6-8 MB each)
     └── zimage/                     # Z-Image posters (PNG)
 ```
 
-Each backend writes its own CSV, its own gallery, and its own `images/<backend>/`
-subdir. The galleries cross-link via a nav bar at the top, so you can flip
-between the Krea, Ideogram 4, and Z-Image batches.
+Each backend writes its own CSV, its own gallery, its own `images/<backend>/`
+subdir, and its own `mashups_<backend>.json` manifest (the list of rendered
+films the game draws from). The galleries cross-link via a nav bar at the top,
+so you can flip between the Krea, Ideogram 4, and Z-Image batches.
 
 ## Browser game
 
-The game loads its genre data from `genres.json` via `fetch()`, so it must be **served over HTTP** rather than opened as a `file://` — run `python -m http.server` in this folder and visit the printed URL. Spacebar rerolls; lock buttons pin individual slots. The poster generator hits `image.pollinations.ai` (free, keyless) on demand. There's a link near the top to the pre-rendered batch galleries.
+The game serves **pre-generated** films: clicking "Smash Genres!" spins the reels and lands on a real entry from the batches — its actual genres, character, title, rendered poster, and synopsis. (No live image generation; everything was rendered by `generate_mashups.py` ahead of time.)
 
-Combination space: 11 major genres × ~8 sub-genres each = 90 sub-genres, paired with 36 character archetypes. **Thousands of distinct genre-pairs**, and the LLM invents fresh specifics on top of each one, so the practical space is effectively unbounded.
+It loads the `mashups_<backend>.json` manifests via `fetch()`, so it must be **served over HTTP** rather than opened as a `file://` — run `python -m http.server` in this folder and visit the printed URL. Spacebar rerolls. There's a link near the top to the full per-backend galleries.
+
+**Which films are in the pool is configurable.** By default the pool merges all backends (Z-Image + Ideogram 4 + Krea). Narrow it with a `?backends=` query param:
+
+```
+index.html?backends=ideogram4         # just Ideogram 4
+index.html?backends=ideogram4,krea     # two of them
+```
+
+(The default lives in `DEFAULT_BACKENDS` near the top of the `<script>` if you'd rather change it permanently — e.g. switch to Ideogram 4 only once you've rendered enough of them.) A backend you haven't run yet simply contributes nothing, so missing manifests are harmless.
 
 ## Batch generator
 
@@ -107,7 +117,7 @@ For each pitch:
      - **zimage**: a `<positive>` block — one long natural-language prompt with the title baked in as visible poster text.
 4. Patch the poster spec + a fresh seed into the matching ComfyUI workflow and render the PNG (1152×1728 for krea, 1536×2304 for ideogram4, 1280×1664 for zimage).
 5. Save the PNG **as-is** (no transcoding, no resizing).
-6. Rewrite the backend's CSV and gallery (e.g. `mashups_krea.csv` / `.html`) after every row, so partial runs are usable. By default this **overwrites** any existing CSV/HTML for that backend; pass `--append` to keep the existing rows and posters and add the new ones after them (new poster filenames are numbered to continue past the existing ones).
+6. Rewrite the backend's CSV, gallery, and game manifest (e.g. `mashups_krea.csv` / `.html` / `.json`) after every row, so partial runs are usable. By default this **overwrites** any existing files for that backend; pass `--append` to keep the existing rows and posters and add the new ones after them (new poster filenames are numbered to continue past the existing ones).
 
 ### Pipelining
 

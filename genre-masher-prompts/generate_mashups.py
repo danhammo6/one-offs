@@ -6,25 +6,32 @@ render) concurrently — while ComfyUI renders row N's poster, the LLM is alread
 drafting row N+1. Each completed row gets written to the CSV and the HTML gallery,
 so a partial run is still useful.
 
-Two image backends are selectable with --backend:
-    - ideogram4 (default): LLM emits a structured poster layout (palette + placed
-      text/illustration elements with coordinates) for the Ideogram 4 model.
+Text LLM is selectable with --llm:
+    - claude (default): shells out to the Claude Code CLI (`claude -p`), tools off.
+    - llama: a local llama.cpp OpenAI-compatible server (--llm-server).
+
+Image backend is selectable with --backend:
+    - krea (default): photoreal structured poster layout for the Krea model
+      (~2 MP, ~30s/render). Same JSON contract as ideogram4 but photo-first.
+    - ideogram4: structured poster layout for the Ideogram 4 model (~3.5 MP,
+      ~7 min/render — high quality but slow).
     - zimage: LLM emits one long natural-language prompt for the Z-Image model.
 
 Requires:
-    - llama.cpp server (default http://127.0.0.1:9503)
+    - Claude Code CLI on PATH (default LLM), or a llama.cpp server for --llm llama
     - ComfyUI server with the matching workflow loaded (default 127.0.0.1:8188)
     - deps from requirements.txt (websocket-client, pillow) — see README for uv setup
 
 Usage:
     python generate_mashups.py <count> [output.csv]
-                               [--backend {ideogram4,zimage}]
+                               [--llm {claude,llama}] [--claude-model NAME]
+                               [--backend {krea,ideogram4,zimage}]
                                [--llm-server URL] [--comfy-server HOST:PORT]
                                [--images-dir DIR] [--html FILE] [--no-images]
 
 Example:
     python generate_mashups.py 30
-    python generate_mashups.py 30 --backend zimage
+    python generate_mashups.py 30 --llm llama --backend zimage
     python generate_mashups.py 5 --no-images       # CSV only, no posters
     .venv/bin/python generate_mashups.py 50
 """
@@ -36,6 +43,8 @@ import csv
 import json
 import random
 import re
+import shutil
+import subprocess
 import sys
 import time
 import urllib.error
@@ -45,194 +54,24 @@ import uuid
 from html import escape as html_escape
 from pathlib import Path
 
-GENRES = {
-    "Horror": [
-        "Folk Horror (rural cult vibes)",
-        "Body Horror (Cronenberg-core)",
-        "Found Footage",
-        "Cosmic / Lovecraftian",
-        "Slasher (masked maniac)",
-        "Haunted Appliance",
-        "Suburban Satanic Panic",
-        "Eco-Horror (the trees are mad)",
-        "Dental Horror",
-    ],
-    "Romance": [
-        "Regency Bodice-Ripper",
-        "Enemies-to-Lovers",
-        "Monster Romance (he is a kraken)",
-        "Mafia Romance",
-        "Small-Town Christmas Romance",
-        "Time-Travel Romance",
-        "Workplace Slow-Burn",
-        "Marriage of Convenience",
-        "Forbidden Beekeeper Romance",
-    ],
-    "Sci-Fi": [
-        "Cyberpunk (neon and noodles)",
-        "Solarpunk (gay agrarian future)",
-        "Space Western",
-        "Hard Sci-Fi (engineers explaining things)",
-        "Biopunk (squelchy laboratory)",
-        "Retrofuturism (1962's tomorrow)",
-        "Dying Earth / Far Future",
-        "First Contact Bureaucracy",
-        "Mundane Apocalypse",
-    ],
-    "Fantasy": [
-        "Grimdark (everyone's sad and damp)",
-        "Cozy Fantasy (tea and dragons)",
-        "Urban Fantasy",
-        "Sword & Sorcery",
-        "Portal Fantasy",
-        "Magical Academia",
-        "Flintlock Fantasy (muskets + magic)",
-        "Mythic Retelling",
-        "Bureaucratic Fantasy (the Wizard's HR dept)",
-    ],
-    "Mystery": [
-        "Cozy Village Whodunit",
-        "Hardboiled Detective",
-        "Locked Room Mystery",
-        "Nordic Noir (everyone is cold)",
-        "Amateur Sleuth (a baker did it)",
-        "Forensic Procedural",
-        "Conspiracy Thriller",
-        "Cold Case Podcast Mystery",
-        "Cryptozoological Investigation",
-    ],
-    "Comedy": [
-        "Cringe Mockumentary",
-        "Screwball",
-        "Stoner Comedy",
-        "Satire (eat the rich)",
-        "Workplace Comedy",
-        "Gross-Out",
-        "Surreal Anti-Humor",
-        "Farce (so many doors)",
-        "Wholesome Himbo Comedy",
-    ],
-    "Drama": [
-        "Prestige Misery Drama",
-        "Coming-of-Age",
-        "Legal Drama",
-        "Medical Drama (very sweaty)",
-        "Family Saga",
-        "Sports Underdog",
-        "Period Piece (corsets, scandals)",
-        "Slow Cinema (a man stares at a lake)",
-        "Restaurant Kitchen Drama",
-    ],
-    "Action": [
-        "Heist",
-        "Spy Thriller",
-        "Martial Arts",
-        "Disaster Movie",
-        "Revenge Thriller (he killed my dog)",
-        "Buddy Cop",
-        "Military Sci-Fi",
-        "Parkour Chase Movie",
-        "Vehicular Mayhem",
-    ],
-    "Documentary-style": [
-        "True Crime (let me look at this map)",
-        "Nature Documentary (gentle British narrator)",
-        "Sports Doc",
-        "Cult Exposé",
-        "Food Porn Doc",
-        "Music Bio-Doc",
-        "Conspiracy Doc",
-        "Reality Competition",
-    ],
-    "Weird Niche": [
-        "Liminal Space Horror",
-        "Hauntology (lost media core)",
-        "Hopepunk",
-        "Dieselpunk",
-        "Mall Mythology",
-        "Y2K Techno-Paranoia",
-        "Gentle Apocalypse",
-        "Bardcore Medieval",
-        "Backrooms Bureaucracy",
-    ],
-    "Western": [
-        "Acid Western (peyote-fueled)",
-        "Spaghetti Western",
-        "Weird West (cowboys + monsters)",
-        "Modern Neo-Western",
-        "Revisionist Western",
-    ],
-    "Musical": [
-        "Jukebox Musical",
-        "Rock Opera",
-        "Sad Indie Folk Musical",
-        "Crime Musical (everyone sings about taxes)",
-        "Surrealist Dance Musical",
-    ],
-}
-
-CHARACTERS = [
-    "Disgraced Sommelier", "Sentient Roomba", "Retired Assassin",
-    "Conspiracy-Theorist Librarian", "Goth Accountant", "Himbo Pirate",
-    "Tax-Dodging Witch", "Time-Traveling Plumber", "Cursed Beauty Pageant Winner",
-    "Bog Witch", "Disillusioned Cult Defector", "Call Center Vampire",
-    "Talking Horse", "Reluctant Middle Manager", "Former Child Star",
-    "Doomsday Prepper Grandma", "Legalese-Speaking Ghost", "Influencer Exorcist",
-    "Spare Royal Twin", "Mall Cop", "Anxious Cryptozoologist", "Gardening AI",
-    "Fading Magician's Assistant", "Mediocre Knight", "Superhero Therapist",
-    "Stand-Up Plague Doctor", "Disgraced Olympic Curler", "Union-Rep Fairy Godmother",
-    "Cowboy Astronaut", "Reformed Demon", "Substitute Teacher",
-    "Polite Cannibal Food Critic", "Anxious Werewolf", "Ex-Pop-Star Goat Farmer",
-    "Underworld Bureaucrat", "Failed Wizard", "Disgruntled Tooth Fairy",
-    "Sentient Houseplant", "Medieval Town Crier", "Murder-Hobo Adventurer",
-    "Mediocre Oracle", "Burned-Out Knight", "Rideshare-Driving Centaur",
-    "Theater Kid Detective", "Failed Mall Santa", "Disgraced Bee Inspector",
-    "HOA-President Lich", "Reluctant Pope", "Off-Brand Superhero",
-    "Suburban Dad Necromancer", "Gen-Z Pirate", "Kindergarten Teacher Spy",
-    "Sentient Vending Machine", "Aging Boy Band Member", "Renaissance Fair Champion",
-    "DMV Clerk Demigod",
-]
-
-QUIRKS = [
-    "with a heart of gold", "seeking redemption", "with PTSD",
-    "who runs a bakery", "who has not paid her taxes",
-    "with strong opinions about jazz", "in a polycule",
-    "doing court-ordered community service", "going through a messy divorce",
-    "training for a marathon", "with prophetic dreams", "with crippling anxiety",
-    "who just wants to garden", "with a podcast nobody listens to",
-    "haunted by a single regret", "who is allergic to their own job",
-    "writing a memoir", "with three ex-husbands and a parrot",
-    "who learned everything from YouTube", "secretly running a Ponzi scheme",
-    "raising a teenager alone", "who only speaks in movie quotes",
-    "competing on a reality show", "with a vendetta against a specific seagull",
-    "in their flop era", "who pivoted to crypto last year", "trying veganism",
-    "in witness protection", "with a doctorate in medieval poetry",
-    "who is also a twin (it's relevant)", "running for local office",
-    "stuck in a time loop", "with a court-mandated emotional support animal",
-    "going through perimenopause", "newly sober and rage-y about it",
-    "who just inherited a haunted mansion", "afraid of birds (specifically)",
-    "moonlighting as a wedding singer", "with one eye and a grudge",
-    "who has been replaced by a doppelgänger and nobody noticed",
-    "currently being sued", "trying to win back their ex",
-    "secretly the chosen one (don't tell them)", "with golden retriever energy",
-    "who has seen things, man", "in deep with the wrong people",
-    "doing a TED Talk circuit", "raising bees as therapy",
-    "who never finished their PhD", "with a mysterious birthmark",
-    "currently ghosting their family group chat", "two weeks from retirement",
-    "obsessed with a single Wikipedia article", "running a failing food truck",
-    "who married into a cult by accident", "with a rival for some reason",
-]
+# GENRES and CHARACTERS live in genres.json — the single source of truth shared
+# with the browser game (index.html). Sub-genres and characters are deliberately
+# broad anchors; the LLM supplies the absurd specificity in the title/synopsis.
+_GENRES_PATH = Path(__file__).parent / "genres.json"
+_genre_data = json.loads(_GENRES_PATH.read_text(encoding="utf-8"))
+GENRES = _genre_data["genres"]
+CHARACTERS = _genre_data["characters"]
 
 PITCH_TEMPLATES = [
-    "It's {g1} meets {g2}... but the protagonist is a {c} {q}.",
-    "Imagine if a {g1} show had a baby with a {g2} miniseries, and that baby grew up to be a {c} {q}.",
-    "Set in a world where {g1} and {g2} coexist uneasily, our hero — a {c} {q} — must save... something. Probably a town.",
-    "Pitch: {g1} x {g2}. Tone: dread, but make it horny. Lead: a {c} {q}.",
-    "A {c} {q} stumbles into a {g1} conspiracy that can only be solved using the rules of {g2}.",
-    "Picture a {g1} setting, but everyone behaves like they're in a {g2}. Our reluctant hero: a {c} {q}.",
-    "Logline: When a {c} {q} discovers their quiet life is actually a {g1}, they must master the genre conventions of {g2} to survive.",
-    "Three-act structure: {g1} in act one, {g2} by act three, and a {c} {q} sobbing into a microwave dinner the whole time.",
-    "Cold open: a {c} {q}, alone, in the rain. The genre? {g1}. The vibe? Unmistakably {g2}. Cue title card.",
+    "It's {g1} meets {g2}... but the protagonist is a {c}.",
+    "Imagine if a {g1} show had a baby with a {g2} miniseries, and that baby grew up to follow a {c}.",
+    "Set in a world where {g1} and {g2} coexist uneasily, our hero — a {c} — must save... something. Probably a town.",
+    "Pitch: {g1} x {g2}. Tone: dread, but make it horny. Lead: a {c}.",
+    "A {c} stumbles into a {g1} conspiracy that can only be solved using the rules of {g2}.",
+    "Picture a {g1} setting, but everyone behaves like they're in a {g2}. Our reluctant hero: a {c}.",
+    "Logline: When a {c} discovers their quiet life is actually a {g1}, they must master the genre conventions of {g2} to survive.",
+    "Three-act structure: {g1} in act one, {g2} by act three, and a {c} sobbing into a microwave dinner the whole time.",
+    "Cold open: a {c}, alone, in the rain. The genre? {g1}. The vibe? Unmistakably {g2}. Cue title card.",
 ]
 
 
@@ -242,16 +81,14 @@ def generate_mashup():
     sub1 = random.choice(GENRES[major1])
     sub2 = random.choice(GENRES[major2])
     character = random.choice(CHARACTERS)
-    quirk = random.choice(QUIRKS)
     template = random.choice(PITCH_TEMPLATES)
-    pitch = template.format(g1=sub1, g2=sub2, c=character, q=quirk)
+    pitch = template.format(g1=sub1, g2=sub2, c=character)
     return {
         "genre_1_major": major1,
         "genre_1_sub": sub1,
         "genre_2_major": major2,
         "genre_2_sub": sub2,
         "character": character,
-        "quirk": quirk,
         "pitch": pitch,
     }
 
@@ -260,7 +97,7 @@ ZIMAGE_SYSTEM_PROMPT = """You are a creative director writing absurd, funny film
 
 For each mashup you receive, invent:
 1. A punchy, ridiculous fake film title (3-7 words). It should feel like a real movie title — sometimes with a colon and subtitle. No emojis.
-2. A 3-5 sentence streaming-service-style synopsis (a "logline-plus") that sells the film. Make it funny — lean into the absurd genre clash and protagonist quirk. Hint at stakes, central conflict, and tone, but stay tight. Roughly 50-100 words.
+2. A 3-5 sentence streaming-service-style synopsis (a "logline-plus") that sells the film. Make it funny — lean into the absurd genre clash. You are given only a broad protagonist archetype (e.g. "Lighthouse Keeper"); invent the specific, funny details — name, predicament, and a quirk or two that fit the genre mashup. Hint at stakes, central conflict, and tone, but stay tight. Roughly 50-100 words.
 3. A detailed prompt for the Z-Image stable diffusion model to generate a movie poster.
 
 Rules for the image prompt:
@@ -284,7 +121,7 @@ IDEOGRAM4_SYSTEM_PROMPT = r"""You are a creative director AND a poster layout de
 
 For each mashup you receive, invent:
 1. A punchy, ridiculous fake film title (3-7 words). It should feel like a real movie title — sometimes with a colon and subtitle. No emojis.
-2. A 3-5 sentence streaming-service-style synopsis (a "logline-plus") that sells the film. Make it funny — lean into the absurd genre clash and protagonist quirk. Hint at stakes, central conflict, and tone, but stay tight. Roughly 50-100 words.
+2. A 3-5 sentence streaming-service-style synopsis (a "logline-plus") that sells the film. Make it funny — lean into the absurd genre clash. You are given only a broad protagonist archetype (e.g. "Lighthouse Keeper"); invent the specific, funny details — name, predicament, and a quirk or two that fit the genre mashup. Hint at stakes, central conflict, and tone, but stay tight. Roughly 50-100 words.
 3. A complete movie-poster layout for the Ideogram 4 image model, expressed as JSON.
 
 The poster is a vertical 2:3 theatrical one-sheet. You control the full composition: background, art style, color palette, lighting, and every placed element — both illustrated objects AND text blocks — each positioned with normalized coordinates.
@@ -329,11 +166,62 @@ RULES FOR THE POSTER JSON:
 - The tags must appear after any thinking. Do not nest tags. Do not add attributes."""
 
 
+KREA_SYSTEM_PROMPT = r"""You are a creative director AND a poster layout designer creating absurd, funny film concepts and the movie posters that sell them.
+
+For each mashup you receive, invent:
+1. A punchy, ridiculous fake film title (3-7 words). It should feel like a real movie title — sometimes with a colon and subtitle. No emojis.
+2. A 3-5 sentence streaming-service-style synopsis (a "logline-plus") that sells the film. Make it funny — lean into the absurd genre clash. You are given only a broad protagonist archetype (e.g. "Lighthouse Keeper"); invent the specific, funny details — name, predicament, and a quirk or two that fit the genre mashup. Hint at stakes, central conflict, and tone, but stay tight. Roughly 50-100 words.
+3. A complete movie-poster layout for the Krea image model, expressed as JSON.
+
+The poster is a vertical 2:3 theatrical one-sheet. You control the full composition: background, photographic style, color palette, lighting, and every placed element — both photographed subjects/objects AND text blocks — each positioned with normalized coordinates.
+
+CRITICAL — THIS IS A PHOTOREALISTIC POSTER, NOT AN ILLUSTRATION. Compose it like a real big-budget movie poster shot by a cinematographer: live-action photography or high-end photoreal CGI, real actors, real sets, real lighting. Do NOT make it look hand-drawn, painted, cartoon, anime, comic-book, or like graphic-design vector art. Even for fantasy or animated-sounding genres, render it as a photoreal live-action film still UNLESS the genre is explicitly animation.
+
+COORDINATE SYSTEM: x, y, w, h are floats from 0.0 to 1.0. (x, y) is the TOP-LEFT corner of the element's bounding box; w and h are its width and height as fractions of the poster. (0,0) is the top-left of the poster, (1,1) the bottom-right. Keep every box fully on-canvas: x + w <= 1.0 and y + h <= 1.0.
+
+COMPOSE LIKE A REAL MOVIE POSTER:
+- A big title treatment, usually in the upper third or lower third.
+- One clear focal character or central image occupying the middle.
+- An optional tagline near the title.
+- A billing block (small condensed credits) and a release-date line near the bottom.
+- 1-3 supporting photographed elements for atmosphere.
+
+Think as much as you want first. Then output your final answer wrapped in EXACTLY these three tags, on their own lines, with nothing else inside them:
+
+<title>The Film Title Goes Here</title>
+<synopsis>The 3-5 sentence funny streaming-style synopsis goes here.</synopsis>
+<poster>
+{
+  "high_level_description": "one vivid sentence describing the whole poster as a photoreal film image",
+  "background": "2-4 sentences describing the full-bleed photographic background: location, depth, atmosphere, any skyline or scenery",
+  "art_style": "comma-separated PHOTOGRAPHIC descriptors — camera, lens, film stock, grade (e.g. 'shot on 35mm anamorphic, shallow depth of field, teal-orange cinematic grade, photorealistic, volumetric haze')",
+  "aesthetics": "comma-separated mood/aesthetic words",
+  "lighting": "one sentence describing the cinematic lighting",
+  "palette": ["#RRGGBB", "#RRGGBB", "#RRGGBB", "#RRGGBB"],
+  "bg_brightness": 55,
+  "elements": [
+    {"type": "obj",  "text": "", "desc": "full photoreal description of a photographed subject or object", "x": 0.30, "y": 0.34, "w": 0.40, "h": 0.50},
+    {"type": "text", "text": "THE TITLE", "desc": "describes the typography, size, color, and treatment of these words", "x": 0.10, "y": 0.05, "w": 0.80, "h": 0.18}
+  ]
+}
+</poster>
+
+RULES FOR THE POSTER JSON:
+- It MUST be valid JSON: double quotes everywhere, no trailing commas, no comments, no code fences.
+- "palette" is an array of 4-6 hex color strings. "bg_brightness" is an integer 0-100 (how bright the background reads).
+- Each element "type" is "obj" for a photographed element or "text" for rendered words.
+- For a "text" element, "text" holds the literal words to render (use \n for line breaks) and "desc" describes typography, size, color, and treatment.
+- For an "obj" element, "text" is an empty string "" and "desc" fully describes the photographed subject/object photorealistically.
+- Include the film title as one large "text" element. Include a billing/credits "text" block near the bottom. Invent fake studio, director, and actor names freely — but do NOT use real actors or real franchises.
+- Use 5-10 elements total. Do not let text blocks overlap each other illegibly.
+- The tags must appear after any thinking. Do not nest tags. Do not add attributes."""
+
+
 def build_user_prompt(mashup):
     return (
         f"Genre 1: {mashup['genre_1_sub']} (a {mashup['genre_1_major']} subgenre)\n"
         f"Genre 2: {mashup['genre_2_sub']} (a {mashup['genre_2_major']} subgenre)\n"
-        f"Protagonist: {mashup['character']} {mashup['quirk']}\n"
+        f"Protagonist archetype: {mashup['character']}\n"
         f"Throwaway pitch (for inspiration only — do not just rewrite it): {mashup['pitch']}\n\n"
         f"Now produce the title, synopsis, and image prompt in the required tag format."
     )
@@ -345,29 +233,91 @@ POSITIVE_RE = re.compile(r"<positive>\s*(.+?)\s*</positive>", re.DOTALL | re.IGN
 POSTER_RE = re.compile(r"<poster>\s*(.+?)\s*</poster>", re.DOTALL | re.IGNORECASE)
 
 
-def _post_chat(server_url, messages, timeout=600):
-    payload = {
-        "messages": messages,
-        "temperature": 0.95,
-        "top_p": 0.95,
-        "max_tokens": 16384,
-        "stream": False,
-    }
-    data = json.dumps(payload).encode("utf-8")
-    req = urllib.request.Request(
-        f"{server_url.rstrip('/')}/v1/chat/completions",
-        data=data,
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
-    with urllib.request.urlopen(req, timeout=timeout) as resp:
-        body = json.loads(resp.read().decode("utf-8"))
-    msg = body["choices"][0]["message"]
-    # Prefer the actual answer in `content`; fall back to reasoning_content if the
-    # model only emitted tags inside its thinking stream.
-    content = (msg.get("content") or "").strip()
-    reasoning = (msg.get("reasoning_content") or "").strip()
-    return content, reasoning
+# ----------------------------------------------------------------------------
+# LLM backends — both expose chat(system_prompt, user_prompt) -> (content, reasoning)
+# ----------------------------------------------------------------------------
+
+class LlamaLLM:
+    """OpenAI-compatible chat server (llama.cpp). Reasoning models split their
+    answer between `content` and `reasoning_content`; we return both."""
+
+    name = "llama"
+
+    def __init__(self, server_url, timeout=600):
+        self.server_url = server_url
+        self.timeout = timeout
+
+    def describe(self):
+        return self.server_url
+
+    def chat(self, system_prompt, user_prompt):
+        payload = {
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            "temperature": 0.95,
+            "top_p": 0.95,
+            "max_tokens": 16384,
+            "stream": False,
+        }
+        data = json.dumps(payload).encode("utf-8")
+        req = urllib.request.Request(
+            f"{self.server_url.rstrip('/')}/v1/chat/completions",
+            data=data,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=self.timeout) as resp:
+            body = json.loads(resp.read().decode("utf-8"))
+        msg = body["choices"][0]["message"]
+        # Prefer the actual answer in `content`; fall back to reasoning_content if
+        # the model only emitted tags inside its thinking stream.
+        content = (msg.get("content") or "").strip()
+        reasoning = (msg.get("reasoning_content") or "").strip()
+        return content, reasoning
+
+
+class ClaudeCodeLLM:
+    """Shells out to the Claude Code CLI (`claude -p`). Each call is a fresh,
+    stateless invocation: system prompt via --system-prompt, user text on stdin,
+    tools disabled (pure generation), JSON envelope parsed for `.result`."""
+
+    name = "claude"
+
+    def __init__(self, model="sonnet", timeout=300, cli="claude"):
+        self.model = model
+        self.timeout = timeout
+        self.cli = cli
+
+    def describe(self):
+        return f"Claude Code CLI ({self.model})"
+
+    def chat(self, system_prompt, user_prompt):
+        cmd = [
+            self.cli, "-p",
+            "--output-format", "json",
+            "--model", self.model,
+            "--system-prompt", system_prompt,
+            "--disallowedTools", "*",   # pure text generation, no agentic tool use
+        ]
+        proc = subprocess.run(
+            cmd,
+            input=user_prompt,
+            capture_output=True,
+            text=True,
+            timeout=self.timeout,
+        )
+        if proc.returncode != 0:
+            raise RuntimeError(f"claude exited {proc.returncode}: {proc.stderr.strip()[:200]}")
+        try:
+            env = json.loads(proc.stdout)
+        except json.JSONDecodeError:
+            raise RuntimeError(f"claude returned non-JSON: {proc.stdout.strip()[:200]!r}")
+        if env.get("is_error") or env.get("subtype") != "success":
+            raise RuntimeError(f"claude error envelope: subtype={env.get('subtype')}")
+        # Claude doesn't expose a separate reasoning stream here; it's all in result.
+        return (env.get("result") or "").strip(), ""
 
 
 def _extract_title_synopsis(text):
@@ -495,12 +445,13 @@ def _extract_ideogram(text):
     return title, synopsis, poster
 
 
-def call_llama_server(server_url, mashup, backend, max_attempts=3, timeout=300):
-    """Call llama.cpp chat completions and extract the backend's tagged output.
+def call_llm(llm, mashup, backend, max_attempts=3):
+    """Call the given LLM backend and extract the image-backend's tagged output.
 
-    Retries on missing/malformed tags up to max_attempts.
-    Returns (title, synopsis, payload). The payload type depends on the backend:
-    a prose string for Z-Image, a validated dict for Ideogram 4.
+    Retries on missing/malformed tags up to max_attempts. On retry, the retry
+    nudge is appended to the user prompt (both LLM backends are stateless here).
+    Returns (title, synopsis, payload). The payload type depends on the image
+    backend: a prose string for Z-Image, a validated dict for Ideogram/Krea.
     Raises RuntimeError if all attempts fail.
     """
     last_error = None
@@ -508,17 +459,11 @@ def call_llama_server(server_url, mashup, backend, max_attempts=3, timeout=300):
 
     for attempt in range(1, max_attempts + 1):
         try:
-            messages = [
-                {"role": "system", "content": backend.system_prompt},
-                {"role": "user", "content": build_user_prompt(mashup)},
-            ]
+            user_prompt = build_user_prompt(mashup)
             if attempt > 1:
-                messages.append({
-                    "role": "user",
-                    "content": backend.retry_nudge,
-                })
+                user_prompt += "\n\n" + backend.retry_nudge
 
-            content, reasoning = _post_chat(server_url, messages, timeout=timeout)
+            content, reasoning = llm.chat(backend.system_prompt, user_prompt)
             title, synopsis, payload = backend.extract(content)
             if not (title and synopsis and payload):
                 title, synopsis, payload = backend.extract(content + "\n" + reasoning)
@@ -528,6 +473,8 @@ def call_llama_server(server_url, mashup, backend, max_attempts=3, timeout=300):
             last_snippet = (content[-200:] or reasoning[-200:]).replace("\n", " ")
         except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError) as e:
             last_error = f"network: {e}"
+        except subprocess.TimeoutExpired as e:
+            last_error = f"claude timeout after {e.timeout}s"
         except Exception as e:
             last_error = f"unexpected: {e}"
 
@@ -600,6 +547,39 @@ def _patch_ideogram(base, payload, seed, poster_w, poster_h):
     return wf
 
 
+# --- Krea text-to-image workflow --------------------------------------------
+# Krea reuses the same Ideogram4PromptBuilderKJ node and our validated poster
+# dict, so _extract_ideogram / _validate_poster carry over unchanged. It differs
+# in node IDs and in being photo-first (style="photo", medium="photograph").
+KREA_NODE_BUILDER = "14"      # Ideogram4PromptBuilderKJ
+KREA_NODE_LATENT = "78:76"    # EmptyLatentImage
+KREA_NODE_SAMPLER = "78:75"   # KSampler (holds the seed)
+
+
+def _patch_krea(base, payload, seed, poster_w, poster_h):
+    """payload is the validated poster dict from _validate_poster."""
+    wf = copy.deepcopy(base)
+    b = wf[KREA_NODE_BUILDER]["inputs"]
+    # Overwrite EVERY content field so nothing from the example workflow's
+    # baked-in poster leaks into a generated row.
+    b["high_level_description"] = payload["high_level_description"]
+    b["background"] = payload["background"]
+    b["style"] = "photo"                       # photo-first, not illustration
+    b["style.photo"] = payload["art_style"]    # photographic descriptors
+    b["aesthetics"] = payload["aesthetics"]
+    b["lighting"] = payload["lighting"]
+    b["medium"] = "photograph"                 # deliberate photoreal default
+    b["bg_brightness"] = payload["bg_brightness"]
+    b["style_palette_data"] = json.dumps(payload["palette"])
+    b["elements_data"] = json.dumps(payload["elements"])
+    b["width"] = poster_w
+    b["height"] = poster_h
+    wf[KREA_NODE_LATENT]["inputs"]["width"] = poster_w
+    wf[KREA_NODE_LATENT]["inputs"]["height"] = poster_h
+    wf[KREA_NODE_SAMPLER]["inputs"]["seed"] = seed
+    return wf
+
+
 # ----------------------------------------------------------------------------
 # Backend registry
 # ----------------------------------------------------------------------------
@@ -654,7 +634,7 @@ class Backend:
 BACKENDS = {
     "zimage": Backend(
         name="zimage",
-        workflow_file="comfy_art_workflow_api.json",
+        workflow_file="workflows/comfy_art_workflow_api.json",
         system_prompt=ZIMAGE_SYSTEM_PROMPT,
         retry_nudge=ZIMAGE_RETRY_NUDGE,
         extract=_extract_zimage,
@@ -663,12 +643,21 @@ BACKENDS = {
     ),
     "ideogram4": Backend(
         name="ideogram4",
-        workflow_file="ideogram4_t2i_api.json",
+        workflow_file="workflows/ideogram4_t2i_api.json",
         system_prompt=IDEOGRAM4_SYSTEM_PROMPT,
         retry_nudge=IDEOGRAM_RETRY_NUDGE,
         extract=_extract_ideogram,
         patch=_patch_ideogram,
         poster_w=1536, poster_h=2304,   # exact 2:3 one-sheet, ~3.5 MP
+    ),
+    "krea": Backend(
+        name="krea",
+        workflow_file="workflows/krea2_comfyui_t2i_aitrepeneur_api.json",
+        system_prompt=KREA_SYSTEM_PROMPT,
+        retry_nudge=IDEOGRAM_RETRY_NUDGE,   # same <poster> JSON contract
+        extract=_extract_ideogram,          # same structured-poster format
+        patch=_patch_krea,
+        poster_w=1152, poster_h=1728,   # exact 2:3 one-sheet, ~2.0 MP (fast)
     ),
 }
 
@@ -765,13 +754,14 @@ HTML_HEAD = """<!DOCTYPE html>
        font-weight: normal; }
   .tagline { text-align: center; opacity: 0.7; font-style: italic; margin-bottom: 50px;
              font-size: 1.1rem; }
-  .grid { display: grid; gap: 48px; max-width: 1600px; margin: 0 auto;
-          grid-template-columns: repeat(auto-fill, minmax(520px, 1fr)); }
+  /* Single centered column — posters render large on big/4K monitors. */
+  .grid { display: grid; gap: 64px; max-width: 900px; margin: 0 auto;
+          grid-template-columns: 1fr; }
   .card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
           border-radius: 14px; overflow: hidden; display: flex; flex-direction: column;
           transition: transform 0.2s, box-shadow 0.2s; }
   .card:hover { transform: translateY(-4px); box-shadow: 0 14px 36px rgba(255,0,110,0.3); }
-  .poster { width: 100%; aspect-ratio: __POSTER_RATIO__; object-fit: cover; background: #1a0033;
+  .poster { width: 100%; aspect-ratio: __POSTER_RATIO__; object-fit: contain; background: #1a0033;
             display: block; }
   .poster.missing { display: flex; align-items: center; justify-content: center;
                     color: rgba(255,255,255,0.3); font-style: italic; padding: 20px;
@@ -871,6 +861,15 @@ GALLERY_META = {
         "html": "mashups_ideogram4.html",
         "credit": "using an Ideogram 4 text-to-image workflow.",
     },
+    "krea": {
+        "label": "Krea",
+        "ratio": "2/3",
+        "images_dir": "images/krea",
+        "html": "mashups_krea.html",
+        "credit": ('using a Krea text-to-image workflow by '
+                   '<a href="https://www.patreon.com/c/aitrepreneur" target="_blank" '
+                   'rel="noopener">Aitrepreneur</a>.'),
+    },
 }
 
 
@@ -889,6 +888,44 @@ def _gallery_nav(current_backend):
     return '\n    '.join(links)
 
 
+def build_manifest(rows, backend_name, images_href):
+    """Build the browser game's JSON manifest for one backend: only rows that
+    rendered a poster, each with its genres/character/title/synopsis and the
+    relative poster path. images_href is the path prefix from the manifest to
+    the poster files (same as the gallery's), e.g. "images/krea"."""
+    meta = GALLERY_META.get(backend_name, GALLERY_META["ideogram4"])
+    films = []
+    for r in rows:
+        if not r.get("image_file"):
+            continue  # no poster -> not usable by the game
+        films.append({
+            "title": r.get("title") or "",
+            "synopsis": r.get("synopsis") or "",
+            "genre_1_major": r.get("genre_1_major") or "",
+            "genre_1_sub": r.get("genre_1_sub") or "",
+            "genre_2_major": r.get("genre_2_major") or "",
+            "genre_2_sub": r.get("genre_2_sub") or "",
+            "character": r.get("character") or "",
+            "image": f"{images_href}/{r['image_file']}",
+            # "Behind the scenes" data, mirroring the static gallery's panel.
+            "pitch": r.get("pitch") or "",
+            "image_prompt": r.get("image_prompt") or "",
+        })
+    return {
+        "backend": backend_name,
+        "label": meta["label"],
+        "ratio": meta["ratio"],
+        "films": films,
+    }
+
+
+def write_manifest(manifest_path, rows, backend_name, images_href):
+    manifest = build_manifest(rows, backend_name, images_href)
+    Path(manifest_path).write_text(
+        json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
+    return len(manifest["films"])
+
+
 def write_gallery(html_path, rows, images_href, backend_name="ideogram4"):
     """images_href is the relative path prefix from the gallery HTML to the
     poster files, e.g. "images/ideogram4"."""
@@ -900,7 +937,6 @@ def write_gallery(html_path, rows, images_href, backend_name="ideogram4"):
         g1 = row.get("genre_1_sub") or ""
         g2 = row.get("genre_2_sub") or ""
         character = row.get("character") or ""
-        quirk = row.get("quirk") or ""
         image_prompt = row.get("image_prompt") or ""
         image_file = row.get("image_file") or ""
 
@@ -925,7 +961,7 @@ def write_gallery(html_path, rows, images_href, backend_name="ideogram4"):
           <span class="badge">{html_escape(g2)}</span>
         </div>
         <p class="pitch">{html_escape(body_text)}</p>
-        <div class="character">Starring: <b>{html_escape(character)}</b> {html_escape(quirk)}</div>
+        <div class="character">Starring: <b>{html_escape(character)}</b></div>
         <details><summary>Behind the scenes</summary>
           <div class="bts-label">Seed pitch:</div><pre>{html_escape(seed_pitch)}</pre>
           <div class="bts-label">Image prompt:</div><pre>{html_escape(image_prompt)}</pre>
@@ -965,16 +1001,33 @@ def main():
     parser.add_argument("count", type=int, help="Number of mashups to generate")
     parser.add_argument("output", type=Path, nargs="?", default=None,
                         help="Output CSV path (default: mashups_<backend>.csv)")
+    parser.add_argument("--llm", choices=["claude", "llama"], default="claude",
+                        help="Text LLM: 'claude' (Claude Code CLI, default) or "
+                             "'llama' (local llama.cpp server)")
+    parser.add_argument("--claude-model", default="opus",
+                        help="Model for the Claude Code CLI (default: opus). opus is the "
+                             "fastest AND cheapest here — it writes tight responses, while "
+                             "sonnet/haiku pad to ~5x the output tokens for no quality gain.")
+    parser.add_argument("--llm-workers", type=int, default=3,
+                        help="LLM calls to run concurrently, drafting ahead of the image "
+                             "renderer (default: 3). Each Claude call is an independent "
+                             "subprocess; ComfyUI renders serially (~30s), so a few workers "
+                             "keep it fed and more just queue up.")
     parser.add_argument("--llm-server", default="http://127.0.0.1:9503",
-                        help="llama.cpp server URL (default: http://127.0.0.1:9503)")
+                        help="llama.cpp server URL when --llm llama (default: http://127.0.0.1:9503)")
     parser.add_argument("--comfy-server", default="127.0.0.1:8188",
                         help="ComfyUI server host:port (default: 127.0.0.1:8188)")
-    parser.add_argument("--backend", choices=sorted(BACKENDS), default="ideogram4",
-                        help="Image backend / workflow (default: ideogram4)")
+    parser.add_argument("--backend", choices=sorted(BACKENDS), default="krea",
+                        help="Image backend / workflow (default: krea)")
     parser.add_argument("--images-dir", type=Path, default=None,
                         help="Directory to write poster PNGs (default: ./images/<backend>)")
     parser.add_argument("--html", type=Path, default=None,
                         help="Output HTML gallery path (default: mashups_<backend>.html)")
+    parser.add_argument("--append", action="store_true",
+                        help="Append to an existing CSV/HTML instead of overwriting. "
+                             "Pre-existing rows are kept, new rows are added after them, "
+                             "and new poster filenames are numbered to continue past the "
+                             "existing ones (no clobbering).")
     parser.add_argument("--no-images", action="store_true",
                         help="Skip ComfyUI image generation")
     parser.add_argument("--no-llm", action="store_true",
@@ -988,6 +1041,18 @@ def main():
     do_images = not args.no_images and not args.no_llm
     backend = BACKENDS[args.backend]
     gallery_meta = GALLERY_META[backend.name]
+
+    # Build the text LLM backend.
+    llm = None
+    if not args.no_llm:
+        if args.llm == "claude":
+            if shutil.which("claude") is None:
+                print("Error: 'claude' CLI not found on PATH (needed for --llm claude).",
+                      file=sys.stderr)
+                sys.exit(1)
+            llm = ClaudeCodeLLM(model=args.claude_model)
+        else:
+            llm = LlamaLLM(args.llm_server)
 
     # Resolve per-backend default paths (CSV / HTML / images dir) so each backend
     # writes to its own files and its own images/<backend>/ subdir.
@@ -1007,14 +1072,15 @@ def main():
         images_href = args.images_dir.as_posix()
 
     fieldnames = ["genre_1_major", "genre_1_sub", "genre_2_major",
-                  "genre_2_sub", "character", "quirk", "pitch",
+                  "genre_2_sub", "character", "pitch",
                   "title", "synopsis", "image_prompt", "image_file"]
 
     print(f"Generating {args.count} mashup{'s' if args.count != 1 else ''}")
     print(f"  CSV:     {args.output}")
     print(f"  HTML:    {args.html}")
     if not args.no_llm:
-        print(f"  LLM:     {args.llm_server}")
+        workers_note = f" ×{args.llm_workers} concurrent" if args.llm == "claude" else ""
+        print(f"  LLM:     {llm.describe()}{workers_note}")
     if do_images:
         print(f"  Backend: {backend.name} ({backend.poster_w}x{backend.poster_h})")
         print(f"  Comfy:   {args.comfy_server}")
@@ -1027,7 +1093,19 @@ def main():
         backend.load_workflow()
     comfy = ComfyClient(args.comfy_server) if do_images else None
 
+    # In --append mode, preload any existing CSV rows so write_outputs() (which
+    # rewrites the whole file each flush) keeps them. New rows are appended after.
     completed_rows = []
+    if args.append and args.output.exists():
+        with args.output.open(newline="", encoding="utf-8") as f:
+            completed_rows = list(csv.DictReader(f))
+        print(f"  Append:  {len(completed_rows)} existing row"
+              f"{'s' if len(completed_rows) != 1 else ''} in {args.output}")
+        print()
+    # New poster filenames continue past the highest existing index so an append
+    # run never clobbers an earlier run's PNGs.
+    row_offset = len(completed_rows)
+
     failures = 0
     start = time.monotonic()
 
@@ -1047,7 +1125,7 @@ def main():
         if args.no_llm:
             return m, None
         try:
-            title, synopsis, payload = call_llama_server(args.llm_server, m, backend)
+            title, synopsis, payload = call_llm(llm, m, backend)
             m["title"] = title
             m["synopsis"] = synopsis
             m["_payload"] = payload
@@ -1059,6 +1137,11 @@ def main():
         except Exception as e:
             return m, f"llm: {e}"
 
+    # The browser game (index.html) reads pre-generated films from a per-backend
+    # JSON manifest (mashups_<backend>.json, sibling to the CSV). Only rows that
+    # actually rendered a poster are included.
+    manifest_path = args.output.with_suffix(".json")
+
     def write_outputs():
         with args.output.open("w", newline="", encoding="utf-8") as f:
             writer = csv.DictWriter(f, fieldnames=fieldnames)
@@ -1066,26 +1149,38 @@ def main():
             for r in completed_rows:
                 writer.writerow({k: r.get(k, "") for k in fieldnames})
         write_gallery(args.html, completed_rows, images_href, backend.name)
+        if do_images:  # game manifest only matters when posters exist
+            write_manifest(manifest_path, completed_rows, backend.name, images_href)
 
     # Pipeline:
-    #   While ComfyUI renders row N's poster, the LLM is already drafting row N+1.
-    #   We use a single-worker pool for the LLM so we always have at most one
-    #   LLM call in flight ahead of the current row.
-    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as llm_pool:
-        # Kick off the first LLM job
-        next_future = llm_pool.submit(llm_task, 1) if args.count > 0 else None
+    #   The LLM is the long pole per row (Claude writes the title + synopsis +
+    #   structured poster JSON), while ComfyUI renders serially in ~30s. We keep
+    #   up to --llm-workers LLM calls in flight, drafting ahead of the renderer,
+    #   so the renderer is never starved. Results are still consumed strictly in
+    #   row order (we await future i, render it, then submit future i+workers).
+    # Each Claude call is its own subprocess, so they parallelize cleanly. A
+    # local llama.cpp server serves one request at a time, so concurrency there
+    # buys nothing and can stall — keep llama single-in-flight.
+    n_workers = max(1, args.llm_workers) if args.llm == "claude" else 1
+    with concurrent.futures.ThreadPoolExecutor(max_workers=n_workers) as llm_pool:
+        # Prime the window: submit the first n_workers rows up front.
+        futures = {
+            idx: llm_pool.submit(llm_task, idx)
+            for idx in range(1, min(n_workers, args.count) + 1)
+        }
 
         for i in range(1, args.count + 1):
             row_start = time.monotonic()
 
             # Wait for the LLM job for THIS row to finish.
-            mashup, llm_err = next_future.result()
+            mashup, llm_err = futures.pop(i).result()
             llm_done = time.monotonic()
 
-            # Immediately queue the LLM job for the NEXT row so it runs
-            # alongside this row's image render.
-            if i < args.count:
-                next_future = llm_pool.submit(llm_task, i + 1)
+            # Keep the window full: queue the row n_workers ahead so the next
+            # batch of LLM calls runs alongside this row's image render.
+            ahead = i + n_workers
+            if ahead <= args.count:
+                futures[ahead] = llm_pool.submit(llm_task, ahead)
 
             status_bits = []
             if llm_err:
@@ -1097,7 +1192,7 @@ def main():
                 img_start = time.monotonic()
                 seed = random.randint(1, 2**31 - 1)
                 wf = backend.patch(mashup["_payload"], seed)
-                slug = f"{i:04d}-{slugify(mashup['title'] or 'untitled')}"
+                slug = f"{row_offset + i:04d}-{slugify(mashup['title'] or 'untitled')}"
                 fname = f"{slug}.png"
                 dest = args.images_dir / fname
                 try:
@@ -1139,6 +1234,8 @@ def main():
     print(f"Done in {format_eta(total)}. {args.count - failures}/{args.count} succeeded.")
     print(f"  CSV:  {args.output}")
     print(f"  HTML: {args.html}")
+    if do_images:
+        print(f"  JSON: {manifest_path}  (game manifest)")
     if failures:
         print(f"  ⚠  {failures} row{'s' if failures != 1 else ''} had errors.")
 

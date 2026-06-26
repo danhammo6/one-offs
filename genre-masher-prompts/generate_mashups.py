@@ -654,7 +654,7 @@ class Backend:
 BACKENDS = {
     "zimage": Backend(
         name="zimage",
-        workflow_file="comfy_art_workflow_api.json",
+        workflow_file="workflows/comfy_art_workflow_api.json",
         system_prompt=ZIMAGE_SYSTEM_PROMPT,
         retry_nudge=ZIMAGE_RETRY_NUDGE,
         extract=_extract_zimage,
@@ -663,7 +663,7 @@ BACKENDS = {
     ),
     "ideogram4": Backend(
         name="ideogram4",
-        workflow_file="ideogram4_t2i_api.json",
+        workflow_file="workflows/ideogram4_t2i_api.json",
         system_prompt=IDEOGRAM4_SYSTEM_PROMPT,
         retry_nudge=IDEOGRAM_RETRY_NUDGE,
         extract=_extract_ideogram,

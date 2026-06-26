@@ -15,8 +15,10 @@ Two pieces:
 .
 ├── index.html                     # standalone browser game (no server needed)
 ├── generate_mashups.py            # batch CSV + HTML + image pipeline
-├── comfy_art_workflow_api.json    # ComfyUI workflow (Z-Image art variant)
-├── ideogram4_t2i_api.json         # ComfyUI workflow (Ideogram 4 structured-poster variant)
+├── workflows/                     # ComfyUI API workflows, one per backend
+│   ├── comfy_art_workflow_api.json            # Z-Image art variant
+│   ├── ideogram4_t2i_api.json                 # Ideogram 4 structured-poster variant
+│   └── krea2_comfyui_t2i_aitrepeneur_api.json # Krea (future backend)
 ├── requirements.txt               # client deps (websocket-client, pillow)
 ├── mashups_zimage.csv / .html     # Z-Image batch + gallery
 ├── mashups_ideogram4.csv / .html  # Ideogram 4 batch + gallery
@@ -40,7 +42,7 @@ Combination space: 12 major genres × ~9 sub-genres each = 99 sub-genres, paired
 ### Requirements
 
 - A llama.cpp-compatible chat server (any OpenAI-style `/v1/chat/completions` endpoint). The included system prompts are tuned for reasoning models like Qwen3 — they let the model think, then emit tags after the reasoning: `<title>`/`<synopsis>`/`<poster>` (ideogram4) or `<title>`/`<synopsis>`/`<positive>` (zimage).
-- A ComfyUI server with the matching workflow loaded (`ideogram4_t2i_api.json` or `comfy_art_workflow_api.json`).
+- A ComfyUI server with the matching workflow loaded (`workflows/ideogram4_t2i_api.json` or `workflows/comfy_art_workflow_api.json`).
 - Python 3.9+ with the deps in `requirements.txt`.
 
 Set up a dedicated virtualenv with [uv](https://docs.astral.sh/uv/):

@@ -907,6 +907,9 @@ def build_manifest(rows, backend_name, images_href):
             "genre_2_sub": r.get("genre_2_sub") or "",
             "character": r.get("character") or "",
             "image": f"{images_href}/{r['image_file']}",
+            # "Behind the scenes" data, mirroring the static gallery's panel.
+            "pitch": r.get("pitch") or "",
+            "image_prompt": r.get("image_prompt") or "",
         })
     return {
         "backend": backend_name,

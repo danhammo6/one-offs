@@ -160,6 +160,58 @@
     text-align: center;
     opacity: 0.92;
   }
+  .bts {
+    max-width: 600px;
+    margin: 4px auto 0;
+    width: 100%;
+    font-size: 0.85rem;
+    text-align: left;
+  }
+  .bts summary {
+    cursor: pointer;
+    opacity: 0.6;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-size: 0.72rem;
+    list-style: none;
+  }
+  .bts summary:hover { opacity: 0.9; }
+  .bts summary::before { content: '▸ '; }
+  .bts[open] summary::before { content: '▾ '; }
+  .bts-label {
+    margin-top: 10px;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.55;
+  }
+  .bts pre {
+    white-space: pre-wrap;
+    word-break: break-word;
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin: 4px 0 0;
+    font-size: 0.78rem;
+    line-height: 1.45;
+    max-height: 260px;
+    overflow: auto;
+  }
+  .footer-links {
+    text-align: center;
+    margin-top: 28px;
+    margin-bottom: 8px;
+    font-size: 0.75rem;
+    opacity: 0.45;
+    max-width: 1000px;
+  }
+  .footer-links a {
+    color: #fff;
+    text-decoration: none;
+    border-bottom: 1px dotted rgba(255,255,255,0.4);
+  }
+  .footer-links a:hover { opacity: 1; border-bottom-color: #fff; }
   .poster-area .loading {
     padding: 40px;
     font-style: italic;
@@ -230,7 +282,6 @@
   <div class="breadcrumb"><a href="../">&larr; one-offs</a></div>
   <h1>Genre Masher 3000</h1>
   <div class="tagline">Pull a real AI-pitched film from the vault</div>
-  <div class="gallery-link">&rarr; Browse the full poster galleries: <a href="mashups_krea.html">Krea</a> &middot; <a href="mashups_ideogram4.html">Ideogram 4</a> &middot; <a href="mashups_zimage.html">Z-Image</a></div>
 
   <div class="container">
     <div class="slots">
@@ -271,6 +322,13 @@
     <div class="poster-area" id="posterArea"></div>
 
     <div class="stats" id="stats">Films pitched: 0</div>
+  </div>
+
+  <div class="footer-links">
+    Posters were pre-rendered by an LLM + ComfyUI. Browse the full galleries:
+    <a href="mashups_krea.html">Krea</a> &middot;
+    <a href="mashups_ideogram4.html">Ideogram 4</a> &middot;
+    <a href="mashups_zimage.html">Z-Image</a>
   </div>
 
 <script>
@@ -349,6 +407,29 @@ const state = {
 
 function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
+// Shuffle-bag: deal through a shuffled copy of the pool without repeats, then
+// reshuffle when it's empty. This shows every film once per cycle and never an
+// immediate repeat — nicer than pure with-replacement on a finite pool.
+let filmBag = [];
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function nextFilm() {
+  if (!filmBag.length) {
+    filmBag = shuffle(FILMS);
+    // Avoid an immediate repeat across the reshuffle boundary.
+    if (filmBag.length > 1 && state.current && filmBag[filmBag.length - 1] === state.current) {
+      filmBag.unshift(filmBag.pop());
+    }
+  }
+  return filmBag.pop();
+}
+
 function rollSlot(slotEl, finalText, finalSub, pool, duration, isObject) {
   return new Promise(resolve => {
     slotEl.classList.add('rolling');
@@ -379,8 +460,8 @@ async function smash() {
   const btn = document.getElementById('smashBtn');
   btn.disabled = true;
 
-  // Shuffle the deck: pick a real pre-generated film from the pool.
-  const film = pick(FILMS);
+  // Deal the next film from the shuffle-bag (no repeats until the pool cycles).
+  const film = nextFilm();
   state.current = film;
 
   // Reels spin over genre/character flavor, then land on the film's real values.
@@ -425,6 +506,7 @@ function revealFilm(film) {
       syn.textContent = film.synopsis;
       area.appendChild(syn);
     }
+    area.appendChild(buildBTS(film));
   };
   img.onerror = () => {
     area.innerHTML = '<div class="loading">Poster image missing. Try another smash?</div>';
@@ -432,6 +514,36 @@ function revealFilm(film) {
   img.src = film.image;
   img.alt = film.title;
 }
+
+// "Behind the scenes": the seed pitch and the raw image prompt that produced
+// this poster, mirroring the static gallery's collapsible panel.
+function buildBTS(film) {
+  const det = document.createElement('details');
+  det.className = 'bts';
+  const sum = document.createElement('summary');
+  sum.textContent = 'Behind the scenes';
+  det.appendChild(sum);
+
+  const rows = [
+    ['Seed pitch', stripTags(film.pitch)],
+    ['Image prompt', film.image_prompt],
+  ];
+  for (const [label, value] of rows) {
+    if (!value) continue;
+    const lab = document.createElement('div');
+    lab.className = 'bts-label';
+    lab.textContent = label + ':';
+    const pre = document.createElement('pre');
+    pre.textContent = value;
+    det.appendChild(lab);
+    det.appendChild(pre);
+  }
+  return det;
+}
+
+// The seed pitch is stored with <b>…</b> emphasis from the templates; show it
+// as plain text in the BTS panel.
+function stripTags(s) { return (s || '').replace(/<[^>]*>/g, ''); }
 
 document.getElementById('smashBtn').addEventListener('click', smash);
 

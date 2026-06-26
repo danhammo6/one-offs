@@ -38,9 +38,11 @@ so you can flip between the Krea, Ideogram 4, and Z-Image batches.
 
 ## Browser game
 
-The game serves **pre-generated** films: clicking "Smash Genres!" spins the reels and lands on a real entry from the batches — its actual genres, character, title, rendered poster, and synopsis. (No live image generation; everything was rendered by `generate_mashups.py` ahead of time.)
+The game serves **pre-generated** films: clicking "Smash Genres!" spins the reels and lands on a real entry from the batches — its actual genres, character, title, rendered poster, and synopsis, plus a collapsible "Behind the scenes" panel showing that film's seed pitch and raw image prompt (same as the static gallery). (No live image generation; everything was rendered by `generate_mashups.py` ahead of time.)
 
-It loads the `mashups_<backend>.json` manifests via `fetch()`, so it must be **served over HTTP** rather than opened as a `file://` — run `python -m http.server` in this folder and visit the printed URL. Spacebar rerolls. There's a link near the top to the full per-backend galleries.
+It loads the `mashups_<backend>.json` manifests via `fetch()`, so it must be **served over HTTP** rather than opened as a `file://` — run `python -m http.server` in this folder and visit the printed URL. Spacebar rerolls. A subtle footer links to the full per-backend galleries.
+
+Films are dealt from a **shuffle-bag**: the pool is shuffled and dealt through without repeats, then reshuffled — so you see every film once per cycle and never an immediate repeat.
 
 **Which films are in the pool is configurable.** By default the pool merges all backends (Z-Image + Ideogram 4 + Krea). Narrow it with a `?backends=` query param:
 

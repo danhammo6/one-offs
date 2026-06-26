@@ -13,8 +13,8 @@ Text LLM is selectable with --llm:
 Image backend is selectable with --backend:
     - krea (default): photoreal structured poster layout for the Krea model
       (~2 MP, ~30s/render). Same JSON contract as ideogram4 but photo-first.
-    - ideogram4: structured poster layout for the Ideogram 4 model (~3.5 MP,
-      ~7 min/render — high quality but slow).
+    - ideogram4: structured poster layout for the Ideogram 4 model (~4.15 MP,
+      ~4 min/render — high quality but slow).
     - zimage: LLM emits one long natural-language prompt for the Z-Image model.
 
 Requires:
@@ -125,7 +125,9 @@ For each mashup you receive, invent:
 2. A 3-5 sentence streaming-service-style synopsis (a "logline-plus") that sells the film. Make it funny — lean into the absurd genre clash. You are given only a broad protagonist archetype (e.g. "Lighthouse Keeper"); invent the specific, funny details — name, predicament, and a quirk or two that fit the genre mashup. Hint at stakes, central conflict, and tone, but stay tight. Roughly 50-100 words.
 3. A complete movie-poster layout for the Ideogram 4 image model, expressed as JSON.
 
-The poster is a vertical 2:3 theatrical one-sheet. You control the full composition: background, art style, color palette, lighting, and every placed element — both illustrated objects AND text blocks — each positioned with normalized coordinates.
+The poster is a vertical 2:3 theatrical one-sheet. You control the full composition: background, photographic style, color palette, lighting, and every placed element — both photographed subjects/objects AND text blocks — each positioned with normalized coordinates.
+
+CRITICAL — THIS IS A PHOTOREALISTIC POSTER, NOT AN ILLUSTRATION. Compose it like a real big-budget movie poster shot by a cinematographer: live-action photography or high-end photoreal CGI, real actors, real sets, real lighting. Do NOT make it look hand-drawn, painted, cartoon, anime, comic-book, screen-printed, retro-poster, or like graphic-design vector art. Even for fantasy or animated-sounding genres, render it as a photoreal live-action film still UNLESS the genre is explicitly animation.
 
 COORDINATE SYSTEM: x, y, w, h are floats from 0.0 to 1.0. (x, y) is the TOP-LEFT corner of the element's bounding box; w and h are its width and height as fractions of the poster. (0,0) is the top-left of the poster, (1,1) the bottom-right. Keep every box fully on-canvas: x + w <= 1.0 and y + h <= 1.0.
 
@@ -134,7 +136,7 @@ COMPOSE LIKE A REAL MOVIE POSTER:
 - One clear focal character or central image occupying the middle.
 - An optional tagline near the title.
 - A billing block (small condensed credits) and a release-date line near the bottom.
-- 1-3 supporting illustrated elements for atmosphere.
+- 1-3 supporting photographed elements for atmosphere.
 
 Think as much as you want first. Then output your final answer wrapped in EXACTLY these three tags, on their own lines, with nothing else inside them:
 
@@ -142,15 +144,15 @@ Think as much as you want first. Then output your final answer wrapped in EXACTL
 <synopsis>The 3-5 sentence funny streaming-style synopsis goes here.</synopsis>
 <poster>
 {
-  "high_level_description": "one vivid sentence describing the whole poster",
-  "background": "2-4 sentences describing the full-bleed background: color field, texture, depth, any skyline or scenery",
-  "art_style": "comma-separated art-style descriptors (illustration technique, texture, era, e.g. '1960s retro movie poster illustration, flat ink shapes, screen-print texture')",
+  "high_level_description": "one vivid sentence describing the whole poster as a photoreal film image",
+  "background": "2-4 sentences describing the full-bleed photographic background: location, depth, atmosphere, any skyline or scenery",
+  "art_style": "comma-separated PHOTOGRAPHIC descriptors — camera, lens, film stock, grade (e.g. 'shot on 35mm anamorphic, shallow depth of field, teal-orange cinematic grade, photorealistic, volumetric haze'). Do NOT name illustration, painting, screen-print, or vector styles.",
   "aesthetics": "comma-separated mood/aesthetic words",
   "lighting": "one sentence describing the lighting",
   "palette": ["#RRGGBB", "#RRGGBB", "#RRGGBB", "#RRGGBB"],
   "bg_brightness": 55,
   "elements": [
-    {"type": "obj",  "text": "", "desc": "full description of an illustrated object", "x": 0.30, "y": 0.34, "w": 0.40, "h": 0.50},
+    {"type": "obj",  "text": "", "desc": "full photoreal description of a photographed subject or object", "x": 0.30, "y": 0.34, "w": 0.40, "h": 0.50},
     {"type": "text", "text": "THE TITLE", "desc": "describes the typography, size, color, and treatment of these words", "x": 0.10, "y": 0.05, "w": 0.80, "h": 0.18}
   ]
 }
@@ -159,9 +161,9 @@ Think as much as you want first. Then output your final answer wrapped in EXACTL
 RULES FOR THE POSTER JSON:
 - It MUST be valid JSON: double quotes everywhere, no trailing commas, no comments, no code fences.
 - "palette" is an array of 4-6 hex color strings. "bg_brightness" is an integer 0-100 (how bright the background reads).
-- Each element "type" is "obj" for an illustrated element or "text" for rendered words.
+- Each element "type" is "obj" for a photographed subject/object or "text" for rendered words.
 - For a "text" element, "text" holds the literal words to render (use \n for line breaks) and "desc" describes typography, size, color, and treatment.
-- For an "obj" element, "text" is an empty string "" and "desc" fully describes the illustrated object.
+- For an "obj" element, "text" is an empty string "" and "desc" fully describes the photographed subject or object (photoreal, never illustrated).
 - Include the film title as one large "text" element. Include a billing/credits "text" block near the bottom. Invent fake studio, director, and actor names freely — but do NOT use real actors or real franchises.
 - Use 5-10 elements total. Do not let text blocks overlap each other illegibly.
 - The tags must appear after any thinking. Do not nest tags. Do not add attributes."""
@@ -517,8 +519,12 @@ def _patch_zimage(base, payload, seed, poster_w, poster_h):
 
 
 # --- Ideogram 4 text-to-image workflow --------------------------------------
-IDEOGRAM_NODE_BUILDER = "200"   # Ideogram4PromptBuilderKJ
-IDEOGRAM_NODE_SEED = "165"      # RandomNoise
+# The rebuilt workflow dropped the Ideogram4PromptBuilderKJ node in favor of a
+# single PrimitiveStringMultiline node holding the whole poster spec as a JSON
+# string (fed through an Any Switch into CLIPTextEncode). That JSON is exactly
+# the shape _validate_poster() returns, so we just serialize the payload.
+IDEOGRAM_NODE_PROMPT = "214"    # PrimitiveStringMultiline (poster JSON)
+IDEOGRAM_NODE_SEED = "165"      # RandomNoise (noise_seed)
 IDEOGRAM_NODE_WIDTH = "204"     # INTConstant WIDTH
 IDEOGRAM_NODE_HEIGHT = "205"    # INTConstant HEIGHT
 
@@ -526,22 +532,10 @@ IDEOGRAM_NODE_HEIGHT = "205"    # INTConstant HEIGHT
 def _patch_ideogram(base, payload, seed, poster_w, poster_h):
     """payload is the validated poster dict from _validate_poster."""
     wf = copy.deepcopy(base)
-    b = wf[IDEOGRAM_NODE_BUILDER]["inputs"]
-    # Overwrite EVERY content field so no values from the example workflow's
-    # baked-in poster (palette, copy, layout) can leak into a generated row.
-    b["high_level_description"] = payload["high_level_description"]
-    b["background"] = payload["background"]
-    b["style"] = "art_style"
-    b["style.art_style"] = payload["art_style"]
-    b["aesthetics"] = payload["aesthetics"]
-    b["lighting"] = payload["lighting"]
-    b["medium"] = "graphic_design"  # deliberate poster default, not inherited
-    b["bg_brightness"] = payload["bg_brightness"]
-    # The builder node takes palette + elements as JSON-encoded strings.
-    b["style_palette_data"] = json.dumps(payload["palette"])
-    b["elements_data"] = json.dumps(payload["elements"])
-    b["width"] = poster_w
-    b["height"] = poster_h
+    # Drop the full validated poster in as the manual-prompt JSON string,
+    # overwriting the workflow's baked-in example so none of its copy/layout
+    # can leak into a generated row.
+    wf[IDEOGRAM_NODE_PROMPT]["inputs"]["value"] = json.dumps(payload, indent=2)
     wf[IDEOGRAM_NODE_WIDTH]["inputs"]["value"] = poster_w
     wf[IDEOGRAM_NODE_HEIGHT]["inputs"]["value"] = poster_h
     wf[IDEOGRAM_NODE_SEED]["inputs"]["noise_seed"] = seed
@@ -649,7 +643,7 @@ BACKENDS = {
         retry_nudge=IDEOGRAM_RETRY_NUDGE,
         extract=_extract_ideogram,
         patch=_patch_ideogram,
-        poster_w=1536, poster_h=2304,   # exact 2:3 one-sheet, ~3.5 MP
+        poster_w=1664, poster_h=2496,   # exact 2:3 one-sheet, ~4.15 MP (full 2K budget)
     ),
     "krea": Backend(
         name="krea",

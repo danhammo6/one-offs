@@ -7,7 +7,7 @@ Two pieces:
 1. **`index.html`** — a single-page browser game. Click "Smash Genres!" and the reels spin and land on a **real pre-generated film** pulled from the batches below — its actual genres, character, title, rendered poster, and synopsis. (Loads the `mashups_<backend>.json` manifests, so serve it over HTTP — see below.)
 2. **`generate_mashups.py`** — batch generator that, for each mashup, asks an LLM for a film title + synopsis + poster spec, drives ComfyUI to render a poster, and produces a static HTML gallery. The text LLM is selectable via `--llm` (Claude Code CLI by default; a local llama.cpp server otherwise). The image model is selectable via `--backend`:
    - **`krea`** (default) — the LLM emits a full structured, **photoreal** poster layout (palette + placed title/tagline/billing/photographed elements with normalized coordinates) for the **Krea** text-to-image model. Renders a 1152×1728 (2:3 one-sheet, ~2 MP) poster in ~30s.
-   - **`ideogram4`** — same structured contract for the **Ideogram 4** model. Renders a 1536×2304 (~3.5 MP) poster with crisp text, but ~7 min each — high quality, slow.
+   - **`ideogram4`** — same structured contract for the **Ideogram 4** model. Renders a 1664×2496 (2:3 one-sheet, ~4.15 MP — Ideogram 4's full native 2K pixel budget) poster with crisp text, but ~4 min each — high quality, slow.
    - **`zimage`** — the original path. The LLM emits one long natural-language prompt for the **Z-Image** model; renders a 1280×1664 (~3:4) poster.
 
 ## Files
@@ -117,7 +117,7 @@ For each pitch:
    - the poster spec, which depends on the backend:
      - **krea** / **ideogram4**: a `<poster>` block containing a JSON object — `high_level_description`, `background`, `art_style`, `aesthetics`, `lighting`, a hex `palette`, `bg_brightness`, and an `elements` array of placed text/illustration blocks each with normalized `x`/`y`/`w`/`h` coordinates. krea's prompt steers it toward photoreal/cinematic; ideogram4's allows stylized illustration. The JSON is validated and lightly repaired (code fences stripped, off-canvas boxes clamped) before use.
      - **zimage**: a `<positive>` block — one long natural-language prompt with the title baked in as visible poster text.
-4. Patch the poster spec + a fresh seed into the matching ComfyUI workflow and render the PNG (1152×1728 for krea, 1536×2304 for ideogram4, 1280×1664 for zimage).
+4. Patch the poster spec + a fresh seed into the matching ComfyUI workflow and render the PNG (1152×1728 for krea, 1664×2496 for ideogram4, 1280×1664 for zimage).
 5. Transcode the render to **JPEG (quality 85)** at the same resolution and save it — keeps the repo small with no visible loss on these posters.
 6. Rewrite the backend's CSV, gallery, and game manifest (e.g. `mashups_krea.csv` / `.html` / `.json`) after every row, so partial runs are usable. By default this **overwrites** any existing files for that backend; pass `--append` to keep the existing rows and posters and add the new ones after them (new poster filenames are numbered to continue past the existing ones).
 
@@ -148,7 +148,7 @@ CSV columns:
 
 The HTML gallery shows poster + title + synopsis prominently, with a collapsible "Behind the scenes" panel exposing the seed pitch and image prompt.
 
-> **Note:** ideogram4 posters render much slower than Z-Image (~7 min vs ~50s each on the test rig), because Ideogram 4 is a larger model. Plan batch sizes accordingly.
+> **Note:** ideogram4 posters render much slower than Z-Image (~4 min vs ~50s each on the test rig), because Ideogram 4 is a larger model. Plan batch sizes accordingly.
 
 ## Tuning
 

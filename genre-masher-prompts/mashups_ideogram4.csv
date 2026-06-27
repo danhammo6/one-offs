@@ -3830,3 +3830,90 @@ Musical,Indie Folk Musical,Action,Buddy Cop,Fortune Teller,"Pitch: Indie Folk Mu
     }
   ]
 }",0040-crystal-ball-and-chain.jpg
+Drama,Period Piece,Musical,Tragic Musical,Ex-Spy,A Ex-Spy stumbles into a Period Piece conspiracy that can only be solved using the rules of Tragic Musical.,The Spy Who Sang Too Late,"Vienna, 1911. Retired imperial spymaster Auguste Vereaux has sworn off ciphers for a quiet life conducting the opera house orchestra. But when a coded assassination plot surfaces hidden inside an aria, Auguste discovers the conspiracy obeys the iron laws of tragic musical theater: every secret must be confessed in song, every villain gets exactly one heartbreaking solo, and no one survives the third act finale. To save the Archduke, Auguste must out-warble a baritone double agent — knowing that whoever hits the final high note dies for it.","{
+  ""high_level_description"": ""A weathered Edwardian spy in a tuxedo stands center-stage in a gilded opera house, one gloved hand raised mid-aria as a hidden pistol glints, golden stage light flooding around him."",
+  ""background"": ""The interior of a lavish Belle Époque opera house seen from the stage, ornate gilded balconies and crimson velvet boxes receding into shadowed depth. A vast painted ceiling and dimmed crystal chandelier loom overhead, dust and haze catching the spotlight. The orchestra pit glows faintly in the lower foreground."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, warm amber cinematic grade with deep shadows, photorealistic, volumetric haze, fine film grain"",
+  ""aesthetics"": ""operatic, melancholic, opulent, period-authentic, tragic grandeur"",
+  ""lighting"": ""a single hard golden spotlight rakes across the protagonist from above-left while the cavernous hall falls into rich crimson-black darkness."",
+  ""palette"": [
+    ""#1A0E0A"",
+    ""#C9A24B"",
+    ""#7A1F1F"",
+    ""#E8D9A8"",
+    ""#3B2417""
+  ],
+  ""bg_brightness"": 38,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a distinguished 60-year-old man in an immaculate black Edwardian tailcoat and white bow tie, silver hair swept back, one white-gloved hand raised dramatically mid-song, the other hand subtly concealing a small antique pistol against his thigh, anguished tearful expression, photoreal"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.3,
+      ""w"": 0.4,
+      ""h"": 0.55
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a folded sheet of antique music manuscript with handwritten notes turning into rows of coded numbers, edges singed, floating in haze in the lower foreground"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.7,
+      ""w"": 0.26,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a glinting brass opera glasses resting on red velvet at the edge of a balcony, soft focus, catching golden light"",
+      ""palette"": [],
+      ""x"": 0.66,
+      ""y"": 0.66,
+      ""w"": 0.24,
+      ""h"": 0.14
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE SPY WHO\nSANG TOO LATE"",
+      ""desc"": ""large elegant engraved serif lettering in tarnished gold with subtle stage-light bloom, centered, classic theatrical playbill styling, slight emboss"",
+      ""palette"": [],
+      ""x"": 0.1,
+      ""y"": 0.05,
+      ""w"": 0.8,
+      ""h"": 0.18
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""Every secret must be sung. Every singer must fall."",
+      ""desc"": ""small italic cream-colored serif tagline, letter-spaced, sitting just under the title"",
+      ""palette"": [],
+      ""x"": 0.16,
+      ""y"": 0.24,
+      ""w"": 0.68,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""MERIDIAN VEIL PICTURES PRESENTS  A LUCIEN FAROUCHE FILM  \""THE SPY WHO SANG TOO LATE\""  ALDOUS RENNICK  VIVIENNE SCHARR  THEO BALLANTINE  CASTING BY M. ODENT  MUSIC BY HENRI DELACROIX-VAUM  DIRECTED BY LUCIEN FAROUCHE"",
+      ""desc"": ""tiny condensed all-caps cream credits in a single justified block, classic billing-block typography"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.9,
+      ""w"": 0.72,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""FINAL CURTAIN — WINTER"",
+      ""desc"": ""small spaced gold all-caps release line above the billing block"",
+      ""palette"": [],
+      ""x"": 0.28,
+      ""y"": 0.86,
+      ""w"": 0.44,
+      ""h"": 0.03
+    }
+  ]
+}",0041-the-spy-who-sang-too-late.jpg

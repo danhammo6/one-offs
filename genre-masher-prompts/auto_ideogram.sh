@@ -13,12 +13,25 @@ cd /Users/dhammond/spike/one-offs/genre-masher-prompts
 SERVER="192.168.33.101:8188"
 IMAGES_DIR="images/ideogram4"
 VENV=".venv/bin/python"
-STOP_AT=150                 # hard cap on total ideogram4 images
-MAX_HOURS=8                 # wall-clock safety cap
+STOP_AT=200                 # hard cap on total ideogram4 images (160 of them hi-res)
+MAX_HOURS=48                # wall-clock safety cap (weekend run)
 SWITCH_AT=40                # image count at which we go to native-2K res
 LO_RES="1152x1728"
 HI_RES="1664x2496"
 WAIT_PID="${1:-}"           # optional: PID of an in-flight batch to wait on first
+LOCK="/tmp/auto_ideogram.lock"
+
+# Single-instance guard: refuse to start a second driver (would race the CSV and
+# collide poster filenames). Stale lock (dead PID) is reclaimed.
+if [ -f "$LOCK" ]; then
+  other=$(cat "$LOCK" 2>/dev/null)
+  if [ -n "$other" ] && kill -0 "$other" 2>/dev/null; then
+    echo "another driver (PID $other) is already running; exiting." >&2
+    exit 1
+  fi
+fi
+echo $$ > "$LOCK"
+trap 'rm -f "$LOCK"' EXIT
 
 start_ts=$(date +%s)
 log() { echo "[$(date '+%H:%M:%S')] $*"; }

@@ -8522,3 +8522,943 @@ Horror,Psychological Horror,Action,Military Action,Stage Magician,"Picture a Psy
     }
   ]
 }",0090-abracadabra-rules-of-engagement.jpg
+Western,Spaghetti Western,Drama,Medical Drama,Washed-Up Rock Star,"Picture a Spaghetti Western setting, but everyone behaves like they're in a Medical Drama. Our reluctant hero: a Washed-Up Rock Star.","The Good, The Bad, and The Defibrillator","Faded glam-rock legend ""Dusty"" Calloway rides into the parched border town of Sangre Seca chasing a comeback gig — only to find the town has no saloon, just an overworked frontier triage tent. When a noon duel ends with two slugs in the sheriff, Dusty discovers his only marketable skill since rehab is a steady hand under pressure. Now he's the reluctant chief surgeon of a one-horse hospital where every gunfighter codes at high noon and the only anesthetic is mezcal. He'll have to stop the bleeding, restart a heart, and maybe his career — all before the cartel's specialist rides in for a second opinion.","{
+  ""high_level_description"": ""A weathered long-haired rock star in a dusty leather duster stands in a sun-scorched western street holding defibrillator paddles like dueling pistols, photographed as a gritty cinematic one-sheet."",
+  ""background"": ""A baking, deserted frontier main street at high noon, rutted dirt road vanishing toward distant adobe buildings and a crooked wooden infirmary tent flying a faded red-cross flag. Heat shimmer rises off the ground and a lone tumbleweed catches dry wind. The sky is a bleached, dust-hazed amber dome with one circling vulture."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, sun-bleached dusty grade with warm amber and teal shadows, fine film grain, volumetric dust haze, photorealistic"",
+  ""aesthetics"": ""gritty, sun-scorched, operatic, sweaty, ironic, epic"",
+  ""lighting"": ""harsh overhead noon sun raking across the subject with deep hard shadows and golden rim light catching the dust in the air."",
+  ""palette"": [
+    ""#C9A24B"",
+    ""#7A3B22"",
+    ""#2E3A38"",
+    ""#E8D8B0"",
+    ""#9C1F1F""
+  ],
+  ""bg_brightness"": 62,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A washed-up middle-aged male rock star with long stringy graying hair, kohl-smudged eyes, fingerless leather gloves, scuffed snakeskin boots and a dust-caked black leather duster over a faded band tee, standing in a wide gunslinger stance gripping two yellow defibrillator paddles low at his hips like revolvers, sweat-streaked face squinting hard into the sun, photoreal, full body"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.34,
+      ""w"": 0.42,
+      ""h"": 0.56
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A battered portable defibrillator unit holstered to a tooled-leather gunbelt, coiled cables, glowing green readout, dust-covered, photoreal close detail"",
+      ""palette"": [],
+      ""x"": 0.06,
+      ""y"": 0.6,
+      ""w"": 0.2,
+      ""h"": 0.18
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A leaning weathered wooden signpost with a hanging tin sign painted with a faded red cross and the word CLINICA, splintered and sun-bleached, photoreal"",
+      ""palette"": [],
+      ""x"": 0.72,
+      ""y"": 0.4,
+      ""w"": 0.22,
+      ""h"": 0.3
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE GOOD, THE BAD,\nAND THE DEFIBRILLATOR"",
+      ""desc"": ""massive distressed slab-serif spaghetti-western title in cracked weathered gold and rust, hand-stenciled texture, slight perspective, bold and dominating the lower third"",
+      ""palette"": [],
+      ""x"": 0.06,
+      ""y"": 0.74,
+      ""w"": 0.88,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""EVERY DUEL ENDS IN THE ER."",
+      ""desc"": ""small all-caps condensed tagline in dusty cream, letter-spaced, sitting just above the title"",
+      ""palette"": [],
+      ""x"": 0.18,
+      ""y"": 0.69,
+      ""w"": 0.64,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""STAGECOACH PICTURES presents  a RANDO QUINTANA film  \""THE GOOD, THE BAD, AND THE DEFIBRILLATOR\""  JAX REVELLE  MARISOL DEVANE  CLAY HORNBECK  casting by VERA SOLIS  music by THE SAGEBRUSH ORCHESTRA  directed by RANDO QUINTANA"",
+      ""desc"": ""tiny condensed sans-serif billing block in pale dust-gray, centered, standard credit-block spacing"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.93,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""CODE BLUE AT HIGH NOON · SUMMER"",
+      ""desc"": ""small bold release line in faded red, centered above the billing block"",
+      ""palette"": [],
+      ""x"": 0.22,
+      ""y"": 0.905,
+      ""w"": 0.56,
+      ""h"": 0.022
+    }
+  ]
+}",0091-the-good-the-bad-and-the-defibrillator.jpg
+Mystery,Cold Case,Musical,Jukebox Musical,Reclusive Author,"Set in a world where Cold Case and Jukebox Musical coexist uneasily, our hero — a Reclusive Author — must save... something. Probably a town.",Last Dance in Dead Man's Holler,"Reclusive thriller novelist Maren Vance hasn't left her cabin — or finished a sentence out loud — in eleven years. But when a forty-year-old unsolved disappearance reopens, the entire town of Dead Man's Holler can only communicate through spontaneous, fully-choreographed renditions of jukebox classics. To crack the case, Maren must overcome her crippling stage fright and lip-sync her way through honky-tonk confessions, doo-wop alibis, and one devastating power-ballad red herring. The clock is ticking: if she doesn't name the killer by the last song, the bar — and the truth — close forever.","{
+  ""high_level_description"": ""A weathered female author stands frozen mid-step on a glowing jukebox-lit barroom floor as evidence photos and townsfolk caught mid-song swirl around her in a smoky, neon-drenched honky-tonk."",
+  ""background"": ""Interior of a derelict roadside honky-tonk bar at midnight, deep perspective receding toward a dusty stage. A vintage Wurlitzer jukebox glows amber and magenta in the back corner, light spilling across a scuffed wooden dance floor. Cigarette haze hangs in volumetric beams; faded missing-person flyers paper the back wall under a buzzing neon sign."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, neon-and-tungsten cinematic grade, volumetric smoke, photorealistic, fine film grain, subtle lens flare"",
+  ""aesthetics"": ""moody noir, sequined neon kitsch, melancholic, theatrical, smoky Americana"",
+  ""lighting"": ""warm amber key from the jukebox raking across the dance floor while cool blue moonlight cuts through a side window, leaving the author half-lit in dramatic chiaroscuro."",
+  ""palette"": [
+    ""#1a1230"",
+    ""#e0285a"",
+    ""#f2a93b"",
+    ""#0d6f8c"",
+    ""#f4e9d0""
+  ],
+  ""bg_brightness"": 38,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A reclusive woman in her late fifties, gray-streaked hair pinned messily, wearing a rumpled wool cardigan over a nightdress and reading glasses pushed up, frozen awkwardly in a half-twirl dance pose mid-step, clutching a yellowed manila case file to her chest, expression a mix of terror and determination, photoreal"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.3,
+      ""w"": 0.42,
+      ""h"": 0.55
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A glowing 1950s chrome-and-bubble Wurlitzer jukebox in the back left, amber and magenta light radiating, slightly out of focus, photoreal"",
+      ""palette"": [],
+      ""x"": 0.03,
+      ""y"": 0.4,
+      ""w"": 0.24,
+      ""h"": 0.34
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""Three blurred townsfolk in the smoky background caught mid-musical-number, arms thrown up in a chorus-line pose, faces lit by neon, shallow focus, photoreal"",
+      ""palette"": [],
+      ""x"": 0.66,
+      ""y"": 0.46,
+      ""w"": 0.3,
+      ""h"": 0.34
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A scatter of old black-and-white evidence photographs and a vintage 45 rpm vinyl record lying on the dusty wooden floor in the foreground, faint red string connecting them, photoreal"",
+      ""palette"": [],
+      ""x"": 0.1,
+      ""y"": 0.78,
+      ""w"": 0.4,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""LAST DANCE\nIN DEAD MAN'S HOLLER"",
+      ""desc"": ""large condensed serif title with a worn neon-tube glow on the first line and a cracked vintage-marquee texture, warm amber and hot pink, stacked across two lines, dominating the lower-middle"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.55,
+      ""w"": 0.84,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""The case went cold. The chorus never did."",
+      ""desc"": ""small italic tagline in soft cream lettering, understated, single line"",
+      ""palette"": [],
+      ""x"": 0.16,
+      ""y"": 0.5,
+      ""w"": 0.68,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""A LANTERN HOLLOW PICTURES PRESENTS  A FILM BY RORY CADWALLADER   \""LAST DANCE IN DEAD MAN'S HOLLER\""  ELOISE TREMBLAY  HANK MARSDEN  DELPHINE OKAFOR  MUSIC SUPERVISED BY THE LATE-NIGHT HONKY-TONK COLLECTIVE  COSTUME BY MIRA VOSS  EDITED BY SAM PELLETIER  DIRECTED BY RORY CADWALLADER"",
+      ""desc"": ""tiny condensed all-caps billing block in pale gray, centered, standard credits formatting"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.9,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""IN THEATERS THIS FALL"",
+      ""desc"": ""small bold spaced all-caps line in warm amber above the billing block"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.86,
+      ""w"": 0.4,
+      ""h"": 0.03
+    }
+  ]
+}",0092-last-dance-in-dead-man-s-holler.jpg
+Fantasy,Sword & Sorcery,Mystery,Forensic Procedural,Rookie Cop,"Imagine if a Sword & Sorcery show had a baby with a Forensic Procedural miniseries, and that baby grew up to follow a Rookie Cop.",Blade & Evidence: The Goblin in the Stone,"Fresh out of the Royal Constabulary Academy, Deputy Wren Halloway is the first cop in the Kingdom of Vorlach to dust a cursed broadsword for fingerprints. When a beloved warlord turns up petrified mid-sneeze and a goblin syndicate starts lawyering up, Wren must pair medieval magic with a forensics kit that fits in a satchel. Her partner is a 900-year-old skeleton who keeps contaminating the crime scene. Solve the murder, or the whole realm gets subpoenaed by demons.","{
+  ""high_level_description"": ""A rookie fantasy cop in studded leather armor crouches over a glowing magical crime scene, holding evidence tweezers up to a floating ember of arcane dust, lit like a prestige crime drama"",
+  ""background"": ""A torch-lit stone hall of a ruined castle keep at night, with crumbling gothic arches receding into smoky darkness. Faint runic chalk lines and numbered yellow evidence markers glow on the flagstone floor, blending caution-tape ritual circles with crime-scene staging. Cold blue moonlight spills through a shattered stained-glass window while warm torch flames flicker in the depth of frame."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, teal-and-amber cinematic grade, volumetric torch haze, photorealistic, fine film grain"",
+  ""aesthetics"": ""grim prestige fantasy, forensic procedural tension, moody noir, epic but intimate"",
+  ""lighting"": ""low-key chiaroscuro with cold moonlight rim light and warm torch fill carving the figures out of smoky darkness"",
+  ""palette"": [
+    ""#0E1B2A"",
+    ""#2C4A63"",
+    ""#C8902E"",
+    ""#E8D9B0"",
+    ""#7A1F1F""
+  ],
+  ""bg_brightness"": 32,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a young female rookie constable in fitted studded-leather fantasy armor with a brass badge on the chest, crouched on one knee, holding metal evidence tweezers that pinch a single glowing magical ember; intense focused expression, braided hair, a small enchanted lantern clipped to her belt; photoreal, sharp detail"",
+      ""palette"": [],
+      ""x"": 0.28,
+      ""y"": 0.34,
+      ""w"": 0.46,
+      ""h"": 0.46
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a weathered animated skeleton wearing a tattered detective's tabard and a tarnished badge, standing in the smoky background slightly out of focus, leaning on a longsword like a cane, mouth agape mid-comment; photoreal bone texture"",
+      ""palette"": [],
+      ""x"": 0.04,
+      ""y"": 0.3,
+      ""w"": 0.24,
+      ""h"": 0.45
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""an ornate broadsword lying on the stone floor inside a glowing chalk ritual circle, surrounded by small numbered yellow evidence markers; blade faintly pulsing with violet runic light, photoreal metal and stone"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.74,
+      ""w"": 0.45,
+      ""h"": 0.18
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a petrified warlord statue frozen mid-sneeze, grey stone texture with cracks, partially visible at the right edge of frame in soft focus"",
+      ""palette"": [],
+      ""x"": 0.78,
+      ""y"": 0.4,
+      ""w"": 0.2,
+      ""h"": 0.4
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""BLADE & EVIDENCE"",
+      ""desc"": ""large bold condensed serif title in carved-stone texture with weathered gold-leaf edges, slight metallic sheen, centered, dominating the lower-middle band"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.8,
+      ""w"": 0.84,
+      ""h"": 0.1
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE GOBLIN IN THE STONE"",
+      ""desc"": ""smaller engraved gold serif subtitle in all caps, tight letter-spacing, sitting just beneath the main title"",
+      ""palette"": [],
+      ""x"": 0.22,
+      ""y"": 0.905,
+      ""w"": 0.56,
+      ""h"": 0.035
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""EVERY SPELL LEAVES A PRINT."",
+      ""desc"": ""thin uppercase tagline in pale bone-white letterpress style, wide tracking, near the top of the poster"",
+      ""palette"": [],
+      ""x"": 0.18,
+      ""y"": 0.06,
+      ""w"": 0.64,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""MIRECREST PICTURES PRESENTS  A HOLLOWAY VANTANE FILM  \""BLADE & EVIDENCE: THE GOBLIN IN THE STONE\""  BRYN ASHCATHE  EDMUND ROURKE-PALL  TALIA VESSMARK  CASTING BY OSRIC FENN  MUSIC BY LIORA QUENN  DIRECTED BY HOLLOWAY VANTANE"",
+      ""desc"": ""small condensed all-caps billing block in pale grey, centered, classic credit-block spacing, low contrast"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.945,
+      ""w"": 0.72,
+      ""h"": 0.04
+    }
+  ]
+}",0093-blade-evidence-the-goblin-in-the-stone.jpg
+Drama,Crime Drama,Mystery,Locked Room,Disgraced Athlete,It's Crime Drama meets Locked Room... but the protagonist is a Disgraced Athlete.,The Penalty Box,"Disgraced ex-goalkeeper Marco ""The Wall"" Delvecchio — banned for life over a bribery scandal he swears he didn't take — is the only guest who stays behind when a luxury ski-lodge investor is found garroted in a chalet sealed by a blizzard. No signal, no exits, six suspects, and a detective who already hates athletes. Marco has until the snow clears to prove he didn't do it, using the only skills he has left: reading angles, anticipating the shot, and never, ever flinching. Turns out the perfect crime has one weakness — a man who's spent his whole life watching the net.","{
+  ""high_level_description"": ""A brooding former goalkeeper stands in a locked, snowbound chalet great-room, lit by a single chandelier, evidence and suspects blurred behind him in a tense crime-drama one-sheet."",
+  ""background"": ""Interior of a vast alpine chalet great-room sealed against a howling blizzard, tall frosted windows packed solid with snow and no visible exit. Deep shadows pool in the timber rafters while a dying fire throws orange across an antique rug stained dark near an overturned chair. Faint silhouettes of five uneasy guests are scattered in the soft-focus background, each lit just enough to read suspicion."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, cold teal shadows with warm amber firelight, fine film grain, photorealistic, volumetric haze, cinematic contrast"",
+  ""aesthetics"": ""tense, claustrophobic, prestige crime drama, wintry noir, brooding"",
+  ""lighting"": ""a single overhead chandelier and a low fire carve hard rim light around the lead while the snowed-in windows glow a pale dead blue."",
+  ""palette"": [
+    ""#0E1A24"",
+    ""#1F3A4C"",
+    ""#C8732B"",
+    ""#E8E2D4"",
+    ""#7A1F1F""
+  ],
+  ""bg_brightness"": 32,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A weathered athletic man in his late 40s, short greying stubble and a scarred brow, wearing a faded team tracksuit jacket over a wool sweater, standing center frame with goalkeeper gloves hanging from one fist, jaw set, eyes scanning sideways with wary intelligence, hard rim light along his shoulders, photoreal"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.3,
+      ""w"": 0.42,
+      ""h"": 0.55
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""An overturned carved-oak dining chair on a dark Persian rug in the lower foreground, a single thin garrote wire glinting beside a tipped crystal glass, sharp focus, photoreal forensic detail"",
+      ""palette"": [],
+      ""x"": 0.05,
+      ""y"": 0.74,
+      ""w"": 0.34,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""Tall chalet window in the upper right packed entirely solid with wind-driven snow, pale blue glow, frost crystals on the glass, soft focus"",
+      ""palette"": [],
+      ""x"": 0.7,
+      ""y"": 0.16,
+      ""w"": 0.28,
+      ""h"": 0.3
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE PENALTY BOX"",
+      ""desc"": ""Massive condensed sans-serif title in cold bone-white with subtle frost texture and a faint metallic sheen, tightly tracked, spanning the lower third, heavy and authoritative"",
+      ""palette"": [],
+      ""x"": 0.07,
+      ""y"": 0.62,
+      ""w"": 0.86,
+      ""h"": 0.14
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""SIX SUSPECTS. ONE EXIT. NO WAY OUT."",
+      ""desc"": ""Small uppercase amber-gold tagline in spaced thin caps, centered just above the title"",
+      ""palette"": [],
+      ""x"": 0.18,
+      ""y"": 0.57,
+      ""w"": 0.64,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""NORTHFACE PICTURES PRESENTS  A SILAS VOORHEES FILM  \""THE PENALTY BOX\""  RENZO BIANCHI  MARISELA OKONKWO  DECLAN HART  CASPAR DUNN  MUSIC BY OLE BRANDT  DIRECTED BY SILAS VOORHEES"",
+      ""desc"": ""Tiny condensed pale-grey billing block in classic single-line credit style, centered at the very bottom edge"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.92,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""WHEN THE SNOW CLEARS — ONLY ONE WALKS OUT"",
+      ""desc"": ""Very small italic light-grey release line set just below the title"",
+      ""palette"": [],
+      ""x"": 0.2,
+      ""y"": 0.77,
+      ""w"": 0.6,
+      ""h"": 0.03
+    }
+  ]
+}",0094-the-penalty-box.jpg
+Action,Buddy Cop,Documentary-style,Food Doc,Undertaker,"Cold open: a Undertaker, alone, in the rain. The genre? Buddy Cop. The vibe? Unmistakably Food Doc. Cue title card.",Stiff & Garnish: A Killing in the Kitchen,"Mortician Cornelius Boggs has embalmed bodies for thirty silent years — until a celebrity chef drops dead face-first in his own foam, and the precinct partners Cornelius with hot-headed gastro-detective Rico Vance. Together they work the city's underground supper-club homicide ring, narrating each crime scene like a Michelin-starred food documentary, complete with reverent slow-motion plating and tearful interviews with the deceased's pastry chef. Cornelius brings a corpse's calm; Rico brings a deathly fear of cilantro. They have 48 hours and one reservation to crack the case before the killer's next ""tasting menu"" claims another diner.","{
+  ""high_level_description"": ""A photoreal buddy-cop one-sheet of a gaunt undertaker and a fired-up detective standing back-to-back in a rain-slicked restaurant alley, lit like a prestige food documentary, a single plated dish glistening under a spotlight between them."",
+  ""background"": ""A wet midnight alley behind a high-end restaurant, neon kitchen-window glow reflecting off slick cobblestones and steaming sewer grates. Stacks of food crates and dripping awnings recede into a shallow, bokeh-blurred haze of red and amber signage. Faint chalk crime-scene outline pooling with rainwater in the lower foreground."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, teal-orange cinematic grade, photorealistic, volumetric rain haze, glossy specular highlights, prestige-doc spotlight on food"",
+  ""aesthetics"": ""moody, deadpan, gourmet noir, rain-soaked, prestige-documentary gloss"",
+  ""lighting"": ""low-key noir key light from a kitchen window with a hard documentary spotlight isolating the plated dish in steam."",
+  ""palette"": [
+    ""#0E1418"",
+    ""#C2410C"",
+    ""#E8B04B"",
+    ""#16302B"",
+    ""#EDE6D6""
+  ],
+  ""bg_brightness"": 32,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""Tall gaunt pale undertaker in a long black wool funeral coat, slicked grey hair, holding a clipboard like a menu, utterly calm expression, rain dripping from his collar, photoreal"",
+      ""palette"": [],
+      ""x"": 0.06,
+      ""y"": 0.3,
+      ""w"": 0.42,
+      ""h"": 0.55
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""Stocky fired-up detective in a rolled-sleeve chef-style apron over a shoulder holster, brandishing a meat thermometer like a weapon, intense scowl, sweat and rain on face, photoreal"",
+      ""palette"": [],
+      ""x"": 0.5,
+      ""y"": 0.3,
+      ""w"": 0.42,
+      ""h"": 0.55
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A single elegant plated gourmet dish glistening with sauce on a white plate, dramatic steam rising, isolated in a documentary spotlight, ultra detailed photoreal food photography"",
+      ""palette"": [],
+      ""x"": 0.38,
+      ""y"": 0.6,
+      ""w"": 0.26,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""Glowing red neon restaurant sign reflected in a rain puddle, soft bokeh, photoreal"",
+      ""palette"": [],
+      ""x"": 0.66,
+      ""y"": 0.1,
+      ""w"": 0.3,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""STIFF & GARNISH"",
+      ""desc"": ""Massive bold condensed sans-serif title in warm gold, slightly wet metallic sheen, dominating the lower third, subtle drop shadow"",
+      ""palette"": [],
+      ""x"": 0.06,
+      ""y"": 0.8,
+      ""w"": 0.88,
+      ""h"": 0.12
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""A KILLING IN THE KITCHEN"",
+      ""desc"": ""Thin uppercase letter-spaced subtitle in off-white directly under the main title"",
+      ""palette"": [],
+      ""x"": 0.18,
+      ""y"": 0.92,
+      ""w"": 0.64,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""One reservation. Two badges. No survivors at the tasting menu."",
+      ""desc"": ""Small italic tagline in pale cream just above the title block"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.74,
+      ""w"": 0.72,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""MORTLEY-VANE PICTURES PRESENTS  A SILAS DROOM FILM  \""STIFF & GARNISH: A KILLING IN THE KITCHEN\""  HARLAN PRYCE  DESMOND OKAFOR  CASTING BY R. TUREEN  MUSIC BY V. LACROIX  DIRECTED BY SILAS DROOM"",
+      ""desc"": ""Tiny condensed all-caps billing block in light grey, centered, standard credit-block spacing"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.965,
+      ""w"": 0.76,
+      ""h"": 0.025
+    }
+  ]
+}",0095-stiff-garnish-a-killing-in-the-kitchen.jpg
+Mystery,Amateur Sleuth,Musical,Jukebox Musical,Reluctant Chosen One,"Logline: When a Reluctant Chosen One discovers their quiet life is actually a Amateur Sleuth, they must master the genre conventions of Jukebox Musical to survive.","Whodunit, Baby, One More Time","Mild-mannered crossword editor Marvin Pesh wants nothing more than to finish his Sunday puzzle in peace. But when his neighbor turns up dead clutching a karaoke remote, an ancient prophecy declares Marvin the ""Chosen Crooner"" — the only sleuth who can solve crimes, but exclusively by belting reworked classic-rock hits at suspects. Now he must learn jazz hands, decode clues hidden in song lyrics, and out-harmonize a murderous a cappella cult before the third-act key change kills him. He really, really cannot carry a tune. Solving the case means singing for his life.","{
+  ""high_level_description"": ""A bewildered middle-aged man in a cardigan stands mid-reluctant-dance-pose under a single dramatic spotlight on a noir city street, magnifying glass in one hand and vintage microphone in the other, photographed like a glossy theatrical one-sheet"",
+  ""background"": ""A rain-slicked nighttime alley in a moody downtown, neon signage glowing soft and out of focus in the deep background, wet cobblestones reflecting colored light. A faint chalk body outline glows on the pavement beneath the man's feet. Atmospheric haze drifts through the beam of a hard overhead spotlight."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, neon-noir cinematic grade, photorealistic, volumetric haze, crisp specular highlights on wet pavement"",
+  ""aesthetics"": ""absurd, theatrical, neon-noir, awkward showmanship, mystery glamour"",
+  ""lighting"": ""a single hard white spotlight from directly above carves the figure out of the dark while magenta and teal neon spill rims his shoulders."",
+  ""palette"": [
+    ""#0E1326"",
+    ""#E0317B"",
+    ""#1FB6C4"",
+    ""#F5D77A"",
+    ""#F4F1EA""
+  ],
+  ""bg_brightness"": 35,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a flustered balding man in his fifties wearing a beige knit cardigan over a rumpled shirt, mid-awkward jazz-hands lunge, eyes wide with terror, gripping a brass vintage microphone in his right hand and a large magnifying glass in his left, photoreal sweat sheen on his forehead"",
+      ""palette"": [],
+      ""x"": 0.28,
+      ""y"": 0.3,
+      ""w"": 0.46,
+      ""h"": 0.52
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a faint glowing white chalk outline of a body sprawled on wet cobblestones, with a karaoke remote control lying inside the outline catching the spotlight"",
+      ""palette"": [],
+      ""x"": 0.18,
+      ""y"": 0.74,
+      ""w"": 0.64,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a blurred cluster of menacing figures in matching sequined choir robes lurking at the edge of the alley shadows, bokeh neon behind them"",
+      ""palette"": [],
+      ""x"": 0.02,
+      ""y"": 0.46,
+      ""w"": 0.22,
+      ""h"": 0.34
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""WHODUNIT, BABY,\nONE MORE TIME"",
+      ""desc"": ""bold condensed serif title in glossy gold with a subtle neon-pink outer glow, all caps, stacked two lines, theatrical and slightly retro Broadway feel, large and dominant in the lower third"",
+      ""palette"": [],
+      ""x"": 0.07,
+      ""y"": 0.6,
+      ""w"": 0.86,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""He can solve any murder. He just has to sing about it."",
+      ""desc"": ""slim italic sans-serif tagline in soft cream white, single line, tucked directly above the title block"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.555,
+      ""w"": 0.76,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""LATE NIGHT REPRISE PICTURES"",
+      ""desc"": ""small spaced-out uppercase sans-serif studio credit in muted teal at the very top center"",
+      ""palette"": [],
+      ""x"": 0.22,
+      ""y"": 0.045,
+      ""w"": 0.56,
+      ""h"": 0.03
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""LATE NIGHT REPRISE PICTURES PRESENTS  A BARNABY QUILL FILM  HUGH MARRABLE  \""WHODUNIT, BABY, ONE MORE TIME\""  DELPHINE OKONKWO  RORY VANTRESS  CASTING BY MIMI HALVORSEN  MUSIC SUPERVISED BY THE LARYNX COLLECTIVE  WRITTEN BY PRISCILLA DODD  DIRECTED BY BARNABY QUILL"",
+      ""desc"": ""tiny condensed all-caps billing block in pale cream, centered, classic credit-block spacing, low contrast"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.9,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""IN THEATERS THIS FALL"",
+      ""desc"": ""small bold uppercase sans-serif release line in neon pink, centered just below the title"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.865,
+      ""w"": 0.4,
+      ""h"": 0.025
+    }
+  ]
+}",0096-whodunit-baby-one-more-time.jpg
+Horror,Cosmic Horror,Fantasy,Sword & Sorcery,Struggling Artist,"Cold open: a Struggling Artist, alone, in the rain. The genre? Cosmic Horror. The vibe? Unmistakably Sword & Sorcery. Cue title card.",The Unfinished Masterpiece,"Bartholomew Quill, a perpetually broke portrait painter behind on rent and self-respect, accepts a commission to paint the ""true face"" of a god that should not be looked at. Big mistake. As his canvas begins screaming and his brushes weep ink that whispers in a dead language, Bartholomew discovers the only way to seal the gate he accidentally opened is to FINISH the painting — while wielding an enchanted palette knife against tentacled critics from beyond the stars. Part starving-artist tragedy, part barbarian sword-and-sorcery epic, fully unhinged. Art is pain. So is this.","{
+  ""high_level_description"": ""A rain-soaked struggling painter stands defiantly in a ruined stone temple, brandishing a glowing palette knife like a sword as a colossal tentacled cosmic entity erupts from his own canvas behind him."",
+  ""background"": ""A crumbling moss-eaten stone temple interior open to a violent storm, towering broken pillars receding into darkness. Behind the figure, an enormous easel holds a half-finished canvas from which a vast iridescent tentacled mass bursts forth, glowing eldritch green and bleeding into a churning star-pocked void in the sky above. Cold rain streaks through shafts of sickly light, mist pooling around shattered marble floors."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, teal and bruised-violet cinematic grade, photorealistic, heavy volumetric haze, rain particulate, fine film grain"",
+  ""aesthetics"": ""epic, dread-soaked, painterly menace, grimy fantasy grandeur, cosmic awe"",
+  ""lighting"": ""low-key chiaroscuro with a sickly green glow from the canvas rim-lighting the artist while cold blue storm light rakes the wet stone from the left."",
+  ""palette"": [
+    ""#0d1b1a"",
+    ""#3aff9e"",
+    ""#6b3f7a"",
+    ""#c9b27e"",
+    ""#e8e3d2""
+  ],
+  ""bg_brightness"": 30,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A gaunt, soaked thirty-something male painter with stringy long hair, ink-stained linen shirt clinging to him, leather apron splattered with luminous paint, standing braced in a heroic warrior stance, raising a long glowing palette knife like a sword in one hand, a battered wooden palette strapped to the other arm like a shield, rain dripping off his determined face, photorealistic"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.34,
+      ""w"": 0.4,
+      ""h"": 0.52
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A massive iridescent tentacled cosmic horror erupting from a tall wooden easel and torn canvas, slick glistening limbs with too many unblinking eyes, glowing eldritch green energy bleeding from the canvas edges, photorealistic creature effects"",
+      ""palette"": [],
+      ""x"": 0.02,
+      ""y"": 0.1,
+      ""w"": 0.96,
+      ""h"": 0.55
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""Shattered marble floor tiles slick with rainwater reflecting green light, scattered broken paintbrushes and an overturned ink pot in the foreground, photoreal wet stone detail"",
+      ""palette"": [],
+      ""x"": 0.0,
+      ""y"": 0.78,
+      ""w"": 1.0,
+      ""h"": 0.21999999999999997
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE UNFINISHED\nMASTERPIECE"",
+      ""desc"": ""Massive carved-stone serif title treatment, weathered and cracked with faint glowing green seeping through the letter crevices, centered, occupying full width, dramatic and theatrical"",
+      ""palette"": [],
+      ""x"": 0.07,
+      ""y"": 0.6,
+      ""w"": 0.86,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""ART IS PAIN. SO IS THE VOID."",
+      ""desc"": ""Thin condensed all-caps italic tagline in pale bone-white, letter-spaced, centered just above the title"",
+      ""palette"": [],
+      ""x"": 0.18,
+      ""y"": 0.555,
+      ""w"": 0.64,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""VANTABLACK PICTURES PRESENTS  A CALLOW THORNE FILM  \""THE UNFINISHED MASTERPIECE\""  DESMOND VALE  IRINA KOSTOVA  ALARIC FENN  CASTING BY MOIRA SLADE  MUSIC BY OTTO REINHARDT  PRODUCTION DESIGN GIDEON ASH  DIRECTOR OF PHOTOGRAPHY LENA MARCH  WRITTEN AND DIRECTED BY CALLOW THORNE"",
+      ""desc"": ""Tiny condensed all-caps billing block, pale grey, centered, classic single-narrow-line credits formatting"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.9,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""IN THEATERS THIS AUTUMN"",
+      ""desc"": ""Small bold letter-spaced all-caps release line in bone-white, centered above the billing block"",
+      ""palette"": [],
+      ""x"": 0.28,
+      ""y"": 0.865,
+      ""w"": 0.44,
+      ""h"": 0.025
+    }
+  ]
+}",0097-the-unfinished-masterpiece.jpg
+Romance,Forbidden Romance,Fantasy,High Fantasy,Burned-Out Surgeon,"Set in a world where Forbidden Romance and High Fantasy coexist uneasily, our hero — a Burned-Out Surgeon — must save... something. Probably a town.",Sutures of the Sundered Realm,"Dr. Maren Vell quit medicine after a thousand-hour shift broke her, fleeing the city to drink mead in a dying frontier kingdom. But when the realm's exiled Frost Prince is carried in with an arrow lodged a finger from his heart, she's the only one who can save him — and falling for enemy royalty is punishable by the Crown's executioner. Now Maren must keep him alive, keep their affair secret, and stitch up a plague that's quietly devouring the village. Caffeine helps. Magic helps more. Her cynicism, somehow, helps most of all.","{
+  ""high_level_description"": ""A weary woman in scrubs layered under a fur-trimmed cloak kneels over a wounded silver-haired prince in a torchlit medieval infirmary, their faces inches apart amid floating embers."",
+  ""background"": ""Interior of a vast stone fortress infirmary at night, rows of cots fading into smoky darkness, arched gothic windows revealing a frozen moonlit kingdom and distant glowing mountains beyond. Banners and dripping candles hang from rough timber rafters. Depth recedes into warm torch glow against cold blue shadow."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, warm-cold dual lighting, photorealistic, fine film grain, volumetric haze, cinematic teal-and-amber grade"",
+  ""aesthetics"": ""epic, intimate, melancholic, sweeping, forbidden tension, grandiose"",
+  ""lighting"": ""warm flickering torchlight on the two lovers against deep teal moonlit shadow, drifting embers catching the light."",
+  ""palette"": [
+    ""#1B2A3A"",
+    ""#C9852E"",
+    ""#E8C57A"",
+    ""#7A2E2E"",
+    ""#0C141E""
+  ],
+  ""bg_brightness"": 38,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A tired late-30s woman with dark hair in a messy bun, modern blue surgical scrubs visible under a worn fur-trimmed medieval cloak, kneeling and pressing a cloth to a wound, half-empty pewter goblet beside her, exhausted determined expression, photoreal"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.3,
+      ""w"": 0.42,
+      ""h"": 0.46
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A handsome pale silver-haired young prince lying wounded on a cot, fine frost-blue royal armor, an arrow shaft near his chest, eyes locked upward toward the surgeon, photoreal"",
+      ""palette"": [],
+      ""x"": 0.1,
+      ""y"": 0.46,
+      ""w"": 0.5,
+      ""h"": 0.3
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""Glowing surgical instruments and a glassy vial of luminescent healing potion arranged on a bloodied cloth on stone, soft magical glow, photoreal"",
+      ""palette"": [],
+      ""x"": 0.62,
+      ""y"": 0.62,
+      ""w"": 0.3,
+      ""h"": 0.18
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""Drifting orange embers and faint magical motes floating through smoky air across the foreground, photoreal"",
+      ""palette"": [],
+      ""x"": 0.0,
+      ""y"": 0.2,
+      ""w"": 1.0,
+      ""h"": 0.55
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""SUTURES\nOF THE SUNDERED REALM"",
+      ""desc"": ""Large engraved serif title in weathered gold with subtle frost-cracked texture, centered, stacked two lines, cinematic high-fantasy treatment with faint glow"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.05,
+      ""w"": 0.84,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""She swore she'd never operate again. The kingdom had other plans."",
+      ""desc"": ""Slim italic serif tagline in pale gold, single line, understated, letter-spaced"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.26,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""HOLLOWMERE PICTURES   PRESENTS   A BRYNN ALDERCROSS FILM   \""SUTURES OF THE SUNDERED REALM\""   ELOISE VANTAR   CASPIAN REYNE   THADDEUS OAKE   CINEMATOGRAPHY DELPHINE MOOR   MUSIC ROAN ESKVELD   DIRECTED BY BRYNN ALDERCROSS"",
+      ""desc"": ""Tiny condensed all-caps billing block in pale grey, centered, standard movie-poster credits styling"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.9,
+      ""w"": 0.72,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""IN THEATERS WINTERSEND"",
+      ""desc"": ""Small bold letter-spaced caps in gold, centered above billing block"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.86,
+      ""w"": 0.4,
+      ""h"": 0.03
+    }
+  ]
+}",0098-sutures-of-the-sundered-realm.jpg
+Fantasy,Grimdark,Romance,Forbidden Romance,Lighthouse Keeper,"Picture a Grimdark setting, but everyone behaves like they're in a Forbidden Romance. Our reluctant hero: a Lighthouse Keeper.",The Keeper of Sorrows,"In a plague-rotted kingdom where loyalty is paid in blood, embittered lighthouse keeper Bram Oathmourn has one sworn duty: guide the dead king's war-fleet safely home so it can raze the rebel coast. Then a half-drowned rebel commander washes onto his rocks — devastatingly handsome, infuriatingly principled, and exactly the man Bram is sworn to doom. Now every flicker of the great lamp is a choice between the oath that defines him and the forbidden ache that's ruining him. Brooding, rain-soaked, and unbearably horny, it's a war epic where the deadliest weapon is eye contact.","{
+  ""high_level_description"": ""A storm-lashed black stone lighthouse at night with two rain-soaked men locked in a charged near-embrace on the rocks below, lit by the dying amber beam above."",
+  ""background"": ""A jagged volcanic coastline under a churning ash-grey storm sky, waves smashing against black rocks and throwing sea-spray into the wind. A towering, weather-scarred medieval stone lighthouse rises center-frame, its great lamp casting a single weak amber beam through the rain. Distant on the horizon, the silhouettes of dark war-galleys with tattered black sails creep toward shore."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, heavy volumetric rain and sea-mist, desaturated steel-and-amber cinematic grade, photorealistic, fine film grain"",
+  ""aesthetics"": ""grimdark, brooding, rain-drenched, doomed romance, epic gothic"",
+  ""lighting"": ""a single warm amber lighthouse beam slices through cold blue storm darkness, rim-lighting the two figures while rain glints in the air around them."",
+  ""palette"": [
+    ""#0E1418"",
+    ""#243038"",
+    ""#6E7A80"",
+    ""#C98A3A"",
+    ""#E8C98A""
+  ],
+  ""bg_brightness"": 28,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A weathered bearded lighthouse keeper in his late 30s wearing a soaked oilskin coat over chainmail, gripping a battered lantern, face anguished and storm-wet, hair plastered down, standing on slick black rocks"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.4,
+      ""w"": 0.34,
+      ""h"": 0.46
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A drenched, handsome younger rebel commander, half-collapsed against the keeper, torn leather armor clinging to him, one hand clutching the keeper's coat, gazing up with desperate longing"",
+      ""palette"": [],
+      ""x"": 0.46,
+      ""y"": 0.46,
+      ""w"": 0.3,
+      ""h"": 0.42
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A towering medieval black-stone lighthouse with a glowing amber lamp room at its peak, partly veiled by rain and mist, rising behind the figures"",
+      ""palette"": [],
+      ""x"": 0.34,
+      ""y"": 0.1,
+      ""w"": 0.32,
+      ""h"": 0.42
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A dark war-galley with tattered black sails silhouetted on the stormy horizon at far left, small and ominous"",
+      ""palette"": [],
+      ""x"": 0.04,
+      ""y"": 0.4,
+      ""w"": 0.2,
+      ""h"": 0.12
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE KEEPER\nOF SORROWS"",
+      ""desc"": ""Massive distressed serif title in tarnished silver with faint amber edge-glow, weathered metallic texture, centered across the lower third, cinematic epic scale"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.68,
+      ""w"": 0.84,
+      ""h"": 0.18
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""He swore to doom the fleet. He never swore to stop his heart."",
+      ""desc"": ""Small italic rain-grey serif tagline, single line, letter-spaced, sitting just above the title"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.62,
+      ""w"": 0.72,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""GRIMHOLD PICTURES PRESENTS  A CALLOWAY VANE FILM  \""THE KEEPER OF SORROWS\""  ALDOUS REN  THORNE MERCADE  ELSPETH GRAY  CASTING BY M. VOSS  MUSIC BY HALVARD KESS  DIRECTED BY CALLOWAY VANE"",
+      ""desc"": ""Tiny condensed all-caps billing block in pale grey, tightly tracked, centered at the very bottom edge"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.92,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THIS WINTER"",
+      ""desc"": ""Small bold all-caps amber release line, letter-spaced, centered just below the title"",
+      ""palette"": [],
+      ""x"": 0.34,
+      ""y"": 0.87,
+      ""w"": 0.32,
+      ""h"": 0.035
+    }
+  ]
+}",0099-the-keeper-of-sorrows.jpg
+Comedy,Screwball,Sci-Fi,Dystopian,Mad Scientist,"Imagine if a Screwball show had a baby with a Dystopian miniseries, and that baby grew up to follow a Mad Scientist.",Eureka! A Lovely Apocalypse,"In the rusted ration-state of New Cheerville, disgraced inventor Dr. Bibi Voltaire builds a machine to abolish all human emotion — and accidentally invents the world's first sarcastic toaster instead. Now wanted by the Ministry of Mood for ""excessive zaniness,"" she's stuck sharing a one-room bunker with her insufferably chipper ex-husband, a defecting state censor, and a malfunctioning surveillance drone that keeps falling in love. As the regime tightens its grip, Bibi has 48 hours to either save the dystopia or get everyone killed by talking too fast. It's a screwball revolution with terrible timing and excellent banter.","{
+  ""high_level_description"": ""A frazzled female mad scientist in a singed lab coat strikes a frantic comic pose amid a grim totalitarian megacity, clutching a sparking sarcastic toaster while a heart-eyed surveillance drone hovers beside her."",
+  ""background"": ""A towering brutalist dystopian metropolis of concrete spires and giant flickering propaganda screens stretches into a smog-orange dusk. Searchlights sweep across rows of identical gray apartment blocks plastered with peeling 'STAY CALM' banners. Steam vents and tangled cables fill the cramped foreground alley where the action takes place, giving deep layered atmosphere."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, dystopian teal-and-rust cinematic grade, volumetric haze, photorealistic, fine film grain, crisp practical lighting"",
+  ""aesthetics"": ""absurdist, frantic, retro-futuristic, grimy yet comedic, energetic"",
+  ""lighting"": ""harsh sodium-orange streetlight from above mixed with cold blue screen glow and bright sparks from the toaster rim-lighting the scientist's wild hair."",
+  ""palette"": [
+    ""#1B2A33"",
+    ""#D9622B"",
+    ""#5FB6C4"",
+    ""#E8D9B5"",
+    ""#101418""
+  ],
+  ""bg_brightness"": 42,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A middle-aged woman scientist with explosively frizzy gray-streaked hair, cracked safety goggles pushed up on her forehead, a singed and smoking white lab coat, mid-stride in a frantic comedic pose with one foot raised, eyes wide, mouth open mid-shout, photoreal live-action"",
+      ""palette"": [],
+      ""x"": 0.27,
+      ""y"": 0.3,
+      ""w"": 0.46,
+      ""h"": 0.55
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A chrome retro toaster with a tiny glowing eye-like dial and two slices of toast popping up, sparks flying, clutched in the scientist's hand, photoreal metallic reflections"",
+      ""palette"": [],
+      ""x"": 0.16,
+      ""y"": 0.52,
+      ""w"": 0.18,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A small dented surveillance drone with a single camera lens, a cartoonishly bent antenna, hovering and tilted adoringly toward the scientist with pink heart-shaped reflection in its lens, photoreal"",
+      ""palette"": [],
+      ""x"": 0.66,
+      ""y"": 0.4,
+      ""w"": 0.2,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""EUREKA!"",
+      ""desc"": ""Enormous bold condensed sans-serif in glowing cracked-neon orange with electric sparks arcing off the letters, top of poster, slight perspective tilt"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.05,
+      ""w"": 0.84,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""A LOVELY APOCALYPSE"",
+      ""desc"": ""Smaller distressed stencil-style state-issued lettering in pale concrete gray with red censor stamp behind it, directly beneath the main title"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.205,
+      ""w"": 0.72,
+      ""h"": 0.07
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""She tried to end all emotion.\nIt did not go well."",
+      ""desc"": ""Italic typewriter-style tagline in soft cream, two centered lines, lower-middle area"",
+      ""palette"": [],
+      ""x"": 0.2,
+      ""y"": 0.83,
+      ""w"": 0.6,
+      ""h"": 0.07
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""VOLTAIRE PICTURES PRESENTS  A QUINCY HORLBECK FILM  \""EUREKA! A LOVELY APOCALYPSE\""  MARGOT DEVEREAUX   topher LANE  with the voice of THE TOASTER  CASTING by P. MUNDY  MUSIC by R. SALK  DIRECTED by QUINCY HORLBECK"",
+      ""desc"": ""Tiny condensed all-caps billing block in light gray, justified center, classic credit-block styling"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.915,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""COMPLIANCE IS MANDATORY  THIS SUMMER"",
+      ""desc"": ""Small bold caps release line in warning-orange, centered just above the billing block"",
+      ""palette"": [],
+      ""x"": 0.22,
+      ""y"": 0.895,
+      ""w"": 0.56,
+      ""h"": 0.022
+    }
+  ]
+}",0100-eureka-a-lovely-apocalypse.jpg

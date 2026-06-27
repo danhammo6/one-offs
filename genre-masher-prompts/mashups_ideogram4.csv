@@ -12273,3 +12273,973 @@ Horror,Cosmic Horror,Musical,Rock Opera,Burned-Out Surgeon,"Cold open: a Burned-
     }
   ]
 }",0130-code-black-a-rock-opera-of-the-outer-dark.jpg
+Drama,Psychological Drama,Musical,Jukebox Musical,Tech Billionaire,It's Psychological Drama meets Jukebox Musical... but the protagonist is a Tech Billionaire.,Disruptor: The Unicorn Sings Alone,"Tech billionaire Caspian Vale built an empire on a smart-mirror that tells you you're enough — and he no longer believes it. As his board stages a coup and his neural-implant startup leaks his own intrusive thoughts to investors, Caspian's grip on reality unravels into spontaneous, devastating renditions of 1980s power ballads sung to an empty boardroom. Every panic attack arrives as a key change; every betrayal cues the synths. A haunting, hilarious descent in which the only honest voice left is the karaoke machine.","{
+  ""high_level_description"": ""A lone tech billionaire stands isolated in a vast glass boardroom at night, gripping a wireless microphone like a lifeline under a single spotlight, his reflection multiplied in the dark windows."",
+  ""background"": ""A floor-to-ceiling glass corporate boardroom on the 80th floor at night, a glittering city skyline blurred far below through rain-streaked windows. Deep shadows pool in the corners while cold reflections of the man repeat across the dark glass panels. The long minimalist conference table stretches into shallow-focus emptiness behind him."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, cool desaturated teal grade with a warm spotlight pool, photorealistic, fine film grain, volumetric haze, cinematic"",
+  ""aesthetics"": ""isolated, melancholic, glossy corporate, theatrical, quietly unhinged"",
+  ""lighting"": ""a single hard overhead spotlight isolates the man in warm light while the rest of the room falls into cold blue darkness."",
+  ""palette"": [
+    ""#0E1A24"",
+    ""#1F3A4D"",
+    ""#D9A441"",
+    ""#E8EEF2"",
+    ""#7A8FA0""
+  ],
+  ""bg_brightness"": 28,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A 50-year-old tech billionaire in a wrinkled gray cashmere hoodie and untucked white shirt, eyes closed, head tilted back, gripping a vintage chrome wireless microphone to his lips mid-power-ballad, sweat on his brow, expression raw and anguished, photoreal"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.3,
+      ""w"": 0.4,
+      ""h"": 0.52
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A glowing karaoke lyric monitor on a stand to the side displaying scrolling ballad lyrics, casting cold blue light, slightly out of focus, photoreal"",
+      ""palette"": [],
+      ""x"": 0.04,
+      ""y"": 0.5,
+      ""w"": 0.2,
+      ""h"": 0.22
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""Empty black leather executive chairs around a long glass table fading into darkness, one chair faintly spinning, photoreal"",
+      ""palette"": [],
+      ""x"": 0.62,
+      ""y"": 0.62,
+      ""w"": 0.34,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""DISRUPTOR"",
+      ""desc"": ""Massive bold condensed sans-serif in metallic brushed-silver, slightly distressed, letter-spaced wide, centered, dominating the lower third"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.78,
+      ""w"": 0.84,
+      ""h"": 0.1
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE UNICORN SINGS ALONE"",
+      ""desc"": ""Thin uppercase gold serif subtitle, letter-spaced, centered directly beneath the main title"",
+      ""palette"": [],
+      ""x"": 0.2,
+      ""y"": 0.885,
+      ""w"": 0.6,
+      ""h"": 0.03
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""He scaled everything but himself."",
+      ""desc"": ""Small italic light-gray tagline, centered, near the top of the poster"",
+      ""palette"": [],
+      ""x"": 0.18,
+      ""y"": 0.1,
+      ""w"": 0.64,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""MERIDIAN HOUSE PICTURES PRESENTS  A DECLAN ROSSMORE FILM  JOAQUIN HALE \""DISRUPTOR: THE UNICORN SINGS ALONE\""  ELODIE FRANCK  MARCUS DEVANE  CASTING BY P. OKORO  MUSIC SUPERVISION BY LENA VOSS  DIRECTED BY DECLAN ROSSMORE"",
+      ""desc"": ""Tiny condensed all-caps credits billing block in pale gray, centered, very small at the very bottom"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.94,
+      ""w"": 0.76,
+      ""h"": 0.04
+    }
+  ]
+}",0131-disruptor-the-unicorn-sings-alone.jpg
+Drama,Psychological Drama,Documentary-style,True Crime,Folk Musician,It's Psychological Drama meets True Crime... but the protagonist is a Folk Musician.,The Ballad of Wendell Frost,"Wendell Frost was the most beloved fingerpicking folk troubadour in the Blue Ridge — until three rival banjoists vanished after sharing his campfire. A grief-rattled documentary crew follows Wendell as he records a haunting concept album about each disappearance, never noticing his lyrics describe details police never released. Part confessional ballad, part slow-tightening interrogation, the film watches a gentle man unravel one verse at a time. By the final track, you'll wonder whether he's mourning the missing — or auditioning their epitaphs.","{
+  ""high_level_description"": ""A weathered folk musician sits alone with a guitar in a dim cabin while documentary lights and an evidence-board loom behind him, shot like a prestige true-crime drama."",
+  ""background"": ""A cramped wood-paneled mountain cabin interior at night, lit by a single practical lamp. On the back wall hangs a string-and-photo evidence board with three faded portraits connected by red thread and pushpins. Soft volumetric haze drifts through the air; the depth falls off into shadow at the edges."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, desaturated cool grade with warm lamp pools, photorealistic, fine film grain, naturalistic documentary framing"",
+  ""aesthetics"": ""ominous, melancholic, intimate, slow-burn dread, prestige true-crime"",
+  ""lighting"": ""a single warm tungsten lamp rakes across the musician's face from one side, leaving the evidence board in cold blue half-shadow."",
+  ""palette"": [
+    ""#1B232B"",
+    ""#3C4A52"",
+    ""#C9A05B"",
+    ""#8A2B22"",
+    ""#E8E2D4""
+  ],
+  ""bg_brightness"": 30,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a gaunt middle-aged folk musician in a worn flannel shirt and corduroy jacket, gray-streaked beard, sitting on a stool cradling a battered acoustic guitar, staring directly into the lens with an unsettlingly calm half-smile, hands frozen mid-chord, photorealistic"",
+      ""palette"": [],
+      ""x"": 0.26,
+      ""y"": 0.3,
+      ""w"": 0.48,
+      ""h"": 0.52
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""an evidence corkboard on the back wall with three black-and-white portrait photos of banjo players connected by taut red string and brass pushpins, slightly out of focus, photoreal"",
+      ""palette"": [],
+      ""x"": 0.04,
+      ""y"": 0.2,
+      ""w"": 0.34,
+      ""h"": 0.3
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a vintage reel-to-reel tape recorder on a small table with its reels spinning, glowing VU meters, soft focus foreground element, photoreal"",
+      ""palette"": [],
+      ""x"": 0.62,
+      ""y"": 0.66,
+      ""w"": 0.3,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE BALLAD OF\nWENDELL FROST"",
+      ""desc"": ""large condensed serif title in cracked off-white letterpress texture, stacked two lines, centered, subtle grain, slight red underline accent"",
+      ""palette"": [],
+      ""x"": 0.1,
+      ""y"": 0.04,
+      ""w"": 0.8,
+      ""h"": 0.18
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""every verse is a confession"",
+      ""desc"": ""small italic serif tagline in muted gold, letter-spaced, centered beneath the title"",
+      ""palette"": [],
+      ""x"": 0.2,
+      ""y"": 0.235,
+      ""w"": 0.6,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""A FALSE SUMMIT PICTURES PRESENTATION  IN ASSOCIATION WITH HOLLOW PINE MEDIA  \""THE BALLAD OF WENDELL FROST\""  HARLAN BOOTHE  MARGUERITE VANCE  DECLAN RAY  CASTING BY P. OKONKWO  MUSIC BY THE LANTERN TRIO  EDITED BY S. MERRIWEATHER  DIRECTED BY ELOISE THORNE"",
+      ""desc"": ""tiny condensed all-caps billing block in pale gray, tightly tracked, centered, classic credit-block formatting"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.9,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""STREAMING THIS FALL"",
+      ""desc"": ""small bold sans-serif release line in off-white, letter-spaced, centered above the billing block"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.865,
+      ""w"": 0.4,
+      ""h"": 0.03
+    }
+  ]
+}",0132-the-ballad-of-wendell-frost.jpg
+Western,Spaghetti Western,Drama,Coming-of-Age,Reclusive Author,"Imagine if a Spaghetti Western show had a baby with a Coming-of-Age miniseries, and that baby grew up to follow a Reclusive Author.",The Last Draft at Dead Mule Gulch,"Reclusive novelist Cormac ""Quill"" Bellweather has spent eleven years in a sun-blasted desert shack, refusing to finish his masterpiece and shooting the doorknob off anyone who mentions deadlines. Then thirteen-year-old runaway Pearl shows up demanding to be his editor — and his apprentice gunslinger. As a vengeful publisher and his posse of bounty-hunting literary critics ride into town for the overdue manuscript, the grumpy hermit and the brave kid must finish the book, draw fast, and grow up together. One of them is forty years too old for a coming-of-age story. It does not go smoothly.","{
+  ""high_level_description"": ""A weathered reclusive author and a determined young girl stand back-to-back in a blazing desert ghost town, he gripping a fountain pen like a pistol, she clutching a stack of manuscript pages, in classic spaghetti-western standoff framing."",
+  ""background"": ""A cracked, sun-bleached frontier ghost town at high noon, with leaning wooden saloon fronts and a rusted water tower receding into heat shimmer. Dust devils curl across a wide dirt main street under a vast bone-white sky. Deep depth of field with distant mesas dissolving in ochre haze."",
+  ""art_style"": ""shot on 35mm anamorphic, Sergio Leone wide framing with extreme telephoto compression, shallow depth of field on the foreground figures, dusty golden-amber cinematic grade, photorealistic, fine film grain, volumetric heat haze"",
+  ""aesthetics"": ""gritty, sun-scorched, melancholic, deadpan-heroic, weathered, epic-but-intimate"",
+  ""lighting"": ""harsh overhead noon sun raking hard shadows across cracked faces, warm bounce off the dirt, faint backlit dust glowing around the figures' silhouettes"",
+  ""palette"": [
+    ""#C9913F"",
+    ""#E8D4A0"",
+    ""#7A4B27"",
+    ""#3A2A1C"",
+    ""#D9534F""
+  ],
+  ""bg_brightness"": 68,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A gaunt, sunburned man in his late fifties wearing a dust-caked frock coat over a faded waistcoat, wide-brimmed weathered hat shading squinting eyes, gray-streaked stubble, holding a brass fountain pen extended forward like a drawn revolver with ink dripping from the nib, leather-bound notebook holstered at his hip"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.3,
+      ""w"": 0.42,
+      ""h"": 0.55
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A tough, dirt-smudged thirteen-year-old girl with braided hair and an oversized poncho, standing back-to-back with the man, fiercely clutching a thick bundle of typed manuscript pages tied with twine, a slingshot tucked in her belt, chin raised defiantly"",
+      ""palette"": [],
+      ""x"": 0.1,
+      ""y"": 0.4,
+      ""w"": 0.3,
+      ""h"": 0.45
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A single dusty ink bottle tipped on its side in the foreground dirt, dark ink pooling into the cracked earth like spilled blood, sharp focus"",
+      ""palette"": [],
+      ""x"": 0.66,
+      ""y"": 0.78,
+      ""w"": 0.2,
+      ""h"": 0.12
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE LAST DRAFT\nAT DEAD MULE GULCH"",
+      ""desc"": ""Massive distressed slab-serif western title in cracked sun-bleached cream lettering with hand-tooled leather texture and long hard drop shadows, stacked two lines, occupying the lower third"",
+      ""palette"": [],
+      ""x"": 0.06,
+      ""y"": 0.66,
+      ""w"": 0.88,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""He outdrew everyone. He just couldn't outwrite a thirteen-year-old."",
+      ""desc"": ""Small italic dusty-gold tagline in a clean condensed serif, single line, centered above the title"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.6,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""MERIDIAN DUST PICTURES"",
+      ""desc"": ""Tiny condensed sans-serif studio name in muted cream, centered near top"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.04,
+      ""w"": 0.4,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""MERIDIAN DUST PICTURES  PRESENTS  A SILAS REDGRAVE FILM  \""THE LAST DRAFT AT DEAD MULE GULCH\""  HOLLIS VANCE  PEARL OKONKWO-DAY  AUGUST BRELL  CASTING BY MAUDE FERRIER  MUSIC BY ENNIO CALABRESI  WRITTEN AND DIRECTED BY SILAS REDGRAVE"",
+      ""desc"": ""Tiny condensed all-caps billing block in pale cream, tightly tracked across several centered lines"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.9,
+      ""w"": 0.72,
+      ""h"": 0.06
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""COMING THIS FALL"",
+      ""desc"": ""Small bold condensed sans-serif release line in dusty red, centered just below the title"",
+      ""palette"": [],
+      ""x"": 0.34,
+      ""y"": 0.87,
+      ""w"": 0.32,
+      ""h"": 0.03
+    }
+  ]
+}",0133-the-last-draft-at-dead-mule-gulch.jpg
+Comedy,Surreal Comedy,Fantasy,High Fantasy,Rookie Cop,"Set in a world where Surreal Comedy and High Fantasy coexist uneasily, our hero — a Rookie Cop — must save... something. Probably a town.",Officer Dingle and the Reasonable Mountain,"On his first day patrolling the kingdom-precinct of Glomthwaite, Rookie Constable Bartholomew Dingle is handed a cursed parking ticket, a sentient bicycle, and one impossible case: a mountain has filed a noise complaint against the entire town. As prophecy collides with paperwork, Dingle must arrest a sky that keeps apologizing, interrogate a duck who insists he's the rightful heir, and stop a wizard-developer from rezoning reality. He has no backup, no idea what's happening, and a soup that won't stop screaming in evidence. Saving the town would be easier if the town agreed it existed.","{
+  ""high_level_description"": ""A bewildered rookie cop in fantasy-tinged uniform stands at attention before an enormous floating cobblestone mountain that has a tiny medieval town stuck to its underside, photographed like a prestige fantasy one-sheet."",
+  ""background"": ""A vast pastel-dawn sky over rolling green highlands, with an impossibly huge cobblestone mountain hovering upside-down in the upper distance, a crooked medieval town clinging to its lower slopes. Soft volumetric haze rolls between floating boulders that drift like lazy balloons. Deep atmospheric perspective fades the far peaks into peach and lavender mist."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, soft golden-hour cinematic grade, photorealistic, volumetric haze, subtle lens flare, fine film grain"",
+  ""aesthetics"": ""whimsical, grand, deadpan, fairytale-epic, gently absurd"",
+  ""lighting"": ""warm low-angle dawn light rimming the cop and the floating mountain while soft fill keeps the foreground readable."",
+  ""palette"": [
+    ""#E9C18A"",
+    ""#7FA9B8"",
+    ""#C9A0D8"",
+    ""#3C4A3E"",
+    ""#F4E3C1""
+  ],
+  ""bg_brightness"": 68,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a nervous young rookie police officer, mid-20s, in a slightly-too-large navy uniform fused with leather fantasy pauldrons and a brass badge shaped like a unicorn, holding a glowing summons scroll in one hand and a standard ticket pad in the other, standing rigidly at attention, full body, photoreal"",
+      ""palette"": [],
+      ""x"": 0.34,
+      ""y"": 0.4,
+      ""w"": 0.34,
+      ""h"": 0.5
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a colossal upside-down cobblestone mountain floating in the sky with a tiny crooked medieval town clinging to its underside, photoreal scale, drifting in haze"",
+      ""palette"": [],
+      ""x"": 0.1,
+      ""y"": 0.1,
+      ""w"": 0.8,
+      ""h"": 0.42
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a small old-fashioned bicycle with a worried cartoonishly-expressive face on its headlamp, leaning against nothing, casting a real shadow on grass, photoreal"",
+      ""palette"": [],
+      ""x"": 0.06,
+      ""y"": 0.66,
+      ""w"": 0.22,
+      ""h"": 0.24
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""an ornate ceramic soup bowl mid-air with steam forming a tiny screaming face, glowing faintly, photoreal product-style lighting"",
+      ""palette"": [],
+      ""x"": 0.74,
+      ""y"": 0.7,
+      ""w"": 0.18,
+      ""h"": 0.18
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""OFFICER DINGLE\nAND THE REASONABLE MOUNTAIN"",
+      ""desc"": ""large condensed serif title in warm cream with gold edge-lighting, slightly weathered metallic texture, stacked over two lines, centered, cinematic fantasy-epic treatment"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.03,
+      ""w"": 0.84,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""The law is the law. The mountain disagrees."",
+      ""desc"": ""small italic tagline in soft lavender-grey, thin elegant serif, centered"",
+      ""palette"": [],
+      ""x"": 0.18,
+      ""y"": 0.245,
+      ""w"": 0.64,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""GLIMMERHOLT PICTURES PRESENTS  A BRENWICK QUAY FILM  \""OFFICER DINGLE AND THE REASONABLE MOUNTAIN\""  FELIX OTTERBY  MARGOLD PENNYWHISTLE  SIR ALDOUS BREAM  CASTING BY P. THISTLEDOWN  MUSIC BY ROWAN MAEVE  DIRECTED BY BRENWICK QUAY"",
+      ""desc"": ""tiny condensed all-caps billing block in pale cream, justified center, classic credit-block spacing"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.92,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""BY ROYAL DECREE THIS SUMMER"",
+      ""desc"": ""small bold all-caps release line in gold, letter-spaced, centered"",
+      ""palette"": [],
+      ""x"": 0.26,
+      ""y"": 0.885,
+      ""w"": 0.48,
+      ""h"": 0.03
+    }
+  ]
+}",0134-officer-dingle-and-the-reasonable-mountain.jpg
+Sci-Fi,First Contact,Fantasy,Sword & Sorcery,Aging Movie Star,It's First Contact meets Sword & Sorcery... but the protagonist is a Aging Movie Star.,The Last Warlock of Burbank,"Three-time Best Actor nominee Roland Castavere, 71, hasn't had a hit since the Reagan administration and now does commercials for arthritis cream. So when literal interstellar beings land on his Malibu deck and announce that the universe's first ambassador must be its ""greatest performer of heroic sorcery,"" Roland — who once played a wizard in a forgotten 1987 flop — bluffs his way into the role. Armed with a prop staff, a SAG card, and zero actual magic, he must broker peace with an alien empire that mistakes his line readings for divine incantations. Method acting has never had higher stakes.","{
+  ""high_level_description"": ""A weathered aging movie star in tattered ceremonial robes raises a glowing prop staff toward a colossal alien craft hovering over a fantasy-lit Los Angeles coastline, shot like a prestige sci-fi epic."",
+  ""background"": ""A dusk Malibu coastline where reality bends into otherworldly fantasy: jagged enchanted rock spires rise from the Pacific while a vast geometric alien mothership hovers low, casting beams through low-rolling sea fog. The distant LA hills glitter with both city lights and floating runic glyphs. Deep atmospheric haze creates layered depth from foreground cliff to far horizon."",
+  ""art_style"": ""shot on 65mm anamorphic, shallow depth of field, photorealistic, teal-and-amber cinematic grade, volumetric haze, fine film grain, epic prestige-poster cinematography"",
+  ""aesthetics"": ""grand, absurdly self-serious, mythic, twilight spectacle, ironic gravitas"",
+  ""lighting"": ""Cool alien rim light from the hovering craft behind the hero clashing with warm golden key light on his face, dramatic god-rays piercing the fog."",
+  ""palette"": [
+    ""#0E2233"",
+    ""#2E6E8E"",
+    ""#E8A24B"",
+    ""#F4E6C8"",
+    ""#7A4FB0""
+  ],
+  ""bg_brightness"": 42,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A distinguished 71-year-old movie star with silver swept-back hair, deeply lined handsome face, and a salt-and-pepper goatee, standing heroically in frayed faux-velvet wizard robes that are clearly an old film costume with a slightly broken shoulder pad; he raises a chipped fiberglass prop staff topped with a flickering LED crystal, his expression theatrically intense as if mid-monologue, photoreal"",
+      ""palette"": [],
+      ""x"": 0.27,
+      ""y"": 0.3,
+      ""w"": 0.46,
+      ""h"": 0.55
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A massive matte-black alien mothership with glowing seams of violet light, partially veiled in sea fog, hovering in the upper background"",
+      ""palette"": [],
+      ""x"": 0.05,
+      ""y"": 0.06,
+      ""w"": 0.9,
+      ""h"": 0.3
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A small sleek alien envoy figure kneeling at the hero's feet, tall and slender with bioluminescent skin, bowing reverently as if before a god, photoreal practical-effects creature"",
+      ""palette"": [],
+      ""x"": 0.6,
+      ""y"": 0.66,
+      ""w"": 0.24,
+      ""h"": 0.24
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A discarded gold acting-award statuette half-buried in the rocky foreground dirt, catching a glint of alien light"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.8,
+      ""w"": 0.14,
+      ""h"": 0.13
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE LAST WARLOCK\nOF BURBANK"",
+      ""desc"": ""Large bold condensed serif title in cracked weathered gold with subtle violet glow edges, all caps, stacked two lines, centered, epic blockbuster treatment"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.84,
+      ""w"": 0.84,
+      ""h"": 0.11
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""HE FAKED THE ROLE. NOW HE HAS TO SAVE THE GALAXY."",
+      ""desc"": ""Thin elegant uppercase tagline in pale cream letterspaced sans-serif, single line, understated"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.255,
+      ""w"": 0.76,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""MERIDIAN SKY PICTURES PRESENTS  A DESMOND VALE FILM  \""THE LAST WARLOCK OF BURBANK\""  RORY MACKENNON  ELARA VOSS  CONRAD BLYTHE  CASTING BY JUNE OKAFOR  MUSIC BY THADDEUS PINE  DIRECTED BY DESMOND VALE"",
+      ""desc"": ""Tiny condensed all-caps billing block in muted cream, tightly tracked, centered, standard credit-block styling"",
+      ""palette"": [],
+      ""x"": 0.13,
+      ""y"": 0.955,
+      ""w"": 0.74,
+      ""h"": 0.035
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""IN THEATERS THIS FALL"",
+      ""desc"": ""Small letterspaced uppercase release line in pale amber sans-serif, centered"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.93,
+      ""w"": 0.4,
+      ""h"": 0.022
+    }
+  ]
+}",0135-the-last-warlock-of-burbank.jpg
+Drama,Period Piece,Fantasy,Mythic Retelling,Traveling Salesman,"Cold open: a Traveling Salesman, alone, in the rain. The genre? Period Piece. The vibe? Unmistakably Mythic Retelling. Cue title card.",The Salesman of Forgotten Wares,"1888. Bartholomew Crick peddles thimbles, tonics, and pocket Bibles across the rain-drowned moors of northern England — until a flooded crossroads reveals that his sample case has been quietly selling pieces of forgotten gods. Now the old powers want their relics back, and they're willing to trade prophecy for a working pair of bootlaces. Cursed to never close a sale he doesn't regret, Bartholomew must out-haggle the Fates themselves before the last myth in his ledger comes due. A muddy, thunderstruck fable about commerce, faith, and a man who simply will not stop knocking.","{
+  ""high_level_description"": ""A lone Victorian traveling salesman in a soaked greatcoat stands at a flooded crossroads clutching a glowing sample case, dwarfed by storm clouds shaped like ancient faces."",
+  ""background"": ""A desolate northern English moor at dusk, drowned in torrential rain, with a muddy crossroads and a leaning wooden signpost. Towering bruise-colored storm clouds churn overhead, their edges subtly forming colossal watching faces. Distant rolling hills fade into silver mist and sheets of falling water."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, desaturated period drama grade with cold steel-blue shadows and a single warm amber accent, photorealistic, heavy volumetric rain and haze, fine film grain"",
+  ""aesthetics"": ""brooding, mythic, melancholic, rain-soaked, painterly cinematic realism, ominous grandeur"",
+  ""lighting"": ""low stormlight from a breaking horizon behind the figure, with an otherworldly amber glow leaking from the open sample case lighting his face from below."",
+  ""palette"": [
+    ""#1B2430"",
+    ""#41535E"",
+    ""#8A9BA8"",
+    ""#C98A3B"",
+    ""#0C1016""
+  ],
+  ""bg_brightness"": 32,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a gaunt, rain-drenched Victorian traveling salesman in a long sodden wool greatcoat and battered bowler hat, mid-30s, mud-spattered boots planted in a flooded crossroads, gripping a worn leather sample case that spills warm golden light through its seams, weary determined expression, water streaming down his face"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.3,
+      ""w"": 0.4,
+      ""h"": 0.55
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""an old weathered wooden crossroads signpost leaning at an angle, arms pointing into the rain, blank and worn, half-swallowed by mist on the left side of frame"",
+      ""palette"": [],
+      ""x"": 0.04,
+      ""y"": 0.34,
+      ""w"": 0.18,
+      ""h"": 0.34
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""colossal ghostly faces of ancient gods subtly forming within the churning storm clouds across the upper sky, barely perceptible, eyes catching faint light"",
+      ""palette"": [],
+      ""x"": 0.1,
+      ""y"": 0.02,
+      ""w"": 0.8,
+      ""h"": 0.26
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""tiny tarnished trinkets, thimbles and a small bronze relic glinting faintly as they float in the floodwater near the salesman's boots, reflecting the case's amber glow"",
+      ""palette"": [],
+      ""x"": 0.34,
+      ""y"": 0.8,
+      ""w"": 0.32,
+      ""h"": 0.12
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE SALESMAN\nOF FORGOTTEN WARES"",
+      ""desc"": ""large distressed serif title in tarnished silver-gold, weathered letterpress texture, centered, stacked on two lines, subtle wet sheen, cinematic period drama typography"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.06,
+      ""w"": 0.84,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""Everything must go. Even the gods."",
+      ""desc"": ""small elegant italic serif tagline in pale silver, single line, understated, letter-spaced"",
+      ""palette"": [],
+      ""x"": 0.18,
+      ""y"": 0.27,
+      ""w"": 0.64,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""HOLLOWMOOR PICTURES PRESENTS  A SILAS R. VANTAGE FILM  \""THE SALESMAN OF FORGOTTEN WARES\""  EDMUND HALE  CORDELIA FENWICK  THADDEUS MOORE  CASTING BY R. ALDOUS  MUSIC BY M. THORNE  DIRECTED BY SILAS R. VANTAGE"",
+      ""desc"": ""tiny condensed all-caps billing block in faded silver-grey, tightly tracked, centered, standard movie-poster credit typography"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.91,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""IN THEATRES THIS WINTER"",
+      ""desc"": ""small spaced all-caps release line in pale amber, centered above the billing block"",
+      ""palette"": [],
+      ""x"": 0.28,
+      ""y"": 0.87,
+      ""w"": 0.44,
+      ""h"": 0.03
+    }
+  ]
+}",0136-the-salesman-of-forgotten-wares.jpg
+Action,Car-Chase Thriller,Romance,Holiday Romance,Ambitious Politician,"Imagine if a Car-Chase Thriller show had a baby with a Holiday Romance miniseries, and that baby grew up to follow a Ambitious Politician.",Filibuster: Full Throttle for the Holidays,"Three weeks before a razor-thin Senate election, ruthless rising star Senator Margot Vance survives an armored-motorcade ambush and floors it into the snowbound town of Tinsel Hollow, where her only refuge is a cozy bed-and-breakfast run by a maddeningly cheerful widower named Caleb. Now she's doing 110 down icing roads while learning to bake gingerbread, dodging a black SUV that won't quit, and falling for the one man who has no idea who she is. Margot has always believed nothing matters more than winning — until a snowball fight, a stolen kiss, and a 200-mph candy-cane semi-truck pursuit make her reconsider her entire platform. Vote your heart. Buckle up.","{
+  ""high_level_description"": ""A glamorous female politician in a torn evening gown grips a steering wheel mid-skid on a snowy main street strung with Christmas lights, a sinister black SUV looming in her rearview as warm holiday glow clashes with cold action menace"",
+  ""background"": ""A picturesque small-town main street at dusk blanketed in fresh snow, brick storefronts wrapped in golden fairy lights and evergreen garlands, a giant lit Christmas tree in the town square behind. Deep perspective down the street with motion-blurred snowflakes streaking past, faint orange flares of distant headlights and a plume of disturbed snow kicked up by a sliding car. Cold blue twilight sky fading to warm window light, cinematic haze."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, motion-blur on falling snow, teal-and-warm-amber cinematic grade, photorealistic, volumetric headlight haze, fine film grain"",
+  ""aesthetics"": ""high-stakes festive, glossy thriller, cozy-meets-chaos, premium holiday blockbuster"",
+  ""lighting"": ""warm string-light glow on the heroine's face cutting through cold blue snowlight, with hard white headlight rim-lighting from behind"",
+  ""palette"": [
+    ""#0E2436"",
+    ""#C8102E"",
+    ""#F2C14E"",
+    ""#E8EEF2"",
+    ""#1C3D2E""
+  ],
+  ""bg_brightness"": 42,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A determined woman in her late 30s with windblown dark hair and a torn deep-red satin evening gown, gripping a leather steering wheel with both hands, knuckles tight, snow dusting her shoulders, intense fearless expression lit by dashboard glow, photorealistic, sharp focus"",
+      ""palette"": [],
+      ""x"": 0.22,
+      ""y"": 0.34,
+      ""w"": 0.56,
+      ""h"": 0.42
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A menacing matte-black armored SUV with glaring xenon headlights skidding through snow in the upper background, motion-blurred, kicking up a wall of white powder"",
+      ""palette"": [],
+      ""x"": 0.55,
+      ""y"": 0.2,
+      ""w"": 0.4,
+      ""h"": 0.22
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A festive gingerbread house with white icing sitting incongruously on the car dashboard in the foreground corner, soft warm light, photoreal"",
+      ""palette"": [],
+      ""x"": 0.04,
+      ""y"": 0.62,
+      ""w"": 0.2,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A single sprig of mistletoe with red ribbon dangling from a car rearview mirror, slightly blurred, catching warm light"",
+      ""palette"": [],
+      ""x"": 0.7,
+      ""y"": 0.4,
+      ""w"": 0.14,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""FILIBUSTER"",
+      ""desc"": ""Massive bold condensed sans-serif title in metallic silver with a frosted snow-capped top edge, slight icy chrome reflection, centered, dominating the lower third"",
+      ""palette"": [],
+      ""x"": 0.06,
+      ""y"": 0.74,
+      ""w"": 0.88,
+      ""h"": 0.11
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""FULL THROTTLE FOR THE HOLIDAYS"",
+      ""desc"": ""Smaller elegant gold serif subtitle with festive flourish, centered directly beneath the main title"",
+      ""palette"": [],
+      ""x"": 0.18,
+      ""y"": 0.855,
+      ""w"": 0.64,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""VOTE YOUR HEART. BUCKLE UP."",
+      ""desc"": ""Thin uppercase white tagline letter-spaced wide, near the top center, subtle drop shadow"",
+      ""palette"": [],
+      ""x"": 0.18,
+      ""y"": 0.07,
+      ""w"": 0.64,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""MERIDIAN PEAK PICTURES PRESENTS  A DELANEY VOSS FILM  \""FILIBUSTER: FULL THROTTLE FOR THE HOLIDAYS\""  CORA WHITFIELD  THEO MARCHETTI  HARLAN BREWSTER  CASTING BY P. NAKASHIMA  MUSIC BY OLIVER REND  DIRECTED BY DELANEY VOSS"",
+      ""desc"": ""Tiny condensed white all-caps billing block, centered, standard credit-block spacing, low opacity"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.905,
+      ""w"": 0.72,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THIS DECEMBER"",
+      ""desc"": ""Small bold white centered release line just above the billing block"",
+      ""palette"": [],
+      ""x"": 0.34,
+      ""y"": 0.885,
+      ""w"": 0.32,
+      ""h"": 0.025
+    }
+  ]
+}",0137-filibuster-full-throttle-for-the-holidays.jpg
+Sci-Fi,Alien Invasion,Mystery,Cold Case,Undertaker,"Picture a Alien Invasion setting, but everyone behaves like they're in a Cold Case. Our reluctant hero: a Undertaker.",Cold Cases of the Third Kind,"Mortician Edna Krell has buried this town's secrets for thirty years — so when alien dropships flatten the city, she treats the invasion like just another unsolved file gone cold. Armed with a corkboard, red yarn, and an embalmer's patience, Edna investigates each saucer attack as a ""case,"" interviewing terrified survivors with the same flat monotone she uses on the bereaved. Her quirk: she insists every extraterrestrial deserves a proper death certificate. As the body count climbs and the ships keep landing, Edna realizes the only way to close the case is to interrogate the things that started it.","{
+  ""high_level_description"": ""A stern elderly undertaker in a black funeral coat stands in a debris-strewn street holding a red-yarn evidence board while a colossal alien saucer hovers in the smoke-choked sky above her"",
+  ""background"": ""A ruined small-town main street at dusk, storefronts cracked and smoldering with overturned hearses in the gutter. A massive metallic alien saucer hangs low in the haze above the rooftops, casting a cold beam down through volumetric smoke. Distant emergency lights flicker red and blue against a bruised purple sky."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, fine film grain, desaturated noir-meets-sci-fi grade with cold steel highlights and warm ember lowlights, photorealistic, volumetric haze"",
+  ""aesthetics"": ""grim, deadpan, eerie, procedural-noir, ominous, dryly comic"",
+  ""lighting"": ""Cold blue downlight from the saucer rakes across the undertaker's face while smoldering orange embers underlight the wreckage, creating a tense two-tone cinematic contrast."",
+  ""palette"": [
+    ""#0E1320"",
+    ""#3A4A66"",
+    ""#A33C2A"",
+    ""#C9B894"",
+    ""#E8E4DC""
+  ],
+  ""bg_brightness"": 38,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A weathered 60-something woman undertaker with severe gray bun, wire spectacles, and a long black mourning coat, standing dead-center with a flat unimpressed expression, holding up a corkboard tangled with red yarn and pinned photographs, ash dusting her shoulders"",
+      ""palette"": [],
+      ""x"": 0.28,
+      ""y"": 0.3,
+      ""w"": 0.46,
+      ""h"": 0.52
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A polished black antique hearse parked askew on the wet cobblestones in the foreground, headlights dim, one door hanging open"",
+      ""palette"": [],
+      ""x"": 0.02,
+      ""y"": 0.66,
+      ""w"": 0.34,
+      ""h"": 0.22
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""An enormous metallic alien saucer hovering low in the smoky sky, a single cold beam of light descending from its underbelly, top right of frame"",
+      ""palette"": [],
+      ""x"": 0.46,
+      ""y"": 0.06,
+      ""w"": 0.5,
+      ""h"": 0.28
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A single official death certificate stamped with an otherworldly glyph, fluttering mid-air on the wind near the lower right"",
+      ""palette"": [],
+      ""x"": 0.66,
+      ""y"": 0.7,
+      ""w"": 0.2,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""COLD CASES\nOF THE THIRD KIND"",
+      ""desc"": ""Large condensed bold serif title in weathered bone-white with subtle metallic sheen and faint smoke edges, stacked two lines, centered in the lower third"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.8,
+      ""w"": 0.84,
+      ""h"": 0.13
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""SHE'S CLOSED EVERY CASE IN TOWN. THIS ONE CAME FROM THE SKY."",
+      ""desc"": ""Small uppercase condensed sans-serif tagline in muted pale gray, single line, letter-spaced, just above the title"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.755,
+      ""w"": 0.76,
+      ""h"": 0.035
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""HOLLOWPINE PICTURES PRESENTS  A MARGIT VANCE FILM  \""COLD CASES OF THE THIRD KIND\""  EDITH RAMSGATE  CORMAC DELL  THEO ABERNATHY  CASTING BY P. LINDQVIST  MUSIC BY R. SOLVANG  DIRECTED BY MARGIT VANCE"",
+      ""desc"": ""Tiny condensed all-caps billing block in faint gray, justified center, classic theatrical credits styling"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.945,
+      ""w"": 0.72,
+      ""h"": 0.035
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""IN THEATERS THIS OCTOBER"",
+      ""desc"": ""Small uppercase letter-spaced sans-serif in pale white, centered below title"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.925,
+      ""w"": 0.4,
+      ""h"": 0.02
+    }
+  ]
+}",0138-cold-cases-of-the-third-kind.jpg
+Western,Neo-Western,Action,Heist,Con Artist,A Con Artist stumbles into a Neo-Western conspiracy that can only be solved using the rules of Heist.,The Long Con at Coyote Flats,"Silver-tongued grifter Dallas ""Three-Card"" McRae rolls into the dying oil town of Coyote Flats planning to fleece one sucker and leave by sundown. Instead he uncovers a buried conspiracy involving a corrupt sheriff, a vanished water fortune, and a vault under the old saloon that nobody's cracked in forty years. The only way out alive is to assemble the worst crew in the county and pull the most elaborate heist the desert has ever seen — using nothing but lies, leverage, and a borrowed horse named Liability. Trouble is, every mark in town is running their own con right back at him.","{
+  ""high_level_description"": ""A weathered con artist in a dusty suit stands center-frame at golden hour on a cracked desert main street, fanning playing cards while a heist crew and a getaway truck loom behind him."",
+  ""background"": ""A sun-scorched neo-Western main street at golden hour: cracked asphalt, a sagging clapboard saloon, rusted oil derricks on the horizon, and telephone poles fading into heat haze. Deep depth of field pulls the eye down the empty street toward distant mesas. Drifting dust and low orange light fill the air."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field on the foreground figure, warm dusty teal-orange cinematic grade, fine film grain, photorealistic, volumetric backlight haze"",
+  ""aesthetics"": ""gritty, sun-bleached, slick, tense, modern-frontier cool"",
+  ""lighting"": ""low golden-hour sun raking across the street from camera-right, throwing long shadows and rimming the protagonist in warm amber light."",
+  ""palette"": [
+    ""#C8772E"",
+    ""#E5C28A"",
+    ""#2F4A4E"",
+    ""#8A3B22"",
+    ""#1C1410""
+  ],
+  ""bg_brightness"": 58,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a lean middle-aged con man in a dust-coated charcoal three-piece suit and bolo tie, sleeves rolled, smirking confidently as he fans a deck of playing cards in one hand; weathered face, sweat-shined brow, cowboy boots, shot full-body slightly low angle, photorealistic"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.33,
+      ""w"": 0.4,
+      ""h"": 0.55
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a battered vintage pickup truck idling in the dusty street behind the man, doors open, two roughed-up crew members in masks and dusters loading a steel strongbox, motion-blurred dust, photorealistic"",
+      ""palette"": [],
+      ""x"": 0.04,
+      ""y"": 0.5,
+      ""w"": 0.34,
+      ""h"": 0.26
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a rusted oil derrick silhouetted against the orange sky on the right horizon, heat shimmer rising, photorealistic"",
+      ""palette"": [],
+      ""x"": 0.72,
+      ""y"": 0.3,
+      ""w"": 0.24,
+      ""h"": 0.34
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a tarnished brass saloon vault dial and a single ace of spades half-buried in desert dust in the foreground, sharp macro focus, photorealistic"",
+      ""palette"": [],
+      ""x"": 0.36,
+      ""y"": 0.86,
+      ""w"": 0.28,
+      ""h"": 0.12
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE LONG CON\nAT COYOTE FLATS"",
+      ""desc"": ""huge bold condensed slab-serif Western title in cracked sun-bleached cream lettering with subtle dust texture and a thin black outline, stacked two lines, occupying the lower-middle band"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.62,
+      ""w"": 0.84,
+      ""h"": 0.18
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""EVERY MARK HAS A PLAN. SO DOES HE."",
+      ""desc"": ""small uppercase letter-spaced tagline in warm gold, single line, set just above the title"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.57,
+      ""w"": 0.72,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""DUSTMARK PICTURES PRESENTS A CASSIDY VANE FILM  \""THE LONG CON AT COYOTE FLATS\""  HOLLIS REED  MARISOL DEKKER  AUGUST PRYCE  CASTING BY THE HARLAN OFFICE  MUSIC BY ELI THORNE  DIRECTED BY CASSIDY VANE"",
+      ""desc"": ""tiny condensed all-caps billing block in pale gray, center-aligned, classic credit-block typography"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.92,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""IN THEATERS THIS FALL"",
+      ""desc"": ""small bold uppercase release line in warm cream, letter-spaced, single line above the billing block"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.88,
+      ""w"": 0.4,
+      ""h"": 0.03
+    }
+  ]
+}",0139-the-long-con-at-coyote-flats.jpg
+Sci-Fi,Time Travel,Fantasy,Sword & Sorcery,Stage Magician,"Three-act structure: Time Travel in act one, Sword & Sorcery by act three, and a Stage Magician sobbing into a microwave dinner the whole time.",Abracadaver: A Trick Gone Medieval,"Las Vegas illusionist Reginald ""The Astonishing Reg"" Plonk botches his signature vanishing-box trick and accidentally yeets himself fourteen centuries into a kingdom that thinks his collapsible top hat is a holy relic. With nothing but a deck of marked cards, a chained dove, and crippling stage anxiety, Reg must defeat a genuine sorcerer who can do everything Reg only pretends to. Between battles he weeps quietly over microwave lasagna he smuggled through the time rift. To go home, he'll have to make the one thing disappear he's never managed before: an entire army.","{
+  ""high_level_description"": ""A sequined Las Vegas stage magician stands heroically on a mist-shrouded medieval battlefield brandishing a glowing magic wand like a sword, his velvet cape billowing as armored sorcerers loom behind him."",
+  ""background"": ""A torchlit medieval battlefield at dusk under a bruised purple sky, ruined castle silhouettes and a faint shimmering circular time-rift hovering on the horizon. Layers of volumetric fog roll across muddy ground littered with broken spears. The deep background fades into stormy clouds lit by distant lightning."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, teal-and-amber cinematic grade, photorealistic, volumetric haze, fine film grain"",
+  ""aesthetics"": ""epic, absurd, theatrical, grandiose, tongue-in-cheek heroic"",
+  ""lighting"": ""dramatic low-key rim lighting from torch flames and the eerie cyan glow of the time-rift, carving the hero out of the foggy dark."",
+  ""palette"": [
+    ""#1B1230"",
+    ""#5B2E8C"",
+    ""#E0A43B"",
+    ""#0FB5C9"",
+    ""#C9C2D4""
+  ],
+  ""bg_brightness"": 38,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A middle-aged stage magician in a tattered sequined tuxedo and red satin-lined cape, slightly potbellied, gripping a black-and-white magic wand that emits a glowing cyan spark, striking a heroic warrior pose with a terrified-yet-determined expression, sweat on his brow, real human actor photorealistic"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.3,
+      ""w"": 0.42,
+      ""h"": 0.52
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A menacing hooded medieval sorcerer in dark iron armor wielding a real flaming sword, looming partially in fog on the left, slightly out of focus, photoreal"",
+      ""palette"": [],
+      ""x"": 0.04,
+      ""y"": 0.4,
+      ""w"": 0.26,
+      ""h"": 0.42
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A white dove with a tiny shackle and chain on its leg fluttering near the magician's shoulder, lit by warm torchlight, photoreal"",
+      ""palette"": [],
+      ""x"": 0.62,
+      ""y"": 0.34,
+      ""w"": 0.18,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A steaming microwave lasagna tray in a foil container resting incongruously on a mossy battlefield rock in the lower foreground, photoreal with rising wisps of steam"",
+      ""palette"": [],
+      ""x"": 0.1,
+      ""y"": 0.78,
+      ""w"": 0.2,
+      ""h"": 0.13
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""ABRACADAVER"",
+      ""desc"": ""Massive bold theatrical serif title in tarnished gold with cracked stone texture and a faint cyan magical glow on the edges, spanning the width, dramatic letter spacing"",
+      ""palette"": [],
+      ""x"": 0.06,
+      ""y"": 0.06,
+      ""w"": 0.88,
+      ""h"": 0.15
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""A TRICK GONE MEDIEVAL"",
+      ""desc"": ""Slim all-caps gold subtitle in elegant condensed serif, centered beneath the main title"",
+      ""palette"": [],
+      ""x"": 0.2,
+      ""y"": 0.215,
+      ""w"": 0.6,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""HE PULLED A RABBIT FROM A HAT.\nNOW HE HAS TO PULL OFF A MIRACLE."",
+      ""desc"": ""Small italic white tagline, two centered lines, subtle drop shadow, positioned just above the billing block"",
+      ""palette"": [],
+      ""x"": 0.16,
+      ""y"": 0.86,
+      ""w"": 0.68,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""PRESTIDIGITON PICTURES PRESENTS  A BARNABY QUELL FILM  \""ABRACADAVER: A TRICK GONE MEDIEVAL\""  DESMOND FAIRLOW  ELENA VOSKA  RUPERT MCCRAE  CASTING BY THE GUILD  MUSIC BY OTTO LINDQVIST  DIRECTED BY BARNABY QUELL"",
+      ""desc"": ""Tiny condensed all-caps silver credits billing block, classic theatrical layout, centered, low opacity"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.92,
+      ""w"": 0.76,
+      ""h"": 0.045
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""IN THEATERS THIS SOLSTICE"",
+      ""desc"": ""Small bold spaced gold release line centered at very bottom"",
+      ""palette"": [],
+      ""x"": 0.28,
+      ""y"": 0.965,
+      ""w"": 0.44,
+      ""h"": 0.025
+    }
+  ]
+}",0140-abracadaver-a-trick-gone-medieval.jpg

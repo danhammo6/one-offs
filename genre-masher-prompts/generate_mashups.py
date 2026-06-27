@@ -643,7 +643,7 @@ BACKENDS = {
         retry_nudge=IDEOGRAM_RETRY_NUDGE,
         extract=_extract_ideogram,
         patch=_patch_ideogram,
-        poster_w=1664, poster_h=2496,   # exact 2:3 one-sheet, ~4.15 MP (full 2K budget)
+        poster_w=1664, poster_h=2496,   # exact 2:3 one-sheet, ~4.15 MP (Ideogram's native 2K budget)
     ),
     "krea": Backend(
         name="krea",
@@ -1046,6 +1046,10 @@ def main():
                              "Pre-existing rows are kept, new rows are added after them, "
                              "and new poster filenames are numbered to continue past the "
                              "existing ones (no clobbering).")
+    parser.add_argument("--poster-size", default=None, metavar="WxH",
+                        help="Override the backend's poster resolution, e.g. "
+                             "'2048x2048' or '1152x1728'. Both must be multiples of "
+                             "64. Defaults to the backend's built-in dimensions.")
     parser.add_argument("--no-images", action="store_true",
                         help="Skip ComfyUI image generation")
     parser.add_argument("--no-llm", action="store_true",
@@ -1059,6 +1063,22 @@ def main():
     do_images = not args.no_images and not args.no_llm
     backend = BACKENDS[args.backend]
     gallery_meta = GALLERY_META[backend.name]
+
+    # Optional resolution override (lets a driver switch sizes between batches
+    # without editing the backend registry). Multiples of 64 for ComfyUI.
+    if args.poster_size:
+        try:
+            w_str, h_str = args.poster_size.lower().split("x")
+            ovr_w, ovr_h = int(w_str), int(h_str)
+        except ValueError:
+            print(f"Error: --poster-size must look like '2048x2048', got "
+                  f"{args.poster_size!r}.", file=sys.stderr)
+            sys.exit(1)
+        if ovr_w % 64 or ovr_h % 64 or ovr_w < 64 or ovr_h < 64:
+            print(f"Error: --poster-size dims must be positive multiples of 64, "
+                  f"got {ovr_w}x{ovr_h}.", file=sys.stderr)
+            sys.exit(1)
+        backend.poster_w, backend.poster_h = ovr_w, ovr_h
 
     # Build the text LLM backend.
     llm = None

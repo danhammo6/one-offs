@@ -4,3 +4,7 @@ __pycache__/
 .DS_Store
 run_*.log
 .idea/
+ideogram4_batch*.log
+ideogram4_auto_batch*.log
+auto_ideogram_driver.log
+commit_watcher.log

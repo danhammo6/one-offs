@@ -688,6 +688,30 @@ class ComfyClient:
         with urllib.request.urlopen(f"http://{self.server}/history/{prompt_id}", timeout=30) as r:
             return json.loads(r.read())
 
+    def ping(self):
+        """True if the ComfyUI server answers /system_stats."""
+        try:
+            with urllib.request.urlopen(
+                f"http://{self.server}/system_stats", timeout=5
+            ) as r:
+                return r.status == 200
+        except Exception:
+            return False
+
+    def wait_until_up(self, poll=30.0, log_every=4):
+        """Block until the server is reachable again, polling every `poll`s.
+        Used to ride out a deliberate server shutdown without failing rows."""
+        tries = 0
+        while not self.ping():
+            if tries % log_every == 0:
+                print(f"      …ComfyUI at {self.server} unreachable; "
+                      f"waiting {poll:.0f}s and retrying", flush=True)
+            time.sleep(poll)
+            tries += 1
+        if tries:
+            print(f"      …ComfyUI back up after {tries} poll(s); resuming",
+                  flush=True)
+
     def generate(self, prompt):
         try:
             import websocket  # websocket-client
@@ -1233,12 +1257,29 @@ def main():
                 slug = f"{row_offset + i:04d}-{slugify(mashup['title'] or 'untitled')}"
                 fname = f"{slug}.jpg"
                 dest = args.images_dir / fname
-                try:
-                    raw = comfy.generate(wf)
-                    dest.write_bytes(png_bytes_to_jpeg(raw))  # JPEG q=85, same res
-                    mashup["image_file"] = fname
-                except Exception as e:
-                    status_bits.append(f"img: {e}"[:50])
+                # Render with retry. A deliberate server shutdown shouldn't lose
+                # the row: if the failure is "server unreachable", wait for it to
+                # come back (unlimited) and retry. Other render errors get a few
+                # bounded retries before we give up on this row.
+                max_up_retries = 3
+                up_attempts = 0
+                while True:
+                    try:
+                        raw = comfy.generate(wf)
+                        dest.write_bytes(png_bytes_to_jpeg(raw))  # JPEG q=85
+                        mashup["image_file"] = fname
+                        break
+                    except Exception as e:
+                        if not comfy.ping():
+                            # Server is down (likely a deliberate restart) — ride
+                            # it out without consuming a retry, then try again.
+                            comfy.wait_until_up()
+                            continue
+                        up_attempts += 1
+                        if up_attempts >= max_up_retries:
+                            status_bits.append(f"img: {e}"[:50])
+                            break
+                        time.sleep(2)
                 img_time = time.monotonic() - img_start
 
             if not status_bits:

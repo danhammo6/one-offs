@@ -45,4 +45,12 @@ if git diff --cached --quiet; then
 fi
 
 git commit -S --no-verify -m "ideogram4 batch: $count posters (auto)" >/dev/null 2>&1
-echo "COMMITTED $count"
+
+# Auto-push the current branch. --force is never used; a rejected push (e.g.
+# remote moved) is reported but not fatal — the next batch will try again.
+branch=$(git rev-parse --abbrev-ref HEAD)
+if git push origin "$branch" >/dev/null 2>&1; then
+  echo "COMMITTED $count (pushed $branch)"
+else
+  echo "COMMITTED $count (PUSH FAILED for $branch — will retry next batch)"
+fi

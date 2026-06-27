@@ -7602,3 +7602,923 @@ Drama,Psychological Drama,Action,Buddy Cop,Washed-Up Rock Star,"Imagine if a Psy
     }
   ]
 }",0080-the-encore-interrogation.jpg
+Comedy,Satire,Drama,Legal Drama,Struggling Artist,"Cold open: a Struggling Artist, alone, in the rain. The genre? Satire. The vibe? Unmistakably Legal Drama. Cue title card.","Objection, Your Honor, It's a Metaphor","Dezzy Pruitt, a perpetually broke performance artist who pays rent in ""exposure,"" accidentally sues a billionaire art collector and somehow wins the right to represent herself in the highest-stakes copyright trial of the decade. Armed with zero legal training, one inspirational beret, and a tendency to answer cross-examination with interpretive dance, she discovers the courtroom is just the world's most expensive open-mic night. As the system closes in, Dezzy must prove that her ""found garbage installation"" is genuine art — or owe damages she'll be paying off in the afterlife. A blistering, deadpan satire about justice, gentrification, and the unbearable pretentiousness of being right.","{
+  ""high_level_description"": ""A drenched young artist in a beret stands defiantly in a marble courtroom doorway clutching a paint-smeared briefcase, lit like a prestige legal thriller but absurdly out of place."",
+  ""background"": ""The towering interior of a grand neoclassical courtroom at dusk, polished marble columns and dark mahogany benches receding into shadow. Rain somehow falls indoors through a leaking skylight, catching shafts of cold light. An ornate gold scales-of-justice statue looms in the deep background, slightly tilted as if off-balance."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, teal-and-amber cinematic prestige-drama grade, photorealistic, volumetric haze, subtle film grain"",
+  ""aesthetics"": ""deadpan, austere, ironic grandeur, courtroom-noir, wet and moody"",
+  ""lighting"": ""dramatic single-source key light from the skylight cutting through indoor rain, deep cool shadows with warm amber rim light on the figure."",
+  ""palette"": [
+    ""#1c2733"",
+    ""#0d1418"",
+    ""#c9a24b"",
+    ""#7b8a94"",
+    ""#e8e2d4""
+  ],
+  ""bg_brightness"": 38,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a soaked, determined woman in her late twenties wearing a black beret, oversized paint-stained turtleneck and a thrift-store blazer, standing front-on, chin raised, holding a battered briefcase splattered with multicolor paint, water dripping from her hair, photoreal"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.3,
+      ""w"": 0.4,
+      ""h"": 0.55
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a tilted polished brass scales-of-justice statue with one pan overflowing with crumpled paint tubes and trash, softly out of focus in the background haze"",
+      ""palette"": [],
+      ""x"": 0.62,
+      ""y"": 0.34,
+      ""w"": 0.26,
+      ""h"": 0.34
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a wooden judge's gavel resting on a marble ledge with a single delicate paintbrush balanced across it, sharp foreground detail, water droplets"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.7,
+      ""w"": 0.22,
+      ""h"": 0.12
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""OBJECTION, YOUR HONOR,\nIT'S A METAPHOR"",
+      ""desc"": ""large condensed serif legal-drama title in cream gold, all caps, stacked two lines, embossed with subtle wet sheen, centered"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.05,
+      ""w"": 0.84,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""She has no lawyer. No money. No idea what she's doing. Just vision."",
+      ""desc"": ""small italic tagline in soft grey, single line, restrained kerning"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.26,
+      ""w"": 0.72,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""PILLARSTONE PICTURES PRESENTS  A MARGAUX DELACROIX-VANE FILM  \""OBJECTION, YOUR HONOR, IT'S A METAPHOR\""  STARRING IONA REBECK  THADDEUS GROVE  CASTING BY P. LUNDQVIST  MUSIC BY HALVARD MENNES  DIRECTED BY MARGAUX DELACROIX-VANE"",
+      ""desc"": ""tiny condensed all-caps billing block in light grey, justified, classic credits formatting"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.9,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""IN THEATERS THIS FALL"",
+      ""desc"": ""small spaced-out gold capitals, centered, above the billing block"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.86,
+      ""w"": 0.4,
+      ""h"": 0.03
+    }
+  ]
+}",0081-objection-your-honor-it-s-a-metaphor.jpg
+Action,Survival,Western,Acid Western,Traveling Salesman,It's Survival meets Acid Western... but the protagonist is a Traveling Salesman.,The Hard Sell at Dead Mule Gulch,"Mort Pennywhistle is the finest vacuum-and-encyclopedia salesman the dusty Territory of New Perdition has ever ignored — until a peyote-laced sasparilla sends his wagon, his mule, and his sample case tumbling into a sunbaked canyon with no road out. Now sixty miles from water, hallucinating a chorus line of singing scorpions, Mort must barter, charm, and door-to-door his way past cannibal claim-jumpers using only his briefcase of brushes and an unkillable sales pitch. Every man he meets wants him dead. Every man he meets is also a potential customer. Closing the deal has never been this literal.","{
+  ""high_level_description"": ""A sunblasted, dust-caked traveling salesman in a ruined three-piece suit clutches a battered sample case as he staggers through a surreal blood-orange desert canyon, shot like a gritty photoreal Western survival epic."",
+  ""background"": ""A vast cracked-clay canyon at brutal high noon, jagged red rock walls rising into a sky bleached white-gold with heat shimmer. Bleached cattle bones and a half-buried, overturned peddler's wagon litter the foreground sand. Distant mesas warp in waves of mirage, and a lone circling vulture is a speck against the punishing sky."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, sun-scorched desaturated grade with blown-out highlights, fine film grain, photorealistic, volumetric dust haze, heavy heat distortion"",
+  ""aesthetics"": ""gritty, hallucinatory, parched, surreal, sweaty desperation, deadpan absurdist"",
+  ""lighting"": ""merciless overhead noon sun casting hard short shadows, golden bounce off the red rock, hazy rim glow through hanging dust."",
+  ""palette"": [
+    ""#C24A1E"",
+    ""#E8B663"",
+    ""#7A3318"",
+    ""#F2E2B8"",
+    ""#3A2412""
+  ],
+  ""bg_brightness"": 68,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a sunburned, sweat-soaked traveling salesman in his late 40s wearing a dust-grayed pinstripe three-piece suit with a loosened bowtie, one sleeve torn, cracked lips, wild sun-mad eyes, hair plastered to forehead, gripping a battered leather sample case to his chest as he staggers forward through deep sand, photoreal, sharp focus"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.3,
+      ""w"": 0.42,
+      ""h"": 0.56
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""an overturned, sun-bleached wooden peddler's wagon half-buried in cracked clay in the foreground left, spilling scattered hairbrushes, encyclopedias and dented tin samples across the sand, photoreal"",
+      ""palette"": [],
+      ""x"": 0.02,
+      ""y"": 0.66,
+      ""w"": 0.34,
+      ""h"": 0.24
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a single large weathered cow skull resting in the sand at lower right, jaw cracked, casting a hard noon shadow, photoreal"",
+      ""palette"": [],
+      ""x"": 0.7,
+      ""y"": 0.74,
+      ""w"": 0.24,
+      ""h"": 0.18
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a lone black vulture silhouetted small and high against the bleached sky, wings spread, circling, photoreal"",
+      ""palette"": [],
+      ""x"": 0.16,
+      ""y"": 0.1,
+      ""w"": 0.12,
+      ""h"": 0.09
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE HARD SELL\nAT DEAD MULE GULCH"",
+      ""desc"": ""large weathered slab-serif Western woodtype title, cracked sun-bleached cream paint with dust grime, slightly distressed letterpress edges, stacked two lines, dominating the lower third"",
+      ""palette"": [],
+      ""x"": 0.07,
+      ""y"": 0.62,
+      ""w"": 0.86,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""EVERYONE WANTS HIM DEAD. EVERYONE'S A CUSTOMER."",
+      ""desc"": ""thin condensed all-caps tagline in dusty gold, letter-spaced, single line above the title"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.55,
+      ""w"": 0.76,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""PARCHED MULE PICTURES PRESENTS A SILAS QUARLES FILM  \""THE HARD SELL AT DEAD MULE GULCH\""  DABNEY HOLT  REZA ALMEIDA  JUNIPER VANCE  CASTING BY M. TROON  MUSIC BY ELLERY FOSS  DIRECTED BY SILAS QUARLES"",
+      ""desc"": ""tiny condensed sans-serif billing block, washed-out cream lettering, centered, standard credits density"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.9,
+      ""w"": 0.72,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""CLOSING THIS SUMMER"",
+      ""desc"": ""small bold all-caps release line in pale gold, centered just below the title"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.84,
+      ""w"": 0.4,
+      ""h"": 0.035
+    }
+  ]
+}",0082-the-hard-sell-at-dead-mule-gulch.jpg
+Mystery,Cold Case,Western,Spaghetti Western,Con Artist,"Set in a world where Cold Case and Spaghetti Western coexist uneasily, our hero — a Con Artist — must save... something. Probably a town.",Dead Man's Bluff,"Forty years after a stagecoach massacre went unsolved, silver-tongued grifter ""Honest"" Cassidy Vane rolls into the sun-bleached town of Perdido with a rigged faro deck and a dead man's pocket watch he can't explain. When the town's last surviving witness recognizes the watch, Cassidy must solve the very cold case he's been conning everyone about — before a black-clad gunman with a ledger of grudges closes the file permanently. Part dusty whodunit, part squint-and-shoot showdown, it's a swindler's race to outdraw the truth. The con of his life, and it's also the truth.","{
+  ""high_level_description"": ""A weathered con artist in a dust-caked frock coat stands at high noon in a dead Old West main street, fanning a deck of cards while a tarnished pocket watch dangles from his fist, a black-clad gunman blurred in the deep background."",
+  ""background"": ""A wide, sun-scorched spaghetti-western main street of cracked clapboard storefronts and a leaning saloon, dust devils drifting across rutted dirt. Heat shimmer warps the horizon where distant mesas glow ochre under a bleached midday sky. Far down the street a lone black-coated figure stands small and ominous in the haze."",
+  ""art_style"": ""shot on 35mm anamorphic, extreme telephoto compression, shallow depth of field, gritty sun-baked spaghetti-western grade, fine film grain, photorealistic, heavy volumetric dust haze"",
+  ""aesthetics"": ""dusty, sweat-streaked, lawless, sun-blasted, tense, cold-case noir under desert glare"",
+  ""lighting"": ""harsh overhead noon sun raking hard shadows across a leathered face, with a faint cool fill catching the swinging pocket watch."",
+  ""palette"": [
+    ""#C9A063"",
+    ""#7A4B2A"",
+    ""#E8D6A8"",
+    ""#2B2018"",
+    ""#A8B0A0""
+  ],
+  ""bg_brightness"": 68,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a lean, dust-caked con artist in his fifties wearing a sweat-stained frock coat and battered flat-brim hat, sly squint, three-day stubble, fanning a worn deck of playing cards in one gloved hand, photoreal"",
+      ""palette"": [],
+      ""x"": 0.26,
+      ""y"": 0.3,
+      ""w"": 0.48,
+      ""h"": 0.58
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a tarnished silver pocket watch on a chain dangling from the con artist's other fist, scratched casing catching the sun, sharp macro focus"",
+      ""palette"": [],
+      ""x"": 0.55,
+      ""y"": 0.55,
+      ""w"": 0.18,
+      ""h"": 0.22
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a small distant black-coated gunman standing in the rutted street, blurred in heat haze, hand near holster, photoreal"",
+      ""palette"": [],
+      ""x"": 0.42,
+      ""y"": 0.4,
+      ""w"": 0.1,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""DEAD MAN'S\nBLUFF"",
+      ""desc"": ""massive distressed slab-serif western title in cracked weathered cream lettering with hard black drop shadow, sun-bleached texture, spanning the lower third"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.7,
+      ""w"": 0.84,
+      ""h"": 0.18
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE COLDEST CASE IN THE WEST. THE OLDEST TRICK IN THE BOOK."",
+      ""desc"": ""small condensed all-caps tagline in dusty gold, centered, letterspaced"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.65,
+      ""w"": 0.72,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""MERIDIAN DUST PICTURES PRESENTS  A SILAS HOLLOWAY FILM  \""DEAD MAN'S BLUFF\""  RAFE CALLOWAY  DELPHINE MARCH  AUGUSTUS REEDE  CASTING BY M. ORTIZ  MUSIC BY ENNIO VALDEZ  DIRECTED BY SILAS HOLLOWAY"",
+      ""desc"": ""tiny condensed sans-serif billing block in faded cream, centered, standard credit-line spacing"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.9,
+      ""w"": 0.72,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""DEALING THIS SUMMER"",
+      ""desc"": ""small bold all-caps release line in pale gold, centered"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.955,
+      ""w"": 0.4,
+      ""h"": 0.03
+    }
+  ]
+}",0083-dead-man-s-bluff.jpg
+Western,Weird West,Sci-Fi,Alien Invasion,Traveling Salesman,"Picture a Weird West setting, but everyone behaves like they're in a Alien Invasion. Our reluctant hero: a Traveling Salesman.",How the West Was Beamed,"Dust-bowl drummer Cornelius ""Corny"" Pratt can sell ice to a snowman and a snake-oil tonic to a dying mule — which is why nobody believes him when he insists the new settlers in Bone Hollow are extraterrestrials wearing very bad human suits. Armed with a wagon of dubious miracle products and a smile that won't quit, Corny must out-talk a hive of body-snatching invaders before the whole frontier gets ""harvested."" His pitch of a lifetime now has the highest stakes imaginable: the planet. Closing the sale has never been this apocalyptic.","{
+  ""high_level_description"": ""A dusty frontier salesman stands before his wagon at twilight as a colossal saucer hovers over a Western boomtown, beams of green light raking the main street."",
+  ""background"": ""A wide deserted Western main street at dusk, weathered timber storefronts and a saloon receding into haze. Above the town hangs an enormous metallic flying saucer half-obscured by dust and rolling cloud, casting vertical beams of sickly green light onto the dirt road. The far horizon glows orange-pink with a dying sun, scattered tumbleweeds frozen mid-roll."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, teal-and-amber cinematic grade, photorealistic, heavy volumetric dust haze, lens flare on the saucer beams"",
+  ""aesthetics"": ""epic, absurd, ominous, sun-baked, retro-sci-fi spectacle"",
+  ""lighting"": ""warm low-angle sunset key on the salesman contrasted against cold green rim light spilling down from the saucer overhead."",
+  ""palette"": [
+    ""#C46A2B"",
+    ""#1F3D3A"",
+    ""#6FE08A"",
+    ""#E8C27A"",
+    ""#241712""
+  ],
+  ""bg_brightness"": 48,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A wiry middle-aged traveling salesman in a dusty brown three-piece suit, string tie, and bowler hat, holding up a glass bottle of glowing tonic with a salesman's confident grin, one eyebrow raised at the sky; photoreal, sweat on his brow, late sun on his face"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.4,
+      ""w"": 0.42,
+      ""h"": 0.5
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A battered horse-drawn peddler's wagon to the left, sides painted with faded patent-medicine lettering, stacked with crates and bottles, one wheel half-buried in dust"",
+      ""palette"": [],
+      ""x"": 0.02,
+      ""y"": 0.52,
+      ""w"": 0.3,
+      ""h"": 0.3
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A massive metallic flying saucer hovering high in the sky, riveted hull catching green internal light, partly veiled by dust clouds, projecting wide vertical light beams downward"",
+      ""palette"": [],
+      ""x"": 0.18,
+      ""y"": 0.06,
+      ""w"": 0.66,
+      ""h"": 0.3
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A lone tumbleweed lit by green underlight rolling across the foreground dirt road"",
+      ""palette"": [],
+      ""x"": 0.7,
+      ""y"": 0.78,
+      ""w"": 0.18,
+      ""h"": 0.12
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""HOW THE WEST\nWAS BEAMED"",
+      ""desc"": ""Large rugged Western slab-serif title in weathered cream-gold, branded-into-leather texture, with a faint green sci-fi glow on the edges, stacked two lines, centered upper third"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.04,
+      ""w"": 0.84,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""The greatest pitch in the history of the planet."",
+      ""desc"": ""Small italic serif tagline in dusty white, single line, centered just below the title"",
+      ""palette"": [],
+      ""x"": 0.16,
+      ""y"": 0.255,
+      ""w"": 0.68,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""SAGEBRUSH ORBIT PICTURES PRESENTS  A BARNABY QUILL FILM  \""HOW THE WEST WAS BEAMED\""  WESLEY DRUM  CORA FONTAINE  AUGUSTUS REED  CASTING BY MAVIS HOLLOWAY  MUSIC BY THE DESERT TONE QUARTET  DIRECTED BY BARNABY QUILL"",
+      ""desc"": ""Tiny condensed all-caps billing block in pale grey, tightly tracked, centered at bottom"",
+      ""palette"": [],
+      ""x"": 0.1,
+      ""y"": 0.9,
+      ""w"": 0.8,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""COMING THIS SUMMER"",
+      ""desc"": ""Small bold all-caps release line in glowing green, centered above the billing block"",
+      ""palette"": [],
+      ""x"": 0.28,
+      ""y"": 0.855,
+      ""w"": 0.44,
+      ""h"": 0.035
+    }
+  ]
+}",0084-how-the-west-was-beamed.jpg
+Comedy,Farce,Action,Spy Thriller,Rookie Cop,"Cold open: a Rookie Cop, alone, in the rain. The genre? Farce. The vibe? Unmistakably Spy Thriller. Cue title card.",Badge of Honor: License to Filing,"On his first day, rookie officer Dennis Pollard accidentally pockets a defecting scientist's microfilm, mistakes a deadly assassin for his carpool buddy, and triggers an international incident before lunch. Now every elegant villain in Geneva wants him dead — and they all think he's a legendary super-agent because he keeps tripping into ventilation shafts at the perfect moment. Armed with a parking-ticket booklet and zero clearance, Dennis must bluff his way through a tuxedo gala, a high-speed Vespa chase, and a code phrase he absolutely cannot remember. The fate of the world rests in the trembling hands of a man who's still on probation.","{
+  ""high_level_description"": ""A drenched, terrified rookie cop in a too-big uniform stands under a single streetlight in the rain clutching a parking-ticket booklet like a weapon, framed exactly like a sleek spy-thriller one-sheet."",
+  ""background"": ""A rain-slicked European cobblestone alley at night, neon reflections smeared across wet stone, a distant ornate gala building glowing gold in deep soft focus. Heavy diagonal rain streaks catch the light, and a black town car idles ominously in the misty background. The depth falls off into moody bokeh and drifting fog."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, teal-orange cinematic grade, photorealistic, volumetric haze, fine rain streaks lit from behind"",
+  ""aesthetics"": ""sleek espionage tension undercut by visible panic, glossy noir, deadpan absurdity"",
+  ""lighting"": ""a single hard cold streetlight from above rim-lighting the soaked cop while warm gala glow flares from behind, dramatic and high-contrast."",
+  ""palette"": [
+    ""#0E1B24"",
+    ""#1F4E5A"",
+    ""#E8973A"",
+    ""#C9D4DA"",
+    ""#080A0C""
+  ],
+  ""bg_brightness"": 38,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a young rookie police officer, mid-20s, slightly too-large soaked navy uniform, peaked cap dripping, wide panicked eyes, standing in a heroic spy stance but holding up a small paper parking-ticket booklet instead of a gun, rain sheeting off him, photoreal full-body hero shot"",
+      ""palette"": [],
+      ""x"": 0.28,
+      ""y"": 0.3,
+      ""w"": 0.46,
+      ""h"": 0.56
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a glamorous femme-fatale woman in a sequined emerald gown half-hidden in the background fog holding a martini and a tiny pistol, soft bokeh, photoreal"",
+      ""palette"": [],
+      ""x"": 0.05,
+      ""y"": 0.46,
+      ""w"": 0.2,
+      ""h"": 0.34
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a sleek black vintage town car with headlights flaring through the rain, parked ominously in deep background blur, photoreal"",
+      ""palette"": [],
+      ""x"": 0.66,
+      ""y"": 0.5,
+      ""w"": 0.3,
+      ""h"": 0.22
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""BADGE OF HONOR"",
+      ""desc"": ""large bold condensed silver metallic sans-serif, embossed spy-thriller style, slight wet sheen, centered across upper portion"",
+      ""palette"": [],
+      ""x"": 0.1,
+      ""y"": 0.06,
+      ""w"": 0.8,
+      ""h"": 0.12
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""LICENSE TO FILING"",
+      ""desc"": ""thinner elegant gold serif subtitle, all caps, smaller, directly beneath main title, refined espionage look"",
+      ""palette"": [],
+      ""x"": 0.18,
+      ""y"": 0.185,
+      ""w"": 0.64,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""He has clearance for nothing. The world is counting on him anyway."",
+      ""desc"": ""small italic light-gray tagline, single line, centered, understated"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.875,
+      ""w"": 0.72,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""MERIDIAN VAULT PICTURES PRESENTS A CALLOWAY FENN FILM \""BADGE OF HONOR: LICENSE TO FILING\"" THEO BRANNICK  ROSALIND VEX  AUGUST KRELL  CASTING BY P. DOOLAN  MUSIC BY H. SOTO-REYES  DIRECTED BY CALLOWAY FENN"",
+      ""desc"": ""tiny condensed white all-caps billing block, classic credit-line spacing, centered"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.925,
+      ""w"": 0.76,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""IN THEATERS THIS AUTUMN"",
+      ""desc"": ""small spaced silver all-caps release line, centered"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.965,
+      ""w"": 0.4,
+      ""h"": 0.025
+    }
+  ]
+}",0085-badge-of-honor-license-to-filing.jpg
+Drama,Coming-of-Age,Comedy,Dark Comedy,Idealistic Lawyer,It's Coming-of-Age meets Dark Comedy... but the protagonist is a Idealistic Lawyer.,"Objection, Your Adulthood","Twenty-five-year-old Marcus Pry passed the bar on his first try and immediately accepted a case nobody else would touch: suing the universe for emotional damages. Armed with a thrifted suit two sizes too big and a misplaced faith in the goodness of all people, he discovers his idealistic crusade has accidentally exposed a small-town graft ring run by his own mentor. As witnesses keep ""retiring to Boca"" and his cactus becomes his only loyal client, Marcus must decide whether growing up means selling out — or finally winning the one case that matters. It's a bleakly hilarious courtroom fable about losing your innocence one objection at a time.","{
+  ""high_level_description"": ""A baby-faced young lawyer in an oversized suit stands alone in a vast empty courtroom clutching an enormous briefcase, lit like a melancholy comedy."",
+  ""background"": ""The interior of a grand but slightly shabby municipal courtroom, deep wood paneling receding into shadow with rows of empty wooden benches. Dust motes drift in slanted afternoon light from tall arched windows. The judge's bench looms huge and unoccupied in the soft-focus background, an American-style flag drooping beside it."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, warm muted cinematic grade with slight desaturation, photorealistic, fine film grain, volumetric window light"",
+  ""aesthetics"": ""wry, bittersweet, awkward, earnest, deadpan dramedy"",
+  ""lighting"": ""soft golden hour light spilling from high windows onto a single lonely figure while the edges of the room fall into warm gloom"",
+  ""palette"": [
+    ""#3A2A1A"",
+    ""#C9A24B"",
+    ""#7E8C7A"",
+    ""#E8DCC0"",
+    ""#1C1610""
+  ],
+  ""bg_brightness"": 42,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a fresh-faced 25-year-old man with an earnest, hopeful expression standing at the center of the courtroom, wearing a charcoal suit that is visibly two sizes too big with rolled sleeves and a slightly crooked tie, gripping an oversized worn leather briefcase with both hands, posture eager but vulnerable, photorealistic full-body shot"",
+      ""palette"": [],
+      ""x"": 0.33,
+      ""y"": 0.3,
+      ""w"": 0.34,
+      ""h"": 0.52
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a small potted cactus in a tiny clay pot sitting on the corner of an empty wooden counsel table in the foreground, sharply in focus, absurdly placed like a courtroom companion"",
+      ""palette"": [],
+      ""x"": 0.07,
+      ""y"": 0.66,
+      ""w"": 0.16,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a wooden judge's gavel resting alone on a green felt pad on the opposite foreground table, catching a glint of window light"",
+      ""palette"": [],
+      ""x"": 0.74,
+      ""y"": 0.69,
+      ""w"": 0.18,
+      ""h"": 0.1
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""OBJECTION,\nYOUR ADULTHOOD"",
+      ""desc"": ""large bold condensed serif title in warm cream and gold, stacked two lines, slightly distressed legal-letterhead texture, occupying the lower third with strong presence"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.8,
+      ""w"": 0.84,
+      ""h"": 0.13
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""He swore to defend justice. Justice did not return the favor."",
+      ""desc"": ""small italic tagline in muted off-white, single line centered above the title"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.74,
+      ""w"": 0.76,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""MERIDIAN HOUSE PICTURES PRESENTS  A DELLWOOD STRAND FILM  \""OBJECTION, YOUR ADULTHOOD\""  THEO MARCHETTI  PRIYA OKONKWO  HAL VEERS  CASTING BY R. SOLANO  MUSIC BY J. ELLERY  DIRECTED BY CORA FENWICK"",
+      ""desc"": ""tiny condensed all-caps billing block in pale gray, centered, classic credit-block spacing"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.945,
+      ""w"": 0.72,
+      ""h"": 0.035
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""IN THEATERS THIS FALL"",
+      ""desc"": ""small spaced all-caps line in gold above the billing block, centered"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.925,
+      ""w"": 0.4,
+      ""h"": 0.02
+    }
+  ]
+}",0086-objection-your-adulthood.jpg
+Horror,Cosmic Horror,Musical,Jukebox Musical,Cynical Journalist,"Set in a world where Cosmic Horror and Jukebox Musical coexist uneasily, our hero — a Cynical Journalist — must save... something. Probably a town.",The Eldritch Hour: A Town That Couldn't Stop Singing,"Burned-out arts reporter Marla Voss takes one last lousy assignment — covering why the dead-end town of Harrow Falls hasn't shut up about its annual sing-along. Turns out the locals can't stop performing classic radio hits because a tentacled god beneath the reservoir feeds on jazz hands and earnest key changes. Marla's the only one immune to the cosmic earworm, which makes her humanity's last cynical hope and a terrible duet partner. To save everyone, she must out-belt an unknowable deity using nothing but sarcasm and a karaoke machine. The encore will end the world.","{
+  ""high_level_description"": ""A cynical woman journalist clutches a vintage microphone in a flooded town square as a colossal tentacled silhouette rises behind a glowing marquee, terrified townsfolk frozen mid-song around her."",
+  ""background"": ""A decaying small-town main street at night, half-submerged in black reflective floodwater that mirrors a sickly green sky. A towering eldritch silhouette of writhing tentacles and a single luminous eye looms over the rooftops in the misty distance. Old theater marquees and storefront signs flicker, their warm bulbs reflecting in the water, while low fog curls between the buildings."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, cinematic teal-and-sickly-green grade with warm marquee accents, volumetric fog, photorealistic, fine film grain, high dynamic range"",
+  ""aesthetics"": ""ominous, theatrical, surreal, dread-soaked, darkly comedic, grand"",
+  ""lighting"": ""moody low-key lighting with warm practical bulbs on the actress's face fighting against a cold green otherworldly glow from the looming creature."",
+  ""palette"": [
+    ""#0B1A14"",
+    ""#2E5D4B"",
+    ""#9BE3B0"",
+    ""#E8B04B"",
+    ""#0A0D14""
+  ],
+  ""bg_brightness"": 30,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A weary 40-something woman journalist in a rain-soaked trench coat, press badge clipped to her lapel, gripping a 1950s chrome stage microphone with white knuckles, one eyebrow raised in exhausted disbelief, standing in ankle-deep floodwater, photoreal, dramatic rim light"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.4,
+      ""w"": 0.4,
+      ""h"": 0.5
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A colossal photoreal silhouette of a tentacled cosmic deity with one enormous glowing pale-green eye, rising from behind small-town rooftops, wreathed in fog, partially obscured"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.18,
+      ""w"": 0.84,
+      ""h"": 0.4
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""Glowing vintage theater marquee sign with rows of warm round bulbs, several flickering, reflected in dark floodwater below, photoreal"",
+      ""palette"": [],
+      ""x"": 0.04,
+      ""y"": 0.55,
+      ""w"": 0.3,
+      ""h"": 0.18
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A small cluster of townsfolk frozen mid-musical-pose with stiff jazz hands and uncanny vacant smiles, lit by eerie green glow, slightly out of focus in the background"",
+      ""palette"": [],
+      ""x"": 0.66,
+      ""y"": 0.58,
+      ""w"": 0.28,
+      ""h"": 0.22
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE ELDRITCH HOUR"",
+      ""desc"": ""huge bold condensed serif title in cracked warm-gold lettering with a faint green otherworldly outer glow, weathered metallic texture, spanning the width near the bottom"",
+      ""palette"": [],
+      ""x"": 0.06,
+      ""y"": 0.78,
+      ""w"": 0.88,
+      ""h"": 0.11
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""A TOWN THAT COULDN'T STOP SINGING"",
+      ""desc"": ""smaller elegant italic subtitle in pale green, letter-spaced, directly beneath the main title"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.895,
+      ""w"": 0.76,
+      ""h"": 0.035
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE ENCORE WILL END THE WORLD"",
+      ""desc"": ""thin uppercase tagline in dim glowing white, letter-spaced, positioned just above the main title"",
+      ""palette"": [],
+      ""x"": 0.18,
+      ""y"": 0.735,
+      ""w"": 0.64,
+      ""h"": 0.03
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""HOLLOWLIGHT PICTURES PRESENTS  A DESMOND KRAY FILM  \""THE ELDRITCH HOUR\""  MARGO VANCE  ELI TORRANCE  RUTH BELLAMY  CASTING BY P. OKONKWO  MUSIC BY THE SUNKEN CHOIR  DIRECTED BY DESMOND KRAY"",
+      ""desc"": ""tiny condensed all-caps billing block in muted gray, centered, standard theatrical credits styling"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.945,
+      ""w"": 0.72,
+      ""h"": 0.03
+    }
+  ]
+}",0087-the-eldritch-hour-a-town-that-couldn-t-stop-singing.jpg
+Western,Revisionist Western,Drama,Sports Drama,Small-Town Sheriff,"Logline: When a Small-Town Sheriff discovers their quiet life is actually a Revisionist Western, they must master the genre conventions of Sports Drama to survive.",High Noon Press: A Western in Overtime,"Sheriff Wade ""Dusty"" Cobb has kept the dirt-road town of Pinch, Arizona peaceful for nineteen quiet years — until a drifting bookie informs him that, per local statute and a forgotten 1887 charter, all disputes must now be settled by full-court basketball. With the railroad barons fielding a ringer squad and the saloon doubling as a locker room, Dusty must trade his six-shooter for a sweatband and coach a team of grizzled ranchers to the championship. He's got bad knees, a tragic backstory, and exactly one inspirational speech left in him. Loser leaves the territory. Forever.","{
+  ""high_level_description"": ""A weathered small-town sheriff stands mid-dusty-street in full Western gear but cradling a basketball, framed like a showdown at high noon outside a saloon-turned-gymnasium."",
+  ""background"": ""A sun-scorched frontier main street stretching to a vanishing point, false-front wooden buildings flanking a rutted dirt road. One saloon has a regulation basketball hoop bolted crookedly above its swinging doors, a sagging net swaying in the heat. Distant mesas shimmer under a blazing white midday sky with low dust haze hanging in the air."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, sun-baked golden-amber cinematic grade, fine film grain, photorealistic, volumetric dust haze, lens flare"",
+  ""aesthetics"": ""gritty, sweaty, mythic, underdog-sports tension, spaghetti-western swagger"",
+  ""lighting"": ""harsh overhead high-noon sun casting hard short shadows, with warm bounce light off the dirt and a faint backlit dust halo around the figure."",
+  ""palette"": [
+    ""#C8893F"",
+    ""#E8C887"",
+    ""#6B3B22"",
+    ""#3A2A1C"",
+    ""#F2E6C2""
+  ],
+  ""bg_brightness"": 68,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A rugged 55-year-old sheriff with a gray mustache and sun-creased face, wearing a dusty tan duster coat over a sweat-stained jersey, tin star badge on his chest, leather gun belt, holding a worn leather basketball against his hip with a defiant squint, standing center-frame in the middle of the dirt street"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.3,
+      ""w"": 0.4,
+      ""h"": 0.55
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A coiled lasso and a referee's whistle hanging together off a wooden hitching post in the lower left foreground, in sharp focus"",
+      ""palette"": [],
+      ""x"": 0.04,
+      ""y"": 0.66,
+      ""w"": 0.22,
+      ""h"": 0.18
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A weathered wooden saloon facade in soft-focus background right with a crooked regulation basketball hoop and sagging net mounted above its swinging doors"",
+      ""palette"": [],
+      ""x"": 0.66,
+      ""y"": 0.3,
+      ""w"": 0.3,
+      ""h"": 0.3
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""HIGH NOON\nPRESS"",
+      ""desc"": ""Massive bold weathered slab-serif Western wood-type lettering, cracked sun-bleached cream with dusty edges, stacked two lines, dominating the lower third with strong drop shadow"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.7,
+      ""w"": 0.84,
+      ""h"": 0.18
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE TERRITORY'S FATE COMES DOWN TO ONE LAST SHOT"",
+      ""desc"": ""Thin condensed uppercase serif tagline in pale gold, letter-spaced wide, single centered line above the title"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.64,
+      ""w"": 0.72,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""STAMPEDE PICTURES PRESENTS  A BARLOW QUICKDRAW FILM  \""HIGH NOON PRESS\""  HAL McCREADY  JUNE TALLGRASS  ORSON BRIDLE  CASTING BY DELLA RHOADES  MUSIC BY THE PINCH VALLEY HORNS  DIRECTED BY CASSIDY VANCE"",
+      ""desc"": ""Tiny condensed sans-serif billing block in faded cream, centered, several justified lines at the very bottom"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.93,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""OVERTIME THIS SUMMER"",
+      ""desc"": ""Small bold uppercase letter-spaced release line in warm white just above the billing block"",
+      ""palette"": [],
+      ""x"": 0.28,
+      ""y"": 0.89,
+      ""w"": 0.44,
+      ""h"": 0.03
+    }
+  ]
+}",0088-high-noon-press-a-western-in-overtime.jpg
+Mystery,Cold Case,Comedy,Screwball,Lighthouse Keeper,"Three-act structure: Cold Case in act one, Screwball by act three, and a Lighthouse Keeper sobbing into a microwave dinner the whole time.",The Lighthouse Keeper Did It (Probably),"For thirty-one years, Brunhilde ""Bunny"" Halvorsen has kept the Sorrowcliff Light burning and the same unsolved murder taped to her refrigerator. When a fast-talking insurance adjuster shipwrecks on her rocks demanding answers, her solemn cold-case obsession collides with his caffeinated optimism and a missing lobster diary. Bunny just wants to grieve into her microwave salisbury steak in peace; the universe wants a slamming-door farce with two suspects, one rowboat, and a foghorn that goes off at the worst possible moments. The truth is out there. So is dinner, and it's getting cold.","{
+  ""high_level_description"": ""A weathered lighthouse keeper clutches a microwave dinner and a yellowed case file at the base of a fog-shrouded lighthouse while a frantic man in a soggy suit waves a notebook behind her, shot like a glossy theatrical one-sheet."",
+  ""background"": ""A craggy storm-lashed coastline at dusk dominated by a tall white lighthouse with a glowing lamp room piercing thick rolling sea fog. Jagged wet rocks and a half-beached wooden rowboat sit in the lower foreground, sea spray frozen mid-air. The horizon fades into bruised purple clouds with a faint moon, giving deep atmospheric layers."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, moody teal-and-amber cinematic grade, volumetric fog, photorealistic, fine film grain, natural skin texture"",
+  ""aesthetics"": ""moody nautical noir, screwball comedic timing, melancholic absurdity, premium streaming one-sheet"",
+  ""lighting"": ""the rotating lighthouse beam rakes warm amber light across the foreground figures against cold blue dusk, with soft rim light from the lamp room and practical glow from the microwave dinner."",
+  ""palette"": [
+    ""#15303f"",
+    ""#e8a24c"",
+    ""#c9d6dd"",
+    ""#7a2f3a"",
+    ""#0a1418""
+  ],
+  ""bg_brightness"": 42,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a stoic 60-year-old woman lighthouse keeper in a chunky cream fisherman's sweater and yellow oilskin, deep crow's-feet and a single tired tear, holding up a steaming compartmentalized microwave salisbury-steak dinner in one hand and a yellowed taped-up cold-case folder in the other, photoreal, centered focal subject"",
+      ""palette"": [],
+      ""x"": 0.28,
+      ""y"": 0.34,
+      ""w"": 0.46,
+      ""h"": 0.52
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a frantic young man in a soaking-wet rumpled business suit and crooked tie behind her, mouth open mid-shout, waving a dripping spiral notebook overhead, slightly out of focus for comedic energy"",
+      ""palette"": [],
+      ""x"": 0.04,
+      ""y"": 0.4,
+      ""w"": 0.26,
+      ""h"": 0.4
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a single red lobster perched comically on a fog-slick rock in the lower right foreground, claws raised, sharp focus"",
+      ""palette"": [],
+      ""x"": 0.7,
+      ""y"": 0.74,
+      ""w"": 0.22,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE LIGHTHOUSE\nKEEPER DID IT\n(PROBABLY)"",
+      ""desc"": ""bold condensed weathered serif title in warm amber-cream, large, occupying upper third, slight salt-corroded metal texture, tight leading with the parenthetical in smaller italic"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.05,
+      ""w"": 0.84,
+      ""h"": 0.22
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""She solved nothing in thirty-one years. Tonight she has company."",
+      ""desc"": ""small italic tagline in pale grey-blue, single line centered just below the title"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.285,
+      ""w"": 0.76,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""DRIFTWOOD PICTURES PRESENTS  A FOGHORN FILMS PRODUCTION  \""THE LIGHTHOUSE KEEPER DID IT (PROBABLY)\""  BRUNHILDE QUILL  THADDEUS PYM-ROE  CASTING BY MARGOT SELKIE  MUSIC BY ORSON DRAY  DIRECTED BY PIPPA VANTERPOOL"",
+      ""desc"": ""tiny condensed all-caps billing block in pale grey, centered, classic theatrical credit styling"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.92,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""IN THEATERS THIS FOG SEASON"",
+      ""desc"": ""small spaced all-caps release line in amber above the billing block, centered"",
+      ""palette"": [],
+      ""x"": 0.22,
+      ""y"": 0.885,
+      ""w"": 0.56,
+      ""h"": 0.03
+    }
+  ]
+}",0089-the-lighthouse-keeper-did-it-probably.jpg
+Horror,Psychological Horror,Action,Military Action,Stage Magician,"Picture a Psychological Horror setting, but everyone behaves like they're in a Military Action. Our reluctant hero: a Stage Magician.",Abracadabra: Rules of Engagement,"Reluctant Vegas illusionist ""The Astonishing"" Dale Crick thought his biggest threat was a heckler in the front row — until his sold-out residency dissolves into a black-ops nightmare where his own assistants are tactically flanking him with collapsible swords. As the theater's walls breathe and his rabbit starts giving hand signals, Dale can't tell if he's hallucinating or being hunted by a special-forces unit that only exists when the lights go out. Armed with nothing but flash paper, a deck of cards, and crippling stage fright, he must execute the greatest disappearing act of his life. The reviews are killer. Literally.","{
+  ""high_level_description"": ""A terrified tuxedoed stage magician crouches in a fog-drenched, blood-lit theater while shadowy combat-geared figures advance from the wings, his playing cards scattering through the smoke like shrapnel."",
+  ""background"": ""The interior of a derelict grand theater shrouded in low-lying smoke, red velvet curtains hanging in tatters under a single failing spotlight. Deep in the shadowed wings, the silhouettes of armed tactical operatives advance in formation, laser sights cutting thin lines through the haze. Rows of empty seats recede into oppressive blackness behind a fogged proscenium arch."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, desaturated steel-and-crimson cinematic grade, heavy volumetric haze, photorealistic, fine film grain, low-key chiaroscuro"",
+  ""aesthetics"": ""dread, paranoia, tactical tension, theatrical decay, claustrophobic"",
+  ""lighting"": ""a single harsh overhead spotlight isolating the magician against red emergency lighting, with sharp blue laser-sight beams slicing through the smoke from the dark wings."",
+  ""palette"": [
+    ""#0B0D0F"",
+    ""#8E1B1B"",
+    ""#C9A24B"",
+    ""#2B3A45"",
+    ""#E6E1D3""
+  ],
+  ""bg_brightness"": 28,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a sweating mid-40s stage magician in a tattered black tuxedo and loosened bow tie, crouched defensively mid-stage, one white-gloved hand fanning playing cards, eyes wide with terror, photoreal, dramatic spotlight on his face"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.4,
+      ""w"": 0.4,
+      ""h"": 0.46
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""menacing silhouettes of three armored special-forces soldiers with rifles and red laser sights emerging from torn velvet stage curtains, backlit in smoke, photoreal"",
+      ""palette"": [],
+      ""x"": 0.02,
+      ""y"": 0.34,
+      ""w"": 0.3,
+      ""h"": 0.46
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a single white rabbit standing alert on its hind legs atop an overturned top hat in the foreground, ears raised like an antenna, eerily lit, photoreal"",
+      ""palette"": [],
+      ""x"": 0.66,
+      ""y"": 0.66,
+      ""w"": 0.24,
+      ""h"": 0.26
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""playing cards frozen mid-air scattering across the smoky stage, motion-blurred, catching crimson light, photoreal"",
+      ""palette"": [],
+      ""x"": 0.2,
+      ""y"": 0.3,
+      ""w"": 0.55,
+      ""h"": 0.3
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""ABRACADABRA"",
+      ""desc"": ""huge bold condensed military-stencil capitals in distressed metallic gold with subtle smoke erosion, spanning the width near the lower third, dramatic and weathered"",
+      ""palette"": [],
+      ""x"": 0.06,
+      ""y"": 0.78,
+      ""w"": 0.88,
+      ""h"": 0.1
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""RULES OF ENGAGEMENT"",
+      ""desc"": ""smaller crimson stencil capitals with thin spacing, centered directly beneath the main title"",
+      ""palette"": [],
+      ""x"": 0.2,
+      ""y"": 0.885,
+      ""w"": 0.6,
+      ""h"": 0.035
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE FINAL TRICK IS STAYING ALIVE"",
+      ""desc"": ""thin uppercase italic tagline in muted bone-white, letter-spaced, positioned just below the spotlight near the top"",
+      ""palette"": [],
+      ""x"": 0.18,
+      ""y"": 0.07,
+      ""w"": 0.64,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""HALLOWED SMOKE PICTURES PRESENTS  A REDACTION FILMS PRODUCTION  \""ABRACADABRA: RULES OF ENGAGEMENT\""  MARCUS DELANEY  PRIYA VOSS  ELLIOT REYNE  DIRECTED BY VANCE OKONKWO"",
+      ""desc"": ""tiny condensed all-caps billing block in pale grey, centered, standard credit-line spacing"",
+      ""palette"": [],
+      ""x"": 0.16,
+      ""y"": 0.94,
+      ""w"": 0.68,
+      ""h"": 0.04
+    }
+  ]
+}",0090-abracadabra-rules-of-engagement.jpg

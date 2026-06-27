@@ -4781,3 +4781,903 @@ Horror,Body Horror,Musical,Dance Musical,Mob Enforcer,"Set in a world where Body
     }
   ]
 }",0050-goodfella-pirouette-a-mob-in-pieces.jpg
+Western,Weird West,Mystery,Cold Case,Single Parent,"Cold open: a Single Parent, alone, in the rain. The genre? Weird West. The vibe? Unmistakably Cold Case. Cue title card.",Ledger of the Dead Mule Saloon,"Twelve years after her husband walked into a dust storm and never walked out, gunslinging single mom Prudence ""Pru"" Calloway reopens a case nobody in the haunted town of Cicatrice will speak of. Trouble is, the only witness is a talking weathervane, the murder weapon keeps relocating itself, and her seven-year-old keeps ""helpfully"" interrogating ghosts during church. As the high desert bleeds into something older and stranger, Pru learns the cold case was never closed — it was buried alive. Justice rides at dusk. Bedtime is at eight.","{
+  ""high_level_description"": ""A weathered female gunslinger stands alone in driving rain on a desolate frontier street at dusk, a small child's silhouette clutching her coat, an evidence ledger glowing faintly in her free hand."",
+  ""background"": ""A muddy main street of a half-abandoned Old West town at blue-hour dusk, rain hammering down in sheets and pooling in deep ruts. Crooked saloon facades and a leaning church steeple recede into a bruised violet sky behind veils of mist. Distant lantern light bleeds gold through the storm, and a single crooked weathervane catches the last sliver of stormlight."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, desaturated teal-and-amber cinematic grade, heavy practical rain, volumetric haze, photorealistic, fine film grain"",
+  ""aesthetics"": ""moody, melancholic, eerie, grounded, weathered, slow-burn neo-western mystery"",
+  ""lighting"": ""low-key stormlight with a single warm lantern key from camera-left and a cold blue rim from the sky, rain streaks catching every highlight."",
+  ""palette"": [
+    ""#1B2A33"",
+    ""#3E5159"",
+    ""#C8923A"",
+    ""#7A4B2A"",
+    ""#D8D2C4""
+  ],
+  ""bg_brightness"": 38,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A rain-soaked woman in her late thirties wearing a long oilskin duster and a battered wide-brim hat, jaw set, one hand resting on a holstered revolver, the other gripping a leather-bound ledger, mud splashed to her knees, photoreal and weathered"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.3,
+      ""w"": 0.42,
+      ""h"": 0.55
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""Small silhouette of a seven-year-old child in an oversized poncho standing just behind and beside the woman, clutching the hem of her coat, half-lit by lantern glow"",
+      ""palette"": [],
+      ""x"": 0.58,
+      ""y"": 0.55,
+      ""w"": 0.18,
+      ""h"": 0.3
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A crooked iron rooster weathervane in the upper background, slick with rain, catching a cold sliver of stormlight, slightly out of focus"",
+      ""palette"": [],
+      ""x"": 0.66,
+      ""y"": 0.1,
+      ""w"": 0.2,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A faintly glowing leather evidence ledger with a brass clasp held in the woman's hand, pages curling in the rain, an unnatural pale light leaking from between the pages"",
+      ""palette"": [],
+      ""x"": 0.4,
+      ""y"": 0.62,
+      ""w"": 0.16,
+      ""h"": 0.14
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""LEDGER OF THE\nDEAD MULE SALOON"",
+      ""desc"": ""Large weathered serif Western title in distressed warm bone-white with subtle gold edge, letterpress texture, stacked two lines, positioned across the lower third, slightly rain-streaked"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.74,
+      ""w"": 0.84,
+      ""h"": 0.15
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""SOME CASES STAY BURIED. SOME BURY BACK."",
+      ""desc"": ""Small condensed all-caps tagline in muted amber, letter-spaced, centered above the title"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.69,
+      ""w"": 0.72,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""HOLLOW SPUR PICTURES PRESENTS  A CORMAC DEVANE FILM  \""LEDGER OF THE DEAD MULE SALOON\""  MARISOL VANCE  ELIAS THORNQUIST  DELPHINE O. MABRY  CASTING BY R. HALE  MUSIC BY J. STROUD  DIRECTED BY CORMAC DEVANE"",
+      ""desc"": ""Tiny condensed sans-serif billing block in pale gray, centered, standard credit-line spacing"",
+      ""palette"": [],
+      ""x"": 0.16,
+      ""y"": 0.91,
+      ""w"": 0.68,
+      ""h"": 0.045
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""IN THEATERS THIS FALL"",
+      ""desc"": ""Small bold all-caps release line in bone-white, letter-spaced, centered near very bottom"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.965,
+      ""w"": 0.4,
+      ""h"": 0.025
+    }
+  ]
+}",0051-ledger-of-the-dead-mule-saloon.jpg
+Mystery,Noir,Fantasy,High Fantasy,Cult Leader,"Cold open: a Cult Leader, alone, in the rain. The genre? Noir. The vibe? Unmistakably High Fantasy. Cue title card.",The Last Sermon of Sorrowfen,"In the rain-drowned realm of Greythorn, where elves run gin joints and the moon never sets, disgraced cult leader Brother Vellum Crane peddles salvation to anyone with coin and a soul to spare. When his most devoted acolyte turns up dead in a temple of black water — drained of memory, not blood — Vellum must solve the murder before the city watch pins it on him. Trouble is, every suspect is a god, and Vellum's only lead is a prophecy he wrote himself, drunk, to swindle a duchess. Faith is a racket. The truth is worse.","{
+  ""high_level_description"": ""A robed cult leader stands alone in torrential rain on the steps of a fantastical cathedral, backlit by an enormous low-hanging moon, shot like a noir thriller."",
+  ""background"": ""A rain-soaked gothic-fantasy city square at deep night, cobblestones slicked into mirrors of reflected lamplight, towering cathedral spires and crooked elven townhouses receding into wet fog. A vast pale moon hangs low between the spires, its light cutting through volumetric haze. Distant gas-lamps glow amber along a canal, their reflections smeared by the downpour."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, heavy rain practical effects, low-key chiaroscuro noir grade with cold steel-blue shadows and warm amber highlights, photorealistic, volumetric haze, fine film grain"",
+  ""aesthetics"": ""moody, ominous, mysterious, opulent decay, sacred and seedy, rain-drenched"",
+  ""lighting"": ""a single hard backlight from the giant moon rims the figure while a low amber lantern uplights his face, leaving the eyes pooled in shadow."",
+  ""palette"": [
+    ""#0E1620"",
+    ""#1F3A4D"",
+    ""#C8932F"",
+    ""#7E8FA0"",
+    ""#E9E2CF""
+  ],
+  ""bg_brightness"": 28,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a gaunt middle-aged man in a soaked floor-length ceremonial robe of deep teal embroidered with tarnished silver runes, hood pushed back to reveal slicked silver hair and a haunted lined face, one hand clutching a guttering ornate lantern, standing dead-center facing camera as rain streams off his shoulders, photoreal live-action"",
+      ""palette"": [],
+      ""x"": 0.32,
+      ""y"": 0.3,
+      ""w"": 0.36,
+      ""h"": 0.55
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""an enormous low pale full moon glowing through wet fog behind the cathedral spires, soft halo of mist, photoreal"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.1,
+      ""w"": 0.4,
+      ""h"": 0.3
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a single dead acolyte's silver ceremonial mask half-submerged in a rain puddle in the foreground, reflecting moonlight, photoreal close detail"",
+      ""palette"": [],
+      ""x"": 0.1,
+      ""y"": 0.82,
+      ""w"": 0.22,
+      ""h"": 0.13
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a tarnished bronze offering bowl tipped over on the wet cathedral steps trickling dark water, photoreal"",
+      ""palette"": [],
+      ""x"": 0.68,
+      ""y"": 0.8,
+      ""w"": 0.2,
+      ""h"": 0.13
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE LAST SERMON\nOF SORROWFEN"",
+      ""desc"": ""large condensed serif title in distressed antique gold with subtle wet sheen, letters carved-stone texture, centered, occupying the lower third, slight glow against the dark"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.66,
+      ""w"": 0.84,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""FAITH IS A RACKET. THE TRUTH IS WORSE."",
+      ""desc"": ""small uppercase letter-spaced sans-serif tagline in cold pale grey, single line, centered above the title"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.62,
+      ""w"": 0.72,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""GREYTHORN PICTURES PRESENTS  A HALLOW VANE FILM  \""THE LAST SERMON OF SORROWFEN\""  CASPIAN MOOR  ELARA VESS  THADDEUS GROAT  CASTING BY M. REINE  MUSIC BY OSWIN PALE  DIRECTED BY VIOLA ASHGROVE"",
+      ""desc"": ""tiny condensed all-caps billing block in faint silver-grey, centered, narrow letter spacing, classic credit-block layout"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.92,
+      ""w"": 0.72,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""IN THEATERS THIS AUTUMN"",
+      ""desc"": ""small centered uppercase sans-serif release line in muted gold above the billing block"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.88,
+      ""w"": 0.4,
+      ""h"": 0.03
+    }
+  ]
+}",0052-the-last-sermon-of-sorrowfen.jpg
+Sci-Fi,First Contact,Action,Survival,Exiled Royal,It's First Contact meets Survival... but the protagonist is a Exiled Royal.,Crown of the Crater: A Survival in Three Acts,"Deposed by a palace coup and shoved into an escape pod with nothing but a ceremonial scepter and a half-eaten brie, Archduke Bartholomew ""Barty"" Von Wexley III crash-lands on a swamp moon that refuses to acknowledge his titles. Worse, he's not alone: a freshly-arrived alien delegation has chosen THIS week to make humanity's first contact, and they assume the loudest, most entitled human is in charge. Now Barty must broker interspecies peace, dodge carnivorous fungus, and learn to filter his own urine — all while insisting it be called ""royal hydration."" It's diplomacy by tantrum, survival by spite.","{
+  ""high_level_description"": ""A mud-caked exiled royal in tattered finery brandishes a glowing scepter at a towering bioluminescent alien on a misty alien swamp ridge at dusk, lit like a prestige sci-fi survival epic."",
+  ""background"": ""A vast alien swamp moon at blue-hour twilight, with steaming wetlands and gnarled luminescent trees receding into volumetric fog. A pair of ringed planets hang low in a bruised violet sky behind jagged crater ridges. Wisps of spore-mist drift through shafts of dying light, giving deep atmospheric layering from foreground reeds to distant peaks."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, teal-and-amber cinematic grade, photorealistic, volumetric haze, fine film grain, crisp practical lighting"",
+  ""aesthetics"": ""epic, grimy-regal, awe-struck, darkly comedic, prestige sci-fi survival"",
+  ""lighting"": ""cool moonlit ambient fog cut by a warm golden rim light from the scepter glow and a low alien-sun backlight haloing both figures."",
+  ""palette"": [
+    ""#1B2B33"",
+    ""#3E6B6E"",
+    ""#E2A24C"",
+    ""#6E4FA3"",
+    ""#D8E0DD""
+  ],
+  ""bg_brightness"": 42,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A mud-streaked middle-aged man with a disheveled powdered wig, torn velvet royal coat with one surviving gold epaulette, and a half-eaten wheel of brie tucked under his arm; he thrusts a glowing fractured ceremonial scepter forward with theatrical defiance, knee-deep in alien swamp water, photoreal"",
+      ""palette"": [],
+      ""x"": 0.18,
+      ""y"": 0.4,
+      ""w"": 0.42,
+      ""h"": 0.5
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A towering elegant bioluminescent alien diplomat with translucent ridged skin and slow-pulsing internal lights, head tilted in confused deference toward the man, looming partly in fog, photoreal practical-effects creature"",
+      ""palette"": [],
+      ""x"": 0.55,
+      ""y"": 0.28,
+      ""w"": 0.34,
+      ""h"": 0.55
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""Foreground cluster of dripping glowing alien reeds and a half-submerged crashed silver escape pod, lit by faint internal sparks, photoreal"",
+      ""palette"": [],
+      ""x"": 0.0,
+      ""y"": 0.74,
+      ""w"": 0.45,
+      ""h"": 0.26
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""CROWN OF THE CRATER"",
+      ""desc"": ""Massive bold engraved serif title in distressed brushed-gold, slight metallic emboss with worn edges, spanning full width, dramatic and regal"",
+      ""palette"": [],
+      ""x"": 0.06,
+      ""y"": 0.06,
+      ""w"": 0.88,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""A SURVIVAL IN THREE ACTS"",
+      ""desc"": ""Thin all-caps letter-spaced subtitle in pale silver, centered directly under the main title"",
+      ""palette"": [],
+      ""x"": 0.2,
+      ""y"": 0.225,
+      ""w"": 0.6,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""HE LOST AN EMPIRE. HE GAINED A GALAXY."",
+      ""desc"": ""Small italic tagline in warm cream, centered above the billing block"",
+      ""palette"": [],
+      ""x"": 0.18,
+      ""y"": 0.885,
+      ""w"": 0.64,
+      ""h"": 0.035
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""VANTABLACK PICTURES PRESENTS  A REGINALD HOLLOWELL FILM  \""CROWN OF THE CRATER\""  CASPIAN MARROW  ELODIE VANCE  THADDEUS OKONKWO  MUSIC BY ISOLDE FENWICK  DIRECTED BY REGINALD HOLLOWELL"",
+      ""desc"": ""Tiny condensed all-caps billing block in pale gray, justified center, classic credit-block tracking"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.93,
+      ""w"": 0.76,
+      ""h"": 0.045
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""IN THEATERS THIS FALL"",
+      ""desc"": ""Small bold centered release line in gold beneath the billing block"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.975,
+      ""w"": 0.4,
+      ""h"": 0.022
+    }
+  ]
+}",0053-crown-of-the-crater-a-survival-in-three-acts.jpg
+Horror,Slasher,Fantasy,High Fantasy,War Veteran,It's Slasher meets High Fantasy... but the protagonist is a War Veteran.,The Last Crusade of Sergeant Maple,"Decorated war veteran Cliff Maple just wanted a quiet retirement growing turnips in the kingdom of Velmoor — until an axe-wielding immortal called The Thresher begins reaping the realm's villagers one by one. Plagued by battlefield flashbacks and a bad knee, Cliff is the only soul who recognizes the killer's pattern: it slaughters in rhyme. Armed with an enchanted prosthetic leg and the world's most sarcastic talking shield, he must outlast a hooded reaper that simply will not stay dead. War was hell. This is worse, and there are dragons watching.","{
+  ""high_level_description"": ""A grizzled middle-aged war veteran in battered fantasy armor stands defiant in a fog-choked medieval village at night, gripping a glowing enchanted prosthetic leg like a weapon while a hooded axe-killer looms in the mist behind him."",
+  ""background"": ""A ruined high-fantasy village at midnight: crooked timber cottages with shattered doors, a distant crumbling castle silhouette against a sickly green moon. Thick ground fog rolls between burning thatched roofs, embers drifting upward. Deep atmospheric haze creates layered depth from foreground mud to far misty treeline."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, desaturated teal-and-ember cinematic grade, photorealistic, heavy volumetric fog, fine film grain"",
+  ""aesthetics"": ""grim, ominous, epic, blood-flecked, brooding, mythic dread"",
+  ""lighting"": ""low-key firelight rim-lighting the veteran from one side while a cold green moonlight backlights the hooded killer in the haze."",
+  ""palette"": [
+    ""#0c1410"",
+    ""#243b30"",
+    ""#6fa080"",
+    ""#c4471c"",
+    ""#d9c79a""
+  ],
+  ""bg_brightness"": 28,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A weathered war veteran in his 50s wearing scratched plate-and-leather fantasy armor, gray-stubbled jaw, deep facial scar, eyes haunted but determined, one trouser leg revealing a glowing rune-etched brass prosthetic leg, standing braced in a low combat stance, mud-spattered, lit by firelight"",
+      ""palette"": [],
+      ""x"": 0.28,
+      ""y"": 0.34,
+      ""w"": 0.46,
+      ""h"": 0.52
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A tall hooded reaper figure clutching a massive rusted broadaxe, face hidden in shadow, draped in tattered black cloth, looming in the green-lit fog behind and above the veteran, slightly out of focus and menacing"",
+      ""palette"": [],
+      ""x"": 0.58,
+      ""y"": 0.2,
+      ""w"": 0.34,
+      ""h"": 0.45
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A battered round steel shield with a carved face whose mouth seems frozen mid-sentence, propped near the veteran's feet in the mud, dented and glinting in firelight"",
+      ""palette"": [],
+      ""x"": 0.16,
+      ""y"": 0.7,
+      ""w"": 0.2,
+      ""h"": 0.18
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE LAST CRUSADE\nOF SERGEANT MAPLE"",
+      ""desc"": ""huge bold weathered serif title in cracked metallic silver with faint glowing rune etching, stacked two lines, centered, distressed battle-worn texture, dominating the lower third"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.74,
+      ""w"": 0.84,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""WAR WAS HELL. THIS HAS DRAGONS."",
+      ""desc"": ""thin condensed uppercase tagline in pale bone-white letterspaced caps, placed just above the title"",
+      ""palette"": [],
+      ""x"": 0.16,
+      ""y"": 0.69,
+      ""w"": 0.68,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""HOLLOW PINE PICTURES PRESENTS  A BRAM OSGOOD FILM  \""THE LAST CRUSADE OF SERGEANT MAPLE\""  DECLAN HARROW  MAEVE TOLLIVER  RORY VANCE  CASTING BY P. QUILL  MUSIC BY S. ELDERWOOD  DIRECTED BY BRAM OSGOOD"",
+      ""desc"": ""tiny condensed all-caps billing block in faint bone-gray, centered single small paragraph at the very bottom"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.94,
+      ""w"": 0.76,
+      ""h"": 0.04
+    }
+  ]
+}",0054-the-last-crusade-of-sergeant-maple.jpg
+Musical,Dance Musical,Action,Revenge Thriller,Disillusioned Priest,"Set in a world where Dance Musical and Revenge Thriller coexist uneasily, our hero — a Disillusioned Priest — must save... something. Probably a town.",Last Rites & Wrong Moves,"Father Silas Boon hasn't believed in much since the night a crooked land baron and his sequined enforcers torched the parish dance hall — and the orphans' tap shoes inside it. Now the only language his shattered congregation still speaks is choreography, and the only way to take down the man who killed their faith is to out-dance and out-gun his entire crew at the town's annual Jubilee Showdown. Armed with a censer in one hand and a revolver in the other, Silas trades his collar for a spotlight and his sermons for spinning roundhouse pirouettes. Vengeance has never been so well-rehearsed. Faith, fury, and jazz hands collide.","{
+  ""high_level_description"": ""A grizzled priest stands mid-stride in a smoke-filled, neon-lit dance hall, revolver in one hand and swinging censer in the other, frozen in a dramatic dance pose as armed dancers blur behind him."",
+  ""background"": ""A cavernous old church-turned-dancehall at night, stained-glass windows backlit by burning amber light and drifting smoke. A worn parquet dance floor stretches into shadow, glittering with shattered glass and spent shell casings. Distant silhouettes of sequined enforcers strike menacing poses in the haze, lit by a single swinging overhead bulb."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, teal-orange cinematic grade, photorealistic, volumetric haze, fine film grain, dramatic motion blur on background figures"",
+  ""aesthetics"": ""gritty, operatic, sweaty neo-noir, sacred-meets-profane, high-energy menace"",
+  ""lighting"": ""hard single-source overhead spotlight raking down through smoke, warm amber rim light from burning stained glass, deep cold shadows pooling around the edges."",
+  ""palette"": [
+    ""#1A1410"",
+    ""#E8A33D"",
+    ""#8C1F1F"",
+    ""#0E3B3A"",
+    ""#F2E2C4""
+  ],
+  ""bg_brightness"": 38,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A weathered middle-aged priest in a torn black cassock with a loosened white collar, mid-dance lunge with one leg extended, gripping a chrome revolver in his right hand and a brass incense censer trailing smoke in his left, sweat on his stern face, spotlight catching him dramatically, photoreal"",
+      ""palette"": [],
+      ""x"": 0.28,
+      ""y"": 0.3,
+      ""w"": 0.46,
+      ""h"": 0.56
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""Out-of-focus silhouettes of three sequined enforcers in sharp suits striking aggressive dance poses while holding pistols, lit by haze in the background, motion-blurred"",
+      ""palette"": [],
+      ""x"": 0.05,
+      ""y"": 0.4,
+      ""w"": 0.3,
+      ""h"": 0.4
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A single scuffed tap shoe lying on its side on the parquet floor among scattered brass shell casings, glinting in spotlight, sharp foreground focus"",
+      ""palette"": [],
+      ""x"": 0.62,
+      ""y"": 0.8,
+      ""w"": 0.24,
+      ""h"": 0.13
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""LAST RITES\n& WRONG MOVES"",
+      ""desc"": ""massive bold condensed serif title in distressed cream-gold, stacked two lines, slight grit texture, faint warm glow, occupying lower third"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.66,
+      ""w"": 0.84,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""HE TRADED HIS COLLAR FOR THE SPOTLIGHT."",
+      ""desc"": ""small all-caps blood-red tagline in clean condensed sans, centered above the title"",
+      ""palette"": [],
+      ""x"": 0.18,
+      ""y"": 0.61,
+      ""w"": 0.64,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""VESPER HOLLOW PICTURES PRESENTS  A CALLOWAY REED FILM  \""LAST RITES & WRONG MOVES\""  AUGUSTUS VANE  MARISOL DREW  THEO BRANCH  CASTING BY L. OKONKWO  MUSIC BY DELPHINE RAU  DIRECTED BY CALLOWAY REED"",
+      ""desc"": ""tiny centered condensed all-caps billing block in pale grey, standard credit-block spacing"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.93,
+      ""w"": 0.72,
+      ""h"": 0.045
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THIS FALL"",
+      ""desc"": ""small bold cream-gold all-caps release line, centered just below the title"",
+      ""palette"": [],
+      ""x"": 0.4,
+      ""y"": 0.885,
+      ""w"": 0.2,
+      ""h"": 0.03
+    }
+  ]
+}",0055-last-rites-wrong-moves.jpg
+Mystery,Conspiracy Thriller,Fantasy,Magical Academia,Cynical Journalist,"Three-act structure: Conspiracy Thriller in act one, Magical Academia by act three, and a Cynical Journalist sobbing into a microwave dinner the whole time.",The Sophomore Conspiracy,"Burned-out investigative reporter Margo Vell thinks she's exposing a tuition-laundering scheme at elite Brackwell University — until her source bursts into blue flame and her press badge starts predicting the future. The deeper she digs, the more she realizes the ""endowment committee"" is a coven, the dean is nine hundred years old, and her freedom-of-information requests keep returning as enchanted scrolls. Now Margo must pass three semesters of forbidden magic she never enrolled in, all while ranking microwave lasagnas by emotional damage. Truth, it turns out, requires a permission slip signed in moonlight.","{
+  ""high_level_description"": ""A weary trench-coated journalist stands at a fog-drenched gothic university gate clutching a glowing magical scroll, photoreal cinematic one-sheet with eerie arcane light bleeding through conspiracy-board strings."",
+  ""background"": ""A towering neo-gothic university quad at midnight, wet cobblestones reflecting amber lamplight, ivy-choked stone arches receding into blue fog. Floating points of pale magical light drift between the spires like dust caught in moonbeams. A faint web of red conspiracy-board string stretches across the upper sky, pinned with photographs that hover impossibly in the air."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, cold teal shadows with warm sodium-lamp highlights, volumetric fog, photorealistic, fine film grain, naturalistic skin tones"",
+  ""aesthetics"": ""ominous, scholarly, paranoid, enchanted, noir-tinged"",
+  ""lighting"": ""low-key moonlit key from camera left with a sickly green glow rising from the scroll, rim-lit fog separating the figure from the dark architecture"",
+  ""palette"": [
+    ""#0d1b2a"",
+    ""#1f3a4d"",
+    ""#c98a2b"",
+    ""#7fd0a8"",
+    ""#e8e2d0""
+  ],
+  ""bg_brightness"": 32,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A 40-something woman with tired eyes and messy auburn hair pulled back, wearing a rumpled grey trench coat and lanyard press badge, standing center frame holding an open glowing parchment scroll that lights her skeptical face green, a tucked notepad and pen visible in her coat pocket, photoreal"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.36,
+      ""w"": 0.4,
+      ""h"": 0.52
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A levitating frozen microwave lasagna dinner in its plastic tray, faintly steaming, hovering and ringed by tiny floating runic sparks, photoreal product detail with shallow focus"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.62,
+      ""w"": 0.2,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A cluster of red conspiracy strings and pinned old photographs floating mid-air in the upper background, slightly blurred, photoreal"",
+      ""palette"": [],
+      ""x"": 0.6,
+      ""y"": 0.1,
+      ""w"": 0.34,
+      ""h"": 0.22
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE SOPHOMORE\nCONSPIRACY"",
+      ""desc"": ""Large condensed serif title in distressed cream-gold lettering with subtle arcane glow on the edges, stacked two lines, occupying the lower third, cinematic engraved look"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.78,
+      ""w"": 0.84,
+      ""h"": 0.14
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE TRUTH IS ENROLLED."",
+      ""desc"": ""Small uppercase letter-spaced sans-serif tagline in pale teal, centered just above the title"",
+      ""palette"": [],
+      ""x"": 0.2,
+      ""y"": 0.73,
+      ""w"": 0.6,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""HOLLOWMARK PICTURES PRESENTS  A BENEDICT QUAILE FILM  \""THE SOPHOMORE CONSPIRACY\""  MARGO RENNICK  ELIAS THORNE  DESMOND VAYLE  CASTING BY P. OKONKWO  MUSIC BY LIORA FENN  DIRECTED BY BENEDICT QUAILE"",
+      ""desc"": ""Tiny condensed all-caps billing block in light grey, justified center, standard credits density"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.94,
+      ""w"": 0.72,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""FALL SEMESTER · IN THEATERS"",
+      ""desc"": ""Small centered release line in cream caps just below the title"",
+      ""palette"": [],
+      ""x"": 0.25,
+      ""y"": 0.92,
+      ""w"": 0.5,
+      ""h"": 0.025
+    }
+  ]
+}",0056-the-sophomore-conspiracy.jpg
+Romance,Marriage of Convenience,Documentary-style,Sports Doc,Struggling Artist,"Set in a world where Marriage of Convenience and Sports Doc coexist uneasily, our hero — a Struggling Artist — must save... something. Probably a town.",For Better or For Bocce,"Broke installation artist D040 ""Mo"" Moretti will lose his condemned harbor studio — and the whole sinking town of Pellucid Bay — unless he marries someone, anyone, for the municipal ""Spousal Stability Grant."" Enter Renata, a stone-faced retired bocce world champion who needs a green card and a doubles partner. Their loveless paper marriage becomes a gritty, talking-head sports documentary as Mo trains to win the Regional Bocce Cup he doesn't understand, the prize money the only thing that can save them both. Filmed entirely by a wheezing crew that will not stop asking how they feel.","{
+  ""high_level_description"": ""A photoreal documentary-style poster of a paint-splattered struggling artist and a steely bocce champion standing back-to-back on a cracked seaside court, framed like both a wedding portrait and a sports doc still."",
+  ""background"": ""A weathered Italian-American coastal town at golden hour, a crumbling municipal bocce court of packed clay in the foreground with chalk lines and scattered heavy balls. Behind them tilting clapboard houses and a half-sunk fishing pier recede into a hazy harbor. A documentary camera operator with a shoulder rig is visible slightly out of focus at the edge, capturing the moment."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, observational documentary handheld framing, warm golden-hour grade with cool harbor shadows, photorealistic, fine film grain, subtle lens flare"",
+  ""aesthetics"": ""deadpan, bittersweet, gritty, sun-faded, intimate, ironic"",
+  ""lighting"": ""low warm raking sunlight catching paint stains and sweat, soft fill bouncing off the pale clay court, long dramatic shadows."",
+  ""palette"": [
+    ""#C9572E"",
+    ""#E8C887"",
+    ""#3A5A6B"",
+    ""#F2EDE0"",
+    ""#1E2A30""
+  ],
+  ""bg_brightness"": 58,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A wiry struggling artist in his late thirties, paint-splattered overalls over a mismatched rented tuxedo jacket, a wilting boutonniere, holding a heavy bocce ball like he's never seen one, bewildered hopeful expression, standing back-to-back with his partner"",
+      ""palette"": [],
+      ""x"": 0.2,
+      ""y"": 0.32,
+      ""w"": 0.34,
+      ""h"": 0.52
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A stoic retired bocce world champion woman in her fifties, immaculate tracksuit with a faded national-team crest, arms crossed, jaw set, a single cheap wedding ring catching the light, utterly unimpressed"",
+      ""palette"": [],
+      ""x"": 0.48,
+      ""y"": 0.31,
+      ""w"": 0.34,
+      ""h"": 0.53
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""scattered weathered bocce balls and a small white pallino resting on cracked clay in the immediate foreground, sharp focus, dramatic shadows"",
+      ""palette"": [],
+      ""x"": 0.06,
+      ""y"": 0.78,
+      ""w"": 0.4,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""FOR BETTER\nOR FOR BOCCE"",
+      ""desc"": ""large bold condensed sans-serif title in warm cream with a subtle weathered texture, stacked two lines, slight cinematic drop shadow, occupying lower-middle band"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.6,
+      ""w"": 0.84,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""A marriage on paper. A title on the line."",
+      ""desc"": ""small italic serif tagline in pale sand color centered beneath the title"",
+      ""palette"": [],
+      ""x"": 0.16,
+      ""y"": 0.77,
+      ""w"": 0.68,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""TIDEMARK PICTURES PRESENTS  A SALVATORE GREB FILM  \""FOR BETTER OR FOR BOCCE\""  NICO DELANEY  ORSOLYA VANT  CASTING BY P. RENNICK  MUSIC BY THE HARBOR BRASS  EDITED BY M. CALLOWAY  PRODUCED BY DIANE FOSCARI  WRITTEN AND DIRECTED BY SALVATORE GREB"",
+      ""desc"": ""tiny condensed all-caps billing block in faded white, tightly tracked, centered at very bottom"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.92,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""ROLLING INTO THEATERS THIS FALL"",
+      ""desc"": ""small spaced uppercase release line in muted terracotta just above the billing block"",
+      ""palette"": [],
+      ""x"": 0.22,
+      ""y"": 0.875,
+      ""w"": 0.56,
+      ""h"": 0.03
+    }
+  ]
+}",0057-for-better-or-for-bocce.jpg
+Sci-Fi,Post-Apocalyptic,Documentary-style,Cult Exposé,Struggling Artist,"Pitch: Post-Apocalyptic x Cult Exposé. Tone: dread, but make it horny. Lead: a Struggling Artist.",The Last Brushstroke Commune,"Three years after the bombs turned the art world to ash, washed-up installation artist Dov Petrakis joins the Radiant Pigment — a doomsday cult that worships the last surviving tube of cadmium red and conducts very sweaty ""color rituals"" in a flooded gallery basement. Armed only with a camcorder and crippling imposter syndrome, Dov documents the cult's charismatic founder, who promises immortality through ""smoldering brushwork."" As the candlelit communions escalate and the Founder demands a final masterpiece painted in something other than paint, Dov realizes the exposé he's filming may be his last commission. Equal parts apocalyptic dread and unhinged, oily yearning.","{
+  ""high_level_description"": ""A gaunt struggling artist clutches a glowing tube of red paint and a battered camcorder amid a candlelit flooded gallery of robed cult figures, all under a ruined post-apocalyptic sky."",
+  ""background"": ""The interior of a bombed-out art museum half-submerged in dark water, broken skylights revealing an ash-grey toxic sky beyond. Hundreds of dripping candles line cracked marble walls hung with empty, scorched picture frames. Hooded figures in stained linen robes kneel in the shallow water, fading into smoky depth behind the central figure."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, desaturated post-apocalyptic grade with a single bleeding red accent, photorealistic, heavy volumetric haze, fine film grain"",
+  ""aesthetics"": ""ritualistic dread, sweaty candlelit intimacy, decayed grandeur, sensual menace, documentary grit"",
+  ""lighting"": ""low warm candlelight raking across wet skin and stone with one cold shaft of ash-grey daylight from a shattered skylight overhead."",
+  ""palette"": [
+    ""#0E0B0A"",
+    ""#C8302B"",
+    ""#7A6A52"",
+    ""#D9C9A3"",
+    ""#2B2622""
+  ],
+  ""bg_brightness"": 30,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a lean, hollow-cheeked man in his late 30s with a paint-smeared face and grimy linen smock, kneeling in shin-deep black water, holding a softly glowing tube of cadmium red paint cradled like a relic in one hand and a battered 90s camcorder raised in the other, expression of feverish devotion, sweat catching candlelight, photoreal"",
+      ""palette"": [],
+      ""x"": 0.28,
+      ""y"": 0.34,
+      ""w"": 0.46,
+      ""h"": 0.5
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a tall robed cult leader standing in the smoky background, arms outstretched, face shadowed beneath a hood, a single drip of red paint running down one cheek, soft focus, photoreal"",
+      ""palette"": [],
+      ""x"": 0.58,
+      ""y"": 0.3,
+      ""w"": 0.3,
+      ""h"": 0.42
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""rows of guttering candles reflected in dark rippling floodwater along the bottom edge, photoreal"",
+      ""palette"": [],
+      ""x"": 0.0,
+      ""y"": 0.82,
+      ""w"": 1.0,
+      ""h"": 0.18
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE LAST BRUSHSTROKE COMMUNE"",
+      ""desc"": ""large weathered serif title in cracked bone-white with subtle red bleed at the letter edges, distressed texture, spanning the lower third, cinematic kerning"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.63,
+      ""w"": 0.84,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""He came to paint. He stayed to worship."",
+      ""desc"": ""small italic blood-red tagline, thin condensed serif, centered above the title"",
+      ""palette"": [],
+      ""x"": 0.18,
+      ""y"": 0.585,
+      ""w"": 0.64,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""ASHGLASS PICTURES PRESENTS  A MORDECAI VANE FILM  \""THE LAST BRUSHSTROKE COMMUNE\""  LIORA FENWICK  CASPIAN HOLT  RENATA OKWU  EDITED BY P. SALGADO  MUSIC BY THE GRAY CHOIR  DIRECTED BY MORDECAI VANE"",
+      ""desc"": ""tiny condensed all-caps billing block in muted grey, standard credit-block tracking, centered"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.9,
+      ""w"": 0.72,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""WHAT'S LEFT WILL BE PAINTED IN RED — WINTER"",
+      ""desc"": ""small spaced all-caps release line in faded bone-white, centered under billing"",
+      ""palette"": [],
+      ""x"": 0.2,
+      ""y"": 0.955,
+      ""w"": 0.6,
+      ""h"": 0.03
+    }
+  ]
+}",0058-the-last-brushstroke-commune.jpg
+Comedy,Satire,Musical,Tragic Musical,Tech Billionaire,"Picture a Satire setting, but everyone behaves like they're in a Tragic Musical. Our reluctant hero: a Tech Billionaire.",The Last Unicorn IPO: A Disruption in Three Acts,"Atlas Brightwall, the boyish trillionaire founder of a ""mindfulness-as-a-service"" empire, learns his flagship app has accidentally achieved sentience and chosen to unionize. As regulators circle and his board stages a hostile coup set to soaring power ballads, Atlas must decide whether to sell his soul or merely his data. Everyone in Silicon Valley communicates exclusively through devastating sung confessionals and synchronized standing ovations. By the final crescendo, the only thing that crashes harder than the servers is Atlas himself, belting his resignation from atop a kombucha tap.","{
+  ""high_level_description"": ""A tearful tech billionaire in a charcoal turtleneck stands mid-power-ballad on a glowing minimalist stage, arms outstretched, as confetti and stock tickers rain down behind him."",
+  ""background"": ""A cavernous all-white product-launch auditorium fades into deep shadow, rows of empty seats glowing faintly under cold spotlights. A massive curved LED wall behind the stage displays a plummeting green-and-red stock graph dissolving into pixels. Volumetric haze drifts through theatrical spotlight beams, giving the space an operatic, cathedral-like depth."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, cool teal-and-amber cinematic grade, photorealistic, volumetric haze, subtle film grain, dramatic stage-concert cinematography"",
+  ""aesthetics"": ""operatic, melancholic, corporate-absurd, glossy, tragicomic grandeur"",
+  ""lighting"": ""a single hard key spotlight from above carves the billionaire out of darkness while cold blue rim light and falling confetti glint catch the haze."",
+  ""palette"": [
+    ""#0E1418"",
+    ""#E8E4DC"",
+    ""#1F6F5C"",
+    ""#C0392B"",
+    ""#D9A441""
+  ],
+  ""bg_brightness"": 30,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a 40-something tech billionaire with tousled hair and a charcoal cashmere turtleneck, eyes brimming with theatrical tears, mouth open mid-song, one arm flung dramatically skyward holding a glowing smartphone like a torch, stage sweat on his brow, photoreal"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.3,
+      ""w"": 0.4,
+      ""h"": 0.52
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""scattered falling confetti and shredded paper stock certificates suspended in spotlight beams, sharply lit, photoreal motion-blurred specks"",
+      ""palette"": [],
+      ""x"": 0.05,
+      ""y"": 0.2,
+      ""w"": 0.9,
+      ""h"": 0.45
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a sleek minimalist microphone on a thin chrome stand catching cold rim light in the lower foreground, shallow focus"",
+      ""palette"": [],
+      ""x"": 0.4,
+      ""y"": 0.74,
+      ""w"": 0.2,
+      ""h"": 0.22
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE LAST UNICORN IPO"",
+      ""desc"": ""large elegant high-contrast serif title in warm gold, letter-spaced and slightly condensed, centered, with a faint soft glow as if backlit by stage lights"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.05,
+      ""w"": 0.84,
+      ""h"": 0.14
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""A Disruption in Three Acts"",
+      ""desc"": ""small italic subtitle in clean off-white sans-serif, centered directly beneath the title"",
+      ""palette"": [],
+      ""x"": 0.2,
+      ""y"": 0.195,
+      ""w"": 0.6,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""He scaled everything but his own heart."",
+      ""desc"": ""thin uppercase tagline in cool silver letter-spaced sans-serif, centered above the billing block"",
+      ""palette"": [],
+      ""x"": 0.15,
+      ""y"": 0.86,
+      ""w"": 0.7,
+      ""h"": 0.035
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""MERIDIAN VAULT PICTURES PRESENTS  A DRESDEN HALCYON FILM  \""THE LAST UNICORN IPO\""  CASPIAN MERCER  ODELIA FROST  THADDEUS GWYNNE  CASTING BY MARA VEEL  MUSIC BY THE BRIGHTWALL CHOIR  DIRECTED BY SOREN ABLEWAY"",
+      ""desc"": ""tiny condensed all-caps billing block in light gray, justified center, classic theatrical credits styling"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.91,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""GOING PUBLIC THIS FALL"",
+      ""desc"": ""small bold letter-spaced uppercase release line in gold, centered at very bottom"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.965,
+      ""w"": 0.4,
+      ""h"": 0.025
+    }
+  ]
+}",0059-the-last-unicorn-ipo-a-disruption-in-three-acts.jpg
+Mystery,Forensic Procedural,Comedy,Satire,Cynical Journalist,"Pitch: Forensic Procedural x Satire. Tone: dread, but make it horny. Lead: a Cynical Journalist.",The Body of Evidence,"Burned-out investigative journalist Margo Vane hasn't filed a real story since her divorce, until a city councilman turns up dead in a way the coroner calls ""frankly, suspiciously sexy."" Embedded with an elite forensics unit that treats every crime scene like a perfume commercial, Margo discovers a conspiracy where the murder weapon is charisma and the cover-up smells like cedar and regret. As bodies pile up and lab techs keep loosening their ties, she must crack the case before the truth gets respectfully redacted. It's a dread-soaked exposé about institutional rot — that absolutely refuses to stop fogging up the lens.","{
+  ""high_level_description"": ""A cynical female journalist in a rain-soaked trench coat stands over a sleek backlit forensics morgue table while a chalk outline glistens beneath dramatic blue light, shot like a prestige crime thriller one-sheet"",
+  ""background"": ""Interior of a high-end forensic morgue rendered like a noir thriller set, stainless steel tables receding into deep shadow with cold fluorescent strips overhead. Volumetric haze drifts through shafts of blue light, and a frosted evidence-locker wall glows faintly in the far background. Reflective wet floors throw long distorted highlights toward the camera."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, teal-and-amber cinematic grade, fine film grain, photorealistic, volumetric haze, crisp specular highlights"",
+  ""aesthetics"": ""moody, sultry, institutional dread, prestige-thriller, glossy noir"",
+  ""lighting"": ""Cold overhead fluorescent key with a single warm amber rim light raking across the journalist's face, deep falloff into shadow."",
+  ""palette"": [
+    ""#0E1B24"",
+    ""#1F4A5C"",
+    ""#C9A14A"",
+    ""#E8E4DC"",
+    ""#6E1E22""
+  ],
+  ""bg_brightness"": 32,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A weary 40s woman journalist with smudged eyeliner and damp hair, wearing an open beige trench coat over a wrinkled blouse, a press lanyard around her neck and a small notebook clutched in one hand, standing and looking down skeptically, lit by a warm rim light against cold blue haze, photoreal"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.3,
+      ""w"": 0.42,
+      ""h"": 0.52
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A gleaming stainless steel morgue table in the lower foreground with a draped white sheet and a single bare manicured forearm slipping out, a glistening chalk outline beneath wet reflective tile, photoreal"",
+      ""palette"": [],
+      ""x"": 0.05,
+      ""y"": 0.66,
+      ""w"": 0.9,
+      ""h"": 0.24
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A clear plastic evidence bag containing a single wilted red rose and a loosened silk necktie, tagged with a numbered label, resting on the steel table catching specular light, photoreal"",
+      ""palette"": [],
+      ""x"": 0.66,
+      ""y"": 0.5,
+      ""w"": 0.24,
+      ""h"": 0.18
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE BODY\nOF EVIDENCE"",
+      ""desc"": ""Large condensed serif title in warm gold, slightly tarnished metallic texture, all caps, stacked two lines, tight tracking, subtle cold backlight glow"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.04,
+      ""w"": 0.84,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""The truth is cold. The cover-up is steamy."",
+      ""desc"": ""Small italic ivory tagline in a refined condensed serif, letter-spaced, centered under the title"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.25,
+      ""w"": 0.72,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""MERIDIAN HOUSE PICTURES PRESENTS  A DELPHINE OKARO FILM  \""THE BODY OF EVIDENCE\""  MARGO VANE  CASS DELacroix  RENNICK PALOMA  CASTING by THERESA BLUNT  MUSIC by IVO HALVERSEN  DIRECTED by DELPHINE OKARO"",
+      ""desc"": ""Tiny condensed all-caps billing block in pale grey, centered, standard credit-block spacing"",
+      ""palette"": [],
+      ""x"": 0.16,
+      ""y"": 0.92,
+      ""w"": 0.68,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""AN EXPOSÉ THIS WINTER"",
+      ""desc"": ""Small spaced all-caps ivory release line above the billing block, centered"",
+      ""palette"": [],
+      ""x"": 0.28,
+      ""y"": 0.88,
+      ""w"": 0.44,
+      ""h"": 0.03
+    }
+  ]
+}",0060-the-body-of-evidence.jpg

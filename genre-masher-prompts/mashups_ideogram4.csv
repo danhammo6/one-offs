@@ -3917,3 +3917,867 @@ Drama,Period Piece,Musical,Tragic Musical,Ex-Spy,A Ex-Spy stumbles into a Period
     }
   ]
 }",0041-the-spy-who-sang-too-late.jpg
+Horror,Gothic Horror,Documentary-style,Cult Exposé,Con Artist,"Pitch: Gothic Horror x Cult Exposé. Tone: dread, but make it horny. Lead: a Con Artist.",The Velvet Congregation,"Disgraced grifter Dorian Vane fakes his way into the Order of the Crimson Lamb — a candlelit hilltop commune of beautiful zealots — planning to swindle their tithe-rich coffers and slip out by dawn. But the documentary crew he hired as a cover starts capturing things their lenses shouldn't: doors that breathe, a charismatic prophetess who hasn't aged since 1612, and devotees who whisper Dorian's real name in their sleep. The longer he cons them, the more the manor seems to be conning him. By the third confessional interview, he can't tell if he's running the scam — or starring in the ritual.","{
+  ""high_level_description"": ""A sweating con man in a rumpled suit stands frozen in a candlelit gothic manor hall while robed cult figures watch from the shadows, shot like a prestige horror one-sheet."",
+  ""background"": ""The interior of a decaying gothic manor great hall at night, vaulted stone arches receding into velvet darkness, hundreds of dripping red candles lining the walls. Deep focus reveals a grand staircase swallowed by shadow and faint silhouettes of hooded figures standing motionless on the landing. Thin incense haze drifts through shafts of moonlight from a stained-glass window high above."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, low-key chiaroscuro lighting, desaturated crimson-and-charcoal cinematic grade, fine film grain, photorealistic, volumetric candle haze"",
+  ""aesthetics"": ""dread, sensual, opulent decay, occult intimacy, prestige horror"",
+  ""lighting"": ""Warm flickering candlelight rakes across faces from below while cold blue moonlight bleeds from a high window, leaving deep velvety shadows."",
+  ""palette"": [
+    ""#0B0608"",
+    ""#7A1220"",
+    ""#C99A4B"",
+    ""#E8D9BC"",
+    ""#2A1E22""
+  ],
+  ""bg_brightness"": 22,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A handsome con man in his 40s wearing a wrinkled charcoal suit with loosened tie, slick hair coming undone, sheen of nervous sweat on his face lit by candlelight, clutching a hidden document camera at his side, eyes darting sideways with dawning terror, full-body three-quarter pose"",
+      ""palette"": [],
+      ""x"": 0.32,
+      ""y"": 0.34,
+      ""w"": 0.4,
+      ""h"": 0.52
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A serene ageless prophetess in a deep crimson velvet robe standing on the staircase behind him, candlelight glinting in unblinking eyes, faint knowing smile, softly out of focus"",
+      ""palette"": [],
+      ""x"": 0.1,
+      ""y"": 0.4,
+      ""w"": 0.2,
+      ""h"": 0.4
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""Two hooded robed cult devotees half-dissolved in shadow on the right edge, hands clasped, faces obscured, holding thin red candles"",
+      ""palette"": [],
+      ""x"": 0.72,
+      ""y"": 0.42,
+      ""w"": 0.22,
+      ""h"": 0.42
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE VELVET\nCONGREGATION"",
+      ""desc"": ""Large serif display title in distressed warm gold, tall condensed letterforms with subtle candlelit glow and faint cracks, centered, occupying lower third"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.74,
+      ""w"": 0.84,
+      ""h"": 0.15
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""He came to take everything. They were happy to give it."",
+      ""desc"": ""Small italic ivory serif tagline, letter-spaced, single line above the title"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.7,
+      ""w"": 0.72,
+      ""h"": 0.035
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""A FILM BY LIONEL ASHCROFT-VEY"",
+      ""desc"": ""Tiny uppercase condensed sans-serif credit line in muted gold, centered near top"",
+      ""palette"": [],
+      ""x"": 0.25,
+      ""y"": 0.07,
+      ""w"": 0.5,
+      ""h"": 0.03
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""HOLLOWPOINT PICTURES PRESENTS  A LIONEL ASHCROFT-VEY FILM  \""THE VELVET CONGREGATION\""  MARCUS DELACROIX  ISOLDE VANN  RUPERT HALE  CASTING BY P. MERRIWEATHER  MUSIC BY THE OSSUARY ENSEMBLE  DIRECTED BY LIONEL ASHCROFT-VEY"",
+      ""desc"": ""Very small condensed sans-serif billing block in pale grey, center-justified, multiple wrapped lines"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.9,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""CONFESS THIS WINTER"",
+      ""desc"": ""Tiny uppercase letter-spaced release-date line in faded crimson, centered at very bottom"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.955,
+      ""w"": 0.4,
+      ""h"": 0.025
+    }
+  ]
+}",0042-the-velvet-congregation.jpg
+Comedy,Mockumentary,Horror,Gothic Horror,Night-Shift Nurse,"Pitch: Mockumentary x Gothic Horror. Tone: dread, but make it horny. Lead: a Night-Shift Nurse.",The Graveyard Shift: A Bedside Manor,"A scrappy documentary crew thinks they're filming a feel-good piece about chronically understaffed Blackmoor Sanatorium — until they meet Sister Imelda Vane, the night nurse who hasn't aged since 1887 and insists the patients ""check out, but they never leave."" Between deadpan talking-head interviews and lingering candlelit glances, the crew slowly realizes the call buttons ring from empty beds and Imelda's ""smoke break"" is just her exhaling at a portrait of a dead duke. It's all very professional. It's also deeply, unsettlingly horny. As the sound guy starts sleepwalking toward the morgue, the crew must decide: get the Emmy, or get out alive.","{
+  ""high_level_description"": ""A photoreal mock-documentary one-sheet of a pale, beautiful night-shift nurse standing in a crumbling Gothic hospital corridor, caught in a handheld camera's harsh on-camera light while shadows loom behind her."",
+  ""background"": ""A long decaying Victorian sanatorium corridor with peeling damask wallpaper, rusted wheelchairs, and rows of iron hospital beds vanishing into darkness. Flickering gas-lamp sconces line the walls and a single fogged window leaks cold moonlight at the far end. Dust and fine mist hang in the air, giving deep receding perspective and a sense of something waiting just beyond the frame."",
+  ""art_style"": ""shot on 35mm, handheld documentary framing, single harsh on-camera LED key creating hard falloff, shallow depth of field, desaturated cold grade with sickly green-amber undertones, photorealistic, volumetric haze, subtle film grain"",
+  ""aesthetics"": ""gothic dread, mockumentary realism, candlelit sensual tension, decayed grandeur, uneasy intimacy"",
+  ""lighting"": ""A single brutal camera-mounted light blasts the nurse from the front while everything behind her drowns in cold blue moonlit shadow, leaving haloed silhouettes in the haze."",
+  ""palette"": [
+    ""#0E1518"",
+    ""#3A4A3F"",
+    ""#C9B68A"",
+    ""#7E1F22"",
+    ""#E8E2D2""
+  ],
+  ""bg_brightness"": 28,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A strikingly pale night-shift nurse in her late 20s in a starched antique white-and-grey nurse's uniform with a small blood-spotted apron and a tarnished silver pin, dark hair pinned beneath a vintage cap, glowing skin, lips slightly parted, holding a lit candle in one hand and a modern clipboard in the other, looking directly into the camera with an unsettling knowing half-smile, hard frontal light, photoreal"",
+      ""palette"": [],
+      ""x"": 0.28,
+      ""y"": 0.3,
+      ""w"": 0.44,
+      ""h"": 0.55
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A gaunt translucent patient figure half-risen from an iron hospital bed in the deep background fog, blurred and out of focus, reaching toward the nurse, barely visible, photoreal horror"",
+      ""palette"": [],
+      ""x"": 0.62,
+      ""y"": 0.4,
+      ""w"": 0.26,
+      ""h"": 0.34
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A boom microphone and a small red REC dot intruding from the top edge of the frame as if a documentary crew is just out of shot, slightly blurred, photoreal"",
+      ""palette"": [],
+      ""x"": 0.05,
+      ""y"": 0.02,
+      ""w"": 0.3,
+      ""h"": 0.12
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE GRAVEYARD SHIFT"",
+      ""desc"": ""large condensed Gothic serif in bone-white, weathered and slightly cracked texture, tightly tracked across the lower third, faint cold rim glow"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.72,
+      ""w"": 0.84,
+      ""h"": 0.12
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""A Bedside Manor"",
+      ""desc"": ""elegant italic serif subtitle in tarnished gold, centered directly under the main title, smaller scale"",
+      ""palette"": [],
+      ""x"": 0.22,
+      ""y"": 0.835,
+      ""w"": 0.56,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""She's been on call since 1887."",
+      ""desc"": ""small uppercase tagline in pale grey letter-spaced sans, set just above the main title"",
+      ""palette"": [],
+      ""x"": 0.18,
+      ""y"": 0.665,
+      ""w"": 0.64,
+      ""h"": 0.035
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""PALLBEARER PICTURES PRESENTS  A HOLLOW WARD PRODUCTION  \""THE GRAVEYARD SHIFT: A BEDSIDE MANOR\""  ROSALIND CRAVE  EDMUND THORNE  MARGUERITE VESS  CASTING BY IVO HALE  MUSIC BY DELPHINE ROUX  DIRECTED BY AUGUSTIN MORROW"",
+      ""desc"": ""tiny condensed all-caps credits billing block in muted off-white, centered, classic compressed one-sheet spacing"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.9,
+      ""w"": 0.76,
+      ""h"": 0.045
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THIS WINTER"",
+      ""desc"": ""small bold letter-spaced sans in pale amber, centered at very bottom"",
+      ""palette"": [],
+      ""x"": 0.38,
+      ""y"": 0.955,
+      ""w"": 0.24,
+      ""h"": 0.03
+    }
+  ]
+}",0043-the-graveyard-shift-a-bedside-manor.jpg
+Action,Buddy Cop,Comedy,Workplace Comedy,Disgraced Athlete,"Pitch: Buddy Cop x Workplace Comedy. Tone: dread, but make it horny. Lead: a Disgraced Athlete.",Personal Foul: Badge of Dishonor,"Disgraced ex-quarterback Roy ""Hot Hands"" Delgado — banned from the league for the infamous ""fumble that broke a city's heart"" — is sentenced to community service as a civilian liaison at the 14th Precinct's Records Department. Partnered with Detective Anita Vance, a sleep-deprived workaholic who communicates exclusively in passive-aggressive sticky notes, Roy must solve a corruption case while filing overtime forms in triplicate. The tension is professional. The tension is also, regrettably, not just professional. Between stakeouts and surprise HR seminars, they'll learn that justice is a team sport and the copier is jammed again.","{
+  ""high_level_description"": ""A photoreal buddy-cop one-sheet of a chiseled disgraced athlete and a frazzled detective standing back-to-back in a fluorescent-lit office bullpen, weapons drawn, surrounded by paperwork chaos."",
+  ""background"": ""A cramped, beige precinct office bullpen lit by harsh overhead fluorescent tubes, rows of metal desks buried under teetering paper stacks and ringing rotary phones. A jammed photocopier spews pages into a drift on the floor in the mid-ground, while a motivational poster and a corkboard of overdue forms blur into the depth. The fluorescent glow gives everything a slightly oppressive, sweaty office sheen."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, slightly desaturated fluorescent office grade with warm skin tones, photorealistic, fine film grain, volumetric haze from overhead tubes"",
+  ""aesthetics"": ""sweaty dread, deadpan comedy, simmering tension, corporate beige menace, action-thriller heat"",
+  ""lighting"": ""Flat green-tinged fluorescent ceiling light overhead with a low warm key catching the actors' faces, hard backlight separating them from the dim bullpen."",
+  ""palette"": [
+    ""#C9B991"",
+    ""#3A4A3F"",
+    ""#D85A2A"",
+    ""#1C1C1C"",
+    ""#E8E4D6""
+  ],
+  ""bg_brightness"": 48,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A muscular Latino ex-athlete in his late 30s wearing a too-tight rumpled dress shirt with a clip-on lanyard ID badge, sleeves rolled up, holding a service pistol in one hand and a stapler in the other, jaw clenched with sweaty intensity, photoreal"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.3,
+      ""w"": 0.42,
+      ""h"": 0.52
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A weary 40s woman detective in a wrinkled blazer standing back-to-back with him, badge on her belt, gun raised, dark circles under her eyes, a yellow sticky note stuck to her shoulder, photoreal"",
+      ""palette"": [],
+      ""x"": 0.1,
+      ""y"": 0.32,
+      ""w"": 0.36,
+      ""h"": 0.5
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A beige office photocopier in the lower foreground mid-jam, crumpled pages spilling out across the floor under harsh light, photoreal"",
+      ""palette"": [],
+      ""x"": 0.02,
+      ""y"": 0.74,
+      ""w"": 0.3,
+      ""h"": 0.22
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""An overturned coffee mug with a faded football logo spilling coffee across a stack of incident reports, photoreal close detail"",
+      ""palette"": [],
+      ""x"": 0.66,
+      ""y"": 0.76,
+      ""w"": 0.28,
+      ""h"": 0.18
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""PERSONAL FOUL"",
+      ""desc"": ""Massive bold condensed sans-serif title in distressed metallic orange with a hard black drop shadow, stacked across two lines, slightly scuffed like a locker-room sign"",
+      ""palette"": [],
+      ""x"": 0.07,
+      ""y"": 0.05,
+      ""w"": 0.86,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""BADGE OF DISHONOR"",
+      ""desc"": ""Smaller bold cream uppercase subtitle directly beneath the main title, tight tracking"",
+      ""palette"": [],
+      ""x"": 0.2,
+      ""y"": 0.215,
+      ""w"": 0.6,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""Justice is a team sport. The copier is jammed."",
+      ""desc"": ""Slim italic white tagline, single line, centered, subtle shadow"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.275,
+      ""w"": 0.72,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""MERIDIAN PICTURES PRESENTS  A DALE QUARTERMAN FILM  \""PERSONAL FOUL: BADGE OF DISHONOR\""  RICO TENNANT  MARLA OYELARAN  CASTING BY P. GLEESON  MUSIC BY THEO VANCE  DIRECTED BY DALE QUARTERMAN"",
+      ""desc"": ""Tiny centered condensed cream billing block in standard credit-block style, multiple lines, low opacity"",
+      ""palette"": [],
+      ""x"": 0.16,
+      ""y"": 0.9,
+      ""w"": 0.68,
+      ""h"": 0.06
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""IN THEATERS THIS FALL"",
+      ""desc"": ""Small bold uppercase orange release line centered above billing block"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.865,
+      ""w"": 0.4,
+      ""h"": 0.03
+    }
+  ]
+}",0044-personal-foul-badge-of-dishonor.jpg
+Action,Spy Thriller,Comedy,Mockumentary,Idealistic Lawyer,"Pitch: Spy Thriller x Mockumentary. Tone: dread, but make it horny. Lead: a Idealistic Lawyer.",Sworn In: A Field Study in Treason,"Idealistic young attorney Marisol ""Mari"" Vega thinks she's been hired to fight for the little guy — until a documentary crew, hired by an agency that doesn't officially exist, follows her through her first week at a law firm that's actually a CIA front. As she earnestly files pro bono motions, she keeps accidentally extracting state secrets, sleeping with at least two double agents, and signing what may or may not be a confession. The handheld interviews get sweatier and the briefcase gets heavier. Justice is blind, but the surveillance cameras are not.","{
+  ""high_level_description"": ""A photoreal one-sheet of a wide-eyed idealistic lawyer clutching a briefcase in a glass office hallway, caught mid-stride by a documentary camera, with red surveillance dots glowing behind her."",
+  ""background"": ""A sleek modern law-firm corridor at night, floor-to-ceiling glass walls reflecting city lights through venetian blinds. Deep one-point perspective down the hallway with a lone red EXIT sign and faint silhouettes of figures lurking at the far end. Volumetric haze and a faint reflection of a second camera operator in the glass."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, teal-and-amber cinematic grade, photorealistic, volumetric haze, subtle handheld documentary framing"",
+  ""aesthetics"": ""tense, sweaty, ironic, surveillance-thriller chic, deadpan comedy undertone"",
+  ""lighting"": ""moody low-key practicals with a single hot key light on the lawyer's face and cool blue spill from the glass walls."",
+  ""palette"": [
+    ""#0E1A24"",
+    ""#E6A23C"",
+    ""#C0392B"",
+    ""#7FA8B5"",
+    ""#F2EEE6""
+  ],
+  ""bg_brightness"": 38,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A young Latina woman in her late twenties in a slightly-too-new charcoal pantsuit, idealistic determined expression with one eyebrow raised in confusion, gripping a worn leather briefcase to her chest with both hands, mid-stride down the glass corridor, sweat sheen on her forehead catching the key light"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.3,
+      ""w"": 0.42,
+      ""h"": 0.55
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A bulky professional documentary shoulder-mounted video camera intruding into frame from the lower left, lens pointed at the woman, a red REC tally light glowing, slightly out of focus"",
+      ""palette"": [],
+      ""x"": 0.02,
+      ""y"": 0.6,
+      ""w"": 0.26,
+      ""h"": 0.3
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""Two glowing red laser surveillance dots and a small dome security camera mounted on the ceiling at the far end of the hallway, softly bokeh'd"",
+      ""palette"": [],
+      ""x"": 0.55,
+      ""y"": 0.18,
+      ""w"": 0.3,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""SWORN IN"",
+      ""desc"": ""Massive condensed bold sans-serif in cream white with subtle metallic sheen, stacked tight, slight redacted-document black bar peeking behind one letter, dominant upper-third title"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.05,
+      ""w"": 0.84,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""A FIELD STUDY IN TREASON"",
+      ""desc"": ""Thin spaced-out uppercase serif subtitle in amber, sitting directly beneath the main title"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.215,
+      ""w"": 0.72,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""She wanted justice. They wanted footage."",
+      ""desc"": ""Small italic tagline in muted cream, centered, just above the billing block"",
+      ""palette"": [],
+      ""x"": 0.18,
+      ""y"": 0.86,
+      ""w"": 0.64,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""MERIDIAN HOUSE PICTURES PRESENTS  A CASSIUS DRABLOW FILM  \""SWORN IN: A FIELD STUDY IN TREASON\""  RENATA OYELOWO  THEO HARGRAVE-PINE  DELPHINE COSTA  CASTING BY MARGO VANTRESS  MUSIC BY IVO SLEET  DIRECTED BY CASSIUS DRABLOW"",
+      ""desc"": ""Tiny condensed all-caps credit block in light grey, centered, classic theatrical billing typography"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.91,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""IN THEATERS NOWHERE NEAR YOU  THIS FALL"",
+      ""desc"": ""Small bold uppercase release line in cream, centered at very bottom"",
+      ""palette"": [],
+      ""x"": 0.22,
+      ""y"": 0.965,
+      ""w"": 0.56,
+      ""h"": 0.025
+    }
+  ]
+}",0045-sworn-in-a-field-study-in-treason.jpg
+Western,Revisionist Western,Horror,Gothic Horror,Exiled Royal,"Imagine if a Revisionist Western show had a baby with a Gothic Horror miniseries, and that baby grew up to follow a Exiled Royal.",The Pale Crown of Buzzard Creek,"Deposed boy-king Aldric Vane flees a coup with nothing but a tarnished crown, a borrowed Stetson, and a cough that won't quit. He rides into Buzzard Creek hoping to vanish — but the town's saloon is run by something centuries old that remembers what royal blood tastes like. As the gunslingers turn gray and the church bell tolls on its own, Aldric must learn to draw a revolver faster than he ever learned to bow. There are no heroes out here. Only a king, a curse, and a very thirsty congregation.","{
+  ""high_level_description"": ""A dust-caked exiled young king in a long oilskin coat stands in a haunted ghost-town main street at dusk, tarnished crown on his head and revolver at his hip, as a pale Gothic figure looms in the saloon doorway behind him."",
+  ""background"": ""A decaying frontier ghost town at blue-hour dusk, weathered timber storefronts leaning at sick angles down a fog-choked main street. A crooked church steeple punctures a bruised purple sky behind dead cottonwoods. Low ground mist curls over the dirt road and ravens scatter from a sagging gallows in the deep background."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, desaturated cold-teal and ember-orange cinematic grade, photorealistic, heavy volumetric haze, fine film grain"",
+  ""aesthetics"": ""ominous, decayed, gothic-western, painterly cinematic dread, lonesome"",
+  ""lighting"": ""low cold moonlight rimming the figure against a single warm lantern glow spilling from the saloon doorway, deep shadows pooling in the street."",
+  ""palette"": [
+    ""#1c222b"",
+    ""#3f4a52"",
+    ""#8a5a32"",
+    ""#c9b48a"",
+    ""#6e1f1f"",
+    ""#0d0f12""
+  ],
+  ""bg_brightness"": 38,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a gaunt young man in his early twenties, pale and hollow-cheeked, wearing a dusty long oilskin trail coat over royal finery gone to rags, a tarnished thin gold crown sitting askew over windblown dark hair, one hand resting on a holstered revolver, eyes hard and tired, facing forward, photoreal"",
+      ""palette"": [],
+      ""x"": 0.31,
+      ""y"": 0.34,
+      ""w"": 0.4,
+      ""h"": 0.52
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a tall pale aristocratic vampiric figure in a black frock coat backlit in the warm glow of a saloon doorway, face in shadow, long fingers curled around the door frame, photoreal and menacing"",
+      ""palette"": [],
+      ""x"": 0.62,
+      ""y"": 0.4,
+      ""w"": 0.2,
+      ""h"": 0.34
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a single black raven perched on a weathered hitching post in the lower foreground, feathers catching cold moonlight, photoreal"",
+      ""palette"": [],
+      ""x"": 0.1,
+      ""y"": 0.62,
+      ""w"": 0.16,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE PALE CROWN\nOF BUZZARD CREEK"",
+      ""desc"": ""large weathered serif title with hairline cracks and tarnished-gold foil edges, distressed letterpress texture, faint blood-red underglow, centered across two lines"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.05,
+      ""w"": 0.84,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""A king without a throne. A town without a dawn."",
+      ""desc"": ""small italic serif tagline in dusty bone-white, letter-spaced, centered"",
+      ""palette"": [],
+      ""x"": 0.18,
+      ""y"": 0.27,
+      ""w"": 0.64,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""HOLLOWPINE PICTURES PRESENTS  A SILAS MORROW FILM  \""THE PALE CROWN OF BUZZARD CREEK\""  ELIAS THORNE  MARGUERITE VALE  CORMAC ASHE  CASTING BY R. DELACROIX  MUSIC BY J. HALVERSON  DIRECTED BY SILAS MORROW"",
+      ""desc"": ""tiny condensed all-caps billing block in pale gray, tightly tracked, centered"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.89,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""COMING THIS WINTER"",
+      ""desc"": ""small spaced all-caps serif in tarnished gold, centered above the billing block"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.85,
+      ""w"": 0.4,
+      ""h"": 0.03
+    }
+  ]
+}",0046-the-pale-crown-of-buzzard-creek.jpg
+Action,Car-Chase Thriller,Romance,Marriage of Convenience,Ex-Spy,"Picture a Car-Chase Thriller setting, but everyone behaves like they're in a Marriage of Convenience. Our reluctant hero: a Ex-Spy.",Till Pursuit Do Us Part,"Burned-out ex-spy Dex Calloway needs a fake marriage to slip past a border checkpoint with a stolen ledger — so he weds his getaway driver, Nadia, in a drive-thru chapel doing 60mph. Now the most dangerous cartel in three countries is in the rearview, but the real crisis is that Nadia keeps ""accidentally"" rear-ending the agency that's tailing them, and Dex forgot their anniversary (it was Tuesday). They must dodge missiles, debate whose name goes on the joint passport, and discover that a marriage of convenience comes with very inconvenient feelings. Buckle up — and apologize.","{
+  ""high_level_description"": ""A handsome ex-spy and his sharp-eyed wife brace inside a speeding muscle car mid-chase, wedding rings catching the light as a tangle of pursuing vehicles burns behind them."",
+  ""background"": ""A sun-scorched coastal highway at golden hour seen from a low chase angle, asphalt streaking with motion blur toward a hazy seaside skyline. Behind the hero car, three black SUVs and a flipped sedan trail smoke and sparks across the lanes. Heat shimmer and tire smoke drift into a dusty orange sky, with palm silhouettes whipping past at the road's edge."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, motion-blurred background, teal-orange cinematic grade, photorealistic, volumetric dust and lens flare"",
+  ""aesthetics"": ""high-octane, glossy, romantic-tense, blockbuster, kinetic"",
+  ""lighting"": ""warm low golden-hour sun raking through the windshield with hard rim light on the couple and fiery backlight from the wreckage behind."",
+  ""palette"": [
+    ""#E8852A"",
+    ""#1C3B4A"",
+    ""#F2D6A2"",
+    ""#7A1410"",
+    ""#0C1418""
+  ],
+  ""bg_brightness"": 58,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A rugged ex-spy in a torn tuxedo and loosened bow tie gripping the wheel of a vintage muscle car, jaw clenched, gold wedding band visible on his hand, sunlight catching sweat on his brow, photoreal"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.3,
+      ""w"": 0.42,
+      ""h"": 0.46
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""An elegant woman in a windswept satin wedding dress in the passenger seat aiming a pistol out the window with one hand while clutching a stolen leather ledger, fierce determined expression, matching ring glinting, photoreal"",
+      ""palette"": [],
+      ""x"": 0.04,
+      ""y"": 0.34,
+      ""w"": 0.34,
+      ""h"": 0.44
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""Three black SUVs in tight pursuit on a smoking highway with sparks and debris, motion-blurred, seen receding behind the hero car, photoreal"",
+      ""palette"": [],
+      ""x"": 0.0,
+      ""y"": 0.58,
+      ""w"": 1.0,
+      ""h"": 0.3
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""Two interlocked gold wedding rings dangling from the rearview mirror, gleaming in the sunlight, foreground focus, photoreal"",
+      ""palette"": [],
+      ""x"": 0.62,
+      ""y"": 0.4,
+      ""w"": 0.16,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""TILL PURSUIT\nDO US PART"",
+      ""desc"": ""Massive bold condensed sans-serif title in distressed metallic chrome with orange ember glow on the edges, stacked two lines, slight perspective tilt, dominating the lower third"",
+      ""palette"": [],
+      ""x"": 0.06,
+      ""y"": 0.74,
+      ""w"": 0.88,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""They said I do. They meant I drive."",
+      ""desc"": ""Small italic tagline in clean white serif, centered, directly above the title"",
+      ""palette"": [],
+      ""x"": 0.18,
+      ""y"": 0.69,
+      ""w"": 0.64,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""VELOCITY PICTURES PRESENTS  A RHEA TANDON FILM  \""TILL PURSUIT DO US PART\""  MARCUS DELANEY  SOPHIA VANCE  DIRECTED BY RHEA TANDON"",
+      ""desc"": ""Tiny condensed all-caps billing block in pale gray, centered, single justified line at the very bottom"",
+      ""palette"": [],
+      ""x"": 0.1,
+      ""y"": 0.94,
+      ""w"": 0.8,
+      ""h"": 0.035
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""IN THEATERS THIS SUMMER"",
+      ""desc"": ""Small spaced-out white sans-serif release line just above the billing block"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.905,
+      ""w"": 0.4,
+      ""h"": 0.025
+    }
+  ]
+}",0047-till-pursuit-do-us-part.jpg
+Romance,Period Romance,Comedy,Dark Comedy,Lighthouse Keeper,"Three-act structure: Period Romance in act one, Dark Comedy by act three, and a Lighthouse Keeper sobbing into a microwave dinner the whole time.",A Lamp for the Drowning Heart,"In 1887 on a storm-battered Cornish rock, lonesome lighthouse keeper Bartholomew Quill falls desperately in love with Cordelia, a shipwreck survivor he nurses back to health — until he realizes she keeps surviving shipwrecks, suspiciously, and that several of her previous ""fiancés"" are now lighthouse-shaped. As the romance curdles into a politely homicidal battle of wits, Bartholomew defends his beloved beacon, his dignity, and his nightly microwaved kipper supper. It's tender. It's deranged. Someone gets fed to a foghorn.","{
+  ""high_level_description"": ""A windswept Victorian lighthouse keeper and a mysterious woman in period dress share a charged, ominous embrace on storm-lashed rocks beneath a towering lighthouse, lit by a single sweeping beam."",
+  ""background"": ""A jagged sea-cliff at dusk dominated by a tall white stone lighthouse, its beacon throwing a hard cone of light across roiling slate-grey waves. Cold spray and volumetric mist drift across the foreground while bruised storm clouds pile up behind. Distant splintered shipwreck timbers jut from the surf at the cliff base."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, desaturated steely-blue grade with warm beam highlights, photorealistic, fine film grain, volumetric haze, naturalistic skin tones"",
+  ""aesthetics"": ""gothic period romance, ominous, darkly comic, windswept, opulent yet bleak"",
+  ""lighting"": ""a single rotating lighthouse beam rakes the couple from the side while cold ambient dusk fills the shadows and sea spray catches the light."",
+  ""palette"": [
+    ""#1d2a38"",
+    ""#3f5b6c"",
+    ""#c9b48a"",
+    ""#e8dcc2"",
+    ""#7a1f1f""
+  ],
+  ""bg_brightness"": 38,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a gaunt bearded Victorian lighthouse keeper in a heavy soaked wool peacoat and oilskin, clutching a brass storm lantern, gazing with anguished devotion and faint terror at the woman in his arms, wind whipping his hair"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.36,
+      ""w"": 0.4,
+      ""h"": 0.5
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""an elegant pale woman in a sodden dark 1880s gown with lace collar, half-smiling serenely, one hand hiding a small marlinspike behind her back, hair plastered by sea spray"",
+      ""palette"": [],
+      ""x"": 0.16,
+      ""y"": 0.4,
+      ""w"": 0.34,
+      ""h"": 0.46
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a sad lukewarm microwaved kipper dinner on a tin tray balanced on a barnacled rock in the lower foreground, steam curling, comically out of place"",
+      ""palette"": [],
+      ""x"": 0.66,
+      ""y"": 0.78,
+      ""w"": 0.26,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""A LAMP FOR THE\nDROWNING HEART"",
+      ""desc"": ""large elegant high-contrast serif title in cream gold with subtle wet sheen, centered, slightly distressed letterpress edges, occupying the lower third"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.66,
+      ""w"": 0.84,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""She survived every shipwreck. That was the first clue."",
+      ""desc"": ""small italic tagline in pale grey-gold, single line above the title"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.62,
+      ""w"": 0.72,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""LANTERNGLASS PICTURES PRESENTS  A MORWENNA HEXT FILM  \""A LAMP FOR THE DROWNING HEART\""  EDMUND CALLOW  ISOLDE VANE  CASTING BY R. PILCHARD  MUSIC BY THE FOGHORN QUARTET  DIRECTED BY MORWENNA HEXT"",
+      ""desc"": ""tiny condensed all-caps billing block in faded cream, centered, several lines, classic credits styling"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.9,
+      ""w"": 0.76,
+      ""h"": 0.06
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""IN THEATRES THIS WINTER"",
+      ""desc"": ""small spaced-out all-caps line in cool grey just above the billing block"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.86,
+      ""w"": 0.4,
+      ""h"": 0.03
+    }
+  ]
+}",0048-a-lamp-for-the-drowning-heart.jpg
+Sci-Fi,Post-Apocalyptic,Horror,Found Footage,Undertaker,"Cold open: a Undertaker, alone, in the rain. The genre? Post-Apocalyptic. The vibe? Unmistakably Found Footage. Cue title card.",The Last Embalmer: Tape 7,"Mort Kessler ran the only funeral home left standing after the world ended, and he refuses to bury anyone without proper paperwork — even when civilization itself is the corpse. Armed with a dying camcorder and an unshakable belief in ""dignity for the deceased,"" he documents his rounds through the ash-choked ruins, narrating each body's eulogy to a microphone nobody will ever hear. But the dead in the wasteland have stopped staying buried, and Mort's footage captures something following him home. This is the tape they found in his hearse. It is the only thing that survived.","{
+  ""high_level_description"": ""A photoreal found-footage one-sheet of a weary undertaker filming himself in a rain-lashed post-apocalyptic graveyard, shot through a grimy camcorder viewfinder overlay."",
+  ""background"": ""A ruined cemetery at dusk on the edge of a collapsed city, leaning headstones half-swallowed by ash and weeds, the broken silhouette of a dead skyline smoldering on the horizon. Heavy rain streaks down through a sodium-orange haze, and a wrecked black hearse sits abandoned in the muddy middle distance. The depth recedes into smoky gray gloom punctuated by a single distant fire glow."",
+  ""art_style"": ""shot on a degraded consumer camcorder, handheld VHS-grain found-footage look, photorealistic, shallow depth of field, low-light noise, lens flecked with rain droplets, desaturated cold grade with sodium highlights, volumetric haze"",
+  ""aesthetics"": ""grim, claustrophobic, documentary-real, decayed, dread-soaked, lo-fi"",
+  ""lighting"": ""A harsh on-camera LED light blasts the undertaker's wet face from below while everything behind him falls into cold rain-soaked darkness."",
+  ""palette"": [
+    ""#1b2026"",
+    ""#3a4148"",
+    ""#8a4f1e"",
+    ""#c9c2b4"",
+    ""#0b0d10""
+  ],
+  ""bg_brightness"": 32,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A gaunt, exhausted middle-aged undertaker in a soaked black mortician's coat, holding an old camcorder out at arm's length and filming his own rain-streaked face, dark circles under his eyes, mud on his lapels, photoreal and harshly lit from below by the camera light"",
+      ""palette"": [],
+      ""x"": 0.27,
+      ""y"": 0.3,
+      ""w"": 0.46,
+      ""h"": 0.5
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A dirt-smeared embalmed corpse hand, fingers slightly curled, reaching up from disturbed grave soil in the lower foreground, photoreal and rain-wet"",
+      ""palette"": [],
+      ""x"": 0.05,
+      ""y"": 0.74,
+      ""w"": 0.3,
+      ""h"": 0.18
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""Camcorder viewfinder HUD overlay framing the whole poster: red REC dot, blinking battery icon, timecode, and faint scanlines, semi-transparent"",
+      ""palette"": [],
+      ""x"": 0.0,
+      ""y"": 0.0,
+      ""w"": 1.0,
+      ""h"": 1.0
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""● REC  TAPE 07  00:42:13"",
+      ""desc"": ""small monospaced red and white camcorder HUD text, top-left corner, slightly glitched"",
+      ""palette"": [],
+      ""x"": 0.04,
+      ""y"": 0.04,
+      ""w"": 0.42,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE LAST\nEMBALMER"",
+      ""desc"": ""large weathered condensed sans-serif title in bone-white, scratched and rain-streaked texture, heavy and grim, lower-third placement"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.6,
+      ""w"": 0.84,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""TAPE 7"",
+      ""desc"": ""smaller distressed stencil subtitle in faded orange directly beneath the main title"",
+      ""palette"": [],
+      ""x"": 0.34,
+      ""y"": 0.76,
+      ""w"": 0.32,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""DIGNITY FOR THE DEAD. NO EXCEPTIONS."",
+      ""desc"": ""thin uppercase tagline in muted gray, centered just above the title"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.555,
+      ""w"": 0.72,
+      ""h"": 0.035
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""ASHFALL PICTURES PRESENTS  A SILAS CROWE FILM  \""THE LAST EMBALMER: TAPE 7\""  MORT KESSLER  RENATA VOSS  DECLAN HABER  CASTING BY P. OKONKWO  MUSIC BY THE DROWNED CHOIR  DIRECTED BY SILAS CROWE"",
+      ""desc"": ""tiny condensed credits billing block in pale gray, centered at the very bottom"",
+      ""palette"": [],
+      ""x"": 0.1,
+      ""y"": 0.92,
+      ""w"": 0.8,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""RECOVERED THIS WINTER"",
+      ""desc"": ""small uppercase release line in bone-white above the billing block"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.875,
+      ""w"": 0.4,
+      ""h"": 0.03
+    }
+  ]
+}",0049-the-last-embalmer-tape-7.jpg
+Horror,Body Horror,Musical,Dance Musical,Mob Enforcer,"Set in a world where Body Horror and Dance Musical coexist uneasily, our hero — a Mob Enforcer — must save... something. Probably a town.",Goodfella Pirouette: A Mob in Pieces,"Vinnie ""The Hinge"" Carbone is the most feared knee-breaker in Cannelloni City — until a cursed protection racket leaves him with a body that won't stop dancing. Every time the music swells, his joints reassemble into jazz hands, his ribs unfold into spirit fingers, and his boss's enemies are choreographed to death. Now Vinnie must out-dance a rival family of contortionist body-snatchers before the whole borough peels itself into a chorus line. It's a horror musical where the only way to survive is to nail the landing.","{
+  ""high_level_description"": ""A menacing mob enforcer in a blood-flecked suit caught mid-pirouette under a single theatrical spotlight, his fingers grotesquely elongating into impossible jazz hands as his body partially unravels into sinew and muscle."",
+  ""background"": ""A derelict 1970s vaudeville theater interior gone to rot, with peeling gilded balconies, torn velvet curtains, and a stage floor slick with dark liquid. Deep shadows swallow the back rows while volumetric haze drifts through a hard spotlight beam. A faint blood-spattered chalk dance diagram is visible underfoot."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, fine film grain, desaturated noir grade with bruised crimson accents, photorealistic, volumetric haze, practical theatrical lighting"",
+  ""aesthetics"": ""grotesque, theatrical, sinister, glamorous decay, unsettling elegance"",
+  ""lighting"": ""a single hard overhead spotlight carves the figure from velvety blackness, rim-lighting wet skin and casting long warped shadows of dancing limbs."",
+  ""palette"": [
+    ""#0C0A0E"",
+    ""#7A1F22"",
+    ""#C9A24B"",
+    ""#E8E2D0"",
+    ""#3A2B30""
+  ],
+  ""bg_brightness"": 28,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A heavyset mob enforcer in his 50s wearing a blood-flecked charcoal pinstripe suit, frozen mid-pirouette on the toes of one polished wingtip shoe; his outstretched arms terminate in unnaturally long, splayed fingers fanning like grotesque jazz hands, with the skin of one forearm peeling back to reveal glistening tendon and muscle, sweat-sheened anguished face under a fedora, photoreal, dramatic spotlight rim"",
+      ""palette"": [],
+      ""x"": 0.27,
+      ""y"": 0.3,
+      ""w"": 0.46,
+      ""h"": 0.55
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A discarded snub-nosed revolver and a single scuffed tap shoe lying together in a thin pool of dark blood on the stage floorboards, sharp foreground detail, photoreal"",
+      ""palette"": [],
+      ""x"": 0.1,
+      ""y"": 0.8,
+      ""w"": 0.34,
+      ""h"": 0.13
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""Tattered red velvet stage curtain hanging in deep shadow at the upper right, catching a sliver of golden spotlight, photoreal fabric texture"",
+      ""palette"": [],
+      ""x"": 0.66,
+      ""y"": 0.1,
+      ""w"": 0.3,
+      ""h"": 0.4
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""GOODFELLA\nPIROUETTE"",
+      ""desc"": ""Massive condensed serif title in distressed cracked gold leaf with crimson drips bleeding from the letters, stacked two lines, slight theatrical arch, high contrast against black"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.05,
+      ""w"": 0.84,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""A MOB IN PIECES"",
+      ""desc"": ""Small all-caps subtitle in tarnished gold thin sans-serif with wide letter spacing, centered beneath the main title"",
+      ""palette"": [],
+      ""x"": 0.2,
+      ""y"": 0.255,
+      ""w"": 0.6,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""HE'LL BREAK YOUR LEGS. THEN HE'LL DANCE ON THEM."",
+      ""desc"": ""Slim italic tagline in off-white, single line, understated, positioned just above the billing block"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.88,
+      ""w"": 0.76,
+      ""h"": 0.035
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""SCAGLIONE-MERIDIAN PICTURES PRESENTS  A LORENZO VESPA FILM  \""GOODFELLA PIROUETTE\""  DOMINIC FERRARA  ROSALIND KHACHATURIAN  VITO LANE  MUSIC BY THE CANNELLONI STRING SYNDICATE  CHOREOGRAPHY BY MADAME BIANCA RUE  DIRECTED BY LORENZO VESPA"",
+      ""desc"": ""Tiny centered condensed sans-serif billing block in pale gray, standard credit-block typography, multiple lines"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.93,
+      ""w"": 0.72,
+      ""h"": 0.05
+    }
+  ]
+}",0050-goodfella-pirouette-a-mob-in-pieces.jpg

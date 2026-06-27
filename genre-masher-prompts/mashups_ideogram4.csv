@@ -10402,3 +10402,933 @@ Action,Disaster,Mystery,Cozy Whodunit,Folk Musician,"Pitch: Disaster x Cozy Whod
     }
   ]
 }",0110-the-last-verse-at-loon-lake.jpg
+Drama,Coming-of-Age,Romance,Period Romance,Con Artist,"Picture a Coming-of-Age setting, but everyone behaves like they're in a Period Romance. Our reluctant hero: a Con Artist.",The Gentleman Swindler's Awakening,"Seventeen-year-old Percival ""Pip"" Hargrove is the finest forger of love-letters in all of Brighton, fleecing lovesick aristocrats one counterfeit sonnet at a time. But when he's hired to ghostwrite a courtship for the dazzling, sharp-tongued Lady Arabella — who immediately sees through every con — Pip discovers the one swindle he can't run is on his own heart. As his lies snowball into a season-long social catastrophe, he must choose between the perfect grift and his first, terrifyingly genuine feeling. A bittersweet drawing-room comedy about growing up, falling hard, and finally telling the truth.","{
+  ""high_level_description"": ""A photoreal Regency-era one-sheet of a roguish teenage con artist clutching a fan of love-letters while a skeptical young noblewoman eyes him across a candlelit ballroom."",
+  ""background"": ""A grand candlelit Georgian ballroom at dusk, marble columns and tall arched windows receding into soft golden gloom. Chandeliers glitter with warm bokeh in the deep background while a blurred crowd of period dancers swirls in muted silks. Faint coastal moonlight spills through the far windows, hinting at the Brighton seafront beyond."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, warm candlelit cinematic grade, photorealistic, fine film grain, volumetric haze"",
+  ""aesthetics"": ""lush, romantic, mischievous, opulent, bittersweet"",
+  ""lighting"": ""Warm low-key candlelight rims the faces from one side with a cool moonlit fill from the windows, leaving rich shadow in the corners."",
+  ""palette"": [
+    ""#1d1208"",
+    ""#c9962f"",
+    ""#7d2b2b"",
+    ""#e8d5a8"",
+    ""#3a4a55""
+  ],
+  ""bg_brightness"": 38,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A handsome 17-year-old boy in a slightly-too-large embroidered Regency tailcoat and crooked cravat, tousled hair, smirking guiltily, holding a fanned spread of wax-sealed love letters near his chest, one eyebrow raised, photoreal"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.3,
+      ""w"": 0.42,
+      ""h"": 0.55
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""An elegant young noblewoman in an empire-waist silk gown and gloves, arms crossed, giving a knowing skeptical side-eye, soft candlelight on her face, positioned slightly behind and left, photoreal"",
+      ""palette"": [],
+      ""x"": 0.06,
+      ""y"": 0.36,
+      ""w"": 0.3,
+      ""h"": 0.48
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A quill pen and overturned ink pot spilling ink across scattered counterfeit love letters on a polished mahogany surface in the foreground, photoreal close detail"",
+      ""palette"": [],
+      ""x"": 0.58,
+      ""y"": 0.78,
+      ""w"": 0.34,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE GENTLEMAN\nSWINDLER'S\nAWAKENING"",
+      ""desc"": ""Large elegant engraved serif title in warm gold foil with subtle letterpress depth, centered, stacked three lines, refined Regency-era styling"",
+      ""palette"": [],
+      ""x"": 0.1,
+      ""y"": 0.05,
+      ""w"": 0.8,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""He forged every word but one."",
+      ""desc"": ""Small italic cream-colored serif tagline, delicate, centered beneath the title"",
+      ""palette"": [],
+      ""x"": 0.18,
+      ""y"": 0.26,
+      ""w"": 0.64,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""CRAVATWORKS PICTURES PRESENTS  A PENNINGTON DRAKE FILM  \""THE GENTLEMAN SWINDLER'S AWAKENING\""  ELIAS FONTAINE  CORDELIA MAYHEW  ROSAMUND VALE  CASTING BY H. ASHCOMBE  MUSIC BY J. THORNQUIST  DIRECTED BY PENNINGTON DRAKE"",
+      ""desc"": ""Tiny condensed all-caps cream billing block, classic theatrical credits styling, centered at bottom"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.91,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THIS WINTER"",
+      ""desc"": ""Small spaced gold all-caps release line above the billing block, centered"",
+      ""palette"": [],
+      ""x"": 0.34,
+      ""y"": 0.875,
+      ""w"": 0.32,
+      ""h"": 0.03
+    }
+  ]
+}",0111-the-gentleman-swindler-s-awakening.jpg
+Documentary-style,Reality Competition,Romance,Second-Chance Romance,Con Artist,"Cold open: a Con Artist, alone, in the rain. The genre? Reality Competition. The vibe? Unmistakably Second-Chance Romance. Cue title card.",The Bachelor Always Rings Twice,"Reformed grifter Sully Marchetti talks his way onto a primetime dating show using a fake billionaire backstory — only to discover that the franchise's new producer is Delphine, the woman he conned and abandoned at an airport seven years ago. Now she controls every rose ceremony, every confessional cut, and every chance he has to win back the one mark he never wanted to leave. As the cameras roll, Sully has to run the longest con of his life: telling the truth. Equal parts elimination chaos and aching second-chance romance, it's the most honest lie ever broadcast.","{
+  ""high_level_description"": ""A rain-soaked man in a soaked tuxedo clutches a single wilting rose under harsh TV stage lights while a woman in a producer's headset watches him from a glowing control-room window above."",
+  ""background"": ""A glossy reality-dating-show set at night, a curved staircase and string-light backdrop blurred behind sheets of falling rain. Above and to the right, a bright control-room window glows with banks of monitors. Wet stage flooring reflects pink and blue light, deep cinematic depth fading into haze."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, teal-and-rose cinematic grade, photorealistic, volumetric haze, rain streaks catching key light"",
+  ""aesthetics"": ""glamorous, melancholic, ironic, glossy-tabloid romance, prestige-doc tension"",
+  ""lighting"": ""hard key spotlight on the lone man, cool blue rim light from the rain, warm pink glow spilling from the control-room window above."",
+  ""palette"": [
+    ""#1B2A38"",
+    ""#E8557A"",
+    ""#F4D9B0"",
+    ""#0E5E6B"",
+    ""#0A0F14""
+  ],
+  ""bg_brightness"": 38,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a charming mid-40s man with stubble in a soaked black tuxedo, bow tie undone, hair plastered by rain, holding a single drooping red rose to his chest, vulnerable hopeful expression, standing alone on a glistening stage floor"",
+      ""palette"": [],
+      ""x"": 0.28,
+      ""y"": 0.34,
+      ""w"": 0.44,
+      ""h"": 0.54
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a poised woman in her early 40s wearing a sleek blazer and a thin TV-producer headset, half-lit behind a glowing control-room window high in the frame, watching down with a conflicted unreadable look"",
+      ""palette"": [],
+      ""x"": 0.6,
+      ""y"": 0.16,
+      ""w"": 0.3,
+      ""h"": 0.22
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a single bright stage spotlight beam slicing diagonally through the rain and haze, dust and droplets glittering inside it"",
+      ""palette"": [],
+      ""x"": 0.1,
+      ""y"": 0.1,
+      ""w"": 0.55,
+      ""h"": 0.45
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE BACHELOR\nALWAYS RINGS TWICE"",
+      ""desc"": ""bold condensed cinematic serif title, glossy warm-gold with subtle wet sheen, large, stacked across two lines, centered, slight drop shadow for depth"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.62,
+      ""w"": 0.84,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""He conned everyone but her. This season, the only scam left is the truth."",
+      ""desc"": ""thin italic sans-serif tagline in soft cream, single line, letter-spaced, sitting just above the title"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.565,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""ROSEGLASS PICTURES PRESENTS  A CALLUM REYNOSO FILM  \""THE BACHELOR ALWAYS RINGS TWICE\""  DECLAN VOSS  MARISOL FENWICK  TEDDY ABARA  PRIYA NALL  CASTING BY HEN WOODROE  MUSIC BY ODILE PRACHT  EDITED BY SAM KETTERIDGE  DIRECTOR OF PHOTOGRAPHY LARS OKONMA  WRITTEN BY JUNE DELACROIX  DIRECTED BY CALLUM REYNOSO"",
+      ""desc"": ""tiny condensed all-caps billing block in pale grey, tightly tracked, centered, standard credits layout"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.9,
+      ""w"": 0.72,
+      ""h"": 0.045
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""STREAMING THIS FALL"",
+      ""desc"": ""small spaced uppercase sans-serif in rose-pink, centered, just above the billing block"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.855,
+      ""w"": 0.4,
+      ""h"": 0.03
+    }
+  ]
+}",0112-the-bachelor-always-rings-twice.jpg
+Action,Military Action,Mystery,Amateur Sleuth,Ambitious Politician,"Three-act structure: Military Action in act one, Amateur Sleuth by act three, and a Ambitious Politician sobbing into a microwave dinner the whole time.",Commander-in-Grief: The Casserole Conspiracy,"Senator Roland Pike spent twelve years building the perfect campaign — until a botched black-ops raid he secretly authorized goes catastrophically sideways, killing his only loyal aide. Now hunted, disgraced, and weeping into a 99-cent Salisbury steak every single night, Roland reinvents himself as an amateur detective to clear his name and unmask the shadow donor who set him up. Armed with a corkboard, a laser pointer, and zero forensic training, he stumbles from gunfights to garden-party interrogations. A whisper-thriller about ambition, grief, and the precise reheating time of frozen lasagna.","{
+  ""high_level_description"": ""A sweaty, tearful politician in a torn suit clutches a glowing microwave dinner like a sacred relic in a war-torn campaign office, lit like a high-stakes military thriller."",
+  ""background"": ""A ransacked campaign headquarters at night, American flags shredded and smoldering, overturned podiums and scattered classified folders across the floor. Through a shattered window, a city skyline glows under helicopter searchlights and rising smoke. Deep shadows recede into a cluttered war-room of corkboards strung with red yarn."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, teal-orange cinematic grade, photorealistic, volumetric haze, fine film grain"",
+  ""aesthetics"": ""tense, tragicomic, prestige-thriller, grim, absurdly somber"",
+  ""lighting"": ""harsh blue searchlight raking through smoke from one side while the open microwave casts a warm sickly glow up onto the politician's tear-streaked face."",
+  ""palette"": [
+    ""#0E2A3B"",
+    ""#D8742A"",
+    ""#E8E2D0"",
+    ""#7C1C1C"",
+    ""#1A1F24""
+  ],
+  ""bg_brightness"": 38,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a haggard middle-aged male politician in a torn, sweat-soaked white dress shirt and loosened American-flag tie, real tears streaking his face, cradling a steaming plastic microwave dinner tray with both trembling hands, illuminated from below by the microwave glow, photoreal"",
+      ""palette"": [],
+      ""x"": 0.27,
+      ""y"": 0.3,
+      ""w"": 0.46,
+      ""h"": 0.5
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""an open stainless-steel microwave on a desk in the lower foreground, door ajar, warm interior light spilling out onto scattered shell casings and a campaign pin"",
+      ""palette"": [],
+      ""x"": 0.06,
+      ""y"": 0.7,
+      ""w"": 0.3,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a corkboard in the blurred background covered in red yarn, pinned photos, and classified documents, slightly out of focus"",
+      ""palette"": [],
+      ""x"": 0.68,
+      ""y"": 0.34,
+      ""w"": 0.3,
+      ""h"": 0.34
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""COMMANDER-IN-GRIEF"",
+      ""desc"": ""huge bold condensed military-stencil serif in distressed cream-white, slightly scorched edges, spanning the width, dramatic and heavy"",
+      ""palette"": [],
+      ""x"": 0.06,
+      ""y"": 0.8,
+      ""w"": 0.88,
+      ""h"": 0.1
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE CASSEROLE CONSPIRACY"",
+      ""desc"": ""smaller all-caps spaced sans-serif in warm orange beneath the main title"",
+      ""palette"": [],
+      ""x"": 0.18,
+      ""y"": 0.905,
+      ""w"": 0.64,
+      ""h"": 0.035
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""HE LOST THE MISSION. HE LOST THE ELECTION.\nHE WILL NOT LOSE DINNER."",
+      ""desc"": ""small italic two-line tagline in pale grey, centered, restrained"",
+      ""palette"": [],
+      ""x"": 0.18,
+      ""y"": 0.21,
+      ""w"": 0.64,
+      ""h"": 0.07
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""HALLBROOK PICTURES PRESENTS  A DESMOND VAULT FILM  \""COMMANDER-IN-GRIEF\""  CORMAC ELLISBY  RENATA VOSS  THEO PALMQUIST  CASTING BY M. ODELL  MUSIC BY J. STRAND  DIRECTED BY DESMOND VAULT"",
+      ""desc"": ""tiny condensed all-caps billing block in light grey, centered, standard credit-block spacing"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.95,
+      ""w"": 0.76,
+      ""h"": 0.035
+    }
+  ]
+}",0113-commander-in-grief-the-casserole-conspiracy.jpg
+Sci-Fi,Space Opera,Fantasy,Sword & Sorcery,Small-Time Crook,"Set in a world where Space Opera and Sword & Sorcery coexist uneasily, our hero — a Small-Time Crook — must save... something. Probably a town.",Blade & Blaster: The Two-Bit Heist of Dagmar Vex,"Dagmar Vex is a small-time crook who fences cursed amulets out of a cargo hold and has never once paid for parking his hover-mule. When he accidentally swipes a sword that's also a sentient plasma rifle — and it won't stop narrating his crimes — every wizard-bounty-hunter in the Nine Star-Holds wants his head. Now Dagmar has eleven hours to return the blade, dodge a dragon that files taxes, and save the only frontier town that still lets him run a tab. He is spectacularly unqualified. The sword agrees.","{
+  ""high_level_description"": ""A grimy roguish thief clutches a glowing sword-rifle hybrid on a dusty alien frontier street as twin moons and a distant starship loom, lit like a gritty space-western epic"",
+  ""background"": ""A dusty twilight bazaar street on a desert moon-world, sandstone arches blending with rusted starship hull plating and tangled cabling. Far down the avenue a battered cargo freighter idles in heat-haze beneath two large pale moons and a smear of nebula. Volumetric dust drifts through low orange backlight; depth falls off into hazy distance."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, teal-orange cinematic grade, volumetric dust haze, photorealistic, fine film grain, subtle lens flare"",
+  ""aesthetics"": ""gritty space-western, swords-and-starships, scoundrel charm, lived-in sci-fi, dusty epic"",
+  ""lighting"": ""warm low-angle sunset key from screen-left with cool blue rim light from the glowing weapon and moons separating the figure from shadow"",
+  ""palette"": [
+    ""#E08A3C"",
+    ""#1F4257"",
+    ""#C8B07A"",
+    ""#6FD3E0"",
+    ""#241914""
+  ],
+  ""bg_brightness"": 48,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A scruffy charming human male thief in his late 30s, three-day stubble, patched leather longcoat over scavenged armor plating, fingerless gloves, gripping a glowing weapon that is half ornate broadsword half plasma rifle with cyan energy crackling along the blade; he glances over his shoulder with a guilty smirk, dust on his face, photoreal"",
+      ""palette"": [],
+      ""x"": 0.27,
+      ""y"": 0.3,
+      ""w"": 0.46,
+      ""h"": 0.55
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A robed wizard-bounty-hunter silhouette in the hazy mid-distance to the right, glowing runic staff in one hand and a holstered blaster on the hip, partially obscured by drifting dust, shallow focus"",
+      ""palette"": [],
+      ""x"": 0.66,
+      ""y"": 0.46,
+      ""w"": 0.22,
+      ""h"": 0.34
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A large scaly dragon perched on a rusted starship gantry far in the upper background, wings half folded, faint smoke from nostrils, tiny against the nebula sky, atmospheric and slightly out of focus"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.16,
+      ""w"": 0.26,
+      ""h"": 0.18
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""BLADE & BLASTER"",
+      ""desc"": ""massive bold metallic condensed sans-serif title, brushed chrome with warm orange edge-glow and tiny etched runes, slightly weathered, spanning the width in two stacked impact lines"",
+      ""palette"": [],
+      ""x"": 0.06,
+      ""y"": 0.7,
+      ""w"": 0.88,
+      ""h"": 0.14
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE TWO-BIT HEIST OF DAGMAR VEX"",
+      ""desc"": ""small wide-tracked condensed caps subtitle in pale gold, centered beneath the main title"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.845,
+      ""w"": 0.72,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""HE STOLE THE WRONG SWORD. IT WON'T SHUT UP."",
+      ""desc"": ""thin italic tagline in cool cyan-white, centered, small, just above the title block"",
+      ""palette"": [],
+      ""x"": 0.16,
+      ""y"": 0.655,
+      ""w"": 0.68,
+      ""h"": 0.035
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""NEBULA HOLLOW PICTURES PRESENTS  A KORWIN ASHE FILM  \""BLADE & BLASTER\""  RYDER MALLOX  SIENNA QUARLES  THADDEUS BRINE  CASTING BY VELA ODoM  MUSIC BY JONAS REEL  DIRECTED BY KORWIN ASHE"",
+      ""desc"": ""tiny condensed all-caps billing block in pale gray, centered, classic theatrical credits formatting"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.93,
+      ""w"": 0.76,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""IN THEATERS THIS FALL"",
+      ""desc"": ""small bold spaced caps in warm white, centered at very bottom"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.965,
+      ""w"": 0.4,
+      ""h"": 0.025
+    }
+  ]
+}",0114-blade-blaster-the-two-bit-heist-of-dagmar-vex.jpg
+Action,Disaster,Mystery,Conspiracy Thriller,Disillusioned Priest,"Pitch: Disaster x Conspiracy Thriller. Tone: dread, but make it horny. Lead: a Disillusioned Priest.",The Rapture Index,"Father Elias Crane lost his faith somewhere between the third funeral and his second bottle of communion wine. So when a basement archive in the Vatican reveals that an extinction-level solar flare was predicted — and deliberately concealed — by a shadow conclave, he's the only man unholy enough to chase the truth. With twelve hours until the sky catches fire, Elias races a smoldering cabal, a seismologist who tempts him toward the very vows he abandoned, and his own creeping certainty that maybe the world deserves it. Salvation is classified. Damnation is right on schedule.","{
+  ""high_level_description"": ""A sweat-drenched priest in a torn cassock stands in a cracked cathedral nave as a blood-orange firestorm sky splits open behind him, conspiracy documents fluttering through the air."",
+  ""background"": ""A vast Gothic cathedral interior whose vaulted ceiling has cracked open to reveal a churning apocalyptic sky burning blood-orange and ash-gray. Stone pillars lean and fracture, dust and embers drift through god-rays of harsh light. In the deep background a city skyline glows with distant fires beyond the shattered stained glass."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, teal-and-ember cinematic grade, photorealistic, volumetric haze, fine film grain, practical firelight"",
+  ""aesthetics"": ""apocalyptic dread, sacred decay, smoldering tension, conspiratorial paranoia, sweaty intimacy"",
+  ""lighting"": ""low-key chiaroscuro with a hot amber key from the burning sky raking across the priest's face and cold blue rim light from the side."",
+  ""palette"": [
+    ""#1B1410"",
+    ""#C5471B"",
+    ""#E8A14C"",
+    ""#2F4A52"",
+    ""#0A0707""
+  ],
+  ""bg_brightness"": 38,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A weathered handsome priest in his 40s, dark stubble, sweat-soaked torn black cassock open at the collar revealing a clenched silver crucifix, gripping a folded classified dossier in one fist, jaw tight, eyes lit by firelight, standing defiantly center frame, full-body cinematic hero shot"",
+      ""palette"": [],
+      ""x"": 0.33,
+      ""y"": 0.3,
+      ""w"": 0.36,
+      ""h"": 0.55
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A poised dark-haired woman in a soaked white blouse standing in shadow lower-left, half-turned, holding a seismograph readout, lit by cold blue rim light, expression of fearful longing"",
+      ""palette"": [],
+      ""x"": 0.04,
+      ""y"": 0.55,
+      ""w"": 0.24,
+      ""h"": 0.34
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""Scattered classified manila documents and redacted papers swirling mid-air on the right, caught in firelit updraft, motion-blurred, photorealistic"",
+      ""palette"": [],
+      ""x"": 0.66,
+      ""y"": 0.4,
+      ""w"": 0.3,
+      ""h"": 0.3
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A shattered stained-glass rose window fragment glowing from behind in the upper background, jagged shards backlit by the burning sky"",
+      ""palette"": [],
+      ""x"": 0.58,
+      ""y"": 0.06,
+      ""w"": 0.34,
+      ""h"": 0.22
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE RAPTURE\nINDEX"",
+      ""desc"": ""Massive condensed slab-serif title in distressed cracked metallic gold with deep ember-orange inner glow and charred edges, centered, dominating the lower third, cinematic engraved texture"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.72,
+      ""w"": 0.84,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE END WAS SCHEDULED. SOMEONE SIGNED OFF."",
+      ""desc"": ""Thin uppercase letter-spaced tagline in pale ash-white, small, set just above the title"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.665,
+      ""w"": 0.72,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""HOLLOW NAVE PICTURES PRESENTS  A SILAS REINHOLT FILM  \""THE RAPTURE INDEX\""  MARCUS DELACROIX  IVANA PETROVNA  THEO HARGRAVE  CASTING BY R. MONROE  MUSIC BY A. VANTERPOOL  EDITED BY L. OKAFOR  PRODUCTION DESIGN J. WREN  DIRECTOR OF PHOTOGRAPHY C. ALMENDROS  WRITTEN BY D. SARGENT  DIRECTED BY SILAS REINHOLT"",
+      ""desc"": ""Tiny condensed all-caps credits billing block in pale gray, tightly tracked, centered at the very bottom"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.93,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""IN THEATERS GOOD FRIDAY"",
+      ""desc"": ""Small bold uppercase release line in ember-orange, centered just above the billing block"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.895,
+      ""w"": 0.4,
+      ""h"": 0.03
+    }
+  ]
+}",0115-the-rapture-index.jpg
+Comedy,Surreal Comedy,Mystery,Amateur Sleuth,Washed-Up Rock Star,"Three-act structure: Surreal Comedy in act one, Amateur Sleuth by act three, and a Washed-Up Rock Star sobbing into a microwave dinner the whole time.","Whodunnit, Reverb?","Once the frontman of stadium gods Velvet Hernia, Dax Marrow now lives in a leaking lake house where the furniture occasionally floats and his goldfish gives advice. When his last surviving bandmate is found drowned in a hot tub full of his own platinum records, the police rule it ""a vibe"" — so Dax, armed with three working brain cells and a karaoke machine, appoints himself detective. Between sobbing into lukewarm microwave lasagna and interrogating a suspiciously articulate roadie, he discovers the truth was hidden in a B-side all along. The reverb knows everything.","{
+  ""high_level_description"": ""A washed-up rock star in a sequined robe stands in a flooded living room clutching a microwave dinner and a magnifying glass, surrounded by floating platinum records under surreal twilight light."",
+  ""background"": ""A faded lake house living room half-submerged in shin-deep water that reflects a pink-and-teal dusk leaking through cracked picture windows. Floating vinyl records, a drifting amplifier, and a lone rubber duck ripple across the water toward the foreground. The far wall holds tilted gold and platinum plaques, one cracked, with a goldfish bowl glowing improbably bright on a side table."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, slight wide-angle distortion, photorealistic, volumetric haze, naturalistic water reflections, cinematic teal-and-magenta grade"",
+  ""aesthetics"": ""surreal, melancholic, absurd, dreamlike, faded-glory glamour, deadpan"",
+  ""lighting"": ""moody dusk key light from the windows with a warm impossible glow off the goldfish bowl and a cold rim light on the wet floor."",
+  ""palette"": [
+    ""#1B2B3A"",
+    ""#E85C8A"",
+    ""#37C6C0"",
+    ""#F4D58D"",
+    ""#0C1620""
+  ],
+  ""bg_brightness"": 42,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a gaunt 50-something washed-up rock star, smeared eyeliner, wild graying mullet, wearing a tattered gold-sequined bathrobe over a faded band tee, standing in ankle-deep water clutching a steaming microwave lasagna tray in one hand and an oversized magnifying glass in the other, tearful and bewildered, photoreal"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.34,
+      ""w"": 0.42,
+      ""h"": 0.52
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a platinum vinyl record floating on the water's surface catching pink light, photoreal reflection"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.74,
+      ""w"": 0.22,
+      ""h"": 0.12
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a glowing round goldfish bowl on a half-submerged side table, single orange goldfish lit from within, casting warm light, photoreal"",
+      ""palette"": [],
+      ""x"": 0.7,
+      ""y"": 0.6,
+      ""w"": 0.2,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a yellow rubber duck drifting across rippling water in the lower right foreground, photoreal"",
+      ""palette"": [],
+      ""x"": 0.6,
+      ""y"": 0.86,
+      ""w"": 0.12,
+      ""h"": 0.09
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""WHODUNNIT,\nREVERB?"",
+      ""desc"": ""huge condensed bold serif title in cracked gold-foil lettering with a wet reflective sheen, centered across upper third, slight perspective tilt"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.06,
+      ""w"": 0.84,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""He lost the band. He lost the plot. He kept the magnifying glass."",
+      ""desc"": ""small italic magenta tagline, single line, clean sans-serif, just under the title"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.27,
+      ""w"": 0.72,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""HOLLOWREEF PICTURES PRESENTS  A BENNO QUILL FILM  \""WHODUNNIT, REVERB?\""  DAX MARROW  LOLA VANTZ  THE GOLDFISH AS HIMSELF  MUSIC BY THE LATE B-SIDES  DIRECTED BY BENNO QUILL"",
+      ""desc"": ""tiny condensed all-caps billing block, pale teal, centered, standard credit-block spacing"",
+      ""palette"": [],
+      ""x"": 0.16,
+      ""y"": 0.91,
+      ""w"": 0.68,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""IN THEATERS THIS FALL"",
+      ""desc"": ""small bold gold sans-serif release line, letter-spaced, centered"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.87,
+      ""w"": 0.4,
+      ""h"": 0.03
+    }
+  ]
+}",0116-whodunnit-reverb.jpg
+Documentary-style,Conspiracy Doc,Musical,Tragic Musical,Disillusioned Priest,"Pitch: Conspiracy Doc x Tragic Musical. Tone: dread, but make it horny. Lead: a Disillusioned Priest.",Hosanna in the Highest Conspiracy,"Father Lucian Voss lost his faith, found a corkboard, and never looked back. In this ""documentary,"" the chain-smoking, dangerously handsome priest croons torch-song confessionals about the Vatican's secret thermostat cabal while a trembling investigative cellist follows him through candlelit catacombs. Every revelation is sung. Every duet ends in tears or sin. As Lucian inches toward the truth — and toward his cameraman, Brother Diego — the choir gets louder, the lighting gets steamier, and somebody's clearly going to die before the third act key change.","{
+  ""high_level_description"": ""A sweat-sheened disillusioned priest mid-anguished-song in a candlelit catacomb plastered with conspiracy strings, shot like a moody true-crime doc that wandered into an operatic melodrama."",
+  ""background"": ""A vaulted stone catacomb crammed with a red-string conspiracy wall: hundreds of pinned photographs, newspaper clippings, and tangled crimson thread converging on a single golden crucifix. Hundreds of dripping votive candles recede into smoky darkness, throwing flickering shadows up the damp masonry. Faint stained-glass light bleeds from a far archway, hazy with incense."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, candle-warm chiaroscuro grade with deep crushed blacks, photorealistic, fine film grain, volumetric incense haze, documentary handheld intimacy"",
+  ""aesthetics"": ""operatic dread, sacred and sweaty, smoldering melodrama, true-crime tension, baroque sensuality"",
+  ""lighting"": ""warm flickering candlelight rims the priest's face and bare throat while a single cold investigative key light cuts in from the left, smoke catching every beam."",
+  ""palette"": [
+    ""#0C0805"",
+    ""#C0392B"",
+    ""#E8B84B"",
+    ""#7A1F12"",
+    ""#F2E2C0""
+  ],
+  ""bg_brightness"": 28,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A ruggedly handsome 40-something priest in an unbuttoned black cassock with the white collar hanging loose, head tilted back mid-anguished-song, eyes glistening with tears, a cigarette smoldering forgotten in one hand, sweat beading on his collarbone, lit theatrically by candlelight, photorealistic"",
+      ""palette"": [],
+      ""x"": 0.27,
+      ""y"": 0.3,
+      ""w"": 0.46,
+      ""h"": 0.5
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A tense young cellist in a rumpled trench coat half-hidden in the candlelit background, bow raised, clutching a handheld documentary camera, watching the priest with worry, soft-focus"",
+      ""palette"": [],
+      ""x"": 0.04,
+      ""y"": 0.46,
+      ""w"": 0.22,
+      ""h"": 0.34
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""Foreground tangle of red conspiracy string and pinned Polaroids stretching across the lower frame, slightly out of focus, photoreal"",
+      ""palette"": [],
+      ""x"": 0.0,
+      ""y"": 0.78,
+      ""w"": 1.0,
+      ""h"": 0.21999999999999997
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""HOSANNA\nIN THE HIGHEST\nCONSPIRACY"",
+      ""desc"": ""Towering condensed serif title in tarnished gold leaf with candle-glow edges and subtle incense smoke wisping off the letters, stacked three lines, centered, distressed sacred-engraving texture"",
+      ""palette"": [],
+      ""x"": 0.1,
+      ""y"": 0.04,
+      ""w"": 0.8,
+      ""h"": 0.24
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""He lost his faith. He kept the high notes."",
+      ""desc"": ""Small italic ivory tagline in elegant serif, letter-spaced, softly glowing"",
+      ""palette"": [],
+      ""x"": 0.16,
+      ""y"": 0.285,
+      ""w"": 0.68,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE TRUTH IS A KEY CHANGE AWAY"",
+      ""desc"": ""Tiny all-caps crimson sans-serif strip, widely tracked, like a documentary lower-third"",
+      ""palette"": [],
+      ""x"": 0.22,
+      ""y"": 0.835,
+      ""w"": 0.56,
+      ""h"": 0.03
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""VEILSTONE PICTURES PRESENTS A SOLEMN HOUR FILM \""HOSANNA IN THE HIGHEST CONSPIRACY\"" MARCUS DELACROIX  ELENA SØRBY  DIEGO ANSELMI  CASTING BY R. PADRON  MUSIC BY THE OSSARIUM CHOIR  DIRECTED BY IGNATIUS VALE"",
+      ""desc"": ""Standard condensed pale-gold billing block, tiny justified credits typography, centered"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.9,
+      ""w"": 0.76,
+      ""h"": 0.06
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""CONFESSING THIS WINTER"",
+      ""desc"": ""Small bold ivory all-caps release line, letter-spaced, centered"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.965,
+      ""w"": 0.4,
+      ""h"": 0.025
+    }
+  ]
+}",0117-hosanna-in-the-highest-conspiracy.jpg
+Drama,Prestige Drama,Romance,Period Romance,Ambitious Politician,A Ambitious Politician stumbles into a Prestige Drama conspiracy that can only be solved using the rules of Period Romance.,The Honorable Affair,"Newly elected Senator Cassius Thorne discovers his predecessor was murdered to bury a treasonous ledger — and the only witnesses are the powdered aristocrats of a 1814 estate frozen in time by their own scandal-bound etiquette. To extract the truth, Cassius must abandon backroom horse-trading and master the lethal arts of the calling card, the chaperoned waltz, and the devastatingly worded letter. Every confession requires a courtship; every alliance demands he risk his heart to the icy Lady Ravensmere, who may be both his killer and his soulmate. In a world where a misplaced glove ends careers, the most dangerous campaign is romance.","{
+  ""high_level_description"": ""A modern-suited politician and a Regency-gowned noblewoman stand back-to-back in a candlelit grand ballroom, divided by eras yet bound by intrigue, on a moody photoreal one-sheet."",
+  ""background"": ""An opulent 1810s ballroom interior with gilded columns, towering arched windows, and a vast crystal chandelier dripping warm light. Deep perspective recedes into shadowed colonnades where masked guests linger as soft silhouettes. Drifting candle-smoke haze and dust motes hang in the air, lending depth and a faint sense of secrets."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, warm candlelit chiaroscuro grade with cool shadow falloff, photorealistic, fine film grain, subtle volumetric haze"",
+  ""aesthetics"": ""prestige period elegance, simmering tension, refined opulence, melancholic grandeur"",
+  ""lighting"": ""warm key light from chandelier and candelabra carving the faces out of velvety shadow, with a cool blue rim from a distant window."",
+  ""palette"": [
+    ""#1C1408"",
+    ""#C8A24B"",
+    ""#7A1F2B"",
+    ""#E8DDC4"",
+    ""#2A3A4F""
+  ],
+  ""bg_brightness"": 38,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A handsome man in his 40s in a sharp modern charcoal three-piece suit and loosened silk tie, jaw tense, holding a sealed wax-stamped letter, standing facing left, half-lit by candlelight"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.34,
+      ""w"": 0.42,
+      ""h"": 0.52
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""An elegant woman in her 30s in an ornate empire-waist Regency gown of deep wine silk, elbow-length gloves, hair in ringlets, glancing back over her bare shoulder with a guarded expression, facing right"",
+      ""palette"": [],
+      ""x"": 0.5,
+      ""y"": 0.32,
+      ""w"": 0.42,
+      ""h"": 0.54
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""An ornate antique calling card resting on a silver tray, edges gilded, catching candlelight in the foreground"",
+      ""palette"": [],
+      ""x"": 0.4,
+      ""y"": 0.8,
+      ""w"": 0.2,
+      ""h"": 0.1
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE HONORABLE\nAFFAIR"",
+      ""desc"": ""large elegant high-contrast engraved serif title in warm gold foil with fine letterpress shadow, centered, spanning two lines"",
+      ""palette"": [],
+      ""x"": 0.1,
+      ""y"": 0.06,
+      ""w"": 0.8,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""Every confession requires a courtship."",
+      ""desc"": ""slim italic serif tagline in soft cream, letter-spaced, single line"",
+      ""palette"": [],
+      ""x"": 0.15,
+      ""y"": 0.27,
+      ""w"": 0.7,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""MERIDIAN HOUSE PICTURES PRESENTS  A ROWAN ELLSWORTH FILM  \""THE HONORABLE AFFAIR\""  JULIAN CRANE   ISADORA VELE  COSTUMES BY MARGOT FELL  MUSIC BY HENRIK DOZE  DIRECTED BY ROWAN ELLSWORTH"",
+      ""desc"": ""small condensed all-caps billing block in pale gold, tightly tracked, centered"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.9,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""IN THEATERS THIS WINTER"",
+      ""desc"": ""small spaced all-caps line in cream above the billing block"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.86,
+      ""w"": 0.4,
+      ""h"": 0.03
+    }
+  ]
+}",0118-the-honorable-affair.jpg
+Comedy,Buddy Comedy,Documentary-style,Reality Competition,Reluctant Chosen One,A Reluctant Chosen One stumbles into a Buddy Comedy conspiracy that can only be solved using the rules of Reality Competition.,The Chosen Three: Eliminated With Extreme Prejudice,"Dale Prunch, a mild-mannered parking enforcement officer, is informed by an ancient prophecy (and a very enthusiastic man named Gary) that he alone can stop a citywide conspiracy. The catch: the cult's secrets are sealed by reality-TV logic, so Dale must survive themed elimination challenges, confessional-booth betrayals, and a ""synergy round"" with his accidental best friend, a disgraced former game-show host. Together they bicker, form an alliance, and lie to a confessional camera nobody can find. Saving the world means outlasting the other contestants — and surviving the dramatic reveal music.","{
+  ""high_level_description"": ""Two mismatched men stand back-to-back under blazing reality-show stage lights inside a crumbling ancient temple repurposed as a competition arena, immunity-idol medallions glowing between them."",
+  ""background"": ""Interior of a half-ruined stone temple retrofitted with a glossy reality-competition stage: torches alongside studio rigging, a giant lit countdown clock embedded in carved rock, and tiered audience risers fading into smoky darkness. Volumetric haze drifts through shafts of colored stage light. Cables snake across mossy ancient flagstones, mixing sacred ruin with cheap TV-set glamour."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, teal-and-amber cinematic grade, volumetric haze, crisp key light, photorealistic film still"",
+  ""aesthetics"": ""absurd, high-energy, ironic, glossy reality-TV sheen, mock-epic"",
+  ""lighting"": ""hard theatrical key spotlights from above with smoky colored backlight and a warm torch glow rimming the two leads."",
+  ""palette"": [
+    ""#0E2A33"",
+    ""#E8A23B"",
+    ""#C23B2E"",
+    ""#F2E4C4"",
+    ""#1A1410""
+  ],
+  ""bg_brightness"": 42,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A nervous, ordinary-looking man in a rumpled parking-enforcement uniform clutching a glowing carved stone medallion, eyebrows raised in bewildered terror, sweat catching the spotlight, standing center"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.34,
+      ""w"": 0.3,
+      ""h"": 0.46
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A flamboyant middle-aged former game-show host in a sequined blazer striking an over-confident pose back-to-back with the other man, holding a microphone like a sword, big toothy grin"",
+      ""palette"": [],
+      ""x"": 0.52,
+      ""y"": 0.36,
+      ""w"": 0.28,
+      ""h"": 0.44
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A huge ancient stone countdown clock with glowing red LED numerals reading 03:00 embedded in a carved temple wall, smoke curling around it"",
+      ""palette"": [],
+      ""x"": 0.06,
+      ""y"": 0.3,
+      ""w"": 0.2,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A weathered confessional-booth camera on a tripod festooned with torchlit ceremonial beads, lens pointed at the leads"",
+      ""palette"": [],
+      ""x"": 0.72,
+      ""y"": 0.62,
+      ""w"": 0.18,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE CHOSEN THREE"",
+      ""desc"": ""massive bold condensed sans-serif title in cracked gold foil with carved-stone texture, slight 3D bevel, centered, dominating the lower third"",
+      ""palette"": [],
+      ""x"": 0.07,
+      ""y"": 0.78,
+      ""w"": 0.86,
+      ""h"": 0.11
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""ELIMINATED WITH EXTREME PREJUDICE"",
+      ""desc"": ""smaller blood-red glowing reality-show subtitle font, all caps, centered beneath the main title"",
+      ""palette"": [],
+      ""x"": 0.15,
+      ""y"": 0.895,
+      ""w"": 0.7,
+      ""h"": 0.035
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""DESTINY HAS A TWIST. AND A COMMERCIAL BREAK."",
+      ""desc"": ""thin italic cream tagline, letter-spaced, centered near the top"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.07,
+      ""w"": 0.72,
+      ""h"": 0.045
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""OBELISK PICTURES PRESENTS  A RYDER FELLGATE FILM  \""THE CHOSEN THREE\""  MARCUS VANE  TEDDY BOSWORTH-PYNE  CASTING BY P. ROUX  MUSIC BY THE SUMMIT ORCHESTRA  DIRECTED BY RYDER FELLGATE"",
+      ""desc"": ""tiny condensed all-caps cream billing block, classic credits formatting, centered at very bottom"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.945,
+      ""w"": 0.76,
+      ""h"": 0.035
+    }
+  ]
+}",0119-the-chosen-three-eliminated-with-extreme-prejudice.jpg
+Documentary-style,Sports Doc,Comedy,Surreal Comedy,Retired Assassin,"Pitch: Sports Doc x Surreal Comedy. Tone: dread, but make it horny. Lead: a Retired Assassin.",The Quiet Game: A Tournament of Hands,"Vincent ""The Whisper"" Kovac retired from contract killing to dominate the world's most prestigious competitive thumb-wrestling circuit — and a reverent documentary crew has captured every dread-soaked, inexplicably sweaty moment. As rival champions vanish under suspicious circumstances, talking-head interviews dissolve into fever dreams of slow-motion knuckle-cracking and a referee who may be Death itself in a polo shirt. Vincent insists he's a changed man, yet his thumb still knows 14 lethal pressure points. It's the feel-good sports story of the year, if your feelings are mostly unease and longing.","{
+  ""high_level_description"": ""A photoreal sports-documentary one-sheet of a brooding retired assassin gripping a rival's hand mid thumb-wrestle under a single dramatic spotlight, shot like a prestige doc still."",
+  ""background"": ""A cavernous, near-empty tournament arena bathed in deep shadow, with a distant blurred crowd lit only by scattered phone lights like embers. A lone overhead spotlight carves a column of haze down to a regulation thumb-wrestling table draped in black felt. The depth falls off into oppressive darkness, lending the scene a sacred, funereal hush."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, fine film grain, desaturated teal-and-amber documentary grade, volumetric spotlight haze, photorealistic, naturalistic skin texture with a faint sheen of sweat"",
+  ""aesthetics"": ""dread, intimate, absurdly solemn, sweaty tension, prestige sports doc, deadpan surreal"",
+  ""lighting"": ""a single hard overhead spotlight pierces the smoky dark, raking across two locked hands and a half-shadowed face while the rest of the arena drowns in shadow."",
+  ""palette"": [
+    ""#0E1518"",
+    ""#1F3A40"",
+    ""#C8862F"",
+    ""#E8D7B0"",
+    ""#7A1F1A""
+  ],
+  ""bg_brightness"": 22,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A weathered middle-aged man in a tight black athletic polo, sleeves straining, jaw clenched, brow glistening with sweat, leaning over a felt table with his right thumb locked in an intense thumb-wrestling grip against an unseen opponent's hand; intensely serious eyes catching the spotlight, photoreal cinematic portrait"",
+      ""palette"": [],
+      ""x"": 0.2,
+      ""y"": 0.3,
+      ""w"": 0.6,
+      ""h"": 0.5
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""Extreme close detail of two interlocked thumbs and clasped hands on black felt, veins and tendons taut, a single bead of sweat dropping, dramatically backlit, photoreal macro"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.66,
+      ""w"": 0.4,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A tall gaunt referee in a striped polo shirt standing in the deep background haze, face obscured in shadow, holding a small whistle, faintly ominous silhouette, photoreal"",
+      ""palette"": [],
+      ""x"": 0.04,
+      ""y"": 0.4,
+      ""w"": 0.16,
+      ""h"": 0.34
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""OFFICIAL SELECTION — TELLURIDE THUMB FORUM"",
+      ""desc"": ""small all-caps condensed sans-serif laurel-style credential line in muted gold, centered near top"",
+      ""palette"": [],
+      ""x"": 0.18,
+      ""y"": 0.05,
+      ""w"": 0.64,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE QUIET GAME"",
+      ""desc"": ""huge bold condensed serif title in cracked amber-gold, letters slightly weathered, heavy and solemn, centered"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.1,
+      ""w"": 0.84,
+      ""h"": 0.13
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""A TOURNAMENT OF HANDS"",
+      ""desc"": ""thin spaced uppercase sans-serif subtitle in pale bone white directly under the main title"",
+      ""palette"": [],
+      ""x"": 0.2,
+      ""y"": 0.235,
+      ""w"": 0.6,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""He left the kill behind.\nThe grip never left him."",
+      ""desc"": ""italic serif tagline in soft off-white, two centered lines, restrained and dread-laden"",
+      ""palette"": [],
+      ""x"": 0.22,
+      ""y"": 0.85,
+      ""w"": 0.56,
+      ""h"": 0.06
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""MERIDIAN VÉRITÉ FILMS PRESENTS  A HALLBORG DRECK FILM  \""THE QUIET GAME\""  VINCENT KOVAC  MARGOT ESTERHAZY  DEACON PROWSE  EDITED BY ORSON FELL  MUSIC BY THE CARPAL ENSEMBLE  DIRECTED BY HALLBORG DRECK"",
+      ""desc"": ""tiny condensed all-caps billing block in faint gray, justified, centered at very bottom"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.93,
+      ""w"": 0.76,
+      ""h"": 0.05
+    }
+  ]
+}",0120-the-quiet-game-a-tournament-of-hands.jpg

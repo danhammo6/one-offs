@@ -5681,3 +5681,954 @@ Mystery,Forensic Procedural,Comedy,Satire,Cynical Journalist,"Pitch: Forensic Pr
     }
   ]
 }",0060-the-body-of-evidence.jpg
+Musical,Dance Musical,Mystery,Conspiracy Thriller,Disillusioned Priest,"Three-act structure: Dance Musical in act one, Conspiracy Thriller by act three, and a Disillusioned Priest sobbing into a microwave dinner the whole time.",Pas de Deux ex Machina,"Father Aurelio Voss lost his faith years ago, but never lost his killer jazz hands — so when his struggling parish launches a fundraising dance revue, he choreographs the show of his life. Then he notices the routines spell out coordinates, his lead dancer vanishes mid-pirouette, and the diocese's accountant is found face-down in a tambourine. As Aurelio tap-dances deeper into a shadow syndicate laundering money through liturgical sequins, he realizes the only thing standing between the truth and a global cover-up is one disillusioned priest with rhythm. He sobs into his microwave lasagna between rehearsals. The choreography never stops.","{
+  ""high_level_description"": ""A weary priest in a black cassock frozen mid-dance pose under a single theatrical spotlight, surrounded by ominous shadowy figures and scattered evidence, shot like a glossy noir thriller one-sheet."",
+  ""background"": ""A cavernous old cathedral repurposed as a rehearsal stage, stone columns and stained-glass windows fading into deep blue darkness. A polished marble floor reflects a hard pool of spotlight in the foreground while corkboard with red strings and surveillance photos lurks in a shadowed alcove at left. Volumetric haze drifts through angled god-rays from high windows."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, teal-and-amber cinematic grade, photorealistic, volumetric haze, subtle film grain"",
+  ""aesthetics"": ""neo-noir, theatrical, paranoid, sacred-meets-showbiz, moody glamour"",
+  ""lighting"": ""a single hard top spotlight isolates the priest in warm light while cold blue rim light edges the surrounding shadows and figures."",
+  ""palette"": [
+    ""#0E1726"",
+    ""#1F3A5F"",
+    ""#C9962E"",
+    ""#E8DCC0"",
+    ""#7A1B1B""
+  ],
+  ""bg_brightness"": 30,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A middle-aged priest in a flowing black cassock and white clerical collar caught mid jazz pose — one arm thrust skyward, head bowed, expression of tormented passion, sequins faintly catching light on his sleeves, photorealistic full-body figure under a hard spotlight"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.3,
+      ""w"": 0.4,
+      ""h"": 0.52
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A cluttered conspiracy corkboard in shadow at the left edge — pinned surveillance photos, dance-step diagrams, and taut red strings connecting them, lit by faint cold blue light"",
+      ""palette"": [],
+      ""x"": 0.02,
+      ""y"": 0.4,
+      ""w"": 0.22,
+      ""h"": 0.34
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A single steaming microwave lasagna tray sitting forlornly on the marble floor in the foreground, fork beside it, lit by spill from the spotlight"",
+      ""palette"": [],
+      ""x"": 0.66,
+      ""y"": 0.74,
+      ""w"": 0.2,
+      ""h"": 0.13
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""Two faceless silhouetted figures in trench coats standing among the cathedral columns in deep background haze, watching, barely visible"",
+      ""palette"": [],
+      ""x"": 0.7,
+      ""y"": 0.34,
+      ""w"": 0.24,
+      ""h"": 0.3
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""PAS DE DEUX\nEX MACHINA"",
+      ""desc"": ""Large elegant high-contrast serif title in cream and gold foil, letter-pressed look, stacked two lines, centered, slight dramatic shadow"",
+      ""palette"": [],
+      ""x"": 0.1,
+      ""y"": 0.05,
+      ""w"": 0.8,
+      ""h"": 0.18
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""He kept the faith in his footwork."",
+      ""desc"": ""Slim italic tagline in muted gold, single line, centered just below the title"",
+      ""palette"": [],
+      ""x"": 0.15,
+      ""y"": 0.25,
+      ""w"": 0.7,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""VESPER LIGHT PICTURES   A FILM BY MARCO DELACROIX-HUTH   STARRING DOMINIC FERREY  ISOLDE VANCE  RAYMOND OKAFOR  CASTING BY L. PRETORIUS  MUSIC BY THE LITURGY COLLECTIVE  EDITED BY ANNA-KEY ROSS  DIRECTOR OF PHOTOGRAPHY JONAS BELL  DIRECTED BY MARCO DELACROIX-HUTH"",
+      ""desc"": ""Tiny condensed all-caps billing block in pale gray, tightly tracked, centered across several wrapped lines"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.88,
+      ""w"": 0.72,
+      ""h"": 0.06
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE COLLECTION IS TAKEN UP THIS WINTER"",
+      ""desc"": ""Small spaced all-caps release line in gold, centered above the billing block"",
+      ""palette"": [],
+      ""x"": 0.2,
+      ""y"": 0.845,
+      ""w"": 0.6,
+      ""h"": 0.025
+    }
+  ]
+}",0061-pas-de-deux-ex-machina.jpg
+Western,Acid Western,Documentary-style,Food Doc,Night-Shift Nurse,It's Acid Western meets Food Doc... but the protagonist is a Night-Shift Nurse.,Graveyard Shift: A Western in Three Courses,"Out in the sun-scorched nowhere town of Buzzard's Mercy, night-shift nurse Delphine ""Del"" Cortez runs the only clinic for ninety miles — and, after midnight, the only kitchen. When a fevered drifter dies mid-sentence babbling about a chili recipe that ""cures or kills,"" Del's documentary crew follows her into a hallucinatory border of cactus broth, peyote consommé, and patients who pay in heirloom beans. Part frontier ghost story, part lovingly plated food doc, it asks the only question that matters at 3 a.m.: is the wound infected, or just underseasoned? Narrated like a cooking show, lit like a fever dream.","{
+  ""high_level_description"": ""A weathered night-shift nurse stands in a sun-cracked desert ghost town at twilight, holding a bloodstained ladle over a simmering enamel pot, lit like a cinematic fever dream."",
+  ""background"": ""A derelict Old West frontier street at deep dusk, with peeling clapboard storefronts, a leaning saloon sign, and dust hanging in the air. The horizon burns a bruised orange-violet behind distant mesas and a lone saguaro. Heat shimmer and floating embers blur the deep background while the foreground stays crisp."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, sun-bleached high-contrast desert grade with teal shadows, fine film grain, photorealistic, volumetric dust haze"",
+  ""aesthetics"": ""acid-western surrealism, gritty documentary intimacy, feverish, sweat-soaked, hauntingly appetizing"",
+  ""lighting"": ""low golden hour key from the dying sun raking across her face, with a hot lantern glow rising from the steaming pot below."",
+  ""palette"": [
+    ""#C8541E"",
+    ""#E8B45A"",
+    ""#2E4A4C"",
+    ""#7A2418"",
+    ""#EAD9B8""
+  ],
+  ""bg_brightness"": 48,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A tired, defiant woman in her late 30s in a faded teal nurse's scrub top layered under a dusty leather duster, hair tied back with a bandana, smears of blood and chili on her forearm, gripping a heavy steel ladle dripping deep-red broth, eyes catching the last sunlight, photoreal"",
+      ""palette"": [],
+      ""x"": 0.28,
+      ""y"": 0.3,
+      ""w"": 0.46,
+      ""h"": 0.55
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A dented vintage enamel stockpot set on a glowing camp burner in the foreground, thick crimson chili-broth bubbling over the rim, steam catching warm lantern light, surgical clamps resting on the rim like cooking tongs, photoreal"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.74,
+      ""w"": 0.42,
+      ""h"": 0.22
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A lone weathered saguaro cactus silhouetted against the burning twilight sky on the left edge, photoreal"",
+      ""palette"": [],
+      ""x"": 0.02,
+      ""y"": 0.34,
+      ""w"": 0.16,
+      ""h"": 0.4
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A swarm of glowing dust motes and tiny embers drifting across the mid-air of the scene, softly out of focus, photoreal"",
+      ""palette"": [],
+      ""x"": 0.55,
+      ""y"": 0.4,
+      ""w"": 0.4,
+      ""h"": 0.3
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""GRAVEYARD SHIFT"",
+      ""desc"": ""Large weathered slab-serif Western title in cracked bone-white with sun-bleached gold edges, distressed texture, spanning the width near the top"",
+      ""palette"": [],
+      ""x"": 0.07,
+      ""y"": 0.06,
+      ""w"": 0.86,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""A Western in Three Courses"",
+      ""desc"": ""Slim italic serif subtitle in dusty amber, centered beneath the main title"",
+      ""palette"": [],
+      ""x"": 0.18,
+      ""y"": 0.23,
+      ""w"": 0.64,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE WOUND IS HEALING. THE BROTH IS ALMOST READY."",
+      ""desc"": ""Small spaced uppercase tagline in pale cream, centered just above the pot"",
+      ""palette"": [],
+      ""x"": 0.15,
+      ""y"": 0.685,
+      ""w"": 0.7,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""DEADLIGHT PICTURES PRESENTS  A RAMÓN ELKHORN FILM  \""GRAVEYARD SHIFT: A WESTERN IN THREE COURSES\""  DELPHINE OQUENDO  SILAS BRAY  MARGUERITE COLE  CASTING BY T. VANCE  MUSIC BY HOLLIS REED  DIRECTED BY RAMÓN ELKHORN"",
+      ""desc"": ""Tiny condensed all-caps billing block in faded cream, justified center at the very bottom"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.95,
+      ""w"": 0.76,
+      ""h"": 0.035
+    }
+  ]
+}",0062-graveyard-shift-a-western-in-three-courses.jpg
+Comedy,Workplace Comedy,Action,Heist,Aging Movie Star,"Imagine if a Workplace Comedy show had a baby with a Heist miniseries, and that baby grew up to follow a Aging Movie Star.",The Last Reel Heist,"Faded action legend Roman Castellane hasn't had a hit since the '90s and now spends his days clocking in as a ""brand ambassador"" at the very studio that forgot him. When he discovers the suits plan to delete his master films to make room for a reality show, Roman recruits the world's most dysfunctional office — a temp, an IT guy, and a passive-aggressive HR rep — to steal the negatives back before Friday's quarterly review. There are laser grids, but also a mandatory team-building seminar. He's done his own stunts for forty years; the printer jam may finally end him.","{
+  ""high_level_description"": ""A silver-haired aging action star in a wrinkled tuxedo crouches in an office-lit vault doorway clutching a reel of film, lit like a heist thriller but framed by cubicle clutter, on a photoreal vertical one-sheet."",
+  ""background"": ""A sleek corporate film-studio vault corridor at night, glowing emergency strip-lighting along the floor and a green laser security grid crisscrossing the deep background. To the sides, beige office cubicles, a water cooler, and motivational posters bleed into the shadows. Volumetric haze gives depth as the corridor recedes toward a glowing red exit sign."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, teal-and-amber cinematic grade, photorealistic, volumetric haze, subtle film grain, crisp key light"",
+  ""aesthetics"": ""slick heist tension, deadpan office mundanity, glossy thriller, comedic contrast"",
+  ""lighting"": ""low-key thriller lighting with a hard cool key on the star's face, warm office fluorescents spilling from the sides, and green laser accents."",
+  ""palette"": [
+    ""#0E2A2E"",
+    ""#E8A23C"",
+    ""#1C3F46"",
+    ""#C0392B"",
+    ""#EDE6D6""
+  ],
+  ""bg_brightness"": 38,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A 60-something silver-haired leading man with rugged stubble and a weathered handsome face, wearing a slightly rumpled black tuxedo with bow tie undone, crouched low in a heist-ready pose, cradling a vintage round metal film canister to his chest, sweat on his brow, intense determined eyes catching a cool key light"",
+      ""palette"": [],
+      ""x"": 0.26,
+      ""y"": 0.3,
+      ""w"": 0.48,
+      ""h"": 0.52
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A clip-on office lanyard ID badge dangling from the tuxedo lapel, reading 'BRAND AMBASSADOR', slightly out of focus, photoreal plastic and lanyard texture"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.55,
+      ""w"": 0.14,
+      ""h"": 0.12
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A beige office water cooler with a translucent jug glowing faintly in the corridor shadows, photoreal, soft bokeh"",
+      ""palette"": [],
+      ""x"": 0.02,
+      ""y"": 0.6,
+      ""w"": 0.16,
+      ""h"": 0.26
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""Crisscrossing green security laser beams cutting across the lower corridor, thin glowing lines with haze scatter, photoreal"",
+      ""palette"": [],
+      ""x"": 0.55,
+      ""y"": 0.66,
+      ""w"": 0.43,
+      ""h"": 0.18
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE LAST REEL HEIST"",
+      ""desc"": ""Massive bold condensed sans-serif title in metallic brushed-silver with a thin amber edge glow, stacked across three lines, centered, cinematic distressed metal texture"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.06,
+      ""w"": 0.84,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""He did his own stunts for 40 years. The printer jam may finally kill him."",
+      ""desc"": ""Small italic light-gray tagline in a single clean line, understated, just below the title"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.27,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""MERIDIAN VAULT PICTURES"",
+      ""desc"": ""Tiny condensed amber all-caps studio name, letter-spaced, centered above billing"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.86,
+      ""w"": 0.4,
+      ""h"": 0.03
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""MERIDIAN VAULT PICTURES PRESENTS  A DECLAN ROURKE FILM  \""THE LAST REEL HEIST\""  ROMAN CASTELLANE  MARGO FENWICK  TYLER OKONKWO  CASTING BY PRIYA VENKAT  MUSIC BY HALSTON BREEZE  DIRECTED BY DECLAN ROURKE"",
+      ""desc"": ""Standard tiny condensed white movie billing block, fully justified, multiple lines, low opacity"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.9,
+      ""w"": 0.72,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""IN THEATERS THIS QUARTER"",
+      ""desc"": ""Small bold off-white all-caps release line, letter-spaced, centered at very bottom"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.955,
+      ""w"": 0.4,
+      ""h"": 0.03
+    }
+  ]
+}",0063-the-last-reel-heist.jpg
+Horror,Cosmic Horror,Mystery,Hardboiled Detective,Undertaker,"Cold open: a Undertaker, alone, in the rain. The genre? Cosmic Horror. The vibe? Unmistakably Hardboiled Detective. Cue title card.",The Mortician's Long Goodbye,"Embalmer Silas Crane runs the only funeral home in a fog-choked harbor town, and lately his clients won't stay quiet about what they saw beyond the veil. When a banker turns up dead with seawater in his lungs and a star-shaped wound that won't close, Silas takes the case the cops won't touch — armed with a flask, a worn fedora, and the unsettling ability to hear corpses confess. Every lead drags him deeper toward a sleeping thing under the docks that's been recruiting the dead as witnesses. He's seen a lot of bodies. He's never had one ask him for backup.","{
+  ""high_level_description"": ""A weary undertaker in a soaked trench coat and fedora stands in a rain-lashed cemetery while a colossal eldritch silhouette with star-shaped eyes looms in the storm clouds above him."",
+  ""background"": ""A waterlogged hillside graveyard at 3 a.m., crooked headstones receding into thick coastal fog and a distant fishing-harbor skyline with one flickering lighthouse. Sheets of rain streak the air, and the low clouds part to reveal an impossibly vast tentacled shape with constellation-bright eyes pressing down on the town. Puddles on the foreground mud mirror the monstrous glow, blending noir wet-street reflection with cosmic dread."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, deep teal-and-amber noir grade, heavy practical rain, volumetric haze, photorealistic, fine film grain"",
+  ""aesthetics"": ""hardboiled noir, lovecraftian dread, rain-soaked, brooding, cinematic"",
+  ""lighting"": ""a single hard amber streetlamp rakes the undertaker from the side while sickly green light bleeds down from the creature above, leaving deep wet shadows."",
+  ""palette"": [
+    ""#0c1417"",
+    ""#1f3a3d"",
+    ""#c8862f"",
+    ""#6fae8f"",
+    ""#0a0d10""
+  ],
+  ""bg_brightness"": 28,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a gaunt middle-aged undertaker in a soaked black trench coat and tilted fedora, pale stubbled face lit hard from the side, holding a brass embalming pump like a detective's pistol, cigarette smoke curling, rain dripping off his hat brim, photoreal"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.4,
+      ""w"": 0.42,
+      ""h"": 0.52
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""an immense translucent eldritch entity in the storm clouds, writhing tentacles and three star-shaped glowing eyes, half-hidden by fog, looming over the town, photoreal CGI integrated into the sky"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.04,
+      ""w"": 0.84,
+      ""h"": 0.34
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""weathered moss-covered headstones in the rainy foreground mud, one tilted open like a door with faint green light leaking out, photoreal"",
+      ""palette"": [],
+      ""x"": 0.0,
+      ""y"": 0.74,
+      ""w"": 0.45,
+      ""h"": 0.24
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE MORTICIAN'S\nLONG GOODBYE"",
+      ""desc"": ""large condensed noir serif title in weathered bone-white, slightly distressed wet metallic sheen, faint green rim glow on the letters, lower third of poster"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.62,
+      ""w"": 0.84,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""He buries the dead. The dead won't stay buried."",
+      ""desc"": ""small italic amber tagline in a clean typewriter-style font, single line, above the title"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.57,
+      ""w"": 0.72,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""HOLLOWPOINT PICTURES PRESENTS  A CORNELIUS VASH FILM  \""THE MORTICIAN'S LONG GOODBYE\""  ELIAS THORNE  MARGOT REVEL  DESMOND OKORO  CASTING BY VERA LUNDQVIST  MUSIC BY THE ABYSSAL STRINGS  DIRECTED BY CORNELIUS VASH"",
+      ""desc"": ""tiny condensed sans-serif billing block in muted grey-white, centered, classic credit-block spacing"",
+      ""palette"": [],
+      ""x"": 0.16,
+      ""y"": 0.92,
+      ""w"": 0.68,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""IN THEATERS THIS OCTOBER"",
+      ""desc"": ""small bold uppercase amber release line, letter-spaced, centered"",
+      ""palette"": [],
+      ""x"": 0.28,
+      ""y"": 0.88,
+      ""w"": 0.44,
+      ""h"": 0.03
+    }
+  ]
+}",0064-the-mortician-s-long-goodbye.jpg
+Sci-Fi,Post-Apocalyptic,Action,Military Action,Disgraced Detective,A Disgraced Detective stumbles into a Post-Apocalyptic conspiracy that can only be solved using the rules of Military Action.,Last Precinct: Rules of Engagement,"Disgraced detective Roy Calhoun was drummed off the force for losing an evidence locker — then the world ended, which honestly took the heat off. Now he runs a one-man cold-case bureau out of a gutted strip mall in the irradiated ruins of Phoenix, trading bullet casings for canned beans. When a missing-persons case unspools into a militia's plan to weaponize the last working satellite, Roy realizes the only way to crack it is to stop investigating and start fragging. He's got a magnifying glass, a belt-fed machine gun, and zero remaining badge. Justice is served in full auto.","{
+  ""high_level_description"": ""A grizzled detective in a tattered trench coat over body armor stands amid a bombed-out desert city, cradling a belt-fed machine gun while clutching a battered case file, dusk smoke swirling behind him."",
+  ""background"": ""A ruined post-apocalyptic Phoenix at golden-hour dusk, collapsed freeway overpasses and gutted skyscrapers fading into ochre dust haze. Wrecked military Humvees and a downed satellite dish litter the cracked highway receding to the horizon. A blood-orange irradiated sky glows with distant smoke columns and a faint dead-pixel moon."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, gritty desaturated teal-and-rust cinematic grade, photorealistic, heavy volumetric dust haze, fine film grain"",
+  ""aesthetics"": ""grimy, militaristic, neo-noir, sun-scorched, desperate, hard-boiled"",
+  ""lighting"": ""low warm backlight rim from the setting sun cutting through dust, with cold blue fill on the detective's face for noir contrast"",
+  ""palette"": [
+    ""#C5641E"",
+    ""#7A8B8C"",
+    ""#2B2620"",
+    ""#E0A24C"",
+    ""#1A2226""
+  ],
+  ""bg_brightness"": 48,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A weathered middle-aged man with stubble and a scarred brow wearing a torn olive trench coat over tactical body armor, holding a belt-fed machine gun in his right hand and a tattered manila evidence folder in his left, dust-caked, lit cinematically, photoreal"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.3,
+      ""w"": 0.42,
+      ""h"": 0.55
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A tarnished detective's badge half-melted and fused to a spent brass shell casing, lying in cracked desert dirt, extreme close-up sharp detail, photoreal"",
+      ""palette"": [],
+      ""x"": 0.06,
+      ""y"": 0.66,
+      ""w"": 0.22,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A crashed white satellite dish array tangled in barbed wire on a ridge, smoking faintly against the dusk sky, photoreal"",
+      ""palette"": [],
+      ""x"": 0.66,
+      ""y"": 0.4,
+      ""w"": 0.3,
+      ""h"": 0.22
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""LAST PRECINCT"",
+      ""desc"": ""Massive heavy condensed military-stencil sans-serif, rust-orange metal texture with scratched edges, slight perspective, dominant upper-third title"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.06,
+      ""w"": 0.84,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""RULES OF ENGAGEMENT"",
+      ""desc"": ""Narrow uppercase sans-serif subtitle in weathered pale grey, letter-spaced wide, sitting directly under the main title"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.225,
+      ""w"": 0.72,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""HE LOST THE BADGE. HE KEPT THE BULLETS."",
+      ""desc"": ""Small italic tagline in dusty white, centered above the billing block"",
+      ""palette"": [],
+      ""x"": 0.16,
+      ""y"": 0.86,
+      ""w"": 0.68,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""WASTELAND PICTURES PRESENTS A DELACROIX HALE FILM  \""LAST PRECINCT: RULES OF ENGAGEMENT\""  GRADY MORROW  ELISE VANCK  BARRON TULL  CASTING BY MAVIS REED  MUSIC BY THEO IRONS  DIRECTED BY DELACROIX HALE"",
+      ""desc"": ""Tiny condensed all-caps billing block in pale grey, standard credit-line spacing, centered at bottom"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.91,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""IN RUINS THIS SUMMER"",
+      ""desc"": ""Small bold uppercase release line in rust-orange, centered just below the tagline"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.905,
+      ""w"": 0.4,
+      ""h"": 0.025
+    }
+  ]
+}",0065-last-precinct-rules-of-engagement.jpg
+Western,Acid Western,Romance,Marriage of Convenience,Retired Assassin,"Three-act structure: Acid Western in act one, Marriage of Convenience by act three, and a Retired Assassin sobbing into a microwave dinner the whole time.",Til Death Do Us Draw,"Cassius ""The Whisper"" Vane retired from contract killing to a sun-blasted ghost town with nothing but a revolver, a hot plate, and crushing despair. When the town's water rights — and his pension — hinge on a forged marriage license, the local undertaker's widow offers a deal: a fake wedding, a real ranch, no feelings allowed. But between hallucinatory peyote shootouts and a microwave dinner he weeps into every single night, Cassius discovers the deadliest target he's ever failed to eliminate is his own heart. Saddle up for a feverish, sobbing love story with bullets.","{
+  ""high_level_description"": ""A weathered retired assassin in a dusty black duster stands in a cracked desert ghost town clutching a microwave dinner tray, a reluctant bride in faded lace beside him, both lit by a blistering acid-orange sunset."",
+  ""background"": ""A bone-dry frontier ghost town at dusk, warped wooden storefronts and a leaning church steeple receding into heat-shimmer. The sky is a bruised, oversaturated wash of acid orange, sulfur yellow, and dirty violet, with mirage ripples distorting the horizon. Fine alkali dust hangs in the still air, catching low golden backlight."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, sun-bleached high-contrast acid-western grade, oversaturated oranges crushed shadows, fine film grain, photorealistic, volumetric dust haze"",
+  ""aesthetics"": ""feverish, sun-scorched, melancholic, deadpan absurd, lonesome, operatic"",
+  ""lighting"": ""harsh low-angle sunset backlight rimming the figures in molten orange while their faces fall into deep warm shadow, a single practical glow from a microwave spilling cold blue onto the assassin's chest."",
+  ""palette"": [
+    ""#E8821F"",
+    ""#F2C53D"",
+    ""#7A4B2A"",
+    ""#3A2418"",
+    ""#9A6FB0"",
+    ""#5C7E94""
+  ],
+  ""bg_brightness"": 60,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a gaunt, grizzled retired assassin in a long dust-caked black duster and faded gunbelt, standing center-frame, holding a steaming peel-back microwave dinner tray with both hands as a single tear cuts a clean line through the dirt on his cheek, weary thousand-yard stare, photoreal"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.3,
+      ""w"": 0.42,
+      ""h"": 0.55
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a tired, unimpressed widow bride in a yellowed thrift-store lace wedding dress with a gunbelt cinched over it, arms crossed, half-turned away from the assassin, wilted bouquet of dead desert flowers in one hand, photoreal"",
+      ""palette"": [],
+      ""x"": 0.06,
+      ""y"": 0.4,
+      ""w"": 0.3,
+      ""h"": 0.46
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a single ornate revolver resting atop a crumpled paper wedding license pierced by a cactus thorn, foreground detail on cracked desert clay, shallow focus, photoreal"",
+      ""palette"": [],
+      ""x"": 0.6,
+      ""y"": 0.78,
+      ""w"": 0.3,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""TIL DEATH\nDO US DRAW"",
+      ""desc"": ""massive distressed slab-serif Western wood-type title in scorched orange-gold with cracked sun-bleached texture and deep black outline, stacked two lines, slight perspective, dominating the lower third"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.66,
+      ""w"": 0.84,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""He never missed a shot. He never finished a dinner alone again."",
+      ""desc"": ""small italic dusty cream serif tagline, single centered line, subtle drop shadow"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.6,
+      ""w"": 0.72,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""VERMILLION DUST PICTURES PRESENTS  A SILAS REDGRAVE FILM  \""TIL DEATH DO US DRAW\""  HOLLIS BRANNOCK  MARISELA QUINTERO  CASTING BY P. ABERNATHY  MUSIC BY THE LONESOME ORGAN  DIRECTED BY SILAS REDGRAVE"",
+      ""desc"": ""tiny condensed all-caps sans-serif billing block in pale dust-gray, tightly tracked, centered, classic credit-block layout"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.92,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THIS FALL — LOAD ONE, SET FOR HIGH"",
+      ""desc"": ""small bold condensed all-caps release line in acid yellow, centered above the billing block"",
+      ""palette"": [],
+      ""x"": 0.2,
+      ""y"": 0.88,
+      ""w"": 0.6,
+      ""h"": 0.03
+    }
+  ]
+}",0066-til-death-do-us-draw.jpg
+Documentary-style,Cult Exposé,Musical,Jukebox Musical,Night-Shift Nurse,It's Cult Exposé meets Jukebox Musical... but the protagonist is a Night-Shift Nurse.,Vital Signs: The Harmony Ward Deprogramming,"Night-shift nurse Pilar Okafor thought the new wellness collective renting the hospital's east wing was just very into vitamins and four-part harmony. Then her patients start signing over their pensions between vitals checks and the charge nurse only communicates in show tunes. As cameras roll on a ""routine documentary about hospital staffing,"" Pilar realizes she's the lone uncharmed soul on a ward run by a chart-topping cult that literally sings its way out of accountability. To save thirty sedated true believers, she'll have to out-belt a charismatic guru during a 3 a.m. code blue. The IV drip keeps tempo.","{
+  ""high_level_description"": ""A documentary-style one-sheet of a determined night-shift nurse standing in a fluorescent hospital corridor while a glowing, choir-robed cult sings in soft focus behind her, lit like a true-crime exposé crossed with a stage musical."",
+  ""background"": ""A long, deep-perspective hospital corridor at night, lined with empty gurneys and flickering fluorescent panels receding to a vanishing point. Halfway down the hall a doorway glows warm amber, spilling out a tightly packed group of figures in matching pale-blue wellness robes, slightly out of focus and uplit as if mid-song. Cold institutional teal dominates the foreground, warm cult light blooms in the distance, with faint volumetric haze drifting through the corridor."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, teal-and-amber cinematic grade, naturalistic fluorescent practicals, fine film grain, photorealistic, subtle handheld documentary framing"",
+  ""aesthetics"": ""ominous, clinical, true-crime exposé, theatrical glow, unsettling wholesomeness"",
+  ""lighting"": ""harsh overhead fluorescent key on the foreground nurse with a seductive warm backlight glow pouring from the distant cult doorway."",
+  ""palette"": [
+    ""#0F2A33"",
+    ""#2E6E78"",
+    ""#E9B66A"",
+    ""#F2F4F1"",
+    ""#1B1F22""
+  ],
+  ""bg_brightness"": 38,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A weary but defiant night-shift nurse in her late 30s, dark teal scrubs, hospital ID badge clipped to her chest, stethoscope around her neck, holding a clipboard and a glowing IV bag like a torch, expression caught between suspicion and fear, lit by cold overhead fluorescents, photorealistic, sharp focus"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.34,
+      ""w"": 0.4,
+      ""h"": 0.52
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A blurred cluster of eight people in matching pale-blue wellness robes standing in a softly glowing amber doorway down the corridor, mouths open mid-song, arms gently raised, slightly out of focus, eerily serene, photorealistic"",
+      ""palette"": [],
+      ""x"": 0.36,
+      ""y"": 0.3,
+      ""w"": 0.3,
+      ""h"": 0.3
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A chrome IV pole and drip stand in the immediate foreground, droplet caught mid-fall reflecting fluorescent light, shallow focus, photorealistic"",
+      ""palette"": [],
+      ""x"": 0.06,
+      ""y"": 0.46,
+      ""w"": 0.16,
+      ""h"": 0.4
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""VITAL SIGNS"",
+      ""desc"": ""huge bold condensed sans-serif in clean clinical white with a faint cyan clinical glow, stacked across the upper third, slight scuffed texture like a hospital sign, dominant title"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.06,
+      ""w"": 0.84,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE HARMONY WARD DEPROGRAMMING"",
+      ""desc"": ""narrow uppercase letter-spaced subtitle in warm amber, thin serif, centered directly under the main title"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.225,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""They sing in harmony.\nShe codes alone."",
+      ""desc"": ""small italic tagline in soft white, two lines, lower-mid poster, restrained documentary tone"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.84,
+      ""w"": 0.4,
+      ""h"": 0.06
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""A LANTERNVEIN FILMS PRESENTATION  A MARISOL D. ABERNATHY FILM  \""VITAL SIGNS: THE HARMONY WARD DEPROGRAMMING\""  PILAR OKAFOR  DESMOND HALE  RENATA VOSS  CASTING BY T. CALLOWAY  MUSIC BY THE EAST WING CHOIR  EDITED BY J. PARRISH  DIRECTED BY MARISOL D. ABERNATHY"",
+      ""desc"": ""tiny condensed all-caps billing block in pale grey, centered, standard credit-line spacing at very bottom"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.915,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""IN THEATERS THIS FALL"",
+      ""desc"": ""small bold white letter-spaced release line above the billing block"",
+      ""palette"": [],
+      ""x"": 0.34,
+      ""y"": 0.965,
+      ""w"": 0.32,
+      ""h"": 0.025
+    }
+  ]
+}",0067-vital-signs-the-harmony-ward-deprogramming.jpg
+Romance,Romantic Comedy,Documentary-style,Reality Competition,Lighthouse Keeper,A Lighthouse Keeper stumbles into a Romantic Comedy conspiracy that can only be solved using the rules of Reality Competition.,Love Island Lighthouse,"Gull Pemberton has manned the Marrowick Point lighthouse alone for nineteen years, talking only to the foghorn and a barnacle he named Gerald. So when a stranded reality-TV crew commandeers his tower to film ""Last Lonely Single,"" Gull discovers the only way to keep his beloved lighthouse from foreclosure is to win the show himself. Trouble is, he's fallen for the producer, the rules forbid romance with staff, and someone keeps rigging the elimination ceremonies. Cue confessional cams, a coupling firepit beside the foghorn, and the most awkward sunset proposal in maritime history.","{
+  ""high_level_description"": ""A weathered lighthouse keeper stands at the foot of his lighthouse beside a glittering reality-TV firepit and confessional camera, lit like a romantic dating-show one-sheet at golden hour."",
+  ""background"": ""A dramatic rocky headland at sunset with a tall white-and-red striped lighthouse rising against a peach-and-rose sky, its lamp glowing. Behind it the ocean catches warm light while a low bank of fog rolls across distant cliffs. Stage rigging, a string of festoon party lights, and a TV camera crane intrude awkwardly on the windswept natural scenery, blending wild coast with cheesy dating-show set dressing."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, warm golden-hour cinematic grade, soft lens flare, photorealistic, volumetric sea haze"",
+  ""aesthetics"": ""romantic, glossy, absurdly earnest, windswept, reality-TV sparkle"",
+  ""lighting"": ""warm low sunset key light from the left mixed with cool blue dusk fill and the lighthouse beam streaking across the haze."",
+  ""palette"": [
+    ""#F4A66A"",
+    ""#E8556E"",
+    ""#2E4A6B"",
+    ""#F5E6C8"",
+    ""#D94B3A""
+  ],
+  ""bg_brightness"": 58,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A rugged 50-something lighthouse keeper with a salt-grey beard, thick cream fisherman's sweater and a single self-conscious red rose tucked in his collar, holding a vintage brass lantern, looking hopefully off-camera, photoreal, weather-lined face"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.4,
+      ""w"": 0.42,
+      ""h"": 0.5
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A glowing reality-show firepit ring with heart-shaped flames and festoon string lights, lower left, photoreal set dressing on wet rocks"",
+      ""palette"": [],
+      ""x"": 0.02,
+      ""y"": 0.7,
+      ""w"": 0.3,
+      ""h"": 0.22
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A professional TV confessional camera on a tripod with a small red record light, foreground right, slightly out of focus, photoreal"",
+      ""palette"": [],
+      ""x"": 0.72,
+      ""y"": 0.6,
+      ""w"": 0.26,
+      ""h"": 0.3
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""LOVE ISLAND\nLIGHTHOUSE"",
+      ""desc"": ""huge bold condensed sans-serif title in glossy coral-pink with subtle gold foil edge, all caps, stacked two lines, centered in lower third"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.78,
+      ""w"": 0.84,
+      ""h"": 0.14
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""He's looking for love. The cameras are looking for ratings."",
+      ""desc"": ""slim italic cream serif tagline, single line, gently tracked, just above the title"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.72,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""MARROWICK PICTURES PRESENTS  A PIPER QUILL FILM  \""LOVE ISLAND LIGHTHOUSE\""  BARNABY FROST  ELODIE VANE  CAST GERALD THE BARNACLE  MUSIC BY HALCYON REEVES  DIRECTED BY PIPER QUILL"",
+      ""desc"": ""tiny condensed all-caps billing block in pale cream, evenly tracked, centered at very bottom"",
+      ""palette"": [],
+      ""x"": 0.1,
+      ""y"": 0.95,
+      ""w"": 0.8,
+      ""h"": 0.035
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""COUPLE UP THIS SUMMER"",
+      ""desc"": ""small spaced gold sans-serif release line, centered just below title"",
+      ""palette"": [],
+      ""x"": 0.22,
+      ""y"": 0.925,
+      ""w"": 0.56,
+      ""h"": 0.025
+    }
+  ]
+}",0068-love-island-lighthouse.jpg
+Romance,Forbidden Romance,Fantasy,Urban Fantasy,Lighthouse Keeper,"Cold open: a Lighthouse Keeper, alone, in the rain. The genre? Forbidden Romance. The vibe? Unmistakably Urban Fantasy. Cue title card.",The Last Light Between Us,"Silas Vane has kept the Blackridge Lighthouse for nineteen lonely years, and he has one rule: never fall for the things the fog brings ashore. Then a storm delivers Marin — a banished tide-spirit who can only hold human form while his lamp keeps burning, and who turns to seafoam the instant it goes dark. Now Silas must choose between the oath that binds him to the light and the impossible, forbidden love that the city's bureaucratic Coven of Harbor Wardens has expressly outlawed. The catch: every hour they spend together costs the lighthouse one hour of fuel. Some flames you keep. Some flames keep you.","{
+  ""high_level_description"": ""A rain-soaked lighthouse keeper and a luminous sea-spirit woman lean toward each other on storm-lashed rocks beneath a beam of light, a neon-lit coastal city glowing across the dark water behind them."",
+  ""background"": ""A jagged storm-battered shoreline at night, wet black rocks in the foreground giving way to churning silver-gray surf. Across the bay, a moody contemporary harbor city glitters with cold neon and amber window-light, half-veiled by drifting fog. Above, a single rotating lighthouse beam cuts a hard cone through the rain into a bruised purple sky."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, drifting rain caught in volumetric light, teal-and-amber cinematic grade, photorealistic, fine film grain, glistening wet highlights"",
+  ""aesthetics"": ""moody, romantic, supernatural, rain-drenched, intimate, epic"",
+  ""lighting"": ""a sweeping lighthouse beam rakes across the couple from the left while cool blue moonlight and distant warm city neon rim their wet faces."",
+  ""palette"": [
+    ""#0E1B2A"",
+    ""#1F4E63"",
+    ""#E9A24B"",
+    ""#9FD6E8"",
+    ""#2C1840""
+  ],
+  ""bg_brightness"": 38,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A weathered fortysomething lighthouse keeper in a soaked oilskin raincoat and knit cap, salt-and-pepper stubble, gripping a glowing brass lantern, gazing with longing at the woman beside him, rain streaming down his face, photoreal"",
+      ""palette"": [],
+      ""x"": 0.1,
+      ""y"": 0.4,
+      ""w"": 0.42,
+      ""h"": 0.5
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""An ethereal sea-spirit woman with faintly translucent skin that shimmers like backlit seafoam, wet hair flowing as if underwater, droplets glowing on her cheeks, the lower edge of her dress dissolving into mist and water vapor, leaning toward the keeper, photoreal with subtle bioluminescent glow"",
+      ""palette"": [],
+      ""x"": 0.48,
+      ""y"": 0.38,
+      ""w"": 0.42,
+      ""h"": 0.52
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A tall photoreal lighthouse on the right cliff edge, its lamp room blazing, beam sweeping into the rainy night, half lost in fog"",
+      ""palette"": [],
+      ""x"": 0.7,
+      ""y"": 0.18,
+      ""w"": 0.26,
+      ""h"": 0.4
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE LAST LIGHT\nBETWEEN US"",
+      ""desc"": ""large elegant high-contrast serif title in warm ivory, letters faintly wet and glowing as if catching the lighthouse beam, centered, occupying the lower third, with a thin luminous underline"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.66,
+      ""w"": 0.84,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""Some flames you keep. Some flames keep you."",
+      ""desc"": ""small italic spaced tagline in pale cyan, sitting just above the title, understated"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.61,
+      ""w"": 0.72,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""TIDELOCK PICTURES PRESENTS  A CALLUM ROARKE FILM  \""THE LAST LIGHT BETWEEN US\""  EDISON HALE  NAÏA VESPER  MARGUERITE FONN  CASPIAN ODELL  MUSIC BY LIORA BRANTT  DIRECTED BY CALLUM ROARKE"",
+      ""desc"": ""tiny condensed all-caps billing block in muted gray-white, single tight centered paragraph at the very bottom"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.93,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""IN THEATERS THIS WINTER"",
+      ""desc"": ""small spaced bold sans-serif release line in warm amber just above the billing block"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.88,
+      ""w"": 0.4,
+      ""h"": 0.03
+    }
+  ]
+}",0069-the-last-light-between-us.jpg
+Documentary-style,Conspiracy Doc,Musical,Dance Musical,Ambitious Politician,"Imagine if a Conspiracy Doc show had a baby with a Dance Musical miniseries, and that baby grew up to follow a Ambitious Politician.",Caucus: The Cover-Up Cha-Cha,"State Senator Dallas Voorhees has a five-year plan, a winning smile, and one tiny problem: every time he tries to bury a scandal, his body involuntarily breaks into a flawless Broadway dance number. As shadowy gala kingmakers pull strings in smoke-filled ballrooms, a basement documentary crew zooms in on grainy footage of Dallas tap-dancing through redacted documents. Is it mind control? Is it the lizard lobbyists? Or is it just really, really good jazz hands? The truth is out there — and it's in perfect 5-6-7-8 time.","{
+  ""high_level_description"": ""A sweating politician frozen mid-jazz-square at a podium under a single spotlight, surrounded by red conspiracy string and surveillance monitors, shot like a paranoid thriller one-sheet."",
+  ""background"": ""A cavernous, dimly lit government press hall photographed in deep perspective, rows of empty velvet seats receding into shadow. The back wall is plastered with a chaotic corkboard of pinned documents, polaroids, and taut red string connecting them. Faint volumetric haze drifts through cold overhead light, with a wall of flickering CCTV monitors glowing in the far background."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, desaturated teal shadows with warm spotlight pools, fine film grain, photorealistic, volumetric haze, subtle handheld surveillance vibe"",
+  ""aesthetics"": ""paranoid, theatrical, ominous, glossy political thriller, absurd glamour"",
+  ""lighting"": ""a single hard white spotlight punches down on the dancing politician while everything around him sinks into cold investigative gloom."",
+  ""palette"": [
+    ""#0E1A24"",
+    ""#B7242C"",
+    ""#E8C66A"",
+    ""#C9D2D6"",
+    ""#1F3A47""
+  ],
+  ""bg_brightness"": 30,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a charismatic mid-40s male politician in a crisp navy suit and red power tie, caught mid-Broadway jazz-square with one leg kicked out, arms thrown wide and fingers splayed in spirit-fingers, sweat beading on his forehead under a hot spotlight, flag pin gleaming, expression a panicked frozen grin"",
+      ""palette"": [],
+      ""x"": 0.27,
+      ""y"": 0.3,
+      ""w"": 0.46,
+      ""h"": 0.52
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a worn wooden presidential-style podium with a cluster of vintage microphones, an official seal partly obscured by a sticky note reading classified, positioned in front of the dancer's legs"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.66,
+      ""w"": 0.4,
+      ""h"": 0.22
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""loose redacted documents and a single white tap shoe flying upward through the air around the politician, motion-blurred, caught in the spotlight beam"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.24,
+      ""w"": 0.3,
+      ""h"": 0.3
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a glowing bank of small CCTV surveillance monitors stacked in the lower-right shadows, each screen showing the dancing politician from a different grainy angle"",
+      ""palette"": [],
+      ""x"": 0.66,
+      ""y"": 0.7,
+      ""w"": 0.26,
+      ""h"": 0.22
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""CAUCUS"",
+      ""desc"": ""enormous bold condensed sans-serif in cracked gold foil, stacked top-aligned, faint red string motif weaving behind the letters, high-contrast cinematic title"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.04,
+      ""w"": 0.84,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE COVER-UP CHA-CHA"",
+      ""desc"": ""slim italic serif subtitle in pale silver with a subtle drop shadow, letter-spaced wide, sitting just under the main title"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.205,
+      ""w"": 0.72,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THEY CONTROL THE VOTE. SOMETHING ELSE CONTROLS HIS FEET."",
+      ""desc"": ""small all-caps tagline in muted teal-white, centered, thin tracking, positioned above the billing block"",
+      ""palette"": [],
+      ""x"": 0.16,
+      ""y"": 0.86,
+      ""w"": 0.68,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""REDLINE PICTURES PRESENTS  A SUBPOENA FILMS PRODUCTION  \""CAUCUS: THE COVER-UP CHA-CHA\""  DALLAS VOORHEES  MARGO QUILL  TERENCE BAUM  CASTING BY P. HOLLOWAY  CHOREOGRAPHY BY RENATA VOSS  MUSIC BY THE FRANCHISE FIVE  DIRECTED BY ABEL CRANE"",
+      ""desc"": ""tiny condensed all-caps billing block in light gray, justified center, classic theatrical credit styling with thin separators"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.915,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""IN THEATERS THIS FALL"",
+      ""desc"": ""small bold gold-foil release line, centered, letter-spaced, just below the billing block"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.965,
+      ""w"": 0.4,
+      ""h"": 0.025
+    }
+  ]
+}",0070-caucus-the-cover-up-cha-cha.jpg

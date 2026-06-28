@@ -17085,3 +17085,933 @@ Sci-Fi,Hard Sci-Fi,Musical,Rock Opera,Bounty Hunter,"Imagine if a Hard Sci-Fi sh
     }
   ]
 }",0180-quarry-a-light-speed-rock-opera.jpg
+Fantasy,Fairy Tale,Romance,Second-Chance Romance,Idealistic Lawyer,"Cold open: a Idealistic Lawyer, alone, in the rain. The genre? Fairy Tale. The vibe? Unmistakably Second-Chance Romance. Cue title card.","Objection, Your Majesty","Idealistic public defender Wren Calloway has spent ten years suing dragons for property damage and arguing tenant rights for the Three Little Pigs. But when she's assigned to defend the wolf — her ex-fiancé, now cursed into a brooding nobleman by their breakup — she discovers their old love was the spell all along. To break the curse, Wren must win an impossible trial in the Court of Eternal Briars, where every objection grows a thornbush and the verdict is decided by True Love's closing argument. Sustained, apparently, is also a feeling.","{
+  ""high_level_description"": ""A rain-soaked idealistic lawyer in a sharp suit stands beneath a glowing enchanted courthouse arch while a brooding cursed nobleman watches from the misty thorns behind her, photoreal fairy-tale romance."",
+  ""background"": ""A grand fairy-tale courthouse facade at night, marble columns wrapped in living thornbushes that bloom faint blue roses, golden lamplight spilling down rain-slicked steps. Heavy storm rain falls in sheets, catching the light, while distant enchanted spires fade into blue mist. Deep atmospheric perspective with puddles mirroring the glow."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, teal-and-amber cinematic grade, volumetric rain haze, photorealistic, cinematic key light"",
+  ""aesthetics"": ""romantic, enchanted, melancholic, grand, storybook-meets-courtroom"",
+  ""lighting"": ""warm golden lamplight rakes across the wet lawyer from the left while cool moonlit blue rim-light edges the cursed figure behind her in the thorns."",
+  ""palette"": [
+    ""#1B2A44"",
+    ""#E9B65A"",
+    ""#6FA8C7"",
+    ""#3A5A40"",
+    ""#F2E8D5""
+  ],
+  ""bg_brightness"": 38,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A determined woman in her mid-thirties, soaked dark-blonde hair, a sharp tailored navy suit clinging from the rain, holding a leather briefcase and a single glowing legal scroll, standing tall on glistening marble steps facing the viewer, raindrops frozen mid-fall around her, photoreal"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.34,
+      ""w"": 0.42,
+      ""h"": 0.52
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A brooding handsome nobleman in a torn velvet coat with subtle wolf-like amber eyes, half-lit in cool blue, emerging from blooming thornbushes in the misty background, blurred by shallow focus, photoreal"",
+      ""palette"": [],
+      ""x"": 0.04,
+      ""y"": 0.4,
+      ""w"": 0.26,
+      ""h"": 0.42
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""An ornate enchanted gavel resting on a thorn-wrapped pedestal, faint golden runes glowing along its head, droplets of rain on the polished wood, photoreal"",
+      ""palette"": [],
+      ""x"": 0.68,
+      ""y"": 0.62,
+      ""w"": 0.24,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""OBJECTION,\nYOUR MAJESTY"",
+      ""desc"": ""Large elegant serif title with gold-foil sheen and a faint thorn-vine flourish curling around the letters, slightly weathered metallic texture, centered"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.04,
+      ""w"": 0.84,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""Love is the only loophole."",
+      ""desc"": ""Slim italic serif tagline in soft cream, letter-spaced, glowing faintly"",
+      ""palette"": [],
+      ""x"": 0.18,
+      ""y"": 0.25,
+      ""w"": 0.64,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THORNWOOD PICTURES PRESENTS  A BRIAR & BENCH PRODUCTION  \""OBJECTION, YOUR MAJESTY\""  MARLOWE FENN  CASPIAN REEVE  DIRECTED BY ELODIE VANCE  WRITTEN BY J. HART MAULDIN  MUSIC BY OSGOOD PELL"",
+      ""desc"": ""Tiny condensed all-caps billing block in pale gold, tightly spaced, centered, classic credits styling"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.88,
+      ""w"": 0.72,
+      ""h"": 0.06
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""IN THEATERS THIS WINTER"",
+      ""desc"": ""Small wide letter-spaced sans-serif in cream, centered"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.835,
+      ""w"": 0.4,
+      ""h"": 0.03
+    }
+  ]
+}",0181-objection-your-majesty.jpg
+Horror,Gothic Horror,Mystery,Locked Room,Reluctant Chosen One,A Reluctant Chosen One stumbles into a Gothic Horror conspiracy that can only be solved using the rules of Locked Room.,The Manor Does Not Permit Exits,"Dewey Plimpton, a deeply unqualified data-entry temp, inherits Blackvein Hall along with a centuries-old prophecy naming him the ""Unbolter of the Eternal Door."" The catch: a vengeful spirit has sealed every window and entrance, and the only way to break the curse is to solve who murdered the original heir — in a room locked from the inside, by candlelight, in 1873. Armed with nothing but a clipboard, a single working flashlight, and a chronic fear of basements, Dewey must out-deduce a ghost that absolutely does not want to be deduced. He'd really rather not be the Chosen One. The house disagrees.","{
+  ""high_level_description"": ""A terrified everyman in a rumpled cardigan stands in a candlelit Gothic foyer clutching a clipboard while spectral chains seal a towering bolted door behind him."",
+  ""background"": ""The cavernous entrance hall of a decaying Victorian manor, all warped oak panelling, peeling damask wallpaper and a sweeping staircase swallowed by shadow. Cobwebbed chandeliers hang unlit while moonlight bleeds through tall grimy windows that are nailed shut with iron crossbars. Deep atmospheric haze and dust motes drift through the air, the perspective stretching the room into oppressive vertical depth."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, desaturated cold-green and amber cinematic grade, volumetric candlelight haze, fine film grain, photorealistic"",
+  ""aesthetics"": ""gothic dread, claustrophobic, candlelit unease, darkly comic"",
+  ""lighting"": ""low-key chiaroscuro from a single guttering candelabra below and cold moonlight from camera-left, carving deep shadows across the protagonist's face."",
+  ""palette"": [
+    ""#0d1410"",
+    ""#2c3a2e"",
+    ""#b98a3c"",
+    ""#d9cba0"",
+    ""#5a1f1f""
+  ],
+  ""bg_brightness"": 28,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a nervous middle-aged man in a wrinkled mustard cardigan and crooked glasses, hair askew, clutching an office clipboard to his chest and holding a small flashlight pointed waveringly upward, sweat on his brow, eyes wide with reluctant dread, photorealistic full-body figure standing center"",
+      ""palette"": [],
+      ""x"": 0.32,
+      ""y"": 0.4,
+      ""w"": 0.36,
+      ""h"": 0.46
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a colossal iron-bolted oak manor door directly behind the man, crisscrossed with glowing ghostly translucent chains and a heavy padlock, faint spectral mist seeping from the keyhole, photorealistic"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.3,
+      ""w"": 0.4,
+      ""h"": 0.55
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a faint translucent Victorian ghost in a tattered black mourning gown hovering at the top of the shadowy staircase, face obscured, photoreal ethereal apparition"",
+      ""palette"": [],
+      ""x"": 0.62,
+      ""y"": 0.18,
+      ""w"": 0.24,
+      ""h"": 0.3
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""an ornate antique brass candelabra with three guttering candles glowing in the lower foreground, dripping wax, photorealistic"",
+      ""palette"": [],
+      ""x"": 0.06,
+      ""y"": 0.74,
+      ""w"": 0.2,
+      ""h"": 0.22
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE MANOR DOES NOT\nPERMIT EXITS"",
+      ""desc"": ""large distressed serif title in tarnished gold with cracked-engraving texture, slightly gothic letterforms, centered across two lines in the upper third with subtle inner shadow"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.05,
+      ""w"": 0.84,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""He never asked to be chosen. He really wanted a window that opens."",
+      ""desc"": ""small italic pale-cream serif tagline, single line, understated and dryly comic, centered"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.27,
+      ""w"": 0.72,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""HOLLOWGATE PICTURES PRESENTS  A BARNABY VOSS FILM  \""THE MANOR DOES NOT PERMIT EXITS\""  CORMAC DRYE  ELODIE FENNIMORE  WALT PRICHARD  CASTING BY MARGOT ELLER  MUSIC BY THE LATCHFORD QUARTET  DIRECTED BY BARNABY VOSS"",
+      ""desc"": ""tiny condensed all-caps cream billing block, classic theatrical credit styling, centered and tightly tracked"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.9,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""SEALED THIS AUTUMN"",
+      ""desc"": ""small spaced all-caps gold release line above the billing block, centered"",
+      ""palette"": [],
+      ""x"": 0.28,
+      ""y"": 0.865,
+      ""w"": 0.44,
+      ""h"": 0.03
+    }
+  ]
+}",0182-the-manor-does-not-permit-exits.jpg
+Western,Spaghetti Western,Comedy,Surreal Comedy,Single Parent,"Cold open: a Single Parent, alone, in the rain. The genre? Spaghetti Western. The vibe? Unmistakably Surreal Comedy. Cue title card.",A Fistful of Juice Boxes,"Widower gunslinger Cornelius ""Quiet Dad"" Pratt rides into the lawless desert town of Mild Tantrum with a single objective: locate a clean public restroom before his four-year-old daughter detonates. But the town's mayor is a talking saguaro cactus, the saloon serves only lukewarm apple juice, and every showdown is interrupted by nap time. As the clock ticks toward a meltdown of biblical proportions, Cornelius must out-draw a posse of bandits who communicate exclusively through interpretive shrugging. Justice is slow. Bedtime is slower.","{
+  ""high_level_description"": ""A weathered cowboy single dad stands in driving rain on a desert main street, a juice box raised like a revolver, while a toddler clings to his leg, shot like a serious spaghetti western but absurd."",
+  ""background"": ""A muddy, rain-lashed frontier main street at dusk, flanked by warped wooden saloon facades and a hand-painted sign reading MILD TANTRUM. Deep perspective recedes toward distant mesas barely visible through sheets of rain and golden haze. A solitary giant saguaro cactus wearing a tiny tin mayor's badge stands ominously in the mid-ground."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, dusty teal-and-amber spaghetti-western grade, heavy volumetric rain, photorealistic, fine film grain, cinematic wide lens"",
+  ""aesthetics"": ""gritty, deadpan, operatic, absurdist, sun-baked, melancholic"",
+  ""lighting"": ""low golden backlight cutting through rain and dust, hard rim light on the cowboy with deep moody shadows across the muddy street"",
+  ""palette"": [
+    ""#C68A3E"",
+    ""#3E4F4A"",
+    ""#8A2D1F"",
+    ""#E3D2A8"",
+    ""#1C1410""
+  ],
+  ""bg_brightness"": 42,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a grizzled middle-aged cowboy in a soaked poncho and wide-brim hat, stubbled jaw, squinting eyes, holding a small cardboard juice box up at the ready like a drawn pistol, rain dripping off the brim, photoreal, central focal subject"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.3,
+      ""w"": 0.42,
+      ""h"": 0.55
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a tiny defiant four-year-old girl in muddy cowboy boots and a too-big sombrero clinging to the cowboy's leg, arms crossed, mid-pout, photoreal"",
+      ""palette"": [],
+      ""x"": 0.22,
+      ""y"": 0.62,
+      ""w"": 0.22,
+      ""h"": 0.3
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a towering anthropomorphic saguaro cactus wearing a small tin sheriff's badge, blurred in the rainy background, photoreal practical creature effect"",
+      ""palette"": [],
+      ""x"": 0.66,
+      ""y"": 0.4,
+      ""w"": 0.2,
+      ""h"": 0.42
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""A FISTFUL OF\nJUICE BOXES"",
+      ""desc"": ""large weathered slab-serif western display type in cracked dusty gold, distressed letterpress texture, slight rain-streak, stacked two lines, lower third"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.74,
+      ""w"": 0.84,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""JUSTICE IS SLOW. BEDTIME IS SLOWER."",
+      ""desc"": ""small italic condensed serif tagline in pale cream, single line, letter-spaced"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.9,
+      ""w"": 0.72,
+      ""h"": 0.035
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""PRONTO HORSE PICTURES PRESENTS  A BARNABY QUILL FILM  \""A FISTFUL OF JUICE BOXES\""  HOLLIS GRANGE  MARISOL DEPP  DIRECTED BY BARNABY QUILL"",
+      ""desc"": ""tiny condensed all-caps billing block in faded cream, centered, two lines"",
+      ""palette"": [],
+      ""x"": 0.1,
+      ""y"": 0.945,
+      ""w"": 0.8,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""COMING THIS SUMMER"",
+      ""desc"": ""small spaced uppercase sans-serif in muted amber, single line near top"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.06,
+      ""w"": 0.4,
+      ""h"": 0.035
+    }
+  ]
+}",0183-a-fistful-of-juice-boxes.jpg
+Action,Disaster,Comedy,Buddy Comedy,Corporate Whistleblower,"Pitch: Disaster x Buddy Comedy. Tone: dread, but make it horny. Lead: a Corporate Whistleblower.",Spreadsheet of the Damned,"Mild-mannered compliance auditor Reggie Plum was about to email the SEC the receipts that would sink his employer — right as the experimental geothermal data center the company built under the city decides to detonate. Now Reggie is trapped in a collapsing skyscraper with Tony Vasquez, the absurdly confident HVAC repairman who may or may not have caused this, and a USB drive that could still ruin everybody. As floors buckle and lava licks the elevator shafts, the two strangers must survive each other to survive the apocalypse. It's a race against magma, malware, and unbearable sexual tension. Whistleblowing has never been this hot.","{
+  ""high_level_description"": ""Two mismatched men in scorched office attire stand back-to-back gripping a USB drive amid a collapsing, flaming skyscraper atrium, lit by molten orange light from below."",
+  ""background"": ""A vast corporate skyscraper lobby mid-collapse, marble floors split by glowing magma fissures, shattered glass and tumbling office chairs frozen in midair. Behind them a wall of floor-to-ceiling windows reveals a burning city skyline under a smoke-choked dawn. Embers and paper drift through volumetric haze, deep perspective receding into orange firelight."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, teal-orange cinematic grade, photorealistic, heavy volumetric haze, lens flares, fine film grain"",
+  ""aesthetics"": ""high-stakes disaster spectacle, sweaty comedic chemistry, blockbuster gloss, smoldering tension"",
+  ""lighting"": ""hot molten underlighting kicks orange across their faces while cool blue rim light from shattered windows separates them from the smoke."",
+  ""palette"": [
+    ""#FF6A1A"",
+    ""#FFD25A"",
+    ""#1C3F4F"",
+    ""#2B1208"",
+    ""#E9E2D0""
+  ],
+  ""bg_brightness"": 45,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A nervous, slightly soft-bodied auditor in his 40s, askew necktie, sweat-soaked white dress shirt with rolled sleeves, smudged glasses, clutching a tiny silver USB drive to his chest like a talisman, terrified determined expression, photoreal"",
+      ""palette"": [],
+      ""x"": 0.26,
+      ""y"": 0.36,
+      ""w"": 0.3,
+      ""h"": 0.52
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A ruggedly handsome HVAC repairman in a tight grease-streaked work shirt half-unbuttoned, tool belt, confident smirk despite the chaos, holding a giant pipe wrench, back-to-back with the auditor, photoreal"",
+      ""palette"": [],
+      ""x"": 0.48,
+      ""y"": 0.34,
+      ""w"": 0.3,
+      ""h"": 0.54
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A glowing river of bright molten lava bursting through cracked marble floor tiles in the foreground, casting upward light, photoreal"",
+      ""palette"": [],
+      ""x"": 0.0,
+      ""y"": 0.8,
+      ""w"": 1.0,
+      ""h"": 0.19999999999999996
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""Scattered office paperwork and a manila folder mid-flight catching fire, embers trailing, photoreal"",
+      ""palette"": [],
+      ""x"": 0.62,
+      ""y"": 0.2,
+      ""w"": 0.22,
+      ""h"": 0.18
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""SPREADSHEET\nOF THE DAMNED"",
+      ""desc"": ""massive bold condensed sans-serif title in cracked molten-metal texture, glowing orange edges, stacked across two lines, dominating the lower third"",
+      ""palette"": [],
+      ""x"": 0.07,
+      ""y"": 0.66,
+      ""w"": 0.86,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""He tried to do the right thing. The building had other plans."",
+      ""desc"": ""small italic off-white tagline, single line, letter-spaced, just above the title"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.61,
+      ""w"": 0.72,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""MERIDIAN VAULT PICTURES PRESENTS  A DALTON FERREIRA-KRUMP FILM  \""SPREADSHEET OF THE DAMNED\""  MARCUS T. WELBY  ORLANDO CRANE  DIRECTED BY DALTON FERREIRA-KRUMP"",
+      ""desc"": ""tiny condensed all-caps billing block, light gray, centered, standard credit-block typography"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.93,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""IN THEATERS THIS SUMMER"",
+      ""desc"": ""small bold all-caps release line, warm white, letter-spaced, centered"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.885,
+      ""w"": 0.4,
+      ""h"": 0.03
+    }
+  ]
+}",0184-spreadsheet-of-the-damned.jpg
+Drama,Psychological Drama,Fantasy,Fairy Tale,Aging Movie Star,"Cold open: a Aging Movie Star, alone, in the rain. The genre? Psychological Drama. The vibe? Unmistakably Fairy Tale. Cue title card.",Once Upon a Comeback,"Faded screen legend Vivienne Marchetti — three Oscars, four divorces, one unkillable ego — wakes in the woods after her latest flop premiere to find every mirror in her mansion now talks back, and they are brutal. As a velvet-voiced fairy godmother offers one last role in exchange for Vivienne's reflection, the actress must decide whether the applause she's chasing was ever real, or just a curse she signed in a contract. Part shimmering grief-fable, part savage industry satire, it's a slow-burn drama where the magic might be a breakdown. Glass slippers optional; therapy mandatory.","{
+  ""high_level_description"": ""A regal aging actress stands alone in rain on a forest road at night, lit by a single magical mirror that floats before her, photoreal and cinematic."",
+  ""background"": ""A misty enchanted forest at the edge of a crumbling Hollywood-era estate, wet cobblestone path receding into fog. Towering ancient trees frame a distant overcast moon. Rain falls in fine vertical streaks, catching cold light, with shallow puddles mirroring faint golden glints."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, desaturated cold-blue grade with warm amber accents, photorealistic, volumetric haze, fine film grain, rain-streaked atmosphere"",
+  ""aesthetics"": ""melancholic, opulent, fairy-tale gothic, prestige-drama, haunting, intimate"",
+  ""lighting"": ""a single warm glow from a floating ornate mirror rim-lights the actress against cold blue ambient moonlight and rain."",
+  ""palette"": [
+    ""#0E1A24"",
+    ""#2C4456"",
+    ""#C9A24B"",
+    ""#E7E2D6"",
+    ""#6B7C86""
+  ],
+  ""bg_brightness"": 32,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""an elegant woman in her late sixties, silver-streaked dark hair plastered by rain, wearing a soaked emerald evening gown and faded fur stole, standing alone on a wet forest road, mascara running, expression caught between defiance and despair, photoreal"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.34,
+      ""w"": 0.4,
+      ""h"": 0.55
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""an ornate gilded antique hand-mirror floating mid-air at chest height, glowing softly from within, its glass surface showing a faint younger reflection that doesn't match her, photoreal with magical practical light"",
+      ""palette"": [],
+      ""x"": 0.55,
+      ""y"": 0.46,
+      ""w"": 0.2,
+      ""h"": 0.22
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a single delicate glass high-heeled slipper resting on wet cobblestones in the foreground, catching golden light, rain droplets on it, photoreal macro detail"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.82,
+      ""w"": 0.18,
+      ""h"": 0.12
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""ONCE UPON A COMEBACK"",
+      ""desc"": ""large elegant serif title in tarnished gold foil with subtle cracks, letter-spaced, centered across two lines, faint glow, occupying lower-middle band"",
+      ""palette"": [],
+      ""x"": 0.1,
+      ""y"": 0.66,
+      ""w"": 0.8,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""The applause was the curse all along."",
+      ""desc"": ""small italic serif tagline in soft off-white, single line, centered, understated"",
+      ""palette"": [],
+      ""x"": 0.18,
+      ""y"": 0.62,
+      ""w"": 0.64,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""GLASSHOUSE PICTURES PRESENTS  A LIORA VANCE FILM  \""ONCE UPON A COMEBACK\""  VIVIENNE MARCHETTI  RENATA DUVALL  AUGUST KOLB  CASTING BY MIRA SOLANO  MUSIC BY THEO ASHGROVE  WRITTEN AND DIRECTED BY LIORA VANCE"",
+      ""desc"": ""tiny condensed all-caps billing block in pale grey, centered, several justified lines, classic credits styling"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.9,
+      ""w"": 0.72,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""IN THEATERS WINTER"",
+      ""desc"": ""small spaced all-caps gold release line, centered, above the billing block"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.86,
+      ""w"": 0.4,
+      ""h"": 0.03
+    }
+  ]
+}",0185-once-upon-a-comeback.jpg
+Romance,Second-Chance Romance,Action,Survival,Rookie Cop,It's Second-Chance Romance meets Survival... but the protagonist is a Rookie Cop.,Hard Reload: The One That Got Away,"Three days out of the academy, Officer Marisol Vega's first stakeout goes sideways when a flash flood swallows the highway — stranding her on a crumbling overpass with the one person she swore she'd never see again: Danny Cho, her ex-fiancé, now a cynical fugitive bondsman handcuffed to her wrist. To survive rising water, falling debris, and a very motivated alligator, they'll have to trust each other's instincts again. Turns out love and tactical rappelling both require letting go. She just has to do them at the exact same time.","{
+  ""high_level_description"": ""A rookie cop and her handcuffed ex cling to a flooded, collapsing highway overpass at dusk as storm water rages below, shot like a glossy survival-romance one-sheet."",
+  ""background"": ""A buckled concrete highway overpass fractured down the middle, rebar exposed, with churning brown floodwater swallowing the lanes far below. Heavy storm clouds bruise the sky in deep teal and bruised orange near a distant drowned city skyline. Sheets of rain streak diagonally across the whole frame with mist rising off the water."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, teal-orange cinematic grade, rain-soaked highlights, photorealistic, volumetric haze, fine film grain"",
+  ""aesthetics"": ""tense, romantic, rain-drenched, high-stakes, glossy blockbuster"",
+  ""lighting"": ""stormy blue ambient light pierced by a warm amber emergency flare from below, rim-lighting the two soaked figures against the dark sky."",
+  ""palette"": [
+    ""#13343B"",
+    ""#C8642A"",
+    ""#E4D9C4"",
+    ""#1E2A33"",
+    ""#8FA9AE""
+  ],
+  ""bg_brightness"": 42,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A soaked young Latina rookie police officer in a torn navy patrol uniform, badge glinting, gripping the broken edge of the overpass with one hand, her other wrist handcuffed to a man, hair plastered to her face, fierce determined expression lit by warm flare light"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.3,
+      ""w"": 0.42,
+      ""h"": 0.52
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A rugged dark-haired man in a drenched open flannel shirt, handcuffed at the wrist to the officer, dangling slightly off the broken ledge but reaching up to steady her, weary smirk, photoreal"",
+      ""palette"": [],
+      ""x"": 0.16,
+      ""y"": 0.4,
+      ""w"": 0.34,
+      ""h"": 0.46
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A single steel handcuff chain stretched taut between two wrists, water droplets caught mid-fall, glinting metallic detail in sharp focus"",
+      ""palette"": [],
+      ""x"": 0.4,
+      ""y"": 0.5,
+      ""w"": 0.2,
+      ""h"": 0.1
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""The dark snout and eyes of an alligator breaking the churning floodwater surface in the lower background, partially obscured by mist, ominous"",
+      ""palette"": [],
+      ""x"": 0.58,
+      ""y"": 0.8,
+      ""w"": 0.22,
+      ""h"": 0.12
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""HARD RELOAD"",
+      ""desc"": ""massive bold condensed sans-serif title in weathered metallic silver-orange, slightly wet sheen, centered, dominating the lower third with subtle water-droplet texture on the letterforms"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.7,
+      ""w"": 0.84,
+      ""h"": 0.13
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE ONE THAT GOT AWAY"",
+      ""desc"": ""smaller all-caps subtitle in clean spaced cream lettering directly beneath the main title"",
+      ""palette"": [],
+      ""x"": 0.2,
+      ""y"": 0.835,
+      ""w"": 0.6,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""LOVE MEANS NEVER HAVING TO LET GO OF THE LEDGE"",
+      ""desc"": ""thin italic tagline in pale teal, single line, positioned just above the main title"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.655,
+      ""w"": 0.72,
+      ""h"": 0.035
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""TIDEWATER PICTURES PRESENTS  A RANSOM OKONKWO FILM  \""HARD RELOAD: THE ONE THAT GOT AWAY\""  CAMILA REYNOSO  THEO HOLLAND  WITH DELPHINE CARR  AND THE ALLIGATOR  CASTING BY M. PRELL  MUSIC BY JONAS VEEN  DIRECTED BY RANSOM OKONKWO"",
+      ""desc"": ""tiny condensed all-caps billing block in light gray, justified center, standard credit-block spacing"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.9,
+      ""w"": 0.76,
+      ""h"": 0.045
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""IN THEATERS THIS STORM SEASON"",
+      ""desc"": ""small bold cream all-caps release line centered at the very bottom"",
+      ""palette"": [],
+      ""x"": 0.28,
+      ""y"": 0.955,
+      ""w"": 0.44,
+      ""h"": 0.03
+    }
+  ]
+}",0186-hard-reload-the-one-that-got-away.jpg
+Mystery,Locked Room,Comedy,Stoner Comedy,Traveling Salesman,"Cold open: a Traveling Salesman, alone, in the rain. The genre? Locked Room. The vibe? Unmistakably Stoner Comedy. Cue title card.","No Exit, No Chill","Door-to-door vacuum salesman Dale Pruitt steps into the Hollowell mansion for a 6 PM demo and discovers every door, window, and air vent has sealed shut behind him. Trapped with a paranoid heiress, a butler who keeps ""forgetting"" the floor plan, and a corpse nobody will claim, Dale must crack the locked-room riddle before dawn — which is hard, because he just smoked what he assumed was oregano in the parlor. As clues multiply and his short-term memory dissolves, Dale realizes the only suspect who can't account for his whereabouts is himself. A whodunit where the detective keeps forgetting the question.","{
+  ""high_level_description"": ""A rumpled traveling salesman stands bewildered in a sealed, dimly lit Victorian parlor clutching a vacuum cleaner, smoke curling around him as a locked door looms behind, shot like a moody photoreal mystery thriller with comic undertones."",
+  ""background"": ""Interior of an opulent but claustrophobic Victorian parlor at night: dark wood paneling, a tall barricaded double door with brass locks, heavy velvet drapes drawn shut over rain-streaked windows. Warm lamplight pools in the foreground while the corners fall into deep shadow, with a faint haze of smoke hanging in the air. A grandfather clock and a chalk-outlined body shape are barely visible in the murky background."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, warm amber and teal cinematic grade, volumetric smoke haze, photorealistic, fine film grain"",
+  ""aesthetics"": ""noir-comedy, claustrophobic, hazy, absurd, moody mansion"",
+  ""lighting"": ""low-key practical lamplight from a single table lamp casting long warm shadows, with cool moonlight leaking through drapes and smoke catching the beam."",
+  ""palette"": [
+    ""#1c1208"",
+    ""#c8841f"",
+    ""#3a4d4a"",
+    ""#e8d9b0"",
+    ""#0a0f10""
+  ],
+  ""bg_brightness"": 32,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A disheveled middle-aged traveling salesman in a wrinkled brown suit and loosened tie, sample case at his feet, gripping a chrome upright vacuum cleaner like a weapon, eyes half-lidded and confused, faint smile, slightly swaying posture, photoreal"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.3,
+      ""w"": 0.42,
+      ""h"": 0.55
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A massive locked Victorian double door behind him with multiple oversized brass deadbolts and a heavy iron bar, slightly out of focus, ominous"",
+      ""palette"": [],
+      ""x"": 0.04,
+      ""y"": 0.22,
+      ""w"": 0.3,
+      ""h"": 0.55
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A smoldering glass ashtray on an antique side table in the foreground corner, thin ribbon of smoke rising, photoreal shallow focus"",
+      ""palette"": [],
+      ""x"": 0.66,
+      ""y"": 0.7,
+      ""w"": 0.24,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""NO EXIT,\nNO CHILL"",
+      ""desc"": ""Bold condensed serif title in cracked gold foil lettering with subtle smoke wisps drifting off the letters, large, occupying lower third, slightly distressed, high contrast against dark parlor"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.74,
+      ""w"": 0.84,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""He cracked the case. He just can't remember opening it."",
+      ""desc"": ""Thin italic cream-colored tagline in a single line, small, centered above the title"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.685,
+      ""w"": 0.76,
+      ""h"": 0.045
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""HOLLOWELL PICTURES PRESENTS  A BARNABY QUIST FILM  \""NO EXIT, NO CHILL\""  MARLON DREE  FENWICK ASHE  PRISCILLA VANE  CASTING BY GRETA OLMO  MUSIC BY THE LOW HUM  DIRECTED BY BARNABY QUIST"",
+      ""desc"": ""Tiny condensed all-caps billing block in muted cream, centered, evenly tracked, standard credits styling"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.92,
+      ""w"": 0.72,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""LOCKED IN THIS WINTER"",
+      ""desc"": ""Small spaced all-caps release line in warm amber just above the billing block, centered"",
+      ""palette"": [],
+      ""x"": 0.28,
+      ""y"": 0.905,
+      ""w"": 0.44,
+      ""h"": 0.02
+    }
+  ]
+}",0187-no-exit-no-chill.jpg
+Horror,Gothic Horror,Mystery,Amateur Sleuth,Disillusioned Priest,"Pitch: Gothic Horror x Amateur Sleuth. Tone: dread, but make it horny. Lead: a Disillusioned Priest.",The Confessional: A Sin Most Mortal,"Father Lucian Vane lost his faith somewhere between the third exorcism and the diocese's expense reports — but he never lost his nose for a lie. When parishioners start dying in the fog-choked village of Wormsey-on-Marsh, each corpse arranged like a saint's icon, the only witness is a confessional booth that hears everything and tells nothing. Now Lucian must solve the murders using the secrets sinners whispered to God, all while a smolderingly handsome stranger keeps showing up to ""help."" It's dread. It's deduction. It's deeply, distractingly horny. Absolution is a long shot; arousal is a certainty.","{
+  ""high_level_description"": ""A brooding priest in a fog-drenched stone chapel stands beside a flickering confessional, candlelight carving shadows across his haunted face as a shrouded figure looms behind stained glass."",
+  ""background"": ""Interior of a crumbling Gothic chapel at midnight, vaulted stone arches receding into deep shadow with ribbons of fog drifting low across the flagstone floor. A massive cracked stained-glass window glows faintly blood-red and amber behind the altar, casting colored light through the haze. Guttering candle banks line the walls, their flames doubled in pools of rainwater on the stone."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, candlelit chiaroscuro, desaturated teal shadows with warm amber highlights, photorealistic, heavy volumetric haze, fine film grain"",
+  ""aesthetics"": ""gothic dread, sensual tension, candlelit menace, sacred decay, slow-burn unease"",
+  ""lighting"": ""Low-key candlelight rakes across the priest from one side leaving deep velvety shadow, while a cold red glow from the stained glass rims the looming figure behind him."",
+  ""palette"": [
+    ""#0E0B12"",
+    ""#7A1C1C"",
+    ""#C9962E"",
+    ""#3A4A4E"",
+    ""#E8DCC0""
+  ],
+  ""bg_brightness"": 28,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A weary handsome priest in his late 40s, dark stubble and tousled black hair flecked with grey, white collar loosened, black cassock unbuttoned at the throat, sweat-sheened skin catching candlelight, intense haunted eyes staring directly at camera, one hand gripping a worn leather-bound missal"",
+      ""palette"": [],
+      ""x"": 0.28,
+      ""y"": 0.3,
+      ""w"": 0.46,
+      ""h"": 0.52
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""An ornate dark-wood confessional booth to the left, its carved lattice screen glowing faintly from within, a pale hand barely visible pressed against the grille from the dark interior"",
+      ""palette"": [],
+      ""x"": 0.02,
+      ""y"": 0.38,
+      ""w"": 0.26,
+      ""h"": 0.42
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A tall shrouded silhouette of a stranger in a long coat standing in fog behind the priest, backlit blood-red by the stained glass, face obscured, posture watchful and seductive"",
+      ""palette"": [],
+      ""x"": 0.66,
+      ""y"": 0.34,
+      ""w"": 0.3,
+      ""h"": 0.46
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A single tipped-over brass candlestick on wet flagstone in the lower foreground, flame still alive, dripping wax pooling near a fallen rosary"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.82,
+      ""w"": 0.4,
+      ""h"": 0.14
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE CONFESSIONAL"",
+      ""desc"": ""Large elegant engraved Gothic serif title in aged gilded gold with subtle cracks and a soft inner glow, letter-spaced and centered, slight emboss as if carved into stone"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.06,
+      ""w"": 0.84,
+      ""h"": 0.13
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""A SIN MOST MORTAL"",
+      ""desc"": ""Smaller condensed engraved gold serif subtitle, all caps, centered beneath the main title with thin hairline rules on either side"",
+      ""palette"": [],
+      ""x"": 0.2,
+      ""y"": 0.19,
+      ""w"": 0.6,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""Forgive him, Father — he's about to solve everyone."",
+      ""desc"": ""Slim italic ivory serif tagline, small, centered, softly glowing against the dark"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.755,
+      ""w"": 0.72,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""HOLLOWPYRE PICTURES PRESENTS  A MAGNUS THORNE FILM  \""THE CONFESSIONAL: A SIN MOST MORTAL\""  DESMOND FAIRCLOTH  ISOLDE VANCE  ALARIC PYNE  CASTING ARABELLA QUINCE  MUSIC SEVERIN MØLLER  CINEMATOGRAPHY JONAH BLACKWOOD  WRITTEN BY CORDELIA ASH  DIRECTED BY MAGNUS THORNE"",
+      ""desc"": ""Tiny condensed all-caps billing block in pale grey, centered, classic theatrical credit-line spacing"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.92,
+      ""w"": 0.76,
+      ""h"": 0.05
+    }
+  ]
+}",0188-the-confessional-a-sin-most-mortal.jpg
+Western,Acid Western,Comedy,Surreal Comedy,Struggling Artist,"Picture a Acid Western setting, but everyone behaves like they're in a Surreal Comedy. Our reluctant hero: a Struggling Artist.",The Last Brushstroke at Buzzard's Mercy,"Gentian Pratt, a near-blind portrait painter, drifts into the sun-warped town of Buzzard's Mercy with one wagon, forty tubes of cadmium yellow, and a saloon tab he cannot remember accruing. The townsfolk speak only in rhyming complaints, the sheriff is a cactus wearing a badge, and a gunslinger named Mr. Vermouth will pay Gentian in gold to paint his portrait — but every likeness comes out as the same screaming pelican. As high noon approaches and the desert begins reciting his negative reviews, Gentian must finish the cursed commission or be exhibited, permanently, in the town's only gallery: a shallow grave with good lighting.","{
+  ""high_level_description"": ""A sunburnt, paint-smeared artist stands defiantly in a cracked desert main street, holding a loaded paintbrush like a revolver while a gold-framed painting of a screaming pelican floats impossibly in the dust behind him."",
+  ""background"": ""A blistering high-noon ghost town main street with warped clapboard saloons leaning at impossible dream-logic angles, their facades melting slightly at the edges. The cracked salt-flat earth stretches to a horizon where mesas dissolve into shimmering heat haze and a sky bruised peach and turquoise. Tumbleweeds made of crumpled sketch paper drift through the foreground dust."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, sun-bleached desaturated highlights with deep amber shadows, photorealistic, fine film grain, volumetric dust haze"",
+  ""aesthetics"": ""acid western, surreal deadpan, dreamlike, scorched and absurd, melancholic comedy"",
+  ""lighting"": ""harsh overhead noon sun casting hard short shadows, with an eerie warm bounce from the salt flats lighting faces from below."",
+  ""palette"": [
+    ""#C98A3B"",
+    ""#E4C27A"",
+    ""#7FA8A0"",
+    ""#3A2A1C"",
+    ""#D96B4A""
+  ],
+  ""bg_brightness"": 68,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a gaunt, sunburnt struggling artist in his 40s wearing a dust-caked linen smock over a frayed waistcoat and battered cowboy boots, paint smeared across his cheeks, squinting through cracked tiny spectacles, holding a long paintbrush leveled forward like a dueling pistol, paint dripping from the bristles, photoreal, centered hero pose"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.34,
+      ""w"": 0.4,
+      ""h"": 0.52
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""an ornate gilded gold picture frame floating in mid-air amid swirling dust, containing a photoreal oil painting of a single wild-eyed pelican mid-scream, slightly tilted, catching the harsh sunlight"",
+      ""palette"": [],
+      ""x"": 0.05,
+      ""y"": 0.4,
+      ""w"": 0.24,
+      ""h"": 0.3
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a tall saguaro cactus wearing a tarnished tin sheriff's star badge pinned to its trunk, standing upright at the edge of the street like a deputized lawman, photoreal"",
+      ""palette"": [],
+      ""x"": 0.74,
+      ""y"": 0.42,
+      ""w"": 0.2,
+      ""h"": 0.4
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""crumpled balls of sketch paper tumbling like tumbleweeds across the cracked desert foreground, kicking up dust, photoreal"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.82,
+      ""w"": 0.4,
+      ""h"": 0.12
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE LAST BRUSHSTROKE\nAT BUZZARD'S MERCY"",
+      ""desc"": ""large weathered slab-serif Western wood-type lettering, hand-painted cadmium-yellow paint with drips running down, slightly warped and uneven as if lettered by an unsteady hand, distressed and sun-faded, occupying the lower third"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.74,
+      ""w"": 0.84,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""He came to paint. The desert had other reviews."",
+      ""desc"": ""small italic serif tagline in dusty cream, letterspaced, centered above the title"",
+      ""palette"": [],
+      ""x"": 0.16,
+      ""y"": 0.69,
+      ""w"": 0.68,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""VERMILION DUNE PICTURES PRESENTS  A SILAS THORNE-WICK FILM  \""THE LAST BRUSHSTROKE AT BUZZARD'S MERCY\""  GENTIAN PRATT  CORDELIA MOSS  AUGUSTUS REIN  CASTING BY THE PELICAN  MUSIC BY HOLLOW REED  DIRECTED BY SILAS THORNE-WICK"",
+      ""desc"": ""tiny condensed all-caps billing block in faded cream, centered, standard movie credit spacing"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.92,
+      ""w"": 0.76,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""PAINTING ITS WAY INTO THEATERS THIS SUMMER"",
+      ""desc"": ""very small letterspaced all-caps release line in dusty amber, centered just below the title"",
+      ""palette"": [],
+      ""x"": 0.22,
+      ""y"": 0.905,
+      ""w"": 0.56,
+      ""h"": 0.018
+    }
+  ]
+}",0189-the-last-brushstroke-at-buzzard-s-mercy.jpg
+Fantasy,Portal Fantasy,Mystery,Hardboiled Detective,Tech Billionaire,"Imagine if a Portal Fantasy show had a baby with a Hardboiled Detective miniseries, and that baby grew up to follow a Tech Billionaire.",Portal Noir: The Billionaire Who Fell Sideways,"Self-made trillionaire Dex Carraway built an empire on cynicism, energy drinks, and a teleportation startup he never read the safety memo for. When the prototype dumps him into Vethryn — a rain-slicked elf city where everyone owes everyone a blood debt — Dex reinvents himself as the only hardboiled detective in a realm that's never needed one. Now he's tracking a missing dragon-egg fortune, dodging assassin guilds, and learning that his investor's ""soul"" was a load-bearing asset. The shareholders want returns. The Veil wants him dead. Same difference.","{
+  ""high_level_description"": ""A weary trillionaire in a soaked tailored suit stands in a rain-drenched fantasy city alley lit by a glowing portal, framed like a classic noir detective one-sheet."",
+  ""background"": ""A narrow medieval-fantasy city alley at night, cobblestones slick with rain and reflecting neon-blue arcane light. Towering crooked stone towers and elven banners recede into fog, while a circular shimmering portal hangs at the far end of the alley casting cold cyan beams through the mist. Steam rises from grates and pooled water catches every highlight."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, teal-and-amber cinematic grade, heavy volumetric rain haze, photorealistic, high dynamic range, filmic grain"",
+  ""aesthetics"": ""neo-noir, brooding, rain-soaked, opulent decay, mysterious, cinematic"",
+  ""lighting"": ""Hard cyan rim light from the portal behind, warm tungsten key from a flickering lantern at left, deep crushed shadows and wet specular highlights everywhere."",
+  ""palette"": [
+    ""#0E1A24"",
+    ""#1F6E8C"",
+    ""#D8A24A"",
+    ""#E8E2D0"",
+    ""#3A0F12""
+  ],
+  ""bg_brightness"": 32,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A 40-something man in a soaked, expensively tailored charcoal suit with loosened tie, collar up like a trench coat, holding a glowing smartphone in one hand and a fantasy-realm bronze coin in the other, weary stubbled face lit half in cyan half in amber, standing center-frame looking directly at camera"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.3,
+      ""w"": 0.4,
+      ""h"": 0.55
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A circular shimmering vertical portal of swirling cyan energy hanging in the misty alley behind the man, edges crackling with arcane filaments, casting beams through rain"",
+      ""palette"": [],
+      ""x"": 0.55,
+      ""y"": 0.18,
+      ""w"": 0.3,
+      ""h"": 0.4
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A hooded elven figure with pointed ears half-lit by lantern glow, lurking in the foreground left as a shadowy out-of-focus silhouette holding a curved dagger"",
+      ""palette"": [],
+      ""x"": 0.04,
+      ""y"": 0.5,
+      ""w"": 0.18,
+      ""h"": 0.38
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""PORTAL NOIR"",
+      ""desc"": ""Massive condensed serif title in distressed warm gold, slight wet sheen, stacked tightly across the lower third with subtle cyan rim glow"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.7,
+      ""w"": 0.84,
+      ""h"": 0.13
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE BILLIONAIRE WHO FELL SIDEWAYS"",
+      ""desc"": ""Slim all-caps condensed subtitle in pale bone-white, letter-spaced, centered directly beneath the main title"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.835,
+      ""w"": 0.72,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""He disrupted everything. Then everything disrupted him."",
+      ""desc"": ""Small italic tagline in faint cyan, centered just above the main title"",
+      ""palette"": [],
+      ""x"": 0.16,
+      ""y"": 0.655,
+      ""w"": 0.68,
+      ""h"": 0.035
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""HOLLOWPOINT PICTURES PRESENTS  A VESSEL & MARGRAVE FILM  \""PORTAL NOIR: THE BILLIONAIRE WHO FELL SIDEWAYS\""  RHETT CALLOWAY  SAOIRSE VENN  ELIAS DRAKE  CASTING BY M. OBARA  MUSIC BY J. KOROLEV  DIRECTED BY AUGUST PELL"",
+      ""desc"": ""Tiny condensed all-caps billing block in muted grey, justified center, with a release line below reading IN THEATERS THIS FALL"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.9,
+      ""w"": 0.76,
+      ""h"": 0.06
+    }
+  ]
+}",0190-portal-noir-the-billionaire-who-fell-sideways.jpg

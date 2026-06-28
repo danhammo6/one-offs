@@ -14203,3 +14203,955 @@ Action,Spy Thriller,Mystery,Hardboiled Detective,Grizzled Sea Captain,"Logline: 
     }
   ]
 }",0150-the-salt-and-the-smoking-gun.jpg
+Musical,Rock Opera,Documentary-style,Conspiracy Doc,Rookie Cop,It's Rock Opera meets Conspiracy Doc... but the protagonist is a Rookie Cop.,Badge of Lies: The Rookie's Requiem,"Officer Danny Cruz wanted to write parking tickets and go home — instead he stumbles onto a citywide cover-up that he can only explain through power ballads. As shadowy councilmen redact evidence and his own precinct lip-syncs the official story, Danny belts out the truth in soaring choruses nobody asked for. Half talking-head exposé, half stadium rock spectacle, the film follows one tone-deaf-but-fearless rookie as he subpoenas the deep state one key change at a time. The conspiracy goes all the way to the top. So does his vocal range.","{
+  ""high_level_description"": ""A photoreal one-sheet of a young rookie cop standing in a rain-slicked interrogation room, mid-belt with arms thrown wide, while a string-board of red conspiracy yarn glows behind him like a stage backdrop."",
+  ""background"": ""A dim municipal interrogation room with a wall covered in a corkboard of pinned documents and crisscrossing red string, photographs redacted with black bars. Volumetric haze hangs in a single hard spotlight beam from above, and a foggy city skyline is barely visible through a barred window in the deep background. Wet concrete floor reflects scattered colored stage lights."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, teal-and-amber cinematic grade, photorealistic, volumetric haze, subtle film grain"",
+  ""aesthetics"": ""gritty, theatrical, paranoid, dramatic, neon-noir"",
+  ""lighting"": ""a single hard white spotlight from above carves the cop out of darkness while cold blue practical light leaks from the conspiracy board behind him."",
+  ""palette"": [
+    ""#0E1B2A"",
+    ""#C8102E"",
+    ""#E8A33D"",
+    ""#1F4A6B"",
+    ""#F2F0EA""
+  ],
+  ""bg_brightness"": 32,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a young rookie police officer in a crisp navy patrol uniform with a shiny badge, head tilted back, eyes shut, mouth wide open mid-power-ballad, one arm flung skyward gripping a wireless microphone, the other hand clutching a manila evidence folder, sweat catching the spotlight, dramatic and earnest"",
+      ""palette"": [],
+      ""x"": 0.28,
+      ""y"": 0.3,
+      ""w"": 0.46,
+      ""h"": 0.55
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a corkboard wall of pinned redacted documents connected by taut red string forming a chaotic web, glowing faintly with cold blue rim light, slightly out of focus behind the figure"",
+      ""palette"": [],
+      ""x"": 0.0,
+      ""y"": 0.18,
+      ""w"": 1.0,
+      ""h"": 0.55
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a vintage chrome stage microphone stand draped with police caution tape, standing on the wet reflective floor in the lower foreground left, catching amber stage light"",
+      ""palette"": [],
+      ""x"": 0.06,
+      ""y"": 0.66,
+      ""w"": 0.18,
+      ""h"": 0.28
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""BADGE OF LIES"",
+      ""desc"": ""huge bold condensed sans-serif title in cracked chrome-and-crimson metallic lettering, slight grunge texture, stacked across two lines, dramatic drop shadow, centered"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.04,
+      ""w"": 0.84,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE ROOKIE'S REQUIEM"",
+      ""desc"": ""smaller engraved gold serif subtitle in all caps, letter-spaced, glowing softly beneath the main title"",
+      ""palette"": [],
+      ""x"": 0.2,
+      ""y"": 0.205,
+      ""w"": 0.6,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE TRUTH HAS A KEY CHANGE."",
+      ""desc"": ""slim italic tagline in clean white uppercase, tracked wide, positioned just above the billing block"",
+      ""palette"": [],
+      ""x"": 0.18,
+      ""y"": 0.86,
+      ""w"": 0.64,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""REDLINE PICTURES PRESENTS  A MARCUS VELTRI FILM  \""BADGE OF LIES: THE ROOKIE'S REQUIEM\""  DANNY OSORIO  RHEA CALLOWAY  THEO BRANDT-PIKE  CASTING BY LINDA MOSS  MUSIC BY THE SUBPOENA BROTHERS  DIRECTED BY MARCUS VELTRI"",
+      ""desc"": ""tiny condensed all-caps billing block in pale gray, classic theatrical credits style, tightly justified, centered"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.915,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""IN THEATERS THIS FALL"",
+      ""desc"": ""small bold white uppercase release line, letter-spaced, centered at very bottom"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.965,
+      ""w"": 0.4,
+      ""h"": 0.025
+    }
+  ]
+}",0151-badge-of-lies-the-rookie-s-requiem.jpg
+Sci-Fi,Hard Sci-Fi,Western,Acid Western,Lighthouse Keeper,"Pitch: Hard Sci-Fi x Acid Western. Tone: dread, but make it horny. Lead: a Lighthouse Keeper.",The Tidekeeper of Tau Ceti,"On a tide-locked ocean planet, disgraced beam-tender Solomon Vane keeps the only photon lighthouse warning starships off the reefs of a black hole's gravity well. Then the light starts whispering in his dead wife's voice, the tides begin running backwards, and a sun-blistered drifter named the Cartographer rides in on a six-legged horse claiming the ocean is a single sleeping organism that wants Solomon to stop blinking. As relativity buckles and his own reflections start arriving early, Solomon must choose: keep the light, or finally let the dark have its dance. Dread-soaked, sweat-slicked, and dangerously horny.","{
+  ""high_level_description"": ""A weather-beaten lighthouse keeper stands at the base of a towering bio-mechanical photon lighthouse on an alien tidal shore, a blood-orange black-hole sun warping the sky behind him, shot like a sun-scorched cosmic western."",
+  ""background"": ""A vast tide-locked alien beach of black glassy sand stretching to a horizon where the ocean is frozen mid-recession into impossible standing waves. Above it a swollen distorted sun smears into an accretion ring around a black hole, bending the sky into a lensed arc. Heat shimmer and salt mist hang in the lower air; faint starships glint as specks near the warped horizon."",
+  ""art_style"": ""shot on 65mm anamorphic, shallow depth of field, photorealistic, sun-bleached high-contrast grade with desaturated shadows and burnt-orange highlights, fine film grain, volumetric haze, lens flare from the warped sun"",
+  ""aesthetics"": ""cosmic dread, sweaty frontier loneliness, sublime and erotic unease, sun-blasted desolation, hard-sci-fi grit"",
+  ""lighting"": ""harsh low-angle blood-orange sunlight from a lensed black-hole sun rakes across the keeper and the lighthouse, throwing long distorted shadows over the black sand."",
+  ""palette"": [
+    ""#1A0E08"",
+    ""#E8581F"",
+    ""#F2B441"",
+    ""#6E3520"",
+    ""#0C1418"",
+    ""#C9C2B0""
+  ],
+  ""bg_brightness"": 45,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A rugged middle-aged lighthouse keeper in a salt-stained worn duster coat over a patched pressure suit, dust mask hanging at his neck, weathered sunburned face squinting under a wide brim, one cybernetic forearm gripping a long photon-lantern staff that emits a thin vertical beam, standing heroically center-low, photoreal"",
+      ""palette"": [],
+      ""x"": 0.34,
+      ""y"": 0.46,
+      ""w"": 0.32,
+      ""h"": 0.46
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A colossal bio-mechanical lighthouse tower fused with coral-like organic plating and humming machinery, a blinding lens chamber at its peak casting a god-ray beam into the warped sky, rising behind the keeper, photoreal massive scale"",
+      ""palette"": [],
+      ""x"": 0.4,
+      ""y"": 0.1,
+      ""w"": 0.3,
+      ""h"": 0.55
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A lone sun-scorched drifter silhouette on a strange six-legged horse-like creature, far to the left on the black tidal flats, tiny and ominous, kicking up faint mist, photoreal"",
+      ""palette"": [],
+      ""x"": 0.06,
+      ""y"": 0.6,
+      ""w"": 0.18,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""Foreground black glassy alien sand with rippling reflected orange light and a half-buried weathered ship's compass, shallow focus, photoreal"",
+      ""palette"": [],
+      ""x"": 0.0,
+      ""y"": 0.86,
+      ""w"": 1.0,
+      ""h"": 0.14
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE TIDEKEEPER\nOF TAU CETI"",
+      ""desc"": ""huge condensed slab-serif title in cracked bone-white with burnt-orange edge glow, weathered metallic texture, kerned wide and stacked on two lines, dominating the upper third"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.04,
+      ""w"": 0.84,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""KEEP THE LIGHT. OR LET THE DARK DANCE."",
+      ""desc"": ""small uppercase condensed tagline in dusty amber, letter-spaced, single line just below the title"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.255,
+      ""w"": 0.72,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""HELIOS DRIFT PICTURES PRESENTS  A CORMAC VANTE FILM  \""THE TIDEKEEPER OF TAU CETI\""  RILEY OKONKWO-MAAR  DELPHINE ASHGROVE  SILAS REDD  CASTING BY M. VOSS  MUSIC BY ANTON KORR  DIRECTOR OF PHOTOGRAPHY J. HALE  WRITTEN AND DIRECTED BY CORMAC VANTE"",
+      ""desc"": ""tiny condensed all-caps billing block in faded grey-white, centered, tightly tracked"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.925,
+      ""w"": 0.76,
+      ""h"": 0.045
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""IN THEATERS AUTUMN"",
+      ""desc"": ""small centered uppercase release line in pale amber above the billing block"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.895,
+      ""w"": 0.4,
+      ""h"": 0.025
+    }
+  ]
+}",0152-the-tidekeeper-of-tau-ceti.jpg
+Sci-Fi,Space Opera,Comedy,Dark Comedy,Tech Billionaire,It's Space Opera meets Dark Comedy... but the protagonist is a Tech Billionaire.,Liquidation Event: A Galactic Comedy,"When self-made trillionaire Dex Vantablack rockets off-world to dodge a planetary tax audit, he accidentally crashes his prototype mega-yacht into the capital throne-room of the Andromeda Dominion. Now the galaxy's worst dictators want him executed, his AI life-coach won't stop optimizing his ""personal brand"" during firefights, and the only ship willing to extract him is crewed by the disgruntled interns he laid off. To survive, Dex must do the one thing he's never done: apologize. Stakes are cosmic, ego is fatal, and the severance package is the universe itself.","{
+  ""high_level_description"": ""A smug billionaire in a torn designer spacesuit stands triumphantly on a cracked alien throne dais while a vast burning space armada looms behind him, shot like a glossy big-budget sci-fi one-sheet."",
+  ""background"": ""A cavernous obsidian alien throne hall opening onto a star-strewn void through a shattered dome, with a colossal fleet of angular warships drifting in formation against a magenta nebula. Smoke and floating debris drift through shafts of light, giving deep cinematic atmosphere. Glowing control consoles and toppled golden statues recede into shadow on either side."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, teal-magenta cinematic grade, volumetric haze, lens flares, photorealistic, crisp practical-effects sci-fi"",
+  ""aesthetics"": ""epic, satirical, opulent, chaotic grandeur, glossy corporate sheen"",
+  ""lighting"": ""dramatic rim light from the nebula behind the hero with warm key light on his face and cold blue fill from holographic consoles."",
+  ""palette"": [
+    ""#0B1026"",
+    ""#E0457B"",
+    ""#F4C95D"",
+    ""#1F6FB2"",
+    ""#0E0E12""
+  ],
+  ""bg_brightness"": 38,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A confident middle-aged tech billionaire with slicked silver-flecked hair and stubble, wearing a sleek tailored white-and-chrome spacesuit that is singed and torn at the shoulder, standing one boot up on a cracked alien throne, smirking and adjusting a glowing wrist console, photoreal cinematic lighting"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.34,
+      ""w"": 0.42,
+      ""h"": 0.5
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A small hovering chrome AI life-coach drone with a single warm glowing blue eye and tiny stabilizer fins, floating near the hero's shoulder projecting a faint holographic graph, photoreal"",
+      ""palette"": [],
+      ""x"": 0.62,
+      ""y"": 0.4,
+      ""w"": 0.16,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A cluster of disgruntled young rescue-crew interns in mismatched orange utility flight suits crowded in a glowing dropship hatch in the lower right, lit from below, photoreal"",
+      ""palette"": [],
+      ""x"": 0.66,
+      ""y"": 0.7,
+      ""w"": 0.3,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A toppled golden alien dictator statue lying broken across the lower left foreground, dust drifting, photoreal"",
+      ""palette"": [],
+      ""x"": 0.04,
+      ""y"": 0.72,
+      ""w"": 0.3,
+      ""h"": 0.18
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""LIQUIDATION\nEVENT"",
+      ""desc"": ""Massive bold condensed sans-serif title in brushed-chrome metallic letters with magenta neon edge glow, stacked two lines, centered, occupying full width"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.06,
+      ""w"": 0.84,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""A GALACTIC COMEDY"",
+      ""desc"": ""Slim gold uppercase serif subtitle with wide letter spacing, centered beneath the title"",
+      ""palette"": [],
+      ""x"": 0.22,
+      ""y"": 0.27,
+      ""w"": 0.56,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""He disrupted the entire galaxy. Now it wants a refund."",
+      ""desc"": ""Small italic white tagline, thin sans-serif, centered near lower middle"",
+      ""palette"": [],
+      ""x"": 0.18,
+      ""y"": 0.63,
+      ""w"": 0.64,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""NOVABRIGHT PICTURES PRESENTS  A CASSIUS VOORHEELE FILM  \""LIQUIDATION EVENT: A GALACTIC COMEDY\""  RILEY OKONKWO-VANCE  MARGOT DELACROIX-PENN  THEO BRANDT  MUSIC BY ELIAS HARROW  DIRECTED BY CASSIUS VOORHEELE"",
+      ""desc"": ""Tiny condensed all-caps billing block in pale gray, tightly spaced, centered at the very bottom"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.93,
+      ""w"": 0.76,
+      ""h"": 0.05
+    }
+  ]
+}",0153-liquidation-event-a-galactic-comedy.jpg
+Drama,Period Piece,Documentary-style,Cult Exposé,Con Artist,"Cold open: a Con Artist, alone, in the rain. The genre? Period Piece. The vibe? Unmistakably Cult Exposé. Cue title card.",The Gilded Flock: An 1888 Exposé,"Posing as a visionary ""Prophet of the Electric Dawn,"" silver-tongued grifter Cornelius Vane has built a thriving commune of corseted true believers in foggy 1888 Yorkshire — all to fleece them of their inheritances. But a relentless lantern-jawed pamphlet-journalist is reconstructing his crimes interview by interview, and Vane's own followers are starting to take the gospel he invented terrifyingly seriously. Shot like a prestige period drama but framed like a modern docuseries — sepia talking-heads, ominous re-enactments, narration that knows too much. The con was perfect. The cult was an accident.","{
+  ""high_level_description"": ""A rain-soaked Victorian con man in a velvet frock coat stands alone on cobblestones beneath gaslight, photographed like a prestige period film but framed with documentary-style title cards."",
+  ""background"": ""A narrow 1888 English village street at night, slick wet cobblestones reflecting amber gaslamps, fog rolling between soot-stained brick facades and a distant chapel spire. Shallow depth fades the background into rainy haze, with faint silhouettes of bonneted figures watching from doorways. A single hanging lantern glows above the protagonist."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, desaturated period sepia-amber grade with cold rain highlights, photorealistic, fine film grain, volumetric fog, naturalistic candle-and-gaslight"",
+  ""aesthetics"": ""ominous, prestige period drama, true-crime docuseries, somber, opulent decay"",
+  ""lighting"": ""warm overhead gaslight pooling on the wet protagonist against a cold blue rainy darkness, single-source and dramatic."",
+  ""palette"": [
+    ""#1c1812"",
+    ""#8a5a23"",
+    ""#d9a441"",
+    ""#4a5560"",
+    ""#0c0d10""
+  ],
+  ""bg_brightness"": 28,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A charismatic Victorian con man in his 40s, soaked black velvet frock coat and silk cravat, top hat tilted, holding a leather-bound 'gospel' ledger to his chest, faint knowing smirk, rain streaming off his shoulders, lit by gaslight from above, photoreal"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.32,
+      ""w"": 0.4,
+      ""h"": 0.52
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A black iron gas lantern hanging on a wrought bracket, glowing warm amber halo cutting through fog, upper left, photoreal"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.2,
+      ""w"": 0.18,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""Two blurred silhouettes of bonneted women in long dresses standing in a doorway watching, soft focus, lower right, photoreal"",
+      ""palette"": [],
+      ""x"": 0.66,
+      ""y"": 0.62,
+      ""w"": 0.26,
+      ""h"": 0.26
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE GILDED FLOCK"",
+      ""desc"": ""Large engraved Victorian serif title, gold foil with weathered metallic sheen, centered, spanning width, slight rain-streak texture"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.06,
+      ""w"": 0.84,
+      ""h"": 0.15
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""AN 1888 EXPOSÉ"",
+      ""desc"": ""Smaller all-caps condensed serif subtitle in muted cream, letter-spaced, directly beneath the title"",
+      ""palette"": [],
+      ""x"": 0.22,
+      ""y"": 0.215,
+      ""w"": 0.56,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE CON WAS PERFECT. THE CULT WAS AN ACCIDENT."",
+      ""desc"": ""Thin italic serif tagline in pale amber, single centered line, modest size"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.86,
+      ""w"": 0.76,
+      ""h"": 0.045
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""LANTERNHOUSE PICTURES PRESENTS  A SILAS GRUBB FILM  \""THE GILDED FLOCK\""  EDMUND HALLORAN  CLARISSA VEX  THADDEUS MOORE  MUSIC BY ROWAN ASHCROFT  DIRECTED BY SILAS GRUBB"",
+      ""desc"": ""Tiny condensed all-caps billing block, off-white, centered, classic credits styling"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.915,
+      ""w"": 0.72,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""REPENT THIS WINTER"",
+      ""desc"": ""Small bold all-caps release line in gaslight amber, centered at very bottom"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.965,
+      ""w"": 0.4,
+      ""h"": 0.028
+    }
+  ]
+}",0154-the-gilded-flock-an-1888-expos.jpg
+Romance,Enemies-to-Lovers,Fantasy,Magical Academia,Rookie Cop,"Three-act structure: Enemies-to-Lovers in act one, Magical Academia by act three, and a Rookie Cop sobbing into a microwave dinner the whole time.",Probationary: A Spell-Check Romance,"Rookie cop Dani Vasquez expected a quiet traffic beat — not a citywide enchantment crisis that gets her involuntarily enrolled at the Thornwick Academy of Applied Sorcery for ""remedial citizen safety."" Her instructor is Magister Cassian Vael, an insufferable, smug wand-snob who writes her up for improper hex containment on day one. They loathe each other through midterms, study-group standoffs, and one cursed library lockdown — right up until they don't. Between failing Potions and saving the academy from a sentient parking violation, Dani learns the hardest spell of all is admitting your nemesis makes excellent enemies-to-lovers material. She still cries into a microwave lasagna nightly. Tuition is murder.","{
+  ""high_level_description"": ""A photoreal one-sheet of a young uniformed cop and a brooding robed sorcerer standing back-to-back amid floating glowing spellbooks in a grand gothic academy hall, sparks crackling between their reluctant glances."",
+  ""background"": ""Interior of a colossal gothic university great hall at dusk, towering stained-glass windows leaking blue and amber light, soaring stone arches receding into haze. Floating candles and open books drift in midair, trailing faint ember-like magic. Long shadows stretch across a polished marble floor checkered with arcane inlays."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, volumetric haze, cool teal shadows with warm amber practicals, photorealistic, fine film grain, cinematic key light"",
+  ""aesthetics"": ""moody, romantic tension, grand fantasy academia, slow-burn rivalry, prestige drama"",
+  ""lighting"": ""dramatic low-key lighting with warm candle glow on the faces and cool blue rim light separating the figures from the deep haze."",
+  ""palette"": [
+    ""#1B2A4A"",
+    ""#E8A23B"",
+    ""#7FB7C9"",
+    ""#2D1A33"",
+    ""#F2E6C9""
+  ],
+  ""bg_brightness"": 42,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A young Latina woman in her late twenties in a crisp dark-blue police patrol uniform with a badge, arms crossed, jaw set in exasperation, a faint glowing handcuff-shaped rune hovering around one wrist, standing slightly turned away from the man beside her"",
+      ""palette"": [],
+      ""x"": 0.1,
+      ""y"": 0.34,
+      ""w"": 0.42,
+      ""h"": 0.52
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A tall brooding man in his early thirties in elaborate charcoal academic sorcerer robes with high collar, smirking faintly, holding a glowing wooden wand that emits soft orange sparks, standing back-to-back with the policewoman"",
+      ""palette"": [],
+      ""x"": 0.48,
+      ""y"": 0.33,
+      ""w"": 0.42,
+      ""h"": 0.53
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""Several open leather-bound spellbooks floating in midair around the figures, pages glowing softly with drifting ember particles, photoreal with realistic motion blur"",
+      ""palette"": [],
+      ""x"": 0.05,
+      ""y"": 0.2,
+      ""w"": 0.9,
+      ""h"": 0.3
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A lone microwave-dinner lasagna tray glowing faintly on the marble floor in the lower foreground, steam rising, comically out of place amid the grandeur, sharp focus"",
+      ""palette"": [],
+      ""x"": 0.4,
+      ""y"": 0.8,
+      ""w"": 0.2,
+      ""h"": 0.12
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""PROBATIONARY"",
+      ""desc"": ""Large bold serif title in cream gold with subtle stone texture and faint magical glow on the edges, centered, commanding upper-middle placement"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.06,
+      ""w"": 0.84,
+      ""h"": 0.12
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""A Spell-Check Romance"",
+      ""desc"": ""Elegant italic thin serif subtitle in soft teal-white, small, centered directly beneath the main title"",
+      ""palette"": [],
+      ""x"": 0.2,
+      ""y"": 0.185,
+      ""w"": 0.6,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""She enforces the law. He bends the rules of reality. Detention has never been this complicated."",
+      ""desc"": ""Small refined uppercase tagline in pale gold, letter-spaced, centered near lower third above the billing block"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.875,
+      ""w"": 0.72,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""HOLLOWPINE PICTURES PRESENTS  A MARISOL TREN FILM  \""PROBATIONARY: A SPELL-CHECK ROMANCE\""  DANI CRUZ-MOORE  ELIAS VANTERPOOL  CASTING BY R. OKAFOR  MUSIC BY J. HALVERSEN  DIRECTED BY MARISOL TREN"",
+      ""desc"": ""Tiny condensed sans-serif billing block in light gray, centered, classic theatrical credits formatting at the very bottom"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.935,
+      ""w"": 0.76,
+      ""h"": 0.05
+    }
+  ]
+}",0155-probationary-a-spell-check-romance.jpg
+Romance,Romantic Comedy,Western,Revisionist Western,Bounty Hunter,A Bounty Hunter stumbles into a Romantic Comedy conspiracy that can only be solved using the rules of Revisionist Western.,The Quick and the Dead Inside,"Bounty hunter Cassidy ""Tumbleweed"" Boon rides into the dust-choked town of Mercy Falls to collect on her last big payday — only to discover her target is a heartbroken pie shop owner caught in a town-wide matchmaking scheme run by the mayor's lonely heart club. As wedding-bell romance threatens to derail frontier justice, Cassidy learns the only way to untangle the conspiracy is by the old code: high noon, hard truths, and a kiss she absolutely did not budget for. She's never missed a bounty. She's also never been on a second date. In Mercy Falls, the deadliest standoff is feelings.","{
+  ""high_level_description"": ""A weathered female bounty hunter stands in a dusty western main street holding both a revolver and a wilting bouquet, framed for a photoreal romantic-comedy-meets-revisionist-western one-sheet."",
+  ""background"": ""A sun-bleached frontier town main street at golden hour, with crooked wooden storefronts, a faded 'MERCY FALLS GENERAL STORE' sign, and hanging paper wedding bunting strung between buildings. Dust hangs in the warm air and a distant church steeple catches the last light. Shallow depth keeps the storefronts soft while the foreground stays crisp."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, warm dusty golden-hour grade, fine film grain, photorealistic, volumetric haze, subtle lens flare"",
+  ""aesthetics"": ""dusty, romantic, wry, sun-soaked, ironic frontier charm"",
+  ""lighting"": ""low warm raking sunlight from camera-left casting long shadows and a soft golden rim around the figures."",
+  ""palette"": [
+    ""#C99A5B"",
+    ""#7A4B2B"",
+    ""#E8D2A0"",
+    ""#3B2A1E"",
+    ""#B23A2E"",
+    ""#F2E6C7""
+  ],
+  ""bg_brightness"": 60,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A rugged, beautiful woman in her 30s, dust-streaked tan duster coat and worn leather hat, standing tall mid-street; she holds a long-barreled revolver lowered at her hip in one hand and a slightly wilted bouquet of wildflowers awkwardly in the other, expression caught between deadly squint and reluctant blush, photoreal"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.3,
+      ""w"": 0.42,
+      ""h"": 0.56
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A nervous, charming man in a flour-dusted apron peeking around a wooden storefront post in the soft-focus background, holding a heart-decorated pie, photoreal"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.46,
+      ""w"": 0.2,
+      ""h"": 0.3
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A crumpled WANTED poster nailed to a weathered wooden post in the foreground, with a torn paper heart pinned over the bounty amount, photoreal"",
+      ""palette"": [],
+      ""x"": 0.7,
+      ""y"": 0.55,
+      ""w"": 0.22,
+      ""h"": 0.28
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE QUICK AND THE\nDEAD INSIDE"",
+      ""desc"": ""Large bold weathered Western slab-serif title in cream with cracked dusty texture and dark drop shadow, spanning the lower-middle, stacked on two lines"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.06,
+      ""w"": 0.84,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""She always gets her man. This time it's a problem."",
+      ""desc"": ""Slim italic serif tagline in warm gold, single line, understated"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.27,
+      ""w"": 0.72,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""SADDLEBRUSH PICTURES presents  a JOLENE McCRAY film  \""THE QUICK AND THE DEAD INSIDE\""  RUBY HALLORAN  DESMOND PIKE  casting by MAREN VOSS  music by THE CALICO BROTHERS  directed by JOLENE McCRAY"",
+      ""desc"": ""Tiny condensed all-caps billing block in pale cream, centered, several lines, classic credits styling"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.88,
+      ""w"": 0.76,
+      ""h"": 0.07
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""SHOWDOWN AT HIGH NOON — THIS SUMMER"",
+      ""desc"": ""Small bold all-caps release line in brick red, centered, letter-spaced"",
+      ""palette"": [],
+      ""x"": 0.2,
+      ""y"": 0.83,
+      ""w"": 0.6,
+      ""h"": 0.04
+    }
+  ]
+}",0156-the-quick-and-the-dead-inside.jpg
+Drama,Family Saga,Romance,Holiday Romance,Small-Town Sheriff,A Small-Town Sheriff stumbles into a Family Saga conspiracy that can only be solved using the rules of Holiday Romance.,"Deck the Halls, Book the Crooks","Sheriff Maren Holloway has policed Tinsel Falls for twenty years on instinct, gut, and grudges — but when the town's beloved Pruett family clan starts unraveling over a forged will, a missing maple-syrup fortune, and three generations of Christmas Eve secrets, she discovers the only way to crack the conspiracy is to follow the sacred rules of the Hallmark playbook. To get a confession she must attend the tree lighting, fake-date her oldest rival, win the gingerbread bake-off, and accidentally fall for the suspect's brooding nephew. Justice has never smelled this much like cinnamon. She has until midnight on the 24th — and her badge — to close the case before the snow buries the truth.","{
+  ""high_level_description"": ""A weathered small-town sheriff in a snow-dusted uniform stands center-frame on a twinkling Main Street decked for Christmas, badge in one hand and a candy cane in the other, caught between a crime scene and a romance."",
+  ""background"": ""A picture-perfect snowy small-town Main Street at dusk, lined with brick storefronts strung in warm Christmas lights and evergreen garlands, a glowing town tree in the soft-focus distance. Fat snowflakes drift through the frame and a thin trail of yellow police tape flutters between two lamp posts. Cozy shop windows glow gold against the deep blue winter twilight, giving long receding depth down the street."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, warm-amber and icy-blue cinematic grade, volumetric snow haze, crisp festival bokeh, photorealistic"",
+  ""aesthetics"": ""cozy, mischievous, festive, mock-noir warmth, holiday-movie charm"",
+  ""lighting"": ""warm string-light key on the sheriff's face with cool blue twilight rim light and soft glints off falling snow"",
+  ""palette"": [
+    ""#0E2A4A"",
+    ""#C8362B"",
+    ""#F4E3B2"",
+    ""#D9E6F2"",
+    ""#1E5631""
+  ],
+  ""bg_brightness"": 48,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A 50-year-old female small-town sheriff with kind tired eyes and a knowing half-smirk, in a tan winter sheriff's jacket with a gold star badge and a Santa-red scarf, snow on her shoulders, holding up a silver candy cane like evidence in one hand and resting the other on her belt; full-body confident stance, photorealistic, sharp focus"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.3,
+      ""w"": 0.4,
+      ""h"": 0.55
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A brooding handsome 40-year-old man in a charcoal peacoat and scarf leaning against a candy-striped lamp post on the left, holding two paper cups of cocoa, looking longingly off-frame, softly out of focus, photorealistic"",
+      ""palette"": [],
+      ""x"": 0.02,
+      ""y"": 0.4,
+      ""w"": 0.24,
+      ""h"": 0.42
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A toppled gingerbread house on a snow-covered cafe table on the right with a tiny evidence marker numbered 1 beside it and a magnifying glass, shallow focus, photorealistic"",
+      ""palette"": [],
+      ""x"": 0.7,
+      ""y"": 0.6,
+      ""w"": 0.27,
+      ""h"": 0.22
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A length of yellow police tape reading POLICE LINE draped across the lower foreground, dusted with snow, gentle motion blur, photorealistic"",
+      ""palette"": [],
+      ""x"": 0.0,
+      ""y"": 0.8,
+      ""w"": 1.0,
+      ""h"": 0.1
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""DECK THE HALLS,\nBOOK THE CROOKS"",
+      ""desc"": ""Bold condensed serif title in warm cream with red sprig-and-holly accents on the comma, slight gold foil sheen, large and centered, occupying the lower third above the billing"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.06,
+      ""w"": 0.84,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""Justice is best served warm."",
+      ""desc"": ""Small handwritten-style italic script tagline in icy white, centered just below the title"",
+      ""palette"": [],
+      ""x"": 0.22,
+      ""y"": 0.27,
+      ""w"": 0.56,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""TINSEL FALLS PICTURES PRESENTS A HOLLY HARTWELL FILM  \""DECK THE HALLS, BOOK THE CROOKS\""  DELORES VANCE  RHETT CALLOWAY  MARGOT PRUETT-LANE  CASTING BY EVE SOLSTICE  MUSIC BY JINGLE MORROW  DIRECTED BY HOLLY HARTWELL"",
+      ""desc"": ""Tiny condensed all-caps billing block in pale cream, centered, classic credit-block spacing"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.9,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THIS CHRISTMAS EVE"",
+      ""desc"": ""Small spaced all-caps release line in festive red, centered just above the billing block"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.855,
+      ""w"": 0.4,
+      ""h"": 0.035
+    }
+  ]
+}",0157-deck-the-halls-book-the-crooks.jpg
+Documentary-style,Reality Competition,Horror,Gothic Horror,Undertaker,"Logline: When a Undertaker discovers their quiet life is actually a Reality Competition, they must master the genre conventions of Gothic Horror to survive.",Last Rites: The Eliminations,"Barnaby Crane has embalmed the dead in the same fog-drowned village for thirty quiet years, until a camera crew informs him he's been on a hit reality show called ""Last Rites"" the entire time — and the audience is voting. Now every coffin he closes triggers a ""Sudden Death"" round, the manor's portraits whisper his weekly rankings, and a spectral host with no eyes promises immortality to the final survivor. To stay in the game, Barnaby must master the rules of Gothic horror he never knew he was living: never investigate the crying, always bring a candle, and absolutely do not look behind the vanity. Confessional booth required.","{
+  ""high_level_description"": ""A gaunt undertaker in Victorian black stands in a candlelit gothic manor entry holding a numbered elimination plaque, while reality-TV cameras and a faceless ghostly host loom in the haze behind him."",
+  ""background"": ""A decaying gothic manor foyer with a grand cracked staircase, peeling oil portraits, and cobwebbed chandeliers swallowed in fog. Deep in the background, two broadcast television cameras on tripods glow with red record lights, half-hidden by drifting mist. The space recedes into murky candlelit darkness with rain-streaked tall windows."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, desaturated teal-and-amber cinematic grade, photorealistic, heavy volumetric haze, fine film grain"",
+  ""aesthetics"": ""gothic dread, candlelit gloom, eerie game-show tension, ornate decay, oppressive elegance"",
+  ""lighting"": ""low-key candlelight from below mixed with cold blue window moonlight and a single hot red camera tally glow cutting through fog."",
+  ""palette"": [
+    ""#0E1418"",
+    ""#2A3A3E"",
+    ""#A8762E"",
+    ""#C7B27A"",
+    ""#7A1F1F""
+  ],
+  ""bg_brightness"": 28,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A tall, pale, hollow-cheeked undertaker around 60 in a long black Victorian frock coat and high collar, holding up a tarnished brass plaque engraved with a glowing red number, candle wax dripping over his fingers, expression of weary terror, photoreal"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.34,
+      ""w"": 0.4,
+      ""h"": 0.54
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A towering faceless ghostly game-show host figure in a translucent grey tuxedo with no eyes, smiling smoothly, half-dissolved into the fog at the top of the staircase, photoreal apparition"",
+      ""palette"": [],
+      ""x"": 0.6,
+      ""y"": 0.22,
+      ""w"": 0.3,
+      ""h"": 0.42
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A vintage broadcast television camera on a tripod with a glowing red record light, draped in cobwebs, lurking in the misty lower-left, photoreal"",
+      ""palette"": [],
+      ""x"": 0.04,
+      ""y"": 0.55,
+      ""w"": 0.24,
+      ""h"": 0.3
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A polished black coffin with a single melting candelabra resting on its lid, foreground bottom edge, photoreal"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.84,
+      ""w"": 0.42,
+      ""h"": 0.14
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""LAST RITES"",
+      ""desc"": ""Massive ornate gothic serif title in tarnished gold with chipped texture, dripping wax detail on letters, centered, dominating the upper portion"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.06,
+      ""w"": 0.84,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE ELIMINATIONS"",
+      ""desc"": ""Condensed bold blood-red sans-serif subtitle with subtle glow, letter-spaced, centered directly under the main title"",
+      ""palette"": [],
+      ""x"": 0.2,
+      ""y"": 0.225,
+      ""w"": 0.6,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""EVERY FUNERAL IS A FINALE."",
+      ""desc"": ""Small elegant italic tagline in pale bone-white, centered above the credits"",
+      ""palette"": [],
+      ""x"": 0.22,
+      ""y"": 0.9,
+      ""w"": 0.56,
+      ""h"": 0.035
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""HOLLOWGRAVE PICTURES PRESENTS A MORTIMER VANE FILM  \""LAST RITES: THE ELIMINATIONS\""  EDMUND THRALE  CORDELIA ASHWORTH  THE HOST AS HIMSELF  CASTING BY LIVIA POLK  MUSIC BY AUGUST REEVE  DIRECTED BY MORTIMER VANE"",
+      ""desc"": ""Tiny condensed all-caps billing block in faded grey, centered, standard credit-strip spacing"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.945,
+      ""w"": 0.72,
+      ""h"": 0.04
+    }
+  ]
+}",0158-last-rites-the-eliminations.jpg
+Drama,Sports Drama,Fantasy,High Fantasy,Undertaker,"Three-act structure: Sports Drama in act one, High Fantasy by act three, and a Undertaker sobbing into a microwave dinner the whole time.",Last Rites Athletic Club,"Mort Pallbright, a soft-spoken small-town undertaker, moonlights coaching the worst rec-league soccer team in the county — until a midnight burial cracks open a portal beneath the cemetery and his eleven benchwarmers are conscripted into the War of the Ember Throne. Now Mort must teach orcs the offside rule, embalm a fallen elf-king before the third act, and somehow win the regional championship in a realm where the losing team is sacrificed to a dragon. He copes the only way he knows: weeping quietly into a microwave Salisbury steak between drills. It's the underdog story of the millennium, and the casualties are real.","{
+  ""high_level_description"": ""A weary undertaker in a black suit stands on a fog-drenched soccer pitch that fractures into a glowing fantasy battlefield, clutching a clipboard and a soccer ball as armored warriors emerge from a cemetery portal behind him."",
+  ""background"": ""A misty rural soccer field at dusk transitions in the upper third into a towering high-fantasy realm of jagged mountains, a burning ember-colored sky, and a distant dragon silhouette circling stone spires. Cracked earth and tilted gravestones bridge the two worlds at midfield, with a glowing rune-lit chasm splitting the grass. Volumetric fog rolls low across the turf, lit by stadium floodlights bleeding into magical embers."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, teal-and-ember cinematic grade, photorealistic, volumetric haze, fine film grain, deep contrast"",
+  ""aesthetics"": ""epic, melancholic, absurd, grand-scale, somber underdog grandeur"",
+  ""lighting"": ""cold floodlight key light on the foreground undertaker contrasted with warm orange firelight glowing from the fantasy portal behind him, rim-lit fog throughout."",
+  ""palette"": [
+    ""#0E1B22"",
+    ""#1F3B44"",
+    ""#C8541E"",
+    ""#E8B468"",
+    ""#D9DBD2""
+  ],
+  ""bg_brightness"": 42,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A tired middle-aged undertaker in a fitted black mortician's suit with a loosened black tie, holding a worn soccer clipboard in one hand and a battered soccer ball under the other arm, glistening eyes, exhausted dignified expression, standing center frame on the foggy pitch, full body, cinematic hero pose"",
+      ""palette"": [],
+      ""x"": 0.33,
+      ""y"": 0.34,
+      ""w"": 0.34,
+      ""h"": 0.5
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""An armored orc and a wounded elf warrior in fantasy battle gear emerging from a glowing rune-lit chasm in the cracked turf, mid-stride, photoreal prosthetics and metal armor catching ember light"",
+      ""palette"": [],
+      ""x"": 0.05,
+      ""y"": 0.52,
+      ""w"": 0.3,
+      ""h"": 0.34
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A single steaming microwave Salisbury-steak TV dinner tray resting incongruously on a weathered gravestone, lit by soft cold light, photoreal detail of gravy and plastic compartments"",
+      ""palette"": [],
+      ""x"": 0.68,
+      ""y"": 0.66,
+      ""w"": 0.24,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A distant winged dragon silhouette circling burning fantasy spires in the upper sky, backlit by ember glow"",
+      ""palette"": [],
+      ""x"": 0.58,
+      ""y"": 0.08,
+      ""w"": 0.3,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""LAST RITES\nATHLETIC CLUB"",
+      ""desc"": ""Massive bold engraved serif title in weathered bone-white with subtle ember-orange inner glow and faint stone texture, stacked two lines, centered, occupying the lower third, slight cinematic perspective"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.78,
+      ""w"": 0.84,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""DEATH IS A TEAM SPORT."",
+      ""desc"": ""Small condensed all-caps tagline in muted gold, letter-spaced, centered just above the title"",
+      ""palette"": [],
+      ""x"": 0.2,
+      ""y"": 0.73,
+      ""w"": 0.6,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""GRAVESPIRE STUDIOS PRESENTS  A BARNABY OKONKWO FILM  \""LAST RITES ATHLETIC CLUB\""  RUFUS HEDGEWAY  MIRA VANTABLACK  THORNE ELLIOTT-GASK  CASTING BY P. MURROW  MUSIC BY ASHLAND VOSS  DIRECTED BY BARNABY OKONKWO"",
+      ""desc"": ""Tiny condensed sans-serif billing block in light grey, centered, classic film-credit spacing"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.945,
+      ""w"": 0.76,
+      ""h"": 0.035
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""IN THEATERS THIS AUTUMN"",
+      ""desc"": ""Small bold all-caps release line in bone-white, centered just above the billing block"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.915,
+      ""w"": 0.4,
+      ""h"": 0.025
+    }
+  ]
+}",0159-last-rites-athletic-club.jpg
+Western,Weird West,Musical,Indie Folk Musical,Washed-Up Rock Star,"Pitch: Weird West x Indie Folk Musical. Tone: dread, but make it horny. Lead: a Washed-Up Rock Star.",Last Saloon at the End of My Voice,"Burnout frontman Dez Calloway, whose stadium band imploded the same night the sun did, wanders into Hollowing — a dust-choked frontier town where every resident communicates only by singing aching, harmonized folk laments. To earn passage out, Dez must out-perform the Saloon, a sentient bordello-tavern that feeds on unfinished songs and lonely men. The catch: the more honestly he croons, the more the town wants to keep him forever, body and ballad. It's dread, it's longing, and somehow it's deeply, uncomfortably horny.","{
+  ""high_level_description"": ""A weather-beaten rock star stands in a haunted desert main street clutching an acoustic guitar that glows from within, photographed like a moody A24 western."",
+  ""background"": ""A deserted Old West main street at dusk, warped wooden saloon facades leaning inward as if listening, lit by a swollen blood-orange sun half-sunk on the horizon. Fine dust and pollen drift through long shafts of light, and faint glowing sheet-music pages spiral up into the bruised sky. Deep perspective draws the eye down the empty rutted road toward the saloon doors."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, warm amber-to-dusty-mauve cinematic grade, fine film grain, volumetric backlight haze, photorealistic"",
+  ""aesthetics"": ""haunted, sultry, melancholic, dread-soaked Americana, smoldering"",
+  ""lighting"": ""low golden-hour rim light from the dying sun behind the figure, with a soft warm glow rising from the guitar onto his sweat-sheened face."",
+  ""palette"": [
+    ""#C8612B"",
+    ""#7A3F52"",
+    ""#E6C79C"",
+    ""#2B1B22"",
+    ""#D98A4E""
+  ],
+  ""bg_brightness"": 48,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a lean, unshaven washed-up rock star in his 40s, smudged eyeliner, sweat-dampened long hair, tattered embroidered western jacket over a bare chest, dusty jeans and worn boots, standing center-frame gripping a battered acoustic guitar that emits a warm internal glow, exhausted yearning expression, full body, backlit by sun"",
+      ""palette"": [],
+      ""x"": 0.32,
+      ""y"": 0.34,
+      ""w"": 0.36,
+      ""h"": 0.52
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""weathered swinging saloon doors framing the figure, peeling paint and dust, slightly out of focus in mid-ground"",
+      ""palette"": [],
+      ""x"": 0.18,
+      ""y"": 0.4,
+      ""w"": 0.64,
+      ""h"": 0.45
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""translucent glowing pages of handwritten sheet music drifting and curling upward through the dusty air on the right side"",
+      ""palette"": [],
+      ""x"": 0.62,
+      ""y"": 0.2,
+      ""w"": 0.3,
+      ""h"": 0.4
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""LAST SALOON\nAT THE END\nOF MY VOICE"",
+      ""desc"": ""large weathered hand-tooled western serif title in cracked gold-leaf letters with subtle inner glow, slightly distressed, stacked across three lines, centered lower portion"",
+      ""palette"": [],
+      ""x"": 0.1,
+      ""y"": 0.66,
+      ""w"": 0.8,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""he sang his heart out. the town kept it."",
+      ""desc"": ""small italic distressed serif tagline in dusty cream, letter-spaced, single line"",
+      ""palette"": [],
+      ""x"": 0.18,
+      ""y"": 0.61,
+      ""w"": 0.64,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""HOLLOW RIDGE PICTURES presents a SILAS VANE film \""LAST SALOON AT THE END OF MY VOICE\""  DEZMOND RYE  CORA LUMEN  THADDEUS BLISS  casting by MAREN OAKLY  music by THE BURNT CHOIR  director of photography ELIO MARCH  written and directed by SILAS VANE"",
+      ""desc"": ""tiny condensed all-caps credit block in faded cream, tightly tracked, centered"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.9,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""SUNG INTO THEATERS THIS FALL"",
+      ""desc"": ""small spaced all-caps release line in muted gold above the billing block"",
+      ""palette"": [],
+      ""x"": 0.22,
+      ""y"": 0.865,
+      ""w"": 0.56,
+      ""h"": 0.025
+    }
+  ]
+}",0160-last-saloon-at-the-end-of-my-voice.jpg

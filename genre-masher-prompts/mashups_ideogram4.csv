@@ -16105,3 +16105,983 @@ Sci-Fi,Space Western,Romance,Forbidden Romance,Reluctant Chosen One,"Logline: Wh
     }
   ]
 }",0170-heart-of-the-dustfire-sky.jpg
+Drama,Period Piece,Comedy,Farce,Lighthouse Keeper,"Pitch: Period Piece x Farce. Tone: dread, but make it horny. Lead: a Lighthouse Keeper.",The Lamplight Indiscretion,"1843, a fog-strangled rock off the Cornish coast. Bartholomew Crisp, a fastidious lighthouse keeper with a fatal weakness for keeping appointments AND keeping the flame lit, accidentally invites a duchess, a corpse, a customs inspector, and his own scandalously underdressed fiancée to the same tiny landing — all on the same stormy night. As doors slam, trousers vanish, and the great lamp threatens to gutter out, Bartholomew must conceal four secrets, three affairs, and one extremely conspicuous goat. It is a tragedy of manners performed at the speed of a slamming armoire. Heaving bosoms. Heaving seas. Absolutely no dignity survives.","{
+  ""high_level_description"": ""A flustered Victorian lighthouse keeper clutches his lamp and a fallen corset on a cramped spiral landing while a duchess and a half-dressed man hide behind slamming doors, shot like a lush prestige period drama gone gloriously wrong."",
+  ""background"": ""The cramped stone interior of a 19th-century lighthouse tower, a tight spiral staircase winding up into shadow behind the figures. A storm rages through a salt-streaked window, lightning silhouetting churning seas and a distant rocky coast. Candlelight and the great rotating lamp throw warm, anxious pools of light against cold wet granite, with volumetric fog seeping under the door."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, candle-warm prestige-drama grade with cool storm-blue shadows, photorealistic, fine film grain, volumetric haze"",
+  ""aesthetics"": ""opulent period detail, frantic farce energy, sweaty dread, comedic timing frozen mid-chaos, romantic candlelight"",
+  ""lighting"": ""warm flickering candle and oil-lamp light on the faces against a cold blue lightning rim from the storm window, with god-rays cutting through fog."",
+  ""palette"": [
+    ""#1B2A3A"",
+    ""#E8C27A"",
+    ""#7A2E2E"",
+    ""#C9B79C"",
+    ""#0C1119""
+  ],
+  ""bg_brightness"": 38,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A wide-eyed Victorian lighthouse keeper in his late 40s, mutton-chop whiskers, sweat-beaded brow, soaked wool peacoat half-buttoned, clutching a brass oil lamp in one hand and a discarded silk corset in the other, mouth open mid-panic, photoreal"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.34,
+      ""w"": 0.42,
+      ""h"": 0.52
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A haughty duchess in an elaborate 1840s emerald gown and powdered curls peeking out from a slightly ajar wooden door at the left, fan raised to hide a scandalized expression, candle glow on her face, photoreal"",
+      ""palette"": [],
+      ""x"": 0.04,
+      ""y"": 0.4,
+      ""w"": 0.22,
+      ""h"": 0.34
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A shirtless dandy in only breeches and one boot, hopping behind a half-open door on the right edge, arms flailing, period side-whiskers, dimly lit, photoreal comedic"",
+      ""palette"": [],
+      ""x"": 0.74,
+      ""y"": 0.42,
+      ""w"": 0.22,
+      ""h"": 0.36
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A small bewildered goat standing on the bottom stone step in the foreground, chewing a lace garter, wet fur, candlelight, photoreal"",
+      ""palette"": [],
+      ""x"": 0.4,
+      ""y"": 0.8,
+      ""w"": 0.2,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE LAMPLIGHT\nINDISCRETION"",
+      ""desc"": ""elegant high-contrast engraved serif title in warm gold leaf with subtle letterpress emboss, large, centered, occupying the lower-middle band, slight candle-glow on the metal"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.6,
+      ""w"": 0.84,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""Heaving bosoms. Heaving seas. No dignity survives."",
+      ""desc"": ""small refined italic serif tagline in cream, single line, centered just above the title"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.555,
+      ""w"": 0.72,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""GUTTERING TIDE PICTURES presents  A NIGEL HORNBY-FELL FILM  \""THE LAMPLIGHT INDISCRETION\""  PERCIVAL GLOSS  ARABELLA MOTH  CRISPIN DEVEREAUX-PYNE  costumes by MAUD TALLOW  music by EDWIN BRINE  directed by NIGEL HORNBY-FELL"",
+      ""desc"": ""tiny condensed all-caps sans-serif billing block in pale grey, tightly tracked, centered, classic credit-block layout"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.905,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THIS WINTER"",
+      ""desc"": ""small spaced gold serif release line, centered, above the billing block"",
+      ""palette"": [],
+      ""x"": 0.34,
+      ""y"": 0.865,
+      ""w"": 0.32,
+      ""h"": 0.03
+    }
+  ]
+}",0171-the-lamplight-indiscretion.jpg
+Musical,Jukebox Musical,Sci-Fi,Time Travel,Tech Billionaire,"Logline: When a Tech Billionaire discovers their quiet life is actually a Jukebox Musical, they must master the genre conventions of Time Travel to survive.",Encore: A Glitch in Time,"Self-made tech mogul Dexter Voss owns four rockets, three islands, and exactly zero rhythm — until the morning his entire life starts breaking into elaborate musical numbers he never agreed to. Worse, every chorus rips a hole in spacetime, flinging him backward through every embarrassing era of his startup. To stop the encores from erasing his timeline, Dexter must learn to belt power ballads on key, sync his jazz hands across four decades, and out-dance his own past self before the final bow becomes permanent. Some men chase legacy. This one's being chased by it — in 4/4 time.","{
+  ""high_level_description"": ""A panicked tech billionaire in a torn designer hoodie mid-jazz-hands under a spotlight on a glowing fractured stage, with a glitching time-portal vortex swirling behind him on a vertical theatrical one-sheet."",
+  ""background"": ""A vast dark theater stage whose floorboards crack apart into glowing seams of blue-white energy, fragments of stage floating as if suspended in zero gravity. Behind the figure a swirling clock-faced time vortex churns with neon spirals, retro microphones and broken vinyl records caught spinning in its current. Deep stage haze recedes into infinite darkness dotted with the glow of distant theater seats."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, teal-and-amber cinematic grade, volumetric stage haze, photorealistic, crisp specular highlights, subtle film grain"",
+  ""aesthetics"": ""absurd, theatrical, glossy blockbuster, kinetic, high-contrast spectacle"",
+  ""lighting"": ""a hard white follow-spot pins the central figure while cool electric-blue rim light from the vortex carves his silhouette against warm amber footlights."",
+  ""palette"": [
+    ""#0B1E3F"",
+    ""#19C3F5"",
+    ""#F4A52A"",
+    ""#F5F1E6"",
+    ""#1A1023""
+  ],
+  ""bg_brightness"": 38,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A 40-something tech billionaire with stubble and a wireless earpiece, wearing an expensive torn gray hoodie and sneakers, frozen mid-musical-number with both arms thrown out in panicked jazz-hands and one knee bent, eyes wide with terror and a forced showbiz grin, sweat catching the spotlight, photoreal"",
+      ""palette"": [],
+      ""x"": 0.28,
+      ""y"": 0.3,
+      ""w"": 0.44,
+      ""h"": 0.52
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A swirling glowing time-vortex shaped like a giant cracked clock face, neon-blue spirals pulling in floating vintage microphones, broken vinyl records and shards of stage floor, photoreal CGI"",
+      ""palette"": [],
+      ""x"": 0.1,
+      ""y"": 0.18,
+      ""w"": 0.8,
+      ""h"": 0.55
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A chrome vintage stage microphone on a stand catching a bright specular glint, slightly bent and trailing sparks of blue energy, foreground lower-left, photoreal"",
+      ""palette"": [],
+      ""x"": 0.06,
+      ""y"": 0.62,
+      ""w"": 0.18,
+      ""h"": 0.3
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""Glowing cracked stage floorboards splitting apart into seams of blue-white light along the bottom edge, fragments lifting weightlessly, photoreal"",
+      ""palette"": [],
+      ""x"": 0.0,
+      ""y"": 0.78,
+      ""w"": 1.0,
+      ""h"": 0.21999999999999997
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""ENCORE"",
+      ""desc"": ""Massive bold condensed sans-serif in glossy cream-white with a faint neon-blue glow and subtle chromatic-glitch fringe, dominating the upper third, theatrical marquee feel"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.06,
+      ""w"": 0.84,
+      ""h"": 0.15
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""A GLITCH IN TIME"",
+      ""desc"": ""Slim elegant amber serif sub-title in widely-spaced caps, sitting directly under the main title, smaller"",
+      ""palette"": [],
+      ""x"": 0.2,
+      ""y"": 0.21,
+      ""w"": 0.6,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""He built the future. Now it won't stop singing."",
+      ""desc"": ""Italic light-gray tagline in a single clean line, small, centered above the billing block"",
+      ""palette"": [],
+      ""x"": 0.16,
+      ""y"": 0.84,
+      ""w"": 0.68,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""NOVABEAM PICTURES PRESENTS  A HOLLIS REINGOLD FILM  \""ENCORE: A GLITCH IN TIME\""  MARCUS DELACROIX  PRIYA ANANTH  TOBIAS WREN  CASTING BY E. MOROW  MUSIC BY THE PARALLAX QUARTET  DIRECTED BY HOLLIS REINGOLD"",
+      ""desc"": ""Tiny condensed all-caps billing block in pale gray, centered, classic credit-block spacing"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.9,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""IN THEATERS THIS FALL"",
+      ""desc"": ""Small bold cream caps with wide letter-spacing, centered at very bottom"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.955,
+      ""w"": 0.4,
+      ""h"": 0.03
+    }
+  ]
+}",0172-encore-a-glitch-in-time.jpg
+Mystery,Spy Mystery,Musical,Indie Folk Musical,Disgraced Athlete,"Three-act structure: Spy Mystery in act one, Indie Folk Musical by act three, and a Disgraced Athlete sobbing into a microwave dinner the whole time.","Cold Open, Warm Reprise","Disgraced curling skip Boomer Vance — banned for ""accidentally"" sweeping a rival into a glacial crevasse — gets recruited by a shadowy agency to retrieve a stolen microfilm hidden inside a banjo. But the deeper he infiltrates the embassy gala, the more he discovers the only weapon that disarms enemy agents is his trembling falsetto. By act three the safehouses become open-mic nights, the dead drops become harmonized duets, and Boomer must decide whether to complete the mission or finally, tearfully, forgive himself in three-part harmony. Espionage has never been this acoustic.","{
+  ""high_level_description"": ""A rumpled disgraced athlete in a tuxedo clutches a banjo like a sniper rifle in a neon-lit embassy corridor, half spy-thriller, half tearful folk balladeer."",
+  ""background"": ""A dim marble embassy hallway at night, gilded columns receding into shallow-focus darkness with a single chandelier flaring overhead. Cold blue moonlight pours through tall windows on one side while a warm amber stage light bleeds in from the far end, splitting the frame into spy-cold and folk-warm halves. Faint silhouettes of tuxedoed guards lurk in the deep background haze."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, teal-and-amber split cinematic grade, photorealistic, volumetric haze, subtle film grain"",
+  ""aesthetics"": ""tense, melancholic, absurd, glamorous, bittersweet"",
+  ""lighting"": ""Hard cold key light from one side and a soft warm rim from the other, with a chandelier flare creating a dramatic split across the subject's face."",
+  ""palette"": [
+    ""#0E2A3B"",
+    ""#E8A23D"",
+    ""#C9402F"",
+    ""#F2E6CC"",
+    ""#1A1410""
+  ],
+  ""bg_brightness"": 38,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A weary middle-aged man in a slightly-too-tight tuxedo with a loosened bow tie, holding an acoustic banjo across his chest in a tactical sniper-aim pose, one eye squinting down the neck, a single tear glistening on his cheek, athletic build gone soft, earpiece visible in one ear, photoreal"",
+      ""palette"": [],
+      ""x"": 0.26,
+      ""y"": 0.3,
+      ""w"": 0.48,
+      ""h"": 0.52
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A vintage microwave dinner tray glowing in cold blue light on a marble pedestal in the lower foreground, half-eaten, fork sticking up, condensation on the plastic film, photoreal"",
+      ""palette"": [],
+      ""x"": 0.06,
+      ""y"": 0.74,
+      ""w"": 0.24,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A silenced pistol resting in a banjo case lined with red velvet, partially open on the floor in warm amber light, photoreal"",
+      ""palette"": [],
+      ""x"": 0.68,
+      ""y"": 0.76,
+      ""w"": 0.26,
+      ""h"": 0.15
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""COLD OPEN,\nWARM REPRISE"",
+      ""desc"": ""Large bold condensed serif title, metallic silver fading to warm gold across the two lines, slight emboss, cinematic spy-thriller weight, centered"",
+      ""palette"": [],
+      ""x"": 0.1,
+      ""y"": 0.05,
+      ""w"": 0.8,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""He came to steal secrets. He stayed to find his harmony."",
+      ""desc"": ""Small italic serif tagline in soft cream, letter-spaced, single line"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.26,
+      ""w"": 0.72,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""PARALLAX HOLLOW PICTURES PRESENTS  A DESMOND QUAY FILM  \""COLD OPEN, WARM REPRISE\""  BOOMER VANCE   STARRING RHETT CALLOWAY  IVANA SØRLIE  MARCUS THIBODEAUX   MUSIC BY THE TREMBLING FALSETTOS   DIRECTED BY DESMOND QUAY"",
+      ""desc"": ""Tiny condensed all-caps billing block in pale grey, tightly tracked, centered, standard credit-block styling"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.9,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""IN THEATERS THIS FALL"",
+      ""desc"": ""Small bold letter-spaced cream caps, centered above the billing block"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.865,
+      ""w"": 0.4,
+      ""h"": 0.025
+    }
+  ]
+}",0173-cold-open-warm-reprise.jpg
+Musical,Rock Opera,Mystery,Spy Mystery,Fortune Teller,"Set in a world where Rock Opera and Spy Mystery coexist uneasily, our hero — a Fortune Teller — must save... something. Probably a town.",The Tarot Defector: A Rock Opera in Six Encores,"Madame Esmé Volkov reads palms by day and plays bass in a sold-out underground rock opera by night — until a coded prophecy in her tarot deck reveals a mole inside the spy agency that's been bankrolling her gigs. Now the only psychic who can hit a high C must decode a conspiracy buried in the lyrics of her own band's setlist. Every fortune she tells comes true within one chorus, which is great for ambushes and terrible for surprise parties. To save the smoky river town of Saltmarrow, she'll have to out-sing, out-spy, and out-shuffle a traitor who's been harmonizing in plain sight.","{
+  ""high_level_description"": ""A photoreal one-sheet of a leather-clad fortune teller mid-power-stance on a fog-drenched stage, tarot cards exploding into the air around her while a sniper's red laser cuts through the haze."",
+  ""background"": ""A vast smoky concert hall at night dissolving into the wet cobblestone streets of a riverside town, stage lights and neon reflecting in puddles below. Volumetric fog rolls across the floor, pierced by hard spotlight beams and a single thin red laser line. Deep stage darkness in the upper corners gives way to a glowing amber crowd silhouette far behind."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, teal-and-amber cinematic grade, photorealistic, volumetric haze, fine film grain, crisp specular highlights"",
+  ""aesthetics"": ""moody, theatrical, espionage-noir, glam-rock, high-contrast, mysterious"",
+  ""lighting"": ""dramatic backlit spotlight rim-lighting the figure through fog with a hard amber key from stage-left and a single ominous red laser slicing the frame."",
+  ""palette"": [
+    ""#0E1418"",
+    ""#E8A23C"",
+    ""#C0233A"",
+    ""#2C4A52"",
+    ""#EDE3CF""
+  ],
+  ""bg_brightness"": 38,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A striking woman in her 40s with kohl-rimmed eyes and silver-streaked dark hair, wearing a beaded fortune-teller shawl over a black leather rocker jacket, mid-stance gripping a bass guitar like a weapon, one hand outstretched casting a glowing tarot card; photoreal, rim-lit through fog"",
+      ""palette"": [],
+      ""x"": 0.28,
+      ""y"": 0.3,
+      ""w"": 0.46,
+      ""h"": 0.55
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A scatter of ornate tarot cards frozen mid-air, edges catching amber spotlight, one card clearly showing a stylized eye-and-microphone symbol, motion-blurred trails, photoreal"",
+      ""palette"": [],
+      ""x"": 0.1,
+      ""y"": 0.22,
+      ""w"": 0.8,
+      ""h"": 0.4
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A thin crimson sniper laser line crossing the lower frame and landing as a red dot on the figure's shoulder, glowing through haze, photoreal"",
+      ""palette"": [],
+      ""x"": 0.05,
+      ""y"": 0.55,
+      ""w"": 0.85,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A vintage chrome stage microphone on a stand in the lower foreground, slightly out of focus, neon reflections on its surface, photoreal"",
+      ""palette"": [],
+      ""x"": 0.06,
+      ""y"": 0.7,
+      ""w"": 0.18,
+      ""h"": 0.25
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE TAROT\nDEFECTOR"",
+      ""desc"": ""Massive bold condensed serif title in cracked gold foil with subtle red neon edge glow, stacked two lines, slight perspective tilt, occupying upper third"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.05,
+      ""w"": 0.84,
+      ""h"": 0.2
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""A ROCK OPERA IN SIX ENCORES"",
+      ""desc"": ""Thin all-caps spaced sans-serif subtitle in pale cream, small, directly beneath the main title"",
+      ""palette"": [],
+      ""x"": 0.18,
+      ""y"": 0.255,
+      ""w"": 0.64,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""SHE SAW THE BETRAYAL COMING. IT STILL HIT THE HIGH NOTE."",
+      ""desc"": ""Italic tagline in dim amber, single centered line, small, just above the billing block"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.86,
+      ""w"": 0.76,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""VELVET DISSONANCE PICTURES  PRESENTS  A NIKO HALVORSEN FILM  \""THE TAROT DEFECTOR\""  MARISELA OKONKWO  DRAVEN ST. CLAIR  YUKI ABERNATHY  MUSIC BY THE SALTMARROW SEVEN  DIRECTED BY NIKO HALVORSEN"",
+      ""desc"": ""Tiny condensed all-caps credits billing block in light gray, centered, classic theatrical layout"",
+      ""palette"": [],
+      ""x"": 0.1,
+      ""y"": 0.91,
+      ""w"": 0.8,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""IN THEATERS THIS FALL"",
+      ""desc"": ""Small bold spaced sans-serif release line in cream, centered at very bottom"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.965,
+      ""w"": 0.4,
+      ""h"": 0.025
+    }
+  ]
+}",0174-the-tarot-defector-a-rock-opera-in-six-encores.jpg
+Comedy,Mockumentary,Drama,Family Saga,Washed-Up Rock Star,"Imagine if a Mockumentary show had a baby with a Family Saga miniseries, and that baby grew up to follow a Washed-Up Rock Star.",Reunion Tour: A Family Saga,"Forty years after their only hit, ""Gravel Throat,"" ex-rock god Dax Thunderbird Mallory (60, leather pants that no longer fit, a parrot named Lawsuit) drags his estranged children into a documentary about the band's comeback. The catch: the band is now just Dax, his bass-playing daughter who hates him, his roadie son who runs the merch table for free, and a drummer who's legally dead. As the cameras roll across three generations of resentment, missed alimony, and one disputed inheritance, Dax must decide whether the family or the encore matters more. Spoiler: he picks the encore. Twice.","{
+  ""high_level_description"": ""A faded aging rock star in tight leather poses defiantly mid-stage while his weary adult children stand behind him in awkward documentary-style framing, all caught in a single harsh spotlight."",
+  ""background"": ""A half-empty small-town theater stage at dusk, dusty red velvet curtains sagging on either side and rows of dim empty seats receding into shadow behind the band. A single boom-mic and a documentary camera operator's silhouette intrude at the edge of the frame, breaking the fourth wall. Faded tour posters peel off the back brick wall, hinting at a glory long gone."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, naturalistic documentary handheld framing, slightly desaturated warm cinematic grade, photorealistic, fine film grain, volumetric stage haze"",
+  ""aesthetics"": ""melancholy comedy, faded glamour, dysfunctional warmth, behind-the-scenes intimacy"",
+  ""lighting"": ""a single warm overhead spotlight pools on the father while cold blue ambient light leaves the children in unflattering half-shadow."",
+  ""palette"": [
+    ""#2A1B14"",
+    ""#C8852E"",
+    ""#8A1F1F"",
+    ""#D9C7A3"",
+    ""#1C2733""
+  ],
+  ""bg_brightness"": 38,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A 60-year-old washed-up rock star in too-tight black leather pants and an open silk shirt, gray chest hair, mirrored aviators, mid-air windmill guitar pose with a dramatic scarf, sweaty and defiant, slightly paunchy, photoreal"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.3,
+      ""w"": 0.4,
+      ""h"": 0.5
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A scowling 35-year-old woman holding a bass guitar low, arms crossed, standing slightly behind and to the left, unimpressed, photoreal documentary lighting"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.42,
+      ""w"": 0.24,
+      ""h"": 0.42
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A tired 30-year-old man in a band T-shirt holding a cardboard box of unsold merch, looking off-camera, standing to the right, photoreal"",
+      ""palette"": [],
+      ""x"": 0.68,
+      ""y"": 0.44,
+      ""w"": 0.24,
+      ""h"": 0.4
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A green parrot perched on the rock star's shoulder wearing a tiny studded collar, screeching, photoreal feathers"",
+      ""palette"": [],
+      ""x"": 0.55,
+      ""y"": 0.3,
+      ""w"": 0.13,
+      ""h"": 0.13
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""REUNION TOUR"",
+      ""desc"": ""Huge distressed condensed sans-serif in cracked metallic gold, bold rock-concert styling, slight vintage wear, centered"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.06,
+      ""w"": 0.84,
+      ""h"": 0.13
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""A FAMILY SAGA"",
+      ""desc"": ""Smaller elegant serif in cream, italic, drama-prestige styling, centered beneath the main title"",
+      ""palette"": [],
+      ""x"": 0.22,
+      ""y"": 0.19,
+      ""w"": 0.56,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""The band broke up. The family never did. Unfortunately."",
+      ""desc"": ""Small clean white italic tagline, single line, understated"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.85,
+      ""w"": 0.72,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""HOLLOWPOINT PICTURES PRESENTS A LARS PENNYWHISTLE FILM  \""REUNION TOUR: A FAMILY SAGA\""  DAX THUNDERBIRD MALLORY  RENATA COLE  BREK HOLLISTER  CASTING BY MAUDE FENWICK  MUSIC BY THE ESTATE OF GRAVEL THROAT  DIRECTED BY LARS PENNYWHISTLE"",
+      ""desc"": ""Tiny condensed all-caps billing block in pale gray, standard credit-block spacing, centered"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.91,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""ONE NIGHT ONLY · THIS FALL"",
+      ""desc"": ""Small bold spaced white sans-serif release line, centered"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.965,
+      ""w"": 0.4,
+      ""h"": 0.025
+    }
+  ]
+}",0175-reunion-tour-a-family-saga.jpg
+Documentary-style,Conspiracy Doc,Mystery,Noir,Retired Assassin,"Set in a world where Conspiracy Doc and Noir coexist uneasily, our hero — a Retired Assassin — must save... something. Probably a town.",Who Killed the Town of Hollow Creek?,"Forty-three confirmed kills, one shaky retirement, and a podcast he never asked for. When true-crime documentarians descend on Hollow Creek to investigate why everyone keeps ""accidentally"" dying, ex-assassin Sal Moretti realizes the conspiracy reaches higher than the water tower he used to nest in. Now Sal must solve the one case he can't shoot his way out of — narrating his own redacted past straight into a boom mic while a faceless cabal redacts the witnesses. He talks in a gravelly voiceover even when no one's filming. Trust no one, especially the guy holding the clapperboard.","{
+  ""high_level_description"": ""A weathered retired hitman in a rain-soaked trench coat stands lit by a documentary camera light in a dim small-town diner, evidence strings and redacted files behind him, shot like a moody noir crime documentary."",
+  ""background"": ""The interior of a dingy late-night diner in a dying small town, fogged windows revealing wet neon signage and a distant water tower under heavy rain. A corkboard wall on the right is covered in pinned photographs, red string, and black-bar redacted documents. Deep shadow pools in the corners with a single shaft of practical light cutting through cigarette haze."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, low-key chiaroscuro noir grade with cold teal shadows and amber highlights, photorealistic, fine film grain, volumetric haze"",
+  ""aesthetics"": ""noir, paranoid, investigative true-crime, grimy, somber, conspiratorial"",
+  ""lighting"": ""a single hard documentary on-camera light rakes the protagonist's face from the side while everything else falls into deep shadow, with neon spill through rain-streaked glass."",
+  ""palette"": [
+    ""#0d1418"",
+    ""#1c2e33"",
+    ""#c98a3a"",
+    ""#8a1f1f"",
+    ""#cdb892""
+  ],
+  ""bg_brightness"": 28,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A grizzled 60-year-old man in a soaked dark trench coat and loosened tie, deeply lined face, gray stubble, holding a small documentary lavalier mic clipped to his collar, squinting warily into a blinding camera light, photoreal cinematic portrait"",
+      ""palette"": [],
+      ""x"": 0.28,
+      ""y"": 0.3,
+      ""w"": 0.46,
+      ""h"": 0.55
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A bright professional documentary camera light and boom microphone intruding from the left frame edge, flaring slightly, casting a hard beam across the haze"",
+      ""palette"": [],
+      ""x"": 0.0,
+      ""y"": 0.34,
+      ""w"": 0.22,
+      ""h"": 0.3
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A corkboard in the upper right cluttered with pinned black-and-white photos, red connecting string, and documents with thick black redaction bars, slightly out of focus"",
+      ""palette"": [],
+      ""x"": 0.6,
+      ""y"": 0.06,
+      ""w"": 0.4,
+      ""h"": 0.34
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A smoldering cigarette resting in a chipped diner ashtray on a chrome-edged counter in the lower foreground, thin smoke curling upward, shallow focus"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.74,
+      ""w"": 0.24,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""WHO KILLED THE TOWN OF HOLLOW CREEK?"",
+      ""desc"": ""Large condensed serif title in distressed off-white, stacked across four lines, with a black censorship bar partially redacting the word 'KILLED', stamped 'CLASSIFIED' texture, upper portion of poster"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.04,
+      ""w"": 0.84,
+      ""h"": 0.24
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""EVERY TOWN HAS A SECRET. THIS ONE HAS A BODY COUNT."",
+      ""desc"": ""Small italic typewriter-style tagline in pale amber, single line, just above the billing block"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.86,
+      ""w"": 0.76,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""MERIDIAN VAULT PICTURES PRESENTS  A CASS DELACROIX FILM  \""WHO KILLED THE TOWN OF HOLLOW CREEK?\""  VINCENT SALERNO  MARA QUILL  ELLIS BROCKMAN  EDITED BY RENATA VOSS  MUSIC BY THEO ANGSTROM  DIRECTED BY CASS DELACROIX"",
+      ""desc"": ""Tiny condensed all-caps billing block in muted gray, centered, multiple lines, standard credit-block typography"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.91,
+      ""w"": 0.72,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE INVESTIGATION BEGINS THIS FALL"",
+      ""desc"": ""Small spaced sans-serif release line in faded white, centered, bottom of poster"",
+      ""palette"": [],
+      ""x"": 0.2,
+      ""y"": 0.965,
+      ""w"": 0.6,
+      ""h"": 0.025
+    }
+  ]
+}",0176-who-killed-the-town-of-hollow-creek.jpg
+Fantasy,Magical Academia,Documentary-style,Cult Exposé,Private Investigator,"Logline: When a Private Investigator discovers their quiet life is actually a Magical Academia, they must master the genre conventions of Cult Exposé to survive.",Tenure of the Damned,"Burned-out PI Vera Mockridge takes a routine missing-persons case at a sleepy New England college — until she notices the faculty never age, the library bleeds, and freshman orientation involves a blood oath. Armed only with a handheld camera, a skeptical voiceover, and a habit of narrating her own danger, she goes undercover as an adjunct professor of ""Comparative Hexcraft."" Now she must document the Dean's enrollment cult before the spring semester sacrifices her tenure track — and her soul. Part true-crime exposé, part forbidden-spellbook nightmare, fully behind on grading.","{
+  ""high_level_description"": ""A trench-coated female private investigator films a glowing, candle-lit Gothic university lecture hall with a handheld camera, hooded faculty rising from their seats behind her as arcane symbols burn in the air."",
+  ""background"": ""The vaulted interior of an ancient university lecture hall at night, towering stone arches and dust-choked bookshelves receding into deep shadow. Hundreds of black candles line the carved desks, their flames bending unnaturally toward a chalkboard scrawled with glowing runic equations. A faint blood-red sigil hovers in the smoky air above rows of motionless, hooded figures."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, cold teal shadows with warm candle-amber highlights, photorealistic, volumetric haze, subtle handheld documentary grain"",
+  ""aesthetics"": ""ominous, occult academia, found-footage dread, true-crime tension, candle-lit gothic"",
+  ""lighting"": ""low-key chiaroscuro lit almost entirely by flickering candles and the eerie glow of floating runes, throwing long unstable shadows across the stone."",
+  ""palette"": [
+    ""#0d1417"",
+    ""#1f3a3d"",
+    ""#c98b3a"",
+    ""#7a1416"",
+    ""#e8d9b0""
+  ],
+  ""bg_brightness"": 28,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A weary woman in her 40s wearing a rumpled tan trench coat, holding up a small consumer camcorder whose red recording light glows, glancing warily over her shoulder; her face half-lit by candlelight, expression of dawning horror, photoreal"",
+      ""palette"": [],
+      ""x"": 0.28,
+      ""y"": 0.4,
+      ""w"": 0.44,
+      ""h"": 0.5
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""Two tall hooded figures in black academic robes rising from carved wooden desks in the smoky background, faces hidden in shadow, hands raised toward glowing runes, photoreal and slightly out of focus"",
+      ""palette"": [],
+      ""x"": 0.04,
+      ""y"": 0.34,
+      ""w"": 0.3,
+      ""h"": 0.42
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A single floating blood-red glowing magical sigil burning in the hazy air, intricate occult geometry, casting faint red light, photoreal volumetric glow"",
+      ""palette"": [],
+      ""x"": 0.6,
+      ""y"": 0.3,
+      ""w"": 0.3,
+      ""h"": 0.22
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""TENURE OF THE DAMNED"",
+      ""desc"": ""Large condensed serif title in cracked bone-white letters with subtle candle-soot texture and a faint red rune-glow bleeding from the edges, stacked across three lines, dominating the lower third"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.7,
+      ""w"": 0.84,
+      ""h"": 0.18
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""She came to find a missing student. She found the curriculum."",
+      ""desc"": ""Small italic typewriter-style tagline in pale amber, single line just above the title"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.655,
+      ""w"": 0.76,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""HOLLOWMERE PICTURES PRESENTS  A NOX VANTERPOOL FILM  \""TENURE OF THE DAMNED\""  MARGOT REINHOLT  CASPIAN DRYE  ELLISON FAUGHT  MUSIC BY THADDEUS QUILL  DIRECTED BY NOX VANTERPOOL"",
+      ""desc"": ""Tiny condensed all-caps billing block in dim grey, centered, several lines, classic credit-block styling"",
+      ""palette"": [],
+      ""x"": 0.14,
+      ""y"": 0.9,
+      ""w"": 0.72,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""ENROLLMENT BEGINS THIS FALL"",
+      ""desc"": ""Small spaced all-caps release line in pale amber just below the title"",
+      ""palette"": [],
+      ""x"": 0.22,
+      ""y"": 0.885,
+      ""w"": 0.56,
+      ""h"": 0.025
+    }
+  ]
+}",0177-tenure-of-the-damned.jpg
+Drama,Coming-of-Age,Documentary-style,True Crime,Bounty Hunter,"Imagine if a Coming-of-Age show had a baby with a True Crime miniseries, and that baby grew up to follow a Bounty Hunter.",Skip & The Half-Life Kid,"Sixteen-year-old Marcus ""Mouse"" Delgado just wanted a summer job; instead he's riding shotgun with Skip Brannigan, a divorced, gum-addicted bounty hunter with 412 captures and zero people skills. As Mouse learns to parallel-park a repo truck and ask a girl to prom, a glossy true-crime docuseries is quietly building a case that one of Skip's ""clean"" arrests was anything but. Narrated in ominous interview confessionals, the film toggles between blooming first crushes and chain-link-fence stakeouts. By the time Mouse finds his courage, he's also found the evidence that could put his mentor away.","{
+  ""high_level_description"": ""A weathered bounty hunter and a nervous teenager stand back-to-back in a sun-bleached motel parking lot at dusk, framed like a true-crime docuseries key art with coming-of-age warmth bleeding through."",
+  ""background"": ""A low-rent desert motel parking lot at golden hour, buzzing neon 'VACANCY' sign half-lit in the deep background, heat shimmer rising off cracked asphalt. A dented tow truck and a chain-link fence recede into shallow-focus haze. The sky is a bruised orange-to-violet gradient with telephone wires cutting across it."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, naturalistic golden-hour grade with crushed teal shadows, fine film grain, photorealistic, volumetric dust haze"",
+  ""aesthetics"": ""gritty documentary realism, nostalgic warmth, tense investigative mood, sun-faded Americana"",
+  ""lighting"": ""warm low-angle golden-hour key light raking across both faces with cool blue fill from the neon, long dramatic shadows on the asphalt."",
+  ""palette"": [
+    ""#E08A3C"",
+    ""#2E4A5A"",
+    ""#F2C879"",
+    ""#1C1410"",
+    ""#C04A36""
+  ],
+  ""bg_brightness"": 52,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A burly 50s bounty hunter in a sweat-stained tactical polo, fingerless gloves, mirrored aviators pushed up on a stubbled forehead, chewing gum, badge on a chain around his neck, arms crossed, photoreal"",
+      ""palette"": [],
+      ""x"": 0.3,
+      ""y"": 0.34,
+      ""w"": 0.42,
+      ""h"": 0.52
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A skinny anxious 16-year-old boy in an oversized thrift-store windbreaker and braces, clutching a clipboard, glancing nervously sideways, photoreal"",
+      ""palette"": [],
+      ""x"": 0.1,
+      ""y"": 0.4,
+      ""w"": 0.3,
+      ""h"": 0.46
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A glowing red-and-blue motel VACANCY neon sign, slightly flickering, mounted on a tall pole, soft bokeh, photoreal"",
+      ""palette"": [],
+      ""x"": 0.66,
+      ""y"": 0.16,
+      ""w"": 0.26,
+      ""h"": 0.22
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""SKIP & THE\nHALF-LIFE KID"",
+      ""desc"": ""Bold condensed sans-serif title in distressed sun-bleached cream lettering with subtle drop shadow, stacked two lines, occupying lower third, cinematic weight"",
+      ""palette"": [],
+      ""x"": 0.08,
+      ""y"": 0.72,
+      ""w"": 0.84,
+      ""h"": 0.16
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""He taught the kid everything. The kid found out everything."",
+      ""desc"": ""Small italic serif tagline in muted gold, single line, set just above the title"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.66,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""A LIMITED SERIES EVENT"",
+      ""desc"": ""Tiny widely-tracked uppercase sans label in cool gray, centered at very top"",
+      ""palette"": [],
+      ""x"": 0.25,
+      ""y"": 0.05,
+      ""w"": 0.5,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""MERIDIAN HOLLOW PICTURES PRESENTS  A DUSTY VANCE FILM  \""SKIP & THE HALF-LIFE KID\""  RANDALL OKAFOR  ELI BRANNON  WITH TESS MARLOWE  CASTING BY P. KOVAC  MUSIC BY HALE RIVERS  DIRECTED BY DUSTY VANCE"",
+      ""desc"": ""Condensed small-caps billing block in pale gray, tightly justified, centered at the very bottom edge"",
+      ""palette"": [],
+      ""x"": 0.1,
+      ""y"": 0.92,
+      ""w"": 0.8,
+      ""h"": 0.06
+    }
+  ]
+}",0178-skip-the-half-life-kid.jpg
+Sci-Fi,Time Travel,Comedy,Workplace Comedy,Aging Movie Star,It's Time Travel meets Workplace Comedy... but the protagonist is a Aging Movie Star.,Take Forty-Seven: The Reshoot Wars,"Faded action legend Reg Calhoun, 71, hasn't had a hit since the Reagan administration and is reduced to doing voiceovers for a fungal cream. When a malfunctioning craft-services microwave punches a hole in spacetime, Reg discovers he can leap back to any film set he ever worked on — and decides to ""fix"" his entire career one humiliating take at a time. But every reshoot reschedules the timeline, and now his agent is a sentient fax machine, his ex-wife directs the apocalypse, and Continuity (a literal department) wants him dead. Reg has one weekend, infinite Mondays, and absolutely no residuals.","{
+  ""high_level_description"": ""A weathered aging action star in a torn 1980s tuxedo stands inside a swirling time-warp on a chaotic film soundstage, clutching a clapperboard like a weapon as multiple versions of himself blur behind him."",
+  ""background"": ""A cavernous Hollywood soundstage at night, crammed with rigging, cables, parabolic studio lights and a half-built spaceship set. A glowing spiral of bent spacetime tears through the back wall, smearing duplicate film sets and clocks into a vortex of motion blur. Volumetric haze drifts through crossing lighting beams, with deep shadows pooling in the rafters."",
+  ""art_style"": ""shot on 35mm anamorphic, shallow depth of field, slight motion-blur on background duplicates, teal-and-amber cinematic grade, photorealistic, volumetric haze, fine film grain"",
+  ""aesthetics"": ""absurd, glossy blockbuster, retro-action nostalgia, frantic, tongue-in-cheek epic"",
+  ""lighting"": ""hard amber key light raking the star's face from camera-left with cold teal rim light from the time vortex behind him."",
+  ""palette"": [
+    ""#0E2A33"",
+    ""#E8A23C"",
+    ""#C7402F"",
+    ""#F2E4C4"",
+    ""#101316""
+  ],
+  ""bg_brightness"": 38,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a 71-year-old leathery-faced movie star with a silver pompadour, deep crow's feet and an over-tanned face, wearing a ripped powder-blue 1980s tuxedo with a loosened bow tie, gripping a vintage wooden clapperboard across his chest like a shield, mid-stride and lit cinematically, photoreal"",
+      ""palette"": [],
+      ""x"": 0.28,
+      ""y"": 0.3,
+      ""w"": 0.45,
+      ""h"": 0.55
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""blurred motion-doubles of the same aging star in different costumes — cowboy hat, spacesuit, trench coat — receding into the glowing time vortex behind the main figure, photoreal long-exposure smear"",
+      ""palette"": [],
+      ""x"": 0.55,
+      ""y"": 0.28,
+      ""w"": 0.4,
+      ""h"": 0.45
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""a battered chrome craft-services microwave on a folding table in the lower foreground, door ajar and spewing a column of crackling blue energy, photoreal practical effect with light spill"",
+      ""palette"": [],
+      ""x"": 0.05,
+      ""y"": 0.62,
+      ""w"": 0.26,
+      ""h"": 0.22
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""an old-fashioned beige office fax machine wearing a tiny clip-on agent's headset perched on an apple box, paper spooling out of it, photoreal"",
+      ""palette"": [],
+      ""x"": 0.7,
+      ""y"": 0.66,
+      ""w"": 0.22,
+      ""h"": 0.18
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""TAKE FORTY-SEVEN"",
+      ""desc"": ""massive bold condensed metallic-gold sans-serif title, slightly distressed chrome 1980s action treatment, beveled edges catching teal rim light, spanning the width"",
+      ""palette"": [],
+      ""x"": 0.06,
+      ""y"": 0.06,
+      ""w"": 0.88,
+      ""h"": 0.13
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""THE RESHOOT WARS"",
+      ""desc"": ""smaller wide-tracked uppercase subtitle in cracked amber neon style, centered directly beneath the main title"",
+      ""palette"": [],
+      ""x"": 0.18,
+      ""y"": 0.19,
+      ""w"": 0.64,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""He fixed his career. He broke everything else."",
+      ""desc"": ""thin italic white tagline, small, centered, subtle drop shadow"",
+      ""palette"": [],
+      ""x"": 0.2,
+      ""y"": 0.86,
+      ""w"": 0.6,
+      ""h"": 0.04
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""MERIDIAN VAULT PICTURES PRESENTS A QUILLON DASKE FILM \""TAKE FORTY-SEVEN: THE RESHOOT WARS\"" REG HALLORAN MERCY OKONKWO-VANCE THEO BRINDLE-SAXE MUSIC BY ANTON KREEL COSTUME GUSSIE FENN EDITED BY P.J. MARLO DIRECTOR OF PHOTOGRAPHY LIO HASSENFELD WRITTEN AND DIRECTED BY QUILLON DASKE"",
+      ""desc"": ""tiny condensed all-caps credits billing block in pale cream, justified center, classic one-sheet style"",
+      ""palette"": [],
+      ""x"": 0.12,
+      ""y"": 0.91,
+      ""w"": 0.76,
+      ""h"": 0.05
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""IN THEATERS EVERY MONDAY"",
+      ""desc"": ""small bold uppercase release line in amber, letter-spaced, centered above billing block"",
+      ""palette"": [],
+      ""x"": 0.28,
+      ""y"": 0.965,
+      ""w"": 0.44,
+      ""h"": 0.025
+    }
+  ]
+}",0179-take-forty-seven-the-reshoot-wars.jpg
+Sci-Fi,Hard Sci-Fi,Musical,Rock Opera,Bounty Hunter,"Imagine if a Hard Sci-Fi show had a baby with a Rock Opera miniseries, and that baby grew up to follow a Bounty Hunter.",Quarry: A Light-Speed Rock Opera,"In the year 2387, the galaxy's deadliest bounty hunter is also its most committed performer. Vex Calloway tracks fugitives across the relativistic frontier — but every kill must be earned with a power ballad, per the binding terms of the Hunters' Guild Acoustic Accord. When she's contracted to capture a quantum physicist who's encrypted his consciousness inside a self-replicating chord progression, Vex discovers the only way to decode him is to finish his unfinished song. Cue the orbital pyrotechnics, the wailing plasma-guitar solos, and the hard math of love across a black hole's event horizon.","{
+  ""high_level_description"": ""A leather-clad female bounty hunter strides toward camera across a scorched spaceship hangar, cradling a glowing electric-guitar-shaped plasma rifle as concert lasers and a fractured starfield blaze behind her"",
+  ""background"": ""A cavernous derelict starship hangar opening onto deep space, with a colossal cracked viewport revealing a luminous accretion disk spiraling into a black hole. Streaks of concert stage lasers cut through volumetric smoke, and distant gantries and cooling vents recede into shadowy depth. Sparks drift in zero gravity near the foreground floor grating."",
+  ""art_style"": ""shot on 65mm anamorphic, shallow depth of field, photorealistic, teal-and-magenta cinematic grade, heavy volumetric haze, fine film grain, sharp practical-light highlights"",
+  ""aesthetics"": ""operatic, gritty, neon-noir, epic scale, high-contrast, theatrical"",
+  ""lighting"": ""dramatic low-key key light from a magenta stage laser raking across her face while cool teal rim light from the black hole separates her silhouette from the smoke."",
+  ""palette"": [
+    ""#0B1F2A"",
+    ""#16C0C8"",
+    ""#E0218A"",
+    ""#F2C94C"",
+    ""#101015""
+  ],
+  ""bg_brightness"": 38,
+  ""elements"": [
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A fierce woman in her 30s, weathered face streaked with neon stage light, wearing a battered black leather flight jacket with glowing circuit-trim and a chrome guitar-strap bandolier of energy cells, standing in a wide power stance, mid-stride toward camera, hair whipping in zero-gravity drift"",
+      ""palette"": [],
+      ""x"": 0.28,
+      ""y"": 0.3,
+      ""w"": 0.46,
+      ""h"": 0.55
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A futuristic plasma rifle shaped like a hybrid electric guitar, glowing magenta filament strings along the barrel, held diagonally across her chest, photoreal metal and emissive light"",
+      ""palette"": [],
+      ""x"": 0.2,
+      ""y"": 0.45,
+      ""w"": 0.45,
+      ""h"": 0.3
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""A swirling photoreal black-hole accretion disk glowing through a cracked viewport, gold and orange light bending around darkness, deep background"",
+      ""palette"": [],
+      ""x"": 0.55,
+      ""y"": 0.2,
+      ""w"": 0.4,
+      ""h"": 0.3
+    },
+    {
+      ""type"": ""obj"",
+      ""text"": """",
+      ""desc"": ""Crossed beams of concert stage lasers in teal and magenta cutting through smoky hangar haze, lens flares"",
+      ""palette"": [],
+      ""x"": 0.0,
+      ""y"": 0.1,
+      ""w"": 1.0,
+      ""h"": 0.4
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""QUARRY"",
+      ""desc"": ""Massive bold condensed sans-serif title in brushed chrome with a hot magenta neon edge glow, centered, slight perspective, dominating the lower third"",
+      ""palette"": [],
+      ""x"": 0.1,
+      ""y"": 0.74,
+      ""w"": 0.8,
+      ""h"": 0.13
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""A LIGHT-SPEED ROCK OPERA"",
+      ""desc"": ""Thin wide-tracked uppercase teal letters with subtle glow, centered directly beneath the main title"",
+      ""palette"": [],
+      ""x"": 0.18,
+      ""y"": 0.87,
+      ""w"": 0.64,
+      ""h"": 0.035
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""EVERY BOUNTY HAS A SONG."",
+      ""desc"": ""Small italic white tagline with faint magenta drop glow, centered above the title"",
+      ""palette"": [],
+      ""x"": 0.22,
+      ""y"": 0.69,
+      ""w"": 0.56,
+      ""h"": 0.03
+    },
+    {
+      ""type"": ""text"",
+      ""text"": ""NOVA HELIX PICTURES PRESENTS  A DRACO VANTH FILM  \""QUARRY: A LIGHT-SPEED ROCK OPERA\""  MAREN OKONKWO-VEX  SILAS REINHOLT  KAI TENMURA  COSTUMES IDA BELLACOURT  MUSIC THE PULSAR CHOIR  DIRECTED BY DRACO VANTH"",
+      ""desc"": ""Tiny condensed all-caps billing block in pale grey, evenly tracked, centered at very bottom edge"",
+      ""palette"": [],
+      ""x"": 0.15,
+      ""y"": 0.945,
+      ""w"": 0.7,
+      ""h"": 0.04
+    }
+  ]
+}",0180-quarry-a-light-speed-rock-opera.jpg

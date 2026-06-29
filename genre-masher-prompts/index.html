@@ -49,15 +49,16 @@
   }
   .slots {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, 1fr);   /* always three across, even on tablets */
     gap: 16px;
     margin-bottom: 25px;
   }
-  @media (min-width: 700px) {
-    .slots { grid-template-columns: 1fr 1fr; }
-  }
-  @media (min-width: 1000px) {
-    .slots { grid-template-columns: 1fr 1fr 1fr; }
+  /* Keep all three reels on one row on phones too — just tighten them up. */
+  @media (max-width: 560px) {
+    .slots { gap: 8px; }
+    .slot { padding: 10px; min-height: 110px; }
+    .slot-label { font-size: 0.6rem; letter-spacing: 1px; }
+    .slot-value { font-size: 0.95rem; }
   }
   .slot {
     background: rgba(255,255,255,0.08);
@@ -108,12 +109,17 @@
     border-left: 4px solid #ffbe0b;
     padding: 18px 22px;
     border-radius: 8px;
+    margin-top: 25px;
     margin-bottom: 25px;
     font-size: 1.05rem;
     min-height: 60px;
     line-height: 1.5;
   }
   .pitch.empty { opacity: 0.5; font-style: italic; }
+  .ellipsis::after {
+    content: '';
+    animation: dots 1.5s steps(4, end) infinite;
+  }
   .controls {
     display: flex;
     gap: 12px;
@@ -139,12 +145,23 @@
     color: #fff;
   }
   .poster-area {
-    margin-top: 25px;
+    margin-top: 40px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 32px;
     min-height: 0;
   }
+  /* Reveal slots: full-width rows that center their contents (synopsis, poster,
+     behind-the-scenes), filled in sequence by the staged reveal. Empty slots
+     collapse so they don't add gaps before their content lands. */
+  .poster-area > div {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .poster-area > div:empty { display: none; }
   .poster-area img {
     max-width: 100%;
     width: 520px;
@@ -154,7 +171,7 @@
   }
   .synopsis {
     max-width: 600px;
-    margin: 20px auto 4px;
+    margin: 0 auto;
     font-size: 1rem;
     line-height: 1.55;
     text-align: center;
@@ -315,11 +332,11 @@
       </div>
     </div>
 
-    <div class="pitch empty" id="pitch">Hit the button to pull a film from the vault...</div>
-
     <div class="controls">
       <button class="smash" id="smashBtn">🎬 Smash Genres!</button>
     </div>
+
+    <div class="pitch empty" id="pitch">Hit the button to pull a film from the vault...</div>
 
     <div class="poster-area" id="posterArea"></div>
 
@@ -409,6 +426,7 @@ const state = {
 };
 
 function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 // Shuffle-bag: deal through a shuffled copy of the pool without repeats, then
 // reshuffle when it's empty. This shows every film once per cycle and never an
@@ -475,13 +493,29 @@ async function smash() {
     rollSlot(document.getElementById('slot3'), film.character, '', CHARACTERS, 1150, false),
   ]);
 
-  // Show the film's real title as the "pitch".
+  // Staged reveal — the films are pre-generated, but pacing the title and poster
+  // behind short delays (with "generating" placeholders) makes it feel like the
+  // pitch is being dreamed up on demand.
   const pitchEl = document.getElementById('pitch');
+  const area = document.getElementById('posterArea');
+  pitchEl.classList.add('empty');
+  pitchEl.innerHTML = 'Pitching a title<span class="ellipsis"></span>';
+  // Reveal order, top to bottom: synopsis, then poster, then behind-the-scenes.
+  area.replaceChildren(
+    makeSlot('synopsisSlot'), makeSlot('posterSlot'), makeSlot('btsSlot'));
+
+  // 1) ~2s later: the written pitch lands — title + synopsis — and the poster
+  //    slot shows a "generating the poster" indicator for the wait that follows.
+  await sleep(2000);
   pitchEl.classList.remove('empty');
   pitchEl.innerHTML = `<b>${escapeHTML(film.title)}</b>` +
     (film.backend ? ` <span class="pitch-tag">${escapeHTML(film.backend)}</span>` : '');
+  showSynopsis(film);
+  showPosterLoading();
 
-  // Reveal the pre-rendered poster + synopsis.
+  // 2) a further ~4s later: the pre-rendered poster is revealed, with the
+  //    "Behind the scenes" panel beneath it.
+  await sleep(4000);
   revealFilm(film);
 
   state.count++;
@@ -498,24 +532,48 @@ function escapeHTML(s) {
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 }
 
+// Empty placeholder div the reveal stages fill in order (synopsis/poster/bts).
+function makeSlot(id) {
+  const d = document.createElement('div');
+  d.id = id;
+  return d;
+}
+
+// Stage 1: the written synopsis, shown above the poster (which renders later).
+function showSynopsis(film) {
+  const slot = document.getElementById('synopsisSlot');
+  if (!slot || !film.synopsis) return;
+  const syn = document.createElement('div');
+  syn.className = 'synopsis';
+  syn.textContent = film.synopsis;
+  slot.replaceChildren(syn);
+}
+
+// Shown during the delay before the poster appears, so the "render" is visible.
+function showPosterLoading() {
+  const slot = document.getElementById('posterSlot');
+  if (slot) {
+    slot.replaceChildren(
+      Object.assign(document.createElement('div'),
+        { className: 'loading', textContent: 'Generating the poster' }));
+  }
+}
+
+// Stage 2: the pre-rendered poster, then the behind-the-scenes panel at bottom.
 function revealFilm(film) {
-  const area = document.getElementById('posterArea');
-  area.innerHTML = '<div class="loading">Pulling the poster from the vault</div>';
+  const posterSlot = document.getElementById('posterSlot');
+  const btsSlot = document.getElementById('btsSlot');
+  showPosterLoading();
 
   const img = new Image();
   img.onload = () => {
-    area.innerHTML = '';
-    area.appendChild(img);
-    if (film.synopsis) {
-      const syn = document.createElement('div');
-      syn.className = 'synopsis';
-      syn.textContent = film.synopsis;
-      area.appendChild(syn);
-    }
-    area.appendChild(buildBTS(film));
+    posterSlot.replaceChildren(img);
+    btsSlot.replaceChildren(buildBTS(film));
   };
   img.onerror = () => {
-    area.innerHTML = '<div class="loading">Poster image missing. Try another smash?</div>';
+    posterSlot.replaceChildren(
+      Object.assign(document.createElement('div'),
+        { className: 'loading', textContent: 'Poster image missing. Try another smash?' }));
   };
   img.src = film.image;
   img.alt = film.title;
@@ -556,7 +614,7 @@ document.getElementById('smashBtn').addEventListener('click', smash);
 window.addEventListener('keydown', e => {
   if (e.code === 'Space' && document.activeElement.tagName !== 'BUTTON') {
     e.preventDefault();
-    if (DATA_READY) smash();
+    if (DATA_READY && !smashBtn.disabled) smash();
   }
 });
 

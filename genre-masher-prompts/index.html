@@ -340,13 +340,14 @@
 // manifests and merge them into one pool; "Smash Genres!" shuffles the deck and
 // reveals a real film.
 //
-// Which backends feed the pool is configurable: the default is all of them, but
-// you can narrow it with a ?backends= query param, e.g.
-//   index.html?backends=ideogram4         (just Ideogram 4)
-//   index.html?backends=ideogram4,krea     (two of them)
+// Which backends feed the pool is configurable: the default is Ideogram 4 only
+// (the deepest, highest-res batch), but you can widen it with a ?backends=
+// query param, e.g.
+//   index.html?backends=ideogram4,krea,zimage   (all three)
+//   index.html?backends=ideogram4,krea           (two of them)
 // NOTE: browsers block fetch() over file:// — serve this folder
 // (e.g. `python -m http.server`) rather than double-clicking.
-const DEFAULT_BACKENDS = ['zimage', 'ideogram4', 'krea'];
+const DEFAULT_BACKENDS = ['ideogram4'];
 
 function selectedBackends() {
   const param = new URLSearchParams(location.search).get('backends');

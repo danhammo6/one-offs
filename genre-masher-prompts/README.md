@@ -44,14 +44,14 @@ It loads the `mashups_<backend>.json` manifests via `fetch()`, so it must be **s
 
 Films are dealt from a **shuffle-bag**: the pool is shuffled and dealt through without repeats, then reshuffled — so you see every film once per cycle and never an immediate repeat. The lone number under the poster is a mysterious countdown of how many unseen films remain in the current cycle (it ticks down to 0, then refills). The full `Films pitched: N · pool: M` detail is logged to the browser console.
 
-**Which films are in the pool is configurable.** By default the pool merges all backends (Z-Image + Ideogram 4 + Krea). Narrow it with a `?backends=` query param:
+**Which films are in the pool is configurable.** By default the pool is **Ideogram 4 only** (the deepest, highest-res batch). Widen it with a `?backends=` query param:
 
 ```
-index.html?backends=ideogram4         # just Ideogram 4
-index.html?backends=ideogram4,krea     # two of them
+index.html?backends=ideogram4,krea,zimage   # all three
+index.html?backends=ideogram4,krea           # two of them
 ```
 
-(The default lives in `DEFAULT_BACKENDS` near the top of the `<script>` if you'd rather change it permanently — e.g. switch to Ideogram 4 only once you've rendered enough of them.) A backend you haven't run yet simply contributes nothing, so missing manifests are harmless.
+(The default lives in `DEFAULT_BACKENDS` near the top of the `<script>` if you'd rather change it permanently.) A backend you haven't run yet simply contributes nothing, so missing manifests are harmless.
 
 ## Batch generator
 

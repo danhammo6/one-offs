@@ -163,8 +163,11 @@
   }
   .poster-area > div:empty { display: none; }
   .poster-area img {
+    width: 950px;
     max-width: 100%;
-    width: 520px;
+    /* 2:3 poster — keep it from getting taller than the viewport on wide screens. */
+    max-height: 90vh;
+    object-fit: contain;
     border-radius: 12px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.6);
     border: 3px solid #ffbe0b;

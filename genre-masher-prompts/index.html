@@ -163,11 +163,14 @@
   }
   .poster-area > div:empty { display: none; }
   .poster-area img {
-    width: 950px;
-    max-width: 100%;
-    /* 2:3 poster — keep it from getting taller than the viewport on wide screens. */
+    /* Auto width/height bounded by both maxes so the bordered box always hugs the
+       actual rendered image (no letterboxing). Fill the column up to 950px, but
+       never exceed the viewport height — on a tall 2:3 poster the width shrinks
+       proportionally rather than leaving padding inside the yellow frame. */
+    width: auto;
+    height: auto;
+    max-width: min(950px, 100%);
     max-height: 90vh;
-    object-fit: contain;
     border-radius: 12px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.6);
     border: 3px solid #ffbe0b;

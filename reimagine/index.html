@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>reimagine — gallery</title>
+<style>
+  :root {
+    --bg: #0f1115; --panel: #171a21; --edge: #262b36;
+    --fg: #e6e8ec; --muted: #8b93a1; --accent: #6ea8fe;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  header {
+    position: sticky; top: 0; z-index: 5;
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    padding: 12px 20px; background: rgba(15,17,21,.9);
+    backdrop-filter: blur(8px); border-bottom: 1px solid var(--edge);
+  }
+  header h1 { font-size: 16px; margin: 0; font-weight: 600; letter-spacing: .3px; }
+  header .stat { color: var(--muted); font-size: 12px; }
+  header .grow { flex: 1; }
+  select, button {
+    background: var(--panel); color: var(--fg); border: 1px solid var(--edge);
+    border-radius: 8px; padding: 6px 10px; font-size: 13px; cursor: pointer;
+  }
+  label.toggle { color: var(--muted); font-size: 13px; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+  main { padding: 20px; }
+  .cat { margin-bottom: 28px; }
+  .cat > h2 {
+    font-size: 13px; text-transform: uppercase; letter-spacing: .08em;
+    color: var(--muted); margin: 0 0 12px; font-weight: 600;
+  }
+  .grid {
+    display: grid; gap: 14px;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
+  .card {
+    background: var(--panel); border: 1px solid var(--edge); border-radius: 12px;
+    overflow: hidden; cursor: pointer; transition: border-color .15s, transform .05s;
+  }
+  .card:hover { border-color: var(--accent); }
+  .card:active { transform: scale(.996); }
+  .card .imgwrap { position: relative; background: #000; aspect-ratio: 1 / 1; }
+  .card .imgwrap.compare { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; }
+  .card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .card .cap { padding: 8px 10px; font-size: 12px; color: var(--muted);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .badge { position: absolute; top: 6px; left: 6px; font-size: 10px;
+    background: rgba(0,0,0,.6); color: #fff; padding: 2px 6px; border-radius: 6px;
+    letter-spacing: .04em; }
+  .empty { color: var(--muted); padding: 40px; text-align: center; }
+
+  /* lightbox */
+  #lb {
+    position: fixed; inset: 0; z-index: 20; display: none;
+    background: rgba(7,8,11,.94); padding: 24px;
+    flex-direction: column; gap: 14px;
+  }
+  #lb.open { display: flex; }
+  #lb .bar { display: flex; align-items: center; gap: 16px; color: var(--muted); }
+  #lb .bar .name { color: var(--fg); font-weight: 600; }
+  #lb .bar .grow { flex: 1; }
+  #lb .stage {
+    flex: 1; min-height: 0; display: grid; gap: 14px;
+    grid-template-columns: 1fr; align-items: center; justify-items: center;
+  }
+  #lb .stage.side { grid-template-columns: 1fr 1fr; }
+  #lb figure { margin: 0; height: 100%; width: 100%;
+    display: flex; flex-direction: column; min-height: 0; }
+  #lb figcaption { color: var(--muted); font-size: 12px; text-align: center;
+    padding-bottom: 6px; }
+  #lb img { max-width: 100%; max-height: 100%; object-fit: contain;
+    margin: auto; border-radius: 8px; }
+  #lb .prompt {
+    flex: 0 0 auto; max-height: 22vh; overflow-y: auto;
+    background: var(--panel); border: 1px solid var(--edge); border-radius: 10px;
+    padding: 10px 14px; color: var(--fg); font-size: 13px; line-height: 1.55;
+  }
+  #lb .prompt .lbl { color: var(--accent); font-size: 11px; text-transform: uppercase;
+    letter-spacing: .08em; font-weight: 600; margin-bottom: 4px; }
+  #lb .prompt.empty { color: var(--muted); font-style: italic; }
+  #lb .hint { color: var(--muted); font-size: 12px; text-align: center; }
+</style>
+</head>
+<body>
+<header>
+  <h1>reimagine</h1>
+  <label class="toggle" for="sourceSel">source</label>
+  <select id="sourceSel" title="which output set to browse"></select>
+  <span class="stat" id="stat">loading…</span>
+  <span class="grow"></span>
+  <label class="toggle"><input type="checkbox" id="compareAll"> compare in grid</label>
+  <select id="catFilter"><option value="">all categories</option></select>
+  <button id="refresh">refresh</button>
+</header>
+
+<main id="main"><div class="empty">loading…</div></main>
+
+<div id="lb">
+  <div class="bar">
+    <span class="name" id="lbName"></span>
+    <span id="lbMeta"></span>
+    <span class="grow"></span>
+    <label class="toggle"><input type="checkbox" id="lbSide" checked> side-by-side</label>
+    <button id="lbClose">close ✕</button>
+  </div>
+  <div class="stage side" id="lbStage"></div>
+  <div class="prompt" id="lbPrompt"></div>
+  <div class="hint">← / → to move · S to toggle side-by-side · Esc to close</div>
+</div>
+
+<script>
+let ITEMS = [];
+let VIEW = [];        // filtered list currently shown (for lightbox nav)
+let cur = -1;
+let SOURCES = [];     // available output sets (dir names)
+
+const $ = (id) => document.getElementById(id);
+const escapeHtml = (s) => s.replace(/[&<>"']/g, c =>
+  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+const SOURCE_KEY = "reimagine.source";  // persists the pick across full reloads
+
+async function loadSources() {
+  const r = await fetch("/api/sources", { cache: "no-store" });
+  const data = await r.json();
+  SOURCES = data.sources || [];
+  const sel = $("sourceSel");
+  // Prefer the live pick, else the one saved from a prior page load, else the
+  // server default — so a full browser reload (F5) keeps the same source.
+  let saved = null;
+  try { saved = localStorage.getItem(SOURCE_KEY); } catch (e) {}
+  const want = sel.value || saved || data.default;
+  sel.innerHTML = SOURCES.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join("");
+  if (SOURCES.includes(want)) sel.value = want;
+  else if (data.default) sel.value = data.default;
+  sel.disabled = SOURCES.length <= 1;
+}
+
+async function load() {
+  await loadSources();
+  const source = $("sourceSel").value;
+  const url = source ? `/api/list?source=${encodeURIComponent(source)}` : "/api/list";
+  const r = await fetch(url, { cache: "no-store" });
+  ITEMS = await r.json();
+  const cats = [...new Set(ITEMS.map(i => i.category))].sort();
+  const sel = $("catFilter"), prev = sel.value;
+  sel.innerHTML = '<option value="">all categories</option>' +
+    cats.map(c => `<option value="${c}">${c}</option>`).join("");
+  if (cats.includes(prev)) sel.value = prev;
+  render();
+}
+
+function render() {
+  const cat = $("catFilter").value;
+  const compareAll = $("compareAll").checked;
+  VIEW = ITEMS.filter(i => !cat || i.category === cat);
+  const src = $("sourceSel").value;
+  $("stat").textContent =
+    (src ? `${src} · ` : "") +
+    `${ITEMS.length} render${ITEMS.length === 1 ? "" : "s"}` +
+    (cat ? ` · ${VIEW.length} in ${cat}` : "");
+
+  const main = $("main");
+  if (!VIEW.length) {
+    main.innerHTML = '<div class="empty">No renders yet. They appear here as the batch completes — hit refresh.</div>';
+    return;
+  }
+  const groups = {};
+  VIEW.forEach((it, idx) => (groups[it.category] ??= []).push({ it, idx }));
+
+  main.innerHTML = Object.keys(groups).sort().map(c => `
+    <section class="cat">
+      <h2>${c} <span class="stat">(${groups[c].length})</span></h2>
+      <div class="grid">
+        ${groups[c].map(({ it, idx }) => card(it, idx, compareAll)).join("")}
+      </div>
+    </section>`).join("");
+
+  [...main.querySelectorAll(".card")].forEach(el =>
+    el.addEventListener("click", () => openLb(+el.dataset.idx)));
+}
+
+function card(it, idx, compareAll) {
+  const showBoth = compareAll && it.input_url;
+  const imgs = showBoth
+    ? `<img loading="lazy" src="${it.input_url}" title="reference">
+       <img loading="lazy" src="${it.output_url}" title="render">`
+    : `<img loading="lazy" src="${it.output_url}">`;
+  const badge = it.input_url ? "" : '<span class="badge">no ref</span>';
+  return `<div class="card" data-idx="${idx}">
+      <div class="imgwrap${showBoth ? " compare" : ""}">${imgs}${badge}</div>
+      <div class="cap">${it.path}</div>
+    </div>`;
+}
+
+function openLb(idx) {
+  cur = idx;
+  const it = VIEW[cur];
+  $("lbName").textContent = it.path;
+  const side = $("lbSide").checked && !!it.input_url;
+  const stage = $("lbStage");
+  stage.classList.toggle("side", side);
+  stage.innerHTML = side
+    ? `<figure><figcaption>reference</figcaption><img src="${it.input_url}"></figure>
+       <figure><figcaption>reimagined</figcaption><img src="${it.output_url}"></figure>`
+    : `<figure><figcaption>reimagined${it.input_url ? "" : " (no reference)"}</figcaption><img src="${it.output_url}"></figure>`;
+  $("lbMeta").textContent = it.input_url ? "" : "no matching reference";
+  const pr = $("lbPrompt");
+  if (it.prompt) {
+    pr.classList.remove("empty");
+    pr.innerHTML = `<div class="lbl">prompt</div>${escapeHtml(it.prompt)}`;
+  } else {
+    pr.classList.add("empty");
+    pr.textContent = "no saved prompt for this render";
+  }
+  $("lb").classList.add("open");
+}
+
+function closeLb() { $("lb").classList.remove("open"); cur = -1; }
+function step(d) {
+  if (cur < 0 || !VIEW.length) return;
+  openLb((cur + d + VIEW.length) % VIEW.length);
+}
+
+$("refresh").addEventListener("click", load);
+$("sourceSel").addEventListener("change", () => {
+  try { localStorage.setItem(SOURCE_KEY, $("sourceSel").value); } catch (e) {}
+  closeLb(); load();
+});
+$("catFilter").addEventListener("change", render);
+$("compareAll").addEventListener("change", render);
+$("lbClose").addEventListener("click", closeLb);
+$("lbSide").addEventListener("change", () => cur >= 0 && openLb(cur));
+$("lb").addEventListener("click", (e) => { if (e.target.id === "lb") closeLb(); });
+document.addEventListener("keydown", (e) => {
+  if (!$("lb").classList.contains("open")) return;
+  if (e.key === "Escape") closeLb();
+  else if (e.key === "ArrowRight") step(1);
+  else if (e.key === "ArrowLeft") step(-1);
+  else if (e.key === "s" || e.key === "S") { $("lbSide").checked = !$("lbSide").checked; openLb(cur); }
+});
+
+load();
+</script>
+</body>
+</html>

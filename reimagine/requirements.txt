@@ -1,0 +1,4 @@
+# reimagine client deps (mirrors genre-masher-prompts)
+websocket-client>=1.7
+pillow>=10.0
+pyyaml>=6.0

@@ -1,0 +1,23 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# macOS
+.DS_Store
+
+# IDE
+.idea/
+
+# Generated render sets (regenerable, bulky) + the "current" convenience symlink
+outputs/
+/output
+
+# Local config and scratch files
+# (mount point is on Desktop, outside repo, but listed here for clarity)
+# ~/Desktop/MyShare — not in repo, no need to ignore
+
+# Fetcher local scratch (the committed credits file is CREDITS.md)
+input/.credits.json

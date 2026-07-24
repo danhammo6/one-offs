@@ -451,9 +451,13 @@ class ComfyClient:
         if tries:
             print(f"      …ComfyUI back up after {tries} poll(s)", flush=True)
 
-    def render(self, workflow):
-        """Queue the workflow, block until done, return the Image Saver's
-        reported output (filename, subfolder, type) — used for HTTP fallback."""
+    def render(self, workflow, all_outputs=False):
+        """Queue the workflow, block until done, return the saver's reported
+        output(s) — used for HTTP fallback. By default returns the FIRST output
+        dict (filename, subfolder, type) or None; with all_outputs=True returns
+        the full list of every reported artifact (e.g. LTX writes a .png first
+        frame, a silent .mp4, and a muxed -audio.mp4), so the caller can choose
+        which one to fetch."""
         import websocket  # websocket-client
         ws = websocket.WebSocket()
         ws.connect(f"ws://{self.server}/ws?clientId={self.client_id}", timeout=30)
@@ -475,12 +479,14 @@ class ComfyClient:
         finally:
             ws.close()
         hist = self._history(prompt_id).get(prompt_id, {})
+        # Image savers report under "images"; VHS_VideoCombine (and other
+        # animated savers) report under "gifs" — collect both.
+        items = []
         for _node, output in hist.get("outputs", {}).items():
-            # Image savers report under "images"; VHS_VideoCombine (and other
-            # animated savers) report under "gifs" — return either.
-            for item in (output.get("images") or []) + (output.get("gifs") or []):
-                return item  # {filename, subfolder, type}
-        return None
+            items += (output.get("images") or []) + (output.get("gifs") or [])
+        if all_outputs:
+            return items
+        return items[0] if items else None  # {filename, subfolder, type}
 
 
 # ----------------------------------------------------------------------------

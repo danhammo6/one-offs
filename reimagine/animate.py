@@ -112,42 +112,66 @@ def patch_ltx_workflow(base, prompt, load_name, seed, width, height,
 
 
 def clear_host_videos(samba_root, save_subdir, base):
-    """Delete any prior host-side video(s) for this base name (via samba), so the
-    freshest render is unambiguous. No-op without samba. Returns count removed."""
+    """Delete any prior host-side artifact for this base name (via samba), so the
+    freshest render is unambiguous. The save subdir is video-only staging, so we
+    clear every artifact for the base — the .png first frame and both .mp4s
+    (silent + -audio). No-op without samba. Returns count removed."""
     if not samba_root:
         return 0
     d = Path(samba_root) / save_subdir
     if not d.is_dir():
         return 0
     removed = 0
-    for ext in VIDEO_EXTS:
-        for p in d.glob(f"{base}*{ext}"):
-            try:
-                p.unlink()
-                removed += 1
-            except OSError as e:
-                print(f"      (could not remove stale {p.name}: {e})", flush=True)
+    for p in d.glob(f"{base}*"):
+        if not p.is_file():
+            continue
+        try:
+            p.unlink()
+            removed += 1
+        except OSError as e:
+            print(f"      (could not remove stale {p.name}: {e})", flush=True)
     return removed
 
 
+def _is_video(name):
+    return Path(name).suffix.lower() in VIDEO_EXTS
+
+
+def _prefer_audio(names):
+    """Choose the keeper among a render's video files. LTX writes a silent
+    `<prefix>_NNNNN.mp4` and then a muxed `<prefix>_NNNNN-audio.mp4` — the latter
+    (which we keep, to preserve LTX's own generated audio) sorts last and is the
+    largest/last-written, so prefer a `-audio` stem, else fall back to the last
+    name given. `names` is expected pre-sorted by write order / mtime."""
+    audio = [n for n in names if Path(n).stem.endswith("-audio")]
+    return (audio or names)[-1] if names else None
+
+
 def retrieve_video(comfy, reported, samba_root, base, save_subdir):
-    """Return rendered video bytes. Prefer the newest samba-mounted match; fall
-    back to ComfyUI's HTTP /view using what VHS reported to /history."""
+    """Return (bytes, suffix) for the rendered clip. Prefer the samba-mounted
+    `-audio.mp4` (LTX muxes its own audio into that final artifact); fall back to
+    ComfyUI's HTTP /view. `reported` is the list of artifacts render() collected
+    from /history (used for the HTTP fallback)."""
     if samba_root:
         d = Path(samba_root) / save_subdir
-        hits = []
-        for ext in VIDEO_EXTS:
-            hits += list(d.glob(f"{base}*{ext}"))
+        hits = [p for p in d.glob(f"{base}*") if p.is_file() and _is_video(p.name)]
         if hits:
-            newest = max(hits, key=lambda p: p.stat().st_mtime)
-            return newest.read_bytes(), newest.suffix
-        print(f"      (samba: no {base}* under {d}; trying HTTP)", flush=True)
-    if reported:
-        raw = comfy._view(reported["filename"], reported.get("subfolder", ""),
-                          reported.get("type", "output"))
-        return raw, Path(reported["filename"]).suffix or ".mp4"
+            hits.sort(key=lambda p: p.stat().st_mtime)  # oldest -> newest
+            pick = Path(_prefer_audio([p.name for p in hits]))
+            chosen = d / pick.name
+            return chosen.read_bytes(), chosen.suffix
+        print(f"      (samba: no {base}* video under {d}; trying HTTP)",
+              flush=True)
+    # HTTP fallback: pick the -audio.mp4 among the reported outputs.
+    vids = [r for r in (reported or []) if _is_video(r.get("filename", ""))]
+    if vids:
+        pick_name = _prefer_audio([r["filename"] for r in vids])
+        r = next(r for r in vids if r["filename"] == pick_name)
+        raw = comfy._view(r["filename"], r.get("subfolder", ""),
+                          r.get("type", "output"))
+        return raw, Path(r["filename"]).suffix or ".mp4"
     raise RuntimeError("could not retrieve rendered video (no samba hit, "
-                       "nothing reported to /history)")
+                       "no video reported to /history)")
 
 
 def iter_stills(set_dir):
@@ -331,7 +355,7 @@ def main():
             try:
                 comfy.wait_until_up()
                 clear_host_videos(args.samba_root, args.save_subdir, base)
-                reported = comfy.render(wf)
+                reported = comfy.render(wf, all_outputs=True)
                 raw, ext = retrieve_video(comfy, reported, args.samba_root,
                                           base, args.save_subdir)
                 # Keep the video next to its still; normalize odd extensions to

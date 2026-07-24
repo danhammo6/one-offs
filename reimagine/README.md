@@ -6,12 +6,15 @@ krea2 prompt, render it on a (Windows) ComfyUI box, and write the results into a
 output tree that mirrors the input's structure and filenames.
 
 ```
-input/sports/sprint.jpg   ──►   output/sports/sprint.jpg
+input/sports/sprint.jpg   ──►   output/sports/sprint.jpg   ──►   output/sports/sprint.mp4
+                                 (reimagine.py: still)            (animate.py: LTX video)
 ```
 
 This is a sibling of `../genre-masher-prompts` and borrows its ComfyUI client and
 JPEG-transcode machinery, but is driven by an input-image walk instead of random
 genre mashups, and prompts the LLM **multimodally** (it looks at the reference).
+An optional second stage (`animate.py`) turns each rendered still into a short
+LTX 2.3 action video — see [Video (LTX 2.3)](#video-ltx-23).
 
 ## How it works
 
@@ -146,6 +149,42 @@ gallery just like a plain-text prompt.
 
 Manual (plain-text) prompting remains the default — pass `--regions` to opt in.
 
+## Video (LTX 2.3)
+
+`animate.py` is a **second stage**: once a still set is rendered, it turns each
+still into a short action video with the LTX 2.3 image-to-video model. For every
+rendered still it asks the LLM to look at that frame (the video's first frame)
+and write a ~10-second motion prompt, then renders the clip and writes the `.mp4`
+**next to the still** (same stem):
+
+```
+outputs/claude-regions/animals/cat-pounce.jpg
+  -> outputs/claude-regions/animals/cat-pounce.mp4
+```
+
+```bash
+# Animate a rendered set. Same async pipeline + samba retrieval as reimagine.py.
+.venv/bin/python animate.py --set outputs/claude-regions \
+    --samba-root ~/Desktop/MyShare --comfy-server 192.168.33.101:8188
+
+# Prompts only — preview the motion prompts without rendering.
+.venv/bin/python animate.py --set outputs/claude-regions --no-videos \
+    --llm-server 127.0.0.1:9503
+```
+
+The prompt is patched into node `1070` of
+`workflows/ltx2-3_comfyui_i2v_aitrepeneur_api.json`; the first frame is read by
+the `LoadImage` node (`1077`). LoadImage resolves relative to ComfyUI's `input/`
+dir, so the default `--load-name-template` (`../output/reimagine/{base}.jpeg`)
+reaches the still that `reimagine.py` already staged on the host — no extra
+upload step. `{base}` is the still's path with `/` → `__` (matching reimagine's
+host filename); point the template elsewhere (or at an absolute path) if the
+stills were staged under a different `--save-subdir`. The video system prompt
+lives in `prompts/system_video.txt`; the retry nudge stays in code. `--duration`
+(default 10s), `--seed`, `--width`/`--height` (default: derived from the still),
+`--force`, and `--no-videos` mirror the still pipeline. The motion prompt for
+each clip is saved to a per-directory `video_prompts.yaml`.
+
 ## Gallery
 
 `serve.py` is a tiny stdlib HTTP server for browsing the results. It walks
@@ -161,6 +200,11 @@ Renders are grouped by category. Click any card for a lightbox that shows the
 render **side-by-side** with its reference (← / → to move between images, `S`
 to toggle the split, `Esc` to close), or tick "compare in grid" to show both
 in every tile. No build step and no third-party deps — it reads the disk directly.
+
+If a still has a sibling video (from `animate.py`), the card gets a **▶ video**
+badge; tick the **video** toggle in the header to swap the static render for the
+looping clip wherever one exists (cards play on hover; the lightbox autoplays and
+shows the motion prompt). Stills without a video fall back to the image.
 
 ### Multiple output sets
 
@@ -203,7 +247,8 @@ respect Wikimedia's rate limits — not part of the render pipeline).
 
 ## Future iterations
 
-- **Video** — generate LTX 2.3 videos from the rendered stills.
-
 Done: **rich krea prompts** — the LLM can now emit a structured,
 coordinate-placed spec (see [Region prompting](#region-prompting), `--regions`).
+
+Done: **video** — `animate.py` generates LTX 2.3 videos from the rendered stills
+(see [Video (LTX 2.3)](#video-ltx-23)).

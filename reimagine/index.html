@@ -46,12 +46,13 @@
   .card:active { transform: scale(.996); }
   .card .imgwrap { position: relative; background: #000; aspect-ratio: 1 / 1; }
   .card .imgwrap.compare { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; }
-  .card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .card img, .card video { width: 100%; height: 100%; object-fit: cover; display: block; }
   .card .cap { padding: 8px 10px; font-size: 12px; color: var(--muted);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .badge { position: absolute; top: 6px; left: 6px; font-size: 10px;
     background: rgba(0,0,0,.6); color: #fff; padding: 2px 6px; border-radius: 6px;
     letter-spacing: .04em; }
+  .badge.vid { left: auto; right: 6px; background: rgba(110,168,254,.85); }
   .empty { color: var(--muted); padding: 40px; text-align: center; }
 
   /* lightbox */
@@ -73,7 +74,7 @@
     display: flex; flex-direction: column; min-height: 0; }
   #lb figcaption { color: var(--muted); font-size: 12px; text-align: center;
     padding-bottom: 6px; }
-  #lb img { max-width: 100%; max-height: 100%; object-fit: contain;
+  #lb img, #lb video { max-width: 100%; max-height: 100%; object-fit: contain;
     margin: auto; border-radius: 8px; }
   #lb .prompt {
     flex: 0 0 auto; max-height: 22vh; overflow-y: auto;
@@ -93,6 +94,7 @@
   <select id="sourceSel" title="which output set to browse"></select>
   <span class="stat" id="stat">loading…</span>
   <span class="grow"></span>
+  <label class="toggle"><input type="checkbox" id="videoMode"> video</label>
   <label class="toggle"><input type="checkbox" id="compareAll"> compare in grid</label>
   <select id="catFilter"><option value="">all categories</option></select>
   <button id="refresh">refresh</button>
@@ -186,14 +188,23 @@ function render() {
 }
 
 function card(it, idx, compareAll) {
+  const videoMode = $("videoMode").checked;
+  const useVideo = videoMode && it.video_url;
+  // The "output" cell shows the video when in video mode and one exists,
+  // otherwise the static render.
+  const outCell = useVideo
+    ? `<video src="${it.video_url}" muted loop playsinline preload="metadata"
+              onmouseenter="this.play()" onmouseleave="this.pause()"></video>`
+    : `<img loading="lazy" src="${it.output_url}">`;
   const showBoth = compareAll && it.input_url;
   const imgs = showBoth
-    ? `<img loading="lazy" src="${it.input_url}" title="reference">
-       <img loading="lazy" src="${it.output_url}" title="render">`
-    : `<img loading="lazy" src="${it.output_url}">`;
-  const badge = it.input_url ? "" : '<span class="badge">no ref</span>';
+    ? `<img loading="lazy" src="${it.input_url}" title="reference">${outCell}`
+    : outCell;
+  const badges =
+    (it.input_url ? "" : '<span class="badge">no ref</span>') +
+    (it.video_url ? '<span class="badge vid">▶ video</span>' : "");
   return `<div class="card" data-idx="${idx}">
-      <div class="imgwrap${showBoth ? " compare" : ""}">${imgs}${badge}</div>
+      <div class="imgwrap${showBoth ? " compare" : ""}">${imgs}${badges}</div>
       <div class="cap">${it.path}</div>
     </div>`;
 }
@@ -202,18 +213,29 @@ function openLb(idx) {
   cur = idx;
   const it = VIEW[cur];
   $("lbName").textContent = it.path;
+  const useVideo = $("videoMode").checked && it.video_url;
+  // The reimagined cell is a looping video in video mode (when one exists),
+  // else the static render.
+  const outMedia = useVideo
+    ? `<video src="${it.video_url}" autoplay muted loop playsinline controls></video>`
+    : `<img src="${it.output_url}">`;
+  const outLabel = useVideo ? "reimagined (video)" : "reimagined";
   const side = $("lbSide").checked && !!it.input_url;
   const stage = $("lbStage");
   stage.classList.toggle("side", side);
   stage.innerHTML = side
     ? `<figure><figcaption>reference</figcaption><img src="${it.input_url}"></figure>
-       <figure><figcaption>reimagined</figcaption><img src="${it.output_url}"></figure>`
-    : `<figure><figcaption>reimagined${it.input_url ? "" : " (no reference)"}</figcaption><img src="${it.output_url}"></figure>`;
+       <figure><figcaption>${outLabel}</figcaption>${outMedia}</figure>`
+    : `<figure><figcaption>${outLabel}${it.input_url ? "" : " (no reference)"}</figcaption>${outMedia}</figure>`;
   $("lbMeta").textContent = it.input_url ? "" : "no matching reference";
+  // Show the video prompt in video mode (falling back to the still prompt),
+  // else the still prompt.
   const pr = $("lbPrompt");
-  if (it.prompt) {
+  const txt = useVideo ? (it.video_prompt || it.prompt) : it.prompt;
+  const lbl = useVideo && it.video_prompt ? "video prompt" : "prompt";
+  if (txt) {
     pr.classList.remove("empty");
-    pr.innerHTML = `<div class="lbl">prompt</div>${escapeHtml(it.prompt)}`;
+    pr.innerHTML = `<div class="lbl">${lbl}</div>${escapeHtml(txt)}`;
   } else {
     pr.classList.add("empty");
     pr.textContent = "no saved prompt for this render";
@@ -234,6 +256,7 @@ $("sourceSel").addEventListener("change", () => {
 });
 $("catFilter").addEventListener("change", render);
 $("compareAll").addEventListener("change", render);
+$("videoMode").addEventListener("change", () => { render(); if (cur >= 0) openLb(cur); });
 $("lbClose").addEventListener("click", closeLb);
 $("lbSide").addEventListener("change", () => cur >= 0 && openLb(cur));
 $("lb").addEventListener("click", (e) => { if (e.target.id === "lb") closeLb(); });

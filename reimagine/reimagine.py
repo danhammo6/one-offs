@@ -476,8 +476,10 @@ class ComfyClient:
             ws.close()
         hist = self._history(prompt_id).get(prompt_id, {})
         for _node, output in hist.get("outputs", {}).items():
-            for img in output.get("images", []) or []:
-                return img  # {filename, subfolder, type}
+            # Image savers report under "images"; VHS_VideoCombine (and other
+            # animated savers) report under "gifs" — return either.
+            for item in (output.get("images") or []) + (output.get("gifs") or []):
+                return item  # {filename, subfolder, type}
         return None
 
 

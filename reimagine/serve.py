@@ -31,6 +31,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).parent.resolve()
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".gif", ".tiff"}
+# Video extensions animate.py may write next to a still (same stem). Ordered by
+# preference when several exist for one still.
+VIDEO_EXTS = (".mp4", ".webm", ".mkv")
 
 
 def discover_sources(outputs_dir):
@@ -64,11 +67,11 @@ def find_reference(rel, input_dir):
     return None
 
 
-def load_prompts(dir_path):
+def load_prompts(dir_path, name="prompts.yaml"):
     """Read a directory's prompts.yaml (filename -> prompt) if present. Tolerant
     of a missing file or malformed YAML — returns {} rather than raising."""
     import yaml
-    yaml_path = dir_path / "prompts.yaml"
+    yaml_path = dir_path / name
     if not yaml_path.is_file():
         return {}
     try:
@@ -78,12 +81,23 @@ def load_prompts(dir_path):
     return data if isinstance(data, dict) else {}
 
 
+def find_sibling_video(still_path):
+    """Return the Path of a video sitting next to a still (same stem), or None.
+    animate.py writes e.g. cat-pounce.mp4 beside cat-pounce.jpg."""
+    for ext in VIDEO_EXTS:
+        cand = still_path.with_suffix(ext)
+        if cand.is_file():
+            return cand
+    return None
+
+
 def list_pairs(source_name, output_dir, input_dir):
     """Walk one source's output dir recursively; return one entry per rendered
     image, grouped by its top-level category (first path segment), each with its
     reference (if any) and the prompt used (from the dir's prompts.yaml)."""
     items = []
     prompt_cache = {}
+    video_prompt_cache = {}
     if output_dir.is_dir():
         for p in sorted(output_dir.rglob("*")):
             if not (p.is_file() and p.suffix.lower() in IMAGE_EXTS):
@@ -94,14 +108,22 @@ def list_pairs(source_name, output_dir, input_dir):
             category = parts[0] if len(parts) > 1 else "(root)"
             if p.parent not in prompt_cache:
                 prompt_cache[p.parent] = load_prompts(p.parent)
+                video_prompt_cache[p.parent] = load_prompts(
+                    p.parent, "video_prompts.yaml")
             src_q = urllib.parse.quote(source_name)
+            vid = find_sibling_video(p)
+            vid_rel = vid.relative_to(output_dir).as_posix() if vid else None
             items.append({
                 "name": rel.name,
                 "path": rel.as_posix(),
                 "category": category,
                 "output_url": f"/img/output/{src_q}/" + urllib.parse.quote(rel.as_posix()),
                 "input_url": ("/img/input/" + urllib.parse.quote(ref)) if ref else None,
+                "video_url": (f"/img/output/{src_q}/" + urllib.parse.quote(vid_rel))
+                             if vid_rel else None,
                 "prompt": prompt_cache[p.parent].get(rel.name),
+                "video_prompt": (video_prompt_cache[p.parent].get(vid.name)
+                                 if vid else None),
             })
     return items
 

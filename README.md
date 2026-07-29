@@ -13,6 +13,12 @@ Generate absurd film mashup pitches by combining two random sub-genres + a rando
 
 See the [project README](./genre-masher-prompts/README.md) for setup and usage.
 
+### [`reimagine/`](./reimagine/)
+
+Recreate reference photos as **dynamic-posture** renders. Walks a tree of reference images, asks a multimodal LLM to describe each one as a krea2 prompt (plain-text or a structured, coordinate-placed region spec), renders it on a (Windows) ComfyUI box, and writes the results into an output tree mirroring the input. An optional second stage (`animate.py`) turns each rendered still into a short LTX 2.3 image-to-video action clip, and a tiny stdlib gallery (`serve.py`) browses stills, references, and videos side by side.
+
+See the [project README](./reimagine/README.md) for setup and usage.
+
 ### [`random-walk/`](./random-walk/)
 
 A single-page interactive visualization of a 2D random walk on a grid, rendered as a heatmap. Adjustable speed, grid size, fade rate, and step budget. No server, no dependencies — just open `index.html`.

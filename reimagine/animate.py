@@ -40,8 +40,6 @@ import reimagine as R
 # ----------------------------------------------------------------------------
 LTX_NODE_PROMPT = "1070"     # CLIPTextEncode (positive prompt text)
 LTX_NODE_LOADIMAGE = "1077"  # LoadImage (first frame, relative filename)
-LTX_NODE_WIDTH = "1071"      # INTConstant WIDTH
-LTX_NODE_HEIGHT = "1069"     # INTConstant HEIGHT
 LTX_NODE_DURATION = "1073"   # INTConstant "Audio - Video Duration" (seconds)
 LTX_NODE_SEED = "1074"       # RandomNoise.noise_seed
 LTX_NODE_SAVER = "1087"      # VHS_VideoCombine (writes the .mp4 on the host)
@@ -92,15 +90,14 @@ def video_prompt_for_image(llm, image_path, retries=3):
         f"no <video> after {retries} tries; last reply: {(last or '')[:160]!r}")
 
 
-def patch_ltx_workflow(base, prompt, load_name, seed, width, height,
-                       duration, save_prefix):
-    """Fill the LTX i2v workflow: prompt text, first-frame filename, W/H, seed,
-    duration, and the video saver's filename prefix. Returns a patched copy."""
+def patch_ltx_workflow(base, prompt, load_name, seed, duration, save_prefix):
+    """Fill the LTX i2v workflow: prompt text, first-frame filename, seed,
+    duration, and the video saver's filename prefix. Returns a patched copy.
+    Output dimensions are handled inside the workflow (it downscales the input
+    frame to ~1280x720 keeping aspect), so W/H are not set here."""
     wf = copy.deepcopy(base)
     wf[LTX_NODE_PROMPT]["inputs"]["text"] = prompt
     wf[LTX_NODE_LOADIMAGE]["inputs"]["image"] = load_name
-    wf[LTX_NODE_WIDTH]["inputs"]["value"] = width
-    wf[LTX_NODE_HEIGHT]["inputs"]["value"] = height
     wf[LTX_NODE_DURATION]["inputs"]["value"] = duration
     wf[LTX_NODE_SEED]["inputs"]["noise_seed"] = seed
     s = wf[LTX_NODE_SAVER]["inputs"]
@@ -238,11 +235,6 @@ def main():
                              "videos (default: %(default)s).")
     parser.add_argument("--duration", type=int, default=10,
                         help="Video duration in seconds (default: %(default)s).")
-    parser.add_argument("--width", type=int, default=None,
-                        help="Override video width (default: derived from the "
-                             "still's aspect ratio, snapped to /64).")
-    parser.add_argument("--height", type=int, default=None,
-                        help="Override video height (default: derived).")
     parser.add_argument("--seed", type=int, default=42,
                         help="Base seed; video i uses seed + its index.")
     parser.add_argument("--no-videos", action="store_true",
@@ -343,15 +335,11 @@ def main():
             rel, still, dest = info["rel"], info["still"], info["dest"]
             t_render = time.time()
             seed = args.seed + i
-            if args.width and args.height:
-                width, height = args.width, args.height
-            else:
-                width, height = R.derive_dims(still)
             base = rel.as_posix().replace("/", "__").rsplit(".", 1)[0]
             load_name = args.load_name_template.format(base=base)
             save_prefix = f"{args.save_subdir}/{base}"
             wf = patch_ltx_workflow(workflow_base, prompt, load_name, seed,
-                                    width, height, args.duration, save_prefix)
+                                    args.duration, save_prefix)
             try:
                 comfy.wait_until_up()
                 clear_host_videos(args.samba_root, args.save_subdir, base)
@@ -370,7 +358,7 @@ def main():
                 continue
             save_video_prompt_yaml(dest.parent, out.name, prompt)
             print(f"{tag}  ✓ llm {info['llm_time']:.1f}s + render "
-                  f"{time.time() - t_render:.1f}s  {width}x{height} "
+                  f"{time.time() - t_render:.1f}s "
                   f"-> {out.relative_to(set_dir.parent)}")
             ok += 1
 

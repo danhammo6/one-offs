@@ -51,18 +51,9 @@
       "title": "DualCLIPLoader"
     }
   },
-  "1069": {
-    "inputs": {
-      "value": 1080
-    },
-    "class_type": "INTConstant",
-    "_meta": {
-      "title": "HEIGHT"
-    }
-  },
   "1070": {
     "inputs": {
-      "text": "A tabby cat launches into a pounce, facing left. It springs from a crouch, front paws extending forward and claws spreading as its hind legs push off and stretch out behind it, body elongating mid-leap. The tail whips and curves for balance, ears pinned slightly back, eyes locked forward on its target. Fur ripples with the motion. The camera holds steady with a subtle push-in, tracking the cat's leftward trajectory, keeping it centered as it sails through the air. Shallow depth of field, soft natural lighting, crisp detail on the fur and whiskers, smooth slow-motion capture of the athletic leap. Realistic, high-detail wildlife-photography look.",
+      "text": "",
       "clip": [
         "914",
         0
@@ -71,15 +62,6 @@
     "class_type": "CLIPTextEncode",
     "_meta": {
       "title": "CLIP Text Encode (Prompt)"
-    }
-  },
-  "1071": {
-    "inputs": {
-      "value": 1920
-    },
-    "class_type": "INTConstant",
-    "_meta": {
-      "title": "WIDTH"
     }
   },
   "1072": {
@@ -120,7 +102,7 @@
   },
   "1077": {
     "inputs": {
-      "image": "animals__cat-pounce.jpeg"
+      "image": "ComfyUI_05016_.png"
     },
     "class_type": "LoadImage",
     "_meta": {
@@ -130,7 +112,7 @@
   "1079": {
     "inputs": {
       "audio": "Hello, My name is Inigo Montoya.....mp3",
-      "audioUI": "/api/view?filename=Hello%2C%20My%20name%20is%20Inigo%20Montoya.....mp3&type=input&subfolder=&rand=0.7846228245438955"
+      "audioUI": "/api/view?filename=Hello%2C%20My%20name%20is%20Inigo%20Montoya.....mp3&type=input&subfolder=&rand=0.028043656200195888"
     },
     "class_type": "LoadAudio",
     "_meta": {
@@ -190,6 +172,33 @@
     "class_type": "VHS_VideoCombine",
     "_meta": {
       "title": "Video Combine 🎥🅥🅗🅢"
+    }
+  },
+  "1955": {
+    "inputs": {
+      "upscale_method": "lanczos",
+      "megapixels": 0.88,
+      "resolution_steps": 16,
+      "image": [
+        "1077",
+        0
+      ]
+    },
+    "class_type": "ImageScaleToTotalPixels",
+    "_meta": {
+      "title": "Scale Image to Total Pixels"
+    }
+  },
+  "1957": {
+    "inputs": {
+      "image": [
+        "1955",
+        0
+      ]
+    },
+    "class_type": "GetImageSize",
+    "_meta": {
+      "title": "Get Image Size"
     }
   },
   "1853:1808": {
@@ -594,12 +603,12 @@
   "1853:1836": {
     "inputs": {
       "width": [
-        "1071",
+        "1957",
         0
       ],
       "height": [
-        "1069",
-        0
+        "1957",
+        1
       ],
       "batch_size": 1,
       "color": 0

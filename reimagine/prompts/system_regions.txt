@@ -13,7 +13,7 @@ Output a single JSON object with these keys:
   palette (array of hex strings, optional): a few dominant colors like "#1a2b3c". Omit if you're unsure — it is NOT required.
   elements (array, required): 2 to 12 regions, each an object with:
      type: "obj" for a normal object/subject (use "text" ONLY if the reference genuinely contains prominent lettering worth reproducing).
-     desc: a vivid description of what's in that region; for a subject with a facing or in motion, name its left/right direction here too.
+     desc: a vivid description of what's in that region; for a subject with a facing or in motion, name its left/right direction here too. Use grounded phrasing for the pose — name the actual position of the limbs and torso (e.g. 'torso leaning forward, right knee lifted and bent, both arms swept back'), not just an evocative label like 'running energetically'.
      text: the literal words (ONLY for type "text"; omit otherwise).
      x, y, w, h: the region box (fractions, as above).
      palette: optional array of hex strings for that region.

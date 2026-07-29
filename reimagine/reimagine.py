@@ -656,10 +656,16 @@ def iter_images(input_dir):
             yield p
 
 
-# Per-image renders match the reference's aspect ratio but are scaled to a fixed
-# total pixel budget (a 1920x1080 frame's worth of pixels), so every render costs
-# about the same regardless of shape.
-MAX_PIXELS = 1920 * 1080
+# Per-image renders match the reference's aspect ratio but are normalized to a
+# fixed total pixel budget (a 1920x1080 frame's worth of pixels), so every render
+# is about the same size and cost regardless of shape. References are scaled both
+# down (if larger) AND up (if smaller) to hit this target, standardizing output
+# resolution across a set of mixed-size references.
+TARGET_PIXELS = 1920 * 1080
+
+# Cap on the longest edge, so an extreme aspect ratio can't blow past the turbo
+# model's ~2k comfort zone even while hitting the area target.
+MAX_EDGE = 2048
 
 
 def _round64(n):
@@ -669,11 +675,14 @@ def _round64(n):
 
 def derive_dims(image_path):
     """Render dimensions matching the reference image's aspect ratio, scaled so the
-    total area is <= MAX_PIXELS, then snapped to multiples of 64."""
+    total area is ~TARGET_PIXELS (scaling up small references and down large ones)
+    but with neither edge exceeding MAX_EDGE, then snapped to multiples of 64."""
     from PIL import Image
     with Image.open(image_path) as im:
         w, h = im.size
-    scale = min(1.0, (MAX_PIXELS / float(w * h)) ** 0.5)
+    scale = (TARGET_PIXELS / float(w * h)) ** 0.5
+    # Rein in extreme aspect ratios: keep the longest edge within MAX_EDGE.
+    scale = min(scale, MAX_EDGE / float(max(w, h)))
     return _round64(w * scale), _round64(h * scale)
 
 
@@ -761,7 +770,7 @@ def main():
     print(f"  llm:     {llm.describe()}")
     if not args.no_images:
         print(f"  comfy:   {args.comfy_server}  "
-              f"(per-image aspect, <= {MAX_PIXELS:,} px)")
+              f"(per-image aspect, ~{TARGET_PIXELS:,} px)")
         print(f"  samba:   {args.samba_root or '(none — HTTP /view fallback)'}")
     print()
 

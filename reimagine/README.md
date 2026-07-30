@@ -18,7 +18,8 @@ LTX 2.3 action video — see [Video (LTX 2.3)](#video-ltx-23).
 
 ## How it works
 
-For each image under `input/` (recursively):
+For each image under `input/` (recursively), either in one `run` command or in
+separate `describe` and `render` commands:
 
 1. **Prompt** — `claude -p` is invoked with only the read-only **Read** tool
    enabled and `--add-dir input/`, so it can view the reference image but do
@@ -30,7 +31,12 @@ For each image under `input/` (recursively):
    tags (retried up to 3× if malformed). The system prompts live in editable
    text files under `prompts/` (`system_manual.txt`, `system_regions.txt`) and
    are loaded at startup; the short retry nudges stay in code.
-2. **Render** — the prompt is patched into node `143` of the krea2 workflow
+2. **Persist** — the exact manual prompt or validated region structure, output
+   path, dimensions, stable item index, and source content hash are written to
+   the output set's versioned `render_specs.yaml`. This manifest is sufficient
+   to render later without the LLM server or original reference images.
+   `prompts.yaml` remains a readable gallery projection.
+3. **Render** — the prompt is patched into node `143` of the krea2 workflow
    (`workflows/krea2_comfyui_t2i_aitrepeneur_jpg_api.json`), along with a fresh
    seed and render dimensions **derived from the reference image's own aspect
    ratio** (scaled to a fixed ~2.07 MP budget — a 1920×1080 frame's worth of
@@ -42,20 +48,17 @@ For each image under `input/` (recursively):
    patched into the `Ideogram4PromptBuilderKJ` node (`14`) of
    `workflows/krea2_regions_comfyui_t2i_aitrepeneur_jpg_api.json`. See
    [Region prompting](#region-prompting) below.
-3. **Retrieve** — the rendered JPEG is read back from a local or mounted copy of
+4. **Retrieve** — the rendered JPEG is read back from a local or mounted copy of
    the ComfyUI `output/` dir (`--comfyui-output-dir`), transcoded to JPEG q=90,
    and written to `output/<mirrored path>.jpg`. If the file isn't found there,
    retrieval falls back to ComfyUI's HTTP `/view` using what the Image Saver
    reported to `/history`.
 
-These stages run as a **sliding-window pipeline** (borrowed from
-`../genre-masher-prompts`): the prompt-writing step is the long pole per image,
-so up to `--llm-workers` prompt jobs run ahead in a thread pool while ComfyUI
-renders the current image serially — keeping both the LLM and ComfyUI busy.
-Results are still consumed strictly in reference order. Each `claude -p` call is
-its own subprocess and parallelizes cleanly (default 3 workers); a local
-`--llm-server` serves one request at a time, so it's automatically pinned to a
-single worker (concurrency there just stalls).
+Description generation uses an ordered sliding window: up to `--llm-workers`
+jobs run in a thread pool and results are consumed in reference order. Each
+`claude -p` call is its own subprocess and parallelizes cleanly (default 3
+workers); a local `--llm-server` is automatically pinned to one worker. Rendering
+is serial because ComfyUI's queue serializes these workflows.
 
 ## Setup
 
@@ -79,28 +82,45 @@ if it isn't. Set `COMFYUI_OUTPUT_DIR` if it is mounted somewhere other than
 ## Usage
 
 ```bash
-# Full run: all images under input/, render on the Windows ComfyUI box,
-# retrieve via a mounted ComfyUI output directory, write to output/ mirroring input/.
-.venv/bin/python reimagine.py \
+# Full run: describe and render in one process.
+.venv/bin/python reimagine.py run \
     --comfyui-output-dir ~/Desktop/MyShare \
     --comfy-server 127.0.0.1:8188
 
-# Prompts only — see what the LLM would send, no rendering (fast, no ComfyUI).
-.venv/bin/python reimagine.py --no-images
+# Run 1 on a memory-constrained machine: only the LLM server must be loaded.
+.venv/bin/python reimagine.py describe \
+    --llm-server 127.0.0.1:9503 \
+    --output-dir outputs/local-llm
 
-# Force-overwrite everything, even if the output already exists.
-.venv/bin/python reimagine.py --comfyui-output-dir ~/Desktop/MyShare --force
+# Stop the LLM server and start ComfyUI. Run 2 needs only render_specs.yaml.
+.venv/bin/python reimagine.py render \
+    --output-dir outputs/local-llm \
+    --comfyui-output-dir ~/Desktop/MyShare
 
-# Region-based structured prompting (see below).
-.venv/bin/python reimagine.py --regions --comfyui-output-dir ~/Desktop/MyShare
+# Optionally override model filenames embedded in the workflow.
+.venv/bin/python reimagine.py render \
+    --output-dir outputs/local-llm \
+    --clip-name qwen3vl_4b_fp8_scaled.safetensors \
+    --unet-name krea2_turbo_fp8.safetensors
+
+# Force only the relevant phase.
+.venv/bin/python reimagine.py describe --output-dir outputs/local-llm --force
+.venv/bin/python reimagine.py render --output-dir outputs/local-llm --force
 
 ```
 
 Each render matches its reference image's aspect ratio, scaled to a fixed
 ~2.07 MP budget (1920×1080 worth of pixels) and snapped to /64.
 
-Existing outputs are skipped unless `--force` is passed, so an interrupted
-run resumes cheaply. Each image uses `--seed + its index` for reproducibility.
+Existing manifest entries and outputs are skipped unless `--force` is passed,
+so interrupted describe and render runs resume independently. Each successful
+description is persisted immediately. Each image uses `--seed + its saved index`
+for reproducibility.
+If a reference changes at the same path, its content hash prevents a stale
+description from being reused.
+Adding, removing, or renaming references changes stable item indexes; use
+`describe --force` to rebuild that output set's manifest after changing its
+reference inventory.
 There's always exactly one file per reference — before each render the pipeline
 clears any prior host-side copy, so the Image Saver never leaves `_NNNNN`
 counter versions behind. The run ends with a count of images generated vs.
@@ -108,19 +128,24 @@ skipped.
 
 ### Options
 
-| flag | default | meaning |
+| command / flag | default | meaning |
 | --- | --- | --- |
+| `describe` | — | generate and save descriptions; never starts ComfyUI |
+| `render` | — | render a complete manifest; never loads references or starts an LLM |
+| `run` | — | describe missing entries and render in one process |
 | `--input-dir` | `input` | reference-image tree (walked recursively) |
 | `--output-dir` | `output` | mirror tree for rendered JPEGs |
+| `--spec-file` | `<output-dir>/render_specs.yaml` | alternate render-manifest path |
 | `--regions` | off | use region-based structured prompting (see below) instead of a single plain-text prompt |
-| `--workflow` | *(mode default)* | ComfyUI API workflow; defaults to the manual workflow, or the regions workflow under `--regions` |
+| `--workflow` | *(mode default)* | ComfyUI API workflow; defaults from the manifest's manual or regions mode |
 | `--comfy-server` | `127.0.0.1:8188` | ComfyUI host |
 | `--comfyui-output-dir` | *(none)* | local or mounted ComfyUI `output/`; falls back to HTTP `/view` if unset |
 | `--claude-model` | `opus` | model for the Claude Code CLI |
-| `--llm-workers` | `3` | LLM prompt jobs kept in flight, drafting ahead of the serial renderer (Claude only; a local `--llm-server` is pinned to 1) |
+| `--llm-workers` | `3` | concurrent description jobs (Claude only; a local `--llm-server` is pinned to 1) |
 | `--seed` | `42` | base seed; image _i_ uses `seed + i` |
-| `--no-images` | off | generate prompts only, print them, skip ComfyUI |
-| `--force` | off | force-overwrite: re-render even if the output exists (otherwise skip it) |
+| `--clip-name` | *(workflow value)* | override the CLIP model filename for `render` or `run` |
+| `--unet-name` | *(workflow value)* | override the UNet model filename for `render` or `run` |
+| `--force` | off | replace descriptions for `describe`, images for `render`, or both for `run` |
 
 ## Region prompting
 
@@ -132,11 +157,13 @@ with its own description. This gives the model explicit control over *where*
 things sit in the frame, not just *what's* in it.
 
 ```bash
-# Region mode, prompts only (see the specs without rendering).
-.venv/bin/python reimagine.py --regions --no-images --llm-server 127.0.0.1:9503
+# Region mode, descriptions only.
+.venv/bin/python reimagine.py describe --regions \
+    --llm-server 127.0.0.1:9503 --output-dir outputs/local-regions
 
-# Region mode, full render.
-.venv/bin/python reimagine.py --regions --comfyui-output-dir ~/Desktop/MyShare
+# Render mode is inferred from the saved manifest; --regions is not needed.
+.venv/bin/python reimagine.py render --output-dir outputs/local-regions \
+    --comfyui-output-dir ~/Desktop/MyShare
 ```
 
 The LLM returns JSON inside `<regions>…</regions>` tags (retried up to 3× if it
@@ -146,8 +173,9 @@ elements are only used when the reference genuinely contains prominent lettering
 The spec is patched into node `14` of
 `workflows/krea2_regions_comfyui_t2i_aitrepeneur_jpg_api.json`; the same
 seed / aspect-ratio / single-file-per-image machinery as manual mode applies. A
-readable rendering of the spec is saved to `prompts.yaml` so it shows up in the
-gallery just like a plain-text prompt.
+complete validated spec is saved to `render_specs.yaml`; a readable rendering is
+also saved to `prompts.yaml` so it shows up in the gallery like a plain-text
+prompt.
 
 Manual (plain-text) prompting remains the default — pass `--regions` to opt in.
 
@@ -183,8 +211,8 @@ upload step. `{base}` is the still's path with `/` → `__` (matching reimagine'
 host filename); point the template elsewhere (or at an absolute path) if the
 stills were staged under a different `--save-subdir`. The video system prompt
 lives in `prompts/system_video.txt`; the retry nudge stays in code. `--duration`
-(default 10s), `--seed`, `--width`/`--height` (default: derived from the still),
-`--force`, and `--no-videos` mirror the still pipeline. The motion prompt for
+(default 10s), `--seed`, `--force`, and `--no-videos` control the video pipeline.
+The workflow derives its dimensions internally. The motion prompt for
 each clip is saved to a per-directory `video_prompts.yaml`.
 
 ## Gallery
@@ -230,7 +258,7 @@ selected. Kept sets stick around for posterity.
 .venv/bin/python serve.py --output-dir outputs/claude   # just one set
 ```
 
-The `output` symlink (a convenience default for `reimagine.py --output-dir`)
+The `output` symlink (the default `--output-dir` for each `reimagine.py` command)
 points at whichever set is "current".
 
 ## Reference images

@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 """reimagine — recreate reference images as dynamic-posture renders.
 
-Walk an input tree of reference images. For each image, ask a multimodal LLM
-(Claude Code CLI by default) to look at it and write ONE plain-text krea2-style
-prompt that recreates it as closely as possible. Patch that prompt into the
-ComfyUI krea2 workflow, render on the (Windows) ComfyUI box, and write the
-resulting JPEG into an output tree mirroring the input's structure + filenames.
+Generate render descriptions from a tree of reference images, render saved
+descriptions through a ComfyUI krea2 workflow, or do both in one run. The split
+commands let the multimodal LLM server and ComfyUI run at different times on a
+machine that cannot hold both models in VRAM.
 
     input/sports/sprint.jpg   ->   output/sports/sprint.jpg
 
@@ -17,21 +16,24 @@ file isn't found there.
 Deps (see requirements.txt): websocket-client, pillow. Set up with uv:
     uv venv --python 3.14 .venv
     uv pip install --python .venv -r requirements.txt
-    .venv/bin/python reimagine.py
+    .venv/bin/python reimagine.py --help
 """
 import argparse
 import concurrent.futures
 import copy
+import hashlib
 import io
 import json
 import re
 import shutil
 import subprocess
 import sys
+import tempfile
 import time
 import urllib.parse
 import urllib.request
 import uuid
+from dataclasses import dataclass, field
 from pathlib import Path
 
 # ----------------------------------------------------------------------------
@@ -42,6 +44,8 @@ NODE_SAVER = "159"     # Image Saver (writes JPEG on the ComfyUI host)
 NODE_KSAMPLER = "78:75"
 NODE_VARIANCE = "148"  # RBG_Smart_Seed_Variance (holds a seed too)
 NODE_LATENT = "78:76"  # EmptyLatentImage
+NODE_CLIP_LOADER = "53"
+NODE_UNET_LOADER = "162"
 
 # ----------------------------------------------------------------------------
 # Region-mode node IDs — workflows/krea2_regions_comfyui_t2i_aitrepeneur_jpg_api.json
@@ -53,9 +57,10 @@ NODE_REGION_BUILDER = "14"  # Ideogram4PromptBuilderKJ
 
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".gif", ".tiff"}
 
-DEFAULT_MANUAL_WORKFLOW = Path(
+ROOT = Path(__file__).parent
+DEFAULT_MANUAL_WORKFLOW = ROOT / (
     "workflows/krea2_comfyui_t2i_aitrepeneur_jpg_api.json")
-DEFAULT_REGIONS_WORKFLOW = Path(
+DEFAULT_REGIONS_WORKFLOW = ROOT / (
     "workflows/krea2_regions_comfyui_t2i_aitrepeneur_jpg_api.json")
 
 # The workflow's Image Saver writes under <comfy_output>/<PATH>/<FILENAME>.jpeg.
@@ -73,7 +78,7 @@ JPEG_QUALITY = 90
 # tuned without touching code. The retry NUDGEs below stay in-code (they're
 # short, tied to the parsing/validation logic, and rarely tweaked).
 # ----------------------------------------------------------------------------
-PROMPTS_DIR = Path(__file__).parent / "prompts"
+PROMPTS_DIR = ROOT / "prompts"
 
 
 def _load_prompt(name):
@@ -86,8 +91,6 @@ def _load_prompt(name):
     except OSError as e:
         raise SystemExit(f"missing system prompt file {path}: {e}")
 
-
-SYSTEM_PROMPT = _load_prompt("system_manual.txt")
 
 RETRY_NUDGE = (
     "\n\nYour previous reply did not contain a usable <prompt>...</prompt> "
@@ -103,8 +106,6 @@ RETRY_NUDGE = (
 # movie-poster framing, no forced title text) and treats every styling field as
 # optional, per the node's own defaults.
 # ----------------------------------------------------------------------------
-REGIONS_SYSTEM_PROMPT = _load_prompt("system_regions.txt")
-
 REGIONS_RETRY_NUDGE = (
     "\n\nYour previous reply did not contain a usable <regions>...</regions> "
     "JSON block (or it failed validation). Read the image and output ONLY the "
@@ -122,12 +123,12 @@ class ClaudeCodeLLM:
     name = "claude"
 
     def __init__(self, model="opus", timeout=300, cli="claude", add_dir=None,
-                 system_prompt=SYSTEM_PROMPT):
+                 system_prompt=None):
         self.model = model
         self.timeout = timeout
         self.cli = cli
         self.add_dir = add_dir  # abs path granted to the Read tool
-        self.system_prompt = system_prompt
+        self.system_prompt = system_prompt or _load_prompt("system_manual.txt")
 
     def describe(self):
         return f"Claude Code CLI ({self.model}, multimodal via Read)"
@@ -172,7 +173,7 @@ class OpenAILLM:
     name = "openai"
 
     def __init__(self, base_url, model=None, api_key=None, timeout=300,
-                 system_prompt=SYSTEM_PROMPT):
+                  system_prompt=None):
         # Accept "127.0.0.1:9503", "http://127.0.0.1:9503", or a full /v1 URL.
         if "://" not in base_url:
             base_url = "http://" + base_url
@@ -180,7 +181,7 @@ class OpenAILLM:
         self.model = model
         self.api_key = api_key
         self.timeout = timeout
-        self.system_prompt = system_prompt
+        self.system_prompt = system_prompt or _load_prompt("system_manual.txt")
 
     def _post(self, path, payload):
         data = json.dumps(payload).encode("utf-8")
@@ -628,6 +629,188 @@ def regions_to_text(spec):
 
 
 PROMPTS_YAML = "prompts.yaml"
+RENDER_SPECS_YAML = "render_specs.yaml"
+RENDER_SPECS_VERSION = 1
+
+
+@dataclass(frozen=True)
+class RenderSpec:
+    """Everything ComfyUI needs to render one image without the reference or LLM."""
+
+    index: int
+    output: Path
+    width: int
+    height: int
+    source_sha256: str | None = None
+    prompt: str | None = None
+    regions: dict | None = None
+
+
+@dataclass
+class RenderManifest:
+    """Versioned, portable handoff between description and rendering runs."""
+
+    mode: str
+    items: list[RenderSpec]
+    item_count: int | None = field(default=None, compare=False)
+
+
+@dataclass(frozen=True)
+class ImageJob:
+    index: int
+    source: Path
+    output: Path
+    width: int
+    height: int
+    source_sha256: str
+
+
+@dataclass
+class RunSummary:
+    generated: int = 0
+    rendered: int = 0
+    skipped: int = 0
+    failed: int = 0
+
+    @property
+    def exit_code(self):
+        return 1 if self.failed else 0
+
+
+def _atomic_write_text(path, text):
+    """Replace path atomically so an interrupted write keeps the prior file."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", dir=path.parent,
+            prefix=f".{path.name}.", delete=False) as f:
+        tmp = Path(f.name)
+        try:
+            f.write(text)
+            f.flush()
+        except Exception:
+            tmp.unlink(missing_ok=True)
+            raise
+    tmp.replace(path)
+
+
+def _atomic_write_bytes(path, data):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.NamedTemporaryFile(
+            mode="wb", dir=path.parent, prefix=f".{path.name}.",
+            delete=False) as f:
+        tmp = Path(f.name)
+        try:
+            f.write(data)
+            f.flush()
+        except Exception:
+            tmp.unlink(missing_ok=True)
+            raise
+    tmp.replace(path)
+
+
+def _validate_output_path(value):
+    path = Path(value)
+    if path.is_absolute() or ".." in path.parts or path.suffix.lower() != ".jpg":
+        raise ValueError(f"invalid manifest output path: {value!r}")
+    return path
+
+
+def _spec_to_data(spec, mode):
+    data = {
+        "index": spec.index,
+        "output": spec.output.as_posix(),
+        "width": spec.width,
+        "height": spec.height,
+    }
+    if spec.source_sha256:
+        data["source_sha256"] = spec.source_sha256
+    if mode == "manual":
+        data["prompt"] = spec.prompt
+    else:
+        data["regions"] = spec.regions
+    return data
+
+
+def _spec_from_data(data, mode):
+    if not isinstance(data, dict):
+        raise ValueError("manifest item is not a mapping")
+    try:
+        index = int(data["index"])
+        output = _validate_output_path(data["output"])
+        width = int(data["width"])
+        height = int(data["height"])
+    except (KeyError, TypeError, ValueError) as e:
+        raise ValueError(f"invalid manifest item: {e}") from e
+    if index < 0 or width <= 0 or height <= 0 or width % 64 or height % 64:
+        raise ValueError(f"invalid index or dimensions for {output}")
+    source_sha256 = data.get("source_sha256")
+    if source_sha256 is not None:
+        source_sha256 = str(source_sha256)
+        if not re.fullmatch(r"[0-9a-f]{64}", source_sha256):
+            raise ValueError(f"invalid source_sha256 for {output}")
+    if mode == "manual":
+        prompt = str(data.get("prompt") or "").strip()
+        if len(prompt) < 20:
+            raise ValueError(f"missing or invalid prompt for {output}")
+        return RenderSpec(index, output, width, height, source_sha256, prompt=prompt)
+    try:
+        regions = validate_regions(data.get("regions"))
+    except ValueError as e:
+        raise ValueError(f"invalid regions for {output}: {e}") from e
+    return RenderSpec(index, output, width, height, source_sha256,
+                      regions=regions)
+
+
+def save_manifest(path, manifest):
+    """Persist a complete or partial render manifest atomically."""
+    if manifest.mode not in ("manual", "regions"):
+        raise ValueError(f"invalid manifest mode: {manifest.mode!r}")
+    items = sorted(manifest.items, key=lambda item: item.index)
+    data = {
+        "schema_version": RENDER_SPECS_VERSION,
+        "mode": manifest.mode,
+        "item_count": (manifest.item_count if manifest.item_count is not None
+                       else len(items)),
+        "items": [_spec_to_data(item, manifest.mode) for item in items],
+    }
+    import yaml
+    _atomic_write_text(path, yaml.safe_dump(
+        data, sort_keys=False, allow_unicode=True, default_flow_style=False,
+        width=1000))
+
+
+def load_manifest(path, require_complete=False):
+    import yaml
+    try:
+        data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    except (OSError, yaml.YAMLError) as e:
+        raise ValueError(f"could not read render manifest {path}: {e}") from e
+    if not isinstance(data, dict):
+        raise ValueError(f"render manifest {path} is not a mapping")
+    if data.get("schema_version") != RENDER_SPECS_VERSION:
+        raise ValueError(
+            f"unsupported render manifest version: {data.get('schema_version')!r}")
+    mode = data.get("mode")
+    if mode not in ("manual", "regions"):
+        raise ValueError(f"invalid manifest mode: {mode!r}")
+    try:
+        item_count = int(data["item_count"])
+    except (KeyError, TypeError, ValueError) as e:
+        raise ValueError("manifest item_count must be an integer") from e
+    raw_items = data.get("items")
+    if item_count < 0 or not isinstance(raw_items, list):
+        raise ValueError("manifest item_count/items are invalid")
+    items = [_spec_from_data(item, mode) for item in raw_items]
+    indexes = [item.index for item in items]
+    outputs = [item.output for item in items]
+    if len(set(indexes)) != len(indexes) or len(set(outputs)) != len(outputs):
+        raise ValueError("manifest contains duplicate indexes or output paths")
+    if any(index < 0 or index >= item_count for index in indexes):
+        raise ValueError("manifest index is outside item_count")
+    if require_complete and set(indexes) != set(range(item_count)):
+        raise ValueError("render manifest is incomplete; run describe first")
+    return RenderManifest(mode, sorted(items, key=lambda item: item.index),
+                          item_count=item_count)
 
 
 def save_prompt_yaml(output_dir, rel, prompt):
@@ -644,10 +827,12 @@ def save_prompt_yaml(output_dir, rel, prompt):
             data = yaml.safe_load(yaml_path.read_text()) or {}
         except yaml.YAMLError:
             data = {}
+    if not isinstance(data, dict):
+        data = {}
     data[rel.with_suffix(".jpg").name] = prompt
-    yaml_path.write_text(
-        yaml.safe_dump(data, sort_keys=True, allow_unicode=True,
-                       default_flow_style=False, width=1000))
+    _atomic_write_text(yaml_path, yaml.safe_dump(
+        data, sort_keys=True, allow_unicode=True, default_flow_style=False,
+        width=1000))
 
 
 def iter_images(input_dir):
@@ -687,211 +872,322 @@ def derive_dims(image_path):
     return _round64(w * scale), _round64(h * scale)
 
 
+def sha256_file(path):
+    digest = hashlib.sha256()
+    with path.open("rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
 # ----------------------------------------------------------------------------
-def main():
+# Commands and orchestration
+# ----------------------------------------------------------------------------
+def add_common_output_args(parser):
+    parser.add_argument("--output-dir", type=Path, default=Path("output"),
+                        help="Output set and default manifest directory.")
+    parser.add_argument("--spec-file", type=Path, default=None,
+                        help="Render manifest (default: OUTPUT_DIR/render_specs.yaml).")
+    parser.add_argument("--force", action="store_true",
+                        help="Replace descriptions or rendered images for this command.")
+
+
+def add_describe_args(parser):
+    parser.add_argument("--input-dir", type=Path, default=Path("input"),
+                        help="Reference-image tree.")
+    parser.add_argument("--regions", action="store_true",
+                        help="Generate structured region descriptions.")
+    parser.add_argument("--claude-model", default="opus")
+    parser.add_argument("--llm-server", default=None)
+    parser.add_argument("--llm-model", default=None)
+    parser.add_argument("--llm-workers", type=int, default=3)
+
+
+def add_render_args(parser):
+    parser.add_argument("--workflow", type=Path, default=None,
+                        help="ComfyUI API workflow; inferred from manifest mode.")
+    parser.add_argument("--comfy-server", default="127.0.0.1:8188",
+                        help="ComfyUI host (default: %(default)s).")
+    parser.add_argument("--comfyui-output-dir", type=Path, default=None,
+                        help="Local or mounted ComfyUI output/ directory.")
+    parser.add_argument("--save-subdir", default=SAVE_SUBDIR,
+                        help="ComfyUI output staging subdirectory.")
+    parser.add_argument("--seed", type=int, default=42,
+                        help="Base seed; item i uses seed + its saved index.")
+    parser.add_argument("--clip-name", default=None,
+                        help="Override the workflow CLIP model filename.")
+    parser.add_argument("--unet-name", default=None,
+                        help="Override the workflow UNet model filename.")
+
+
+def build_parser():
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--input-dir", type=Path, default=Path("input"))
-    parser.add_argument("--output-dir", type=Path, default=Path("output"))
-    parser.add_argument("--regions", action="store_true",
-                        help="Use region-based structured prompting (the "
-                             "Ideogram4PromptBuilderKJ workflow) instead of the "
-                             "default single plain-text prompt.")
-    parser.add_argument("--workflow", type=Path, default=None,
-                        help="ComfyUI API workflow JSON. Defaults to the manual "
-                             "workflow, or the regions workflow under --regions.")
-    parser.add_argument("--comfy-server", default="127.0.0.1:8188")
-    parser.add_argument("--comfyui-output-dir", type=Path, default=None,
-                        help="Local or mounted ComfyUI output/ dir. If set, "
-                              "rendered files are read from here; otherwise HTTP "
-                              "/view is used.")
-    parser.add_argument("--claude-model", default="opus")
-    parser.add_argument("--llm-server", default=None,
-                        help="OpenAI-compatible server (e.g. 127.0.0.1:9503). If "
-                             "set, use it for multimodal prompting instead of the "
-                             "Claude Code CLI.")
-    parser.add_argument("--llm-model", default=None,
-                        help="Model id for --llm-server (default: the server's "
-                             "first listed model).")
-    parser.add_argument("--llm-workers", type=int, default=3,
-                        help="How many LLM prompt jobs to keep in flight, "
-                             "drafting ahead of the (serial) ComfyUI renderer so "
-                             "it's never starved (default: %(default)s). Only "
-                             "applies to the Claude Code CLI — each call is its "
-                             "own subprocess. A local --llm-server serves one "
-                             "request at a time, so it's pinned to 1 worker.")
-    parser.add_argument("--save-subdir", default=SAVE_SUBDIR,
-                        help="Subfolder under the ComfyUI host output/ where this "
-                             "run stages its renders (default: %(default)s). Give "
-                             "concurrent runs on the same ComfyUI host DISTINCT "
-                             "subdirs so they don't clobber each other's files.")
-    parser.add_argument("--seed", type=int, default=42,
-                        help="Base seed; each image uses seed + its index.")
-    parser.add_argument("--no-images", action="store_true",
-                        help="Only generate prompts (skip ComfyUI); prints them.")
-    parser.add_argument("--force", action="store_true",
-                        help="Force overwrite: re-render every image even if its "
-                             "output already exists. Without this, existing "
-                             "outputs are skipped so an interrupted run resumes.")
-    args = parser.parse_args()
+    commands = parser.add_subparsers(dest="command", required=True)
+    describe = commands.add_parser(
+        "describe", help="Generate and persist render descriptions; no ComfyUI.")
+    add_common_output_args(describe)
+    add_describe_args(describe)
+    render = commands.add_parser(
+        "render", help="Render a saved manifest; no reference images or LLM.")
+    add_common_output_args(render)
+    add_render_args(render)
+    run = commands.add_parser(
+        "run", help="Describe missing items, then render them in one process.")
+    add_common_output_args(run)
+    add_describe_args(run)
+    add_render_args(run)
+    return parser
 
-    input_dir = args.input_dir.resolve()
-    output_dir = args.output_dir.resolve()
-    if not input_dir.is_dir():
-        sys.exit(f"input dir not found: {input_dir}")
 
+def manifest_path(args, output_dir):
+    return (args.spec_file or output_dir / RENDER_SPECS_YAML).resolve()
+
+
+def build_llm(args, input_dir):
+    system_prompt = _load_prompt(
+        "system_regions.txt" if args.regions else "system_manual.txt")
+    if args.llm_server:
+        return OpenAILLM(args.llm_server, model=args.llm_model,
+                         system_prompt=system_prompt)
+    return ClaudeCodeLLM(model=args.claude_model, add_dir=input_dir,
+                         system_prompt=system_prompt)
+
+
+class ImageRenderer:
+    def __init__(self, comfy, workflow, mode, output_dir, comfyui_output_dir,
+                 save_subdir, base_seed):
+        self.comfy = comfy
+        self.workflow = workflow
+        self.mode = mode
+        self.output_dir = output_dir
+        self.comfyui_output_dir = comfyui_output_dir
+        self.save_subdir = save_subdir
+        self.base_seed = base_seed
+
+    def render(self, spec):
+        destination = self.output_dir / spec.output
+        filename = spec.output.as_posix().replace("/", "__").rsplit(".", 1)[0]
+        seed = self.base_seed + spec.index
+        if self.mode == "regions":
+            workflow = patch_regions_workflow(
+                self.workflow, spec.regions, seed, spec.width, spec.height,
+                self.save_subdir, filename)
+        else:
+            workflow = patch_workflow(
+                self.workflow, spec.prompt, seed, spec.width, spec.height,
+                self.save_subdir, filename)
+        self.comfy.wait_until_up()
+        clear_host_files(self.comfyui_output_dir, self.save_subdir, filename)
+        reported = self.comfy.render(workflow)
+        raw = retrieve(self.comfy, reported, self.comfyui_output_dir, filename,
+                       self.save_subdir)
+        _atomic_write_bytes(destination, png_bytes_to_jpeg(raw))
+
+
+def override_workflow_models(workflow, clip_name=None, unet_name=None):
+    """Override model filenames in a loaded still workflow when requested."""
+    overrides = (
+        (clip_name, NODE_CLIP_LOADER, "clip_name"),
+        (unet_name, NODE_UNET_LOADER, "unet_name"),
+    )
+    for value, node_id, input_name in overrides:
+        if value is None:
+            continue
+        try:
+            workflow[node_id]["inputs"][input_name] = value
+        except (KeyError, TypeError) as e:
+            raise ValueError(
+                f"workflow has no {input_name} input at node {node_id}") from e
+    return workflow
+
+
+def build_renderer(args, manifest, output_dir):
+    workflow_path = args.workflow or (
+        DEFAULT_REGIONS_WORKFLOW if manifest.mode == "regions"
+        else DEFAULT_MANUAL_WORKFLOW)
+    try:
+        workflow = json.loads(workflow_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as e:
+        raise ValueError(f"could not load workflow {workflow_path}: {e}") from e
+    override_workflow_models(workflow, args.clip_name, args.unet_name)
+    comfy = ComfyClient(args.comfy_server)
+    if not comfy.ping():
+        print(f"ComfyUI at {args.comfy_server} not reachable yet.")
+    comfy.wait_until_up()
+    return ImageRenderer(
+        comfy, workflow, manifest.mode, output_dir, args.comfyui_output_dir,
+        args.save_subdir, args.seed)
+
+
+def discover_jobs(input_dir):
     images = list(iter_images(input_dir))
     if not images:
-        sys.exit(f"no images found under {input_dir}")
+        raise ValueError(f"no images found under {input_dir}")
+    jobs = []
+    outputs = set()
+    host_names = set()
+    for index, source in enumerate(images):
+        output = source.relative_to(input_dir).with_suffix(".jpg")
+        host_name = output.as_posix().replace("/", "__").rsplit(".", 1)[0]
+        if output in outputs or host_name in host_names:
+            raise ValueError(f"output or host filename collision at {output}")
+        outputs.add(output)
+        host_names.add(host_name)
+        width, height = derive_dims(source)
+        jobs.append(ImageJob(index, source, output, width, height,
+                             sha256_file(source)))
+    return jobs
 
-    system_prompt = REGIONS_SYSTEM_PROMPT if args.regions else SYSTEM_PROMPT
-    if args.llm_server:
-        llm = OpenAILLM(args.llm_server, model=args.llm_model,
-                        system_prompt=system_prompt)
+
+def _description_for_job(llm, job, mode):
+    started = time.time()
+    if mode == "regions":
+        regions = regions_for_image(llm, str(job.source))
+        spec = RenderSpec(job.index, job.output, job.width, job.height,
+                          job.source_sha256, regions=regions)
     else:
-        llm = ClaudeCodeLLM(model=args.claude_model, add_dir=input_dir,
-                            system_prompt=system_prompt)
+        prompt = prompt_for_image(llm, str(job.source))
+        spec = RenderSpec(job.index, job.output, job.width, job.height,
+                          job.source_sha256, prompt=prompt)
+    return spec, time.time() - started
 
-    workflow_path = args.workflow or (
-        DEFAULT_REGIONS_WORKFLOW if args.regions else DEFAULT_MANUAL_WORKFLOW)
 
-    workflow_base = None
-    comfy = None
-    if not args.no_images:
-        workflow_base = json.loads(workflow_path.read_text())
-        comfy = ComfyClient(args.comfy_server)
-        if not comfy.ping():
-            print(f"ComfyUI at {args.comfy_server} not reachable yet.")
-        comfy.wait_until_up()
+def describe_specs(args, output_dir, path):
+    input_dir = args.input_dir.resolve()
+    if not input_dir.is_dir():
+        raise ValueError(f"input dir not found: {input_dir}")
+    jobs = discover_jobs(input_dir)
+    mode = "regions" if args.regions else "manual"
+    existing = None
+    if path.is_file() and not args.force:
+        existing = load_manifest(path)
+        if existing.mode != mode or existing.item_count != len(jobs):
+            raise ValueError("existing manifest mode or item count does not match")
+        for item in existing.items:
+            job = jobs[item.index]
+            if (item.output != job.output or item.width != job.width
+                    or item.height != job.height
+                    or item.source_sha256 != job.source_sha256):
+                raise ValueError(
+                    f"existing manifest no longer matches input at {job.output}")
+    manifest = RenderManifest(
+        mode, [] if args.force or existing is None else list(existing.items),
+        item_count=len(jobs))
+    by_index = {item.index: item for item in manifest.items}
+    pending = [job for job in jobs if job.index not in by_index]
+    if not pending:
+        print(f"describe: {len(jobs)} description(s) already saved")
+        return manifest, RunSummary(skipped=len(jobs))
 
-    print(f"reimagine: {len(images)} reference image(s)")
-    print(f"  input:   {input_dir}")
-    print(f"  output:  {output_dir}")
-    print(f"  mode:    {'regions (structured)' if args.regions else 'manual (plain text)'}")
-    print(f"  llm:     {llm.describe()}")
-    if not args.no_images:
-        print(f"  comfy:   {args.comfy_server}  "
-              f"(per-image aspect, ~{TARGET_PIXELS:,} px)")
-        output_source = args.comfyui_output_dir or "(none — HTTP /view fallback)"
-        print(f"  comfyui output: {output_source}")
-    print()
-
-    # Pipeline (mirrors ../genre-masher-prompts): the LLM prompt-write is the
-    # long pole per image, while ComfyUI renders serially. We keep up to
-    # --llm-workers prompt jobs in flight in a thread pool, drafting ahead of the
-    # renderer so it's never starved, but still CONSUME results strictly in order
-    # (await job i, render it on the main thread, then submit job i+workers).
-    # Each Claude call is its own subprocess and parallelizes cleanly; a local
-    # --llm-server serves one request at a time, so it's pinned to 1 worker.
-    n = len(images)
-
-    def llm_task(idx):
-        """Worker-thread job: produce the prompt/spec for image idx. Does NOT
-        touch ComfyUI — rendering stays serial on the main thread. Returns a
-        dict the main thread acts on (skip / prompt_error / ready)."""
-        img = images[idx]
-        rel = img.relative_to(input_dir)
-        dest = (output_dir / rel).with_suffix(".jpg")
-        info = {"idx": idx, "img": img, "rel": rel, "dest": dest,
-                "tag": f"[{idx + 1}/{n}] {rel}"}
-        if dest.exists() and not args.force and not args.no_images:
-            info["action"] = "skip"
-            return info
-        t0 = time.time()
-        try:
-            if args.regions:
-                spec = regions_for_image(llm, str(img))
-                prompt = regions_to_text(spec)  # readable form for YAML/UI
-            else:
-                spec = None
-                prompt = prompt_for_image(llm, str(img))
-        except Exception as e:
-            info["action"] = "prompt_error"
-            info["error"] = e
-            return info
-        info.update(action="ready", spec=spec, prompt=prompt,
-                    llm_time=time.time() - t0)
-        return info
-
-    n_workers = max(1, args.llm_workers) if llm.name == "claude" else 1
-    if n_workers > 1:
-        print(f"  workers: {n_workers} LLM jobs in flight (drafting ahead)\n")
-
-    ok = fail = skipped = 0
-    with concurrent.futures.ThreadPoolExecutor(max_workers=n_workers) as pool:
-        # Prime the window: submit the first n_workers jobs up front.
-        futures = {idx: pool.submit(llm_task, idx)
-                   for idx in range(min(n_workers, n))}
-
-        for i in range(n):
-            info = futures.pop(i).result()
-            # Keep the window full: queue the job n_workers ahead so the next
-            # prompt writes run alongside this image's render.
-            ahead = i + n_workers
-            if ahead < n:
-                futures[ahead] = pool.submit(llm_task, ahead)
-
-            tag = info["tag"]
-            if info["action"] == "skip":
-                print(f"{tag}  ✓ exists, skip")
-                skipped += 1
-                continue
-            if info["action"] == "prompt_error":
-                print(f"{tag}  ✗ prompt failed: {info['error']}")
-                fail += 1
-                continue
-
-            prompt = info["prompt"]
-            if args.no_images:
-                indented = prompt.replace("\n", "\n      ")
-                print(f"{tag}  ({info['llm_time']:.1f}s)\n      {indented}\n")
-                ok += 1
-                continue
-
-            rel, img, dest, spec = (info["rel"], info["img"],
-                                    info["dest"], info["spec"])
-            t_render = time.time()
-            seed = args.seed + i
-            # Match the reference's own aspect ratio, scaled to the pixel budget.
-            width, height = derive_dims(img)
-            # Host filename mirrors the image's path (no seed) so it's stable
-            # across runs: clear_host_files can then wipe ANY prior version
-            # before rendering, leaving exactly one file per reference on the
-            # host. The seed still drives the render, it just doesn't leak into
-            # the filename.
-            filename = rel.as_posix().replace("/", "__").rsplit(".", 1)[0]
-            save_path = args.save_subdir
-            if args.regions:
-                wf = patch_regions_workflow(workflow_base, spec, seed, width,
-                                            height, save_path, filename)
-            else:
-                wf = patch_workflow(workflow_base, prompt, seed, width,
-                                    height, save_path, filename)
+    llm = build_llm(args, input_dir)
+    workers = max(1, args.llm_workers) if llm.name == "claude" else 1
+    print(f"describe: {len(pending)} of {len(jobs)} description(s)")
+    print(f"  input:    {input_dir}")
+    print(f"  manifest: {path}")
+    print(f"  mode:     {mode}")
+    print(f"  llm:      {llm.describe()}")
+    summary = RunSummary(skipped=len(jobs) - len(pending))
+    with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = {}
+        submit_at = 0
+        while submit_at < min(workers, len(pending)):
+            job = pending[submit_at]
+            futures[job.index] = pool.submit(
+                _description_for_job, llm, job, mode)
+            submit_at += 1
+        for job in pending:
+            future = futures.pop(job.index)
+            if submit_at < len(pending):
+                ahead = pending[submit_at]
+                futures[ahead.index] = pool.submit(
+                    _description_for_job, llm, ahead, mode)
+                submit_at += 1
+            tag = f"[{job.index + 1}/{len(jobs)}] {job.output}"
             try:
-                comfy.wait_until_up()
-                # Remove any prior host-side render for this name first, so the
-                # Image Saver writes a single file (no _NNNNN counter version).
-                clear_host_files(args.comfyui_output_dir, save_path, filename)
-                reported = comfy.render(wf)
-                raw = retrieve(comfy, reported, args.comfyui_output_dir,
-                               filename, save_path)
-                dest.parent.mkdir(parents=True, exist_ok=True)
-                dest.write_bytes(png_bytes_to_jpeg(raw))
+                spec, elapsed = future.result()
             except Exception as e:
-                print(f"{tag}  ✗ render failed after "
-                      f"{time.time() - t_render:.1f}s: {e}")
-                fail += 1
+                print(f"{tag}  ✗ description failed: {e}")
+                summary.failed += 1
                 continue
-            save_prompt_yaml(output_dir, rel, prompt)
-            print(f"{tag}  ✓ llm {info['llm_time']:.1f}s + render "
-                  f"{time.time() - t_render:.1f}s  {width}x{height} "
-                  f"-> {dest.relative_to(output_dir.parent)}")
-            ok += 1
+            by_index[spec.index] = spec
+            manifest.items = sorted(by_index.values(), key=lambda item: item.index)
+            save_manifest(path, manifest)
+            display = (regions_to_text(spec.regions) if mode == "regions"
+                       else spec.prompt)
+            save_prompt_yaml(output_dir, spec.output, display)
+            print(f"{tag}  ✓ described in {elapsed:.1f}s")
+            summary.generated += 1
+    return manifest, summary
 
-    noun = "prompt" if args.no_images else "image"
-    print(f"\ndone: {ok} {noun}(s) generated, {skipped} skipped (already existed)"
-          + (f", {fail} failed" if fail else ""))
+
+def _display_text(spec, mode):
+    return regions_to_text(spec.regions) if mode == "regions" else spec.prompt
+
+
+def render_specs(args, manifest, output_dir):
+    summary = RunSummary()
+    pending = []
+    for spec in manifest.items:
+        save_prompt_yaml(output_dir, spec.output, _display_text(spec, manifest.mode))
+        destination = output_dir / spec.output
+        if destination.exists() and not args.force:
+            summary.skipped += 1
+        else:
+            pending.append(spec)
+    if not pending:
+        print(f"render: {len(manifest.items)} image(s) already exist")
+        return summary
+
+    renderer = build_renderer(args, manifest, output_dir)
+    print(f"render: {len(pending)} of {len(manifest.items)} image(s)")
+    print(f"  output: {output_dir}")
+    print(f"  mode:   {manifest.mode}")
+    for spec in pending:
+        tag = f"[{spec.index + 1}/{manifest.item_count}] {spec.output}"
+        started = time.time()
+        try:
+            renderer.render(spec)
+        except Exception as e:
+            print(f"{tag}  ✗ render failed after {time.time() - started:.1f}s: {e}")
+            summary.failed += 1
+            continue
+        print(f"{tag}  ✓ rendered in {time.time() - started:.1f}s  "
+              f"{spec.width}x{spec.height}")
+        summary.rendered += 1
+    return summary
+
+
+def print_summary(command, summary):
+    print(f"\ndone ({command}): {summary.generated} described, "
+          f"{summary.rendered} rendered, {summary.skipped} skipped"
+          + (f", {summary.failed} failed" if summary.failed else ""))
+
+
+def main(argv=None):
+    args = build_parser().parse_args(argv)
+    output_dir = args.output_dir.resolve()
+    path = manifest_path(args, output_dir)
+    try:
+        if args.command == "describe":
+            _, summary = describe_specs(args, output_dir, path)
+        elif args.command == "render":
+            manifest = load_manifest(path, require_complete=True)
+            summary = render_specs(args, manifest, output_dir)
+        else:
+            manifest, described = describe_specs(args, output_dir, path)
+            rendered = render_specs(args, manifest, output_dir)
+            summary = RunSummary(
+                generated=described.generated,
+                rendered=rendered.rendered,
+                skipped=rendered.skipped,
+                failed=described.failed + rendered.failed)
+    except (ValueError, OSError) as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 2
+    print_summary(args.command, summary)
+    return summary.exit_code
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

@@ -1,22 +1,22 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Configuration
-MOUNT_POINT="$HOME/Desktop/MyShare"
-MOUNT_CMD="mount_smbfs '//story@192.168.33.101/e$/lib/ComfyUI_windows_portable/ComfyUI/output' ~/Desktop/MyShare"
+# Override this when the ComfyUI output directory is mounted elsewhere.
+COMFYUI_OUTPUT_DIR="${COMFYUI_OUTPUT_DIR:-$HOME/Desktop/MyShare}"
 
-# Check if the ComfyUI output samba share is mounted
-check_samba() {
-  echo "Checking samba share..."
+# Check if the ComfyUI output directory is mounted
+check_comfyui_output_dir() {
+  echo "Checking ComfyUI output directory..."
 
-  if mount | grep -q "$MOUNT_POINT"; then
-    echo "✓ Samba share mounted at $MOUNT_POINT"
+  if mount | grep -q "$COMFYUI_OUTPUT_DIR"; then
+    echo "✓ ComfyUI output directory mounted at $COMFYUI_OUTPUT_DIR"
     return 0
   else
-    echo "✗ Samba share NOT mounted"
+    echo "✗ ComfyUI output directory NOT mounted"
     echo ""
-    echo "To mount the ComfyUI output directory, run:"
-    echo "  $MOUNT_CMD"
+    echo "Mount or otherwise expose ComfyUI's output directory at:"
+    echo "  $COMFYUI_OUTPUT_DIR"
+    echo "Then pass it to the pipeline with --comfyui-output-dir."
     echo ""
     return 1
   fi
@@ -24,7 +24,7 @@ check_samba() {
 
 # Main setup checks
 main() {
-  check_samba
+  check_comfyui_output_dir
 
   # Add more setup checks below as needed
   # check_python_venv

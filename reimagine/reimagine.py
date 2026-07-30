@@ -10,8 +10,9 @@ resulting JPEG into an output tree mirroring the input's structure + filenames.
     input/sports/sprint.jpg   ->   output/sports/sprint.jpg
 
 Retrieval of the rendered file: the workflow's Image Saver node writes a JPEG on
-the ComfyUI host. We read it back from a mounted samba share (--samba-root),
-falling back to ComfyUI's HTTP /view if the file isn't found on the share.
+the ComfyUI host. We read it back from a local or mounted copy of its output
+directory (--comfyui-output-dir), falling back to ComfyUI's HTTP /view if the
+file isn't found there.
 
 Deps (see requirements.txt): websocket-client, pillow. Set up with uv:
     uv venv --python 3.14 .venv
@@ -562,11 +563,11 @@ def png_bytes_to_jpeg(raw):
     return out.getvalue()
 
 
-def retrieve(comfy, reported, samba_root, filename, save_path):
-    """Return rendered image bytes. Prefer the samba-mounted file; fall back to
-    ComfyUI's HTTP /view using what the Image Saver reported to /history."""
-    if samba_root:
-        base = Path(samba_root) / save_path
+def retrieve(comfy, reported, comfyui_output_dir, filename, save_path):
+    """Return rendered image bytes. Prefer the ComfyUI output directory; fall
+    back to HTTP /view using what the Image Saver reported to /history."""
+    if comfyui_output_dir:
+        base = Path(comfyui_output_dir) / save_path
         # Image Saver appends the extension and, if the name already exists on
         # the host, a _NNNNN counter (e.g. foo.jpeg -> foo_00001.jpeg). Grab the
         # MOST RECENTLY WRITTEN match so a fresh render always wins over any
@@ -577,23 +578,23 @@ def retrieve(comfy, reported, samba_root, filename, save_path):
         if hits:
             newest = max(hits, key=lambda p: p.stat().st_mtime)
             return newest.read_bytes()
-        print(f"      (samba: no {filename}* under {base}; trying HTTP)",
+        print(f"      (output dir: no {filename}* under {base}; trying HTTP)",
               flush=True)
     if reported:
         return comfy._view(
             reported["filename"], reported.get("subfolder", ""),
             reported.get("type", "output"))
-    raise RuntimeError("could not retrieve rendered image (no samba hit, "
+    raise RuntimeError("could not retrieve rendered image (no output-dir hit, "
                        "nothing reported to /history)")
 
 
-def clear_host_files(samba_root, save_path, filename):
-    """Delete any existing host-side renders for this base filename (via the
-    samba mount), so the Image Saver writes ONE clean file with no _NNNNN
-    counter suffix. Returns the number of files removed. No-op without samba."""
-    if not samba_root:
+def clear_host_files(comfyui_output_dir, save_path, filename):
+    """Delete existing host-side renders through the ComfyUI output directory,
+    so Image Saver writes one clean file with no _NNNNN counter suffix. Returns
+    the number removed. No-op without an output directory."""
+    if not comfyui_output_dir:
         return 0
-    base = Path(samba_root) / save_path
+    base = Path(comfyui_output_dir) / save_path
     if not base.is_dir():
         return 0
     removed = 0
@@ -699,11 +700,11 @@ def main():
     parser.add_argument("--workflow", type=Path, default=None,
                         help="ComfyUI API workflow JSON. Defaults to the manual "
                              "workflow, or the regions workflow under --regions.")
-    parser.add_argument("--comfy-server", default="192.168.33.101:8188")
-    parser.add_argument("--samba-root", default=None,
-                        help="Local mount of the ComfyUI output/ dir. If set, "
-                             "rendered files are read from here; otherwise HTTP "
-                             "/view is used.")
+    parser.add_argument("--comfy-server", default="127.0.0.1:8188")
+    parser.add_argument("--comfyui-output-dir", type=Path, default=None,
+                        help="Local or mounted ComfyUI output/ dir. If set, "
+                              "rendered files are read from here; otherwise HTTP "
+                              "/view is used.")
     parser.add_argument("--claude-model", default="opus")
     parser.add_argument("--llm-server", default=None,
                         help="OpenAI-compatible server (e.g. 127.0.0.1:9503). If "
@@ -771,7 +772,8 @@ def main():
     if not args.no_images:
         print(f"  comfy:   {args.comfy_server}  "
               f"(per-image aspect, ~{TARGET_PIXELS:,} px)")
-        print(f"  samba:   {args.samba_root or '(none — HTTP /view fallback)'}")
+        output_source = args.comfyui_output_dir or "(none — HTTP /view fallback)"
+        print(f"  comfyui output: {output_source}")
     print()
 
     # Pipeline (mirrors ../genre-masher-prompts): the LLM prompt-write is the
@@ -869,10 +871,10 @@ def main():
                 comfy.wait_until_up()
                 # Remove any prior host-side render for this name first, so the
                 # Image Saver writes a single file (no _NNNNN counter version).
-                clear_host_files(args.samba_root, save_path, filename)
+                clear_host_files(args.comfyui_output_dir, save_path, filename)
                 reported = comfy.render(wf)
-                raw = retrieve(comfy, reported, args.samba_root, filename,
-                               save_path)
+                raw = retrieve(comfy, reported, args.comfyui_output_dir,
+                               filename, save_path)
                 dest.parent.mkdir(parents=True, exist_ok=True)
                 dest.write_bytes(png_bytes_to_jpeg(raw))
             except Exception as e:

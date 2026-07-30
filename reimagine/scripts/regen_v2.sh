@@ -7,9 +7,9 @@ set -uo pipefail
 cd "$(dirname "$0")/.."
 
 PY=.venv/bin/python
-COMFY=192.168.33.101:8188
-SAMBA=~/Desktop/MyShare
-COMMON=(--samba-root "$SAMBA" --comfy-server "$COMFY")
+COMFY="${COMFY:-127.0.0.1:8188}"
+COMFYUI_OUTPUT_DIR="${COMFYUI_OUTPUT_DIR:-$HOME/Desktop/MyShare}"
+COMMON=(--comfyui-output-dir "$COMFYUI_OUTPUT_DIR" --comfy-server "$COMFY")
 
 run() {
   local label="$1"; shift

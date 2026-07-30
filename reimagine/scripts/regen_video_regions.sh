@@ -11,15 +11,16 @@ set -uo pipefail
 cd "$(dirname "$0")/.."
 
 PY=.venv/bin/python
-COMFY=192.168.33.101:8188
-SAMBA=~/Desktop/MyShare
+COMFY="${COMFY:-127.0.0.1:8188}"
+COMFYUI_OUTPUT_DIR="${COMFYUI_OUTPUT_DIR:-$HOME/Desktop/MyShare}"
 
 run() {
   local label="$1"; shift
   echo "======================================================================"
   echo ">>> $label  @ $(date '+%H:%M:%S')"
   echo "======================================================================"
-  "$PY" animate.py "$@" --samba-root "$SAMBA" --comfy-server "$COMFY"
+  "$PY" animate.py "$@" --comfyui-output-dir "$COMFYUI_OUTPUT_DIR" \
+    --comfy-server "$COMFY"
   echo "<<< $label done @ $(date '+%H:%M:%S')  (exit $?)"
   echo
 }

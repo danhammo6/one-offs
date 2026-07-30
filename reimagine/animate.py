@@ -17,7 +17,7 @@ Reuses reimagine.py's ComfyUI client, LLM backends, retrieval + async
 sliding-window pipeline, so both the LLM and ComfyUI stay busy.
 
     .venv/bin/python animate.py --set outputs/claude-regions \
-        --samba-root ~/Desktop/MyShare --comfy-server 192.168.33.101:8188
+        --comfyui-output-dir ~/Desktop/MyShare --comfy-server 127.0.0.1:8188
 
 The LTX LoadImage node reads the first frame from ComfyUI's own input/ dir by a
 RELATIVE filename. Getting the still onto the host into that dir is a separate
@@ -108,14 +108,13 @@ def patch_ltx_workflow(base, prompt, load_name, seed, duration, save_prefix):
     return wf
 
 
-def clear_host_videos(samba_root, save_subdir, base):
-    """Delete any prior host-side artifact for this base name (via samba), so the
-    freshest render is unambiguous. The save subdir is video-only staging, so we
-    clear every artifact for the base — the .png first frame and both .mp4s
-    (silent + -audio). No-op without samba. Returns count removed."""
-    if not samba_root:
+def clear_host_videos(comfyui_output_dir, save_subdir, base):
+    """Delete prior artifacts for this base through the ComfyUI output directory.
+    The save subdir is video-only staging, so clear the .png first frame and both
+    .mp4s (silent + -audio). No-op without an output directory."""
+    if not comfyui_output_dir:
         return 0
-    d = Path(samba_root) / save_subdir
+    d = Path(comfyui_output_dir) / save_subdir
     if not d.is_dir():
         return 0
     removed = 0
@@ -144,20 +143,19 @@ def _prefer_audio(names):
     return (audio or names)[-1] if names else None
 
 
-def retrieve_video(comfy, reported, samba_root, base, save_subdir):
-    """Return (bytes, suffix) for the rendered clip. Prefer the samba-mounted
-    `-audio.mp4` (LTX muxes its own audio into that final artifact); fall back to
-    ComfyUI's HTTP /view. `reported` is the list of artifacts render() collected
-    from /history (used for the HTTP fallback)."""
-    if samba_root:
-        d = Path(samba_root) / save_subdir
+def retrieve_video(comfy, reported, comfyui_output_dir, base, save_subdir):
+    """Return (bytes, suffix) for the rendered clip. Prefer `-audio.mp4` from
+    the ComfyUI output directory; fall back to HTTP /view. `reported` is the
+    artifact list render() collected from /history for the HTTP fallback."""
+    if comfyui_output_dir:
+        d = Path(comfyui_output_dir) / save_subdir
         hits = [p for p in d.glob(f"{base}*") if p.is_file() and _is_video(p.name)]
         if hits:
             hits.sort(key=lambda p: p.stat().st_mtime)  # oldest -> newest
             pick = Path(_prefer_audio([p.name for p in hits]))
             chosen = d / pick.name
             return chosen.read_bytes(), chosen.suffix
-        print(f"      (samba: no {base}* video under {d}; trying HTTP)",
+        print(f"      (output dir: no {base}* video under {d}; trying HTTP)",
               flush=True)
     # HTTP fallback: pick the -audio.mp4 among the reported outputs.
     vids = [r for r in (reported or []) if _is_video(r.get("filename", ""))]
@@ -167,7 +165,7 @@ def retrieve_video(comfy, reported, samba_root, base, save_subdir):
         raw = comfy._view(r["filename"], r.get("subfolder", ""),
                           r.get("type", "output"))
         return raw, Path(r["filename"]).suffix or ".mp4"
-    raise RuntimeError("could not retrieve rendered video (no samba hit, "
+    raise RuntimeError("could not retrieve rendered video (no output-dir hit, "
                        "no video reported to /history)")
 
 
@@ -205,11 +203,11 @@ def main():
                              "each still (same stem, .mp4).")
     parser.add_argument("--workflow", type=Path, default=DEFAULT_LTX_WORKFLOW,
                         help="LTX 2.3 i2v ComfyUI API workflow JSON.")
-    parser.add_argument("--comfy-server", default="192.168.33.101:8188")
-    parser.add_argument("--samba-root", default=None,
-                        help="Local mount of the ComfyUI output/ dir. If set, "
-                             "rendered videos are read from here; otherwise HTTP "
-                             "/view is used.")
+    parser.add_argument("--comfy-server", default="127.0.0.1:8188")
+    parser.add_argument("--comfyui-output-dir", type=Path, default=None,
+                        help="Local or mounted ComfyUI output/ dir. If set, "
+                              "rendered videos are read from here; otherwise HTTP "
+                              "/view is used.")
     parser.add_argument("--claude-model", default="opus")
     parser.add_argument("--llm-server", default=None,
                         help="OpenAI-compatible server (e.g. 127.0.0.1:9503) to "
@@ -275,7 +273,8 @@ def main():
     print(f"  llm:     {llm.describe()}")
     if not args.no_videos:
         print(f"  comfy:   {args.comfy_server}  ({args.duration}s per clip)")
-        print(f"  samba:   {args.samba_root or '(none — HTTP /view fallback)'}")
+        output_source = args.comfyui_output_dir or "(none — HTTP /view fallback)"
+        print(f"  comfyui output: {output_source}")
     print()
 
     n = len(stills)
@@ -342,10 +341,12 @@ def main():
                                     args.duration, save_prefix)
             try:
                 comfy.wait_until_up()
-                clear_host_videos(args.samba_root, args.save_subdir, base)
+                clear_host_videos(args.comfyui_output_dir, args.save_subdir,
+                                  base)
                 reported = comfy.render(wf, all_outputs=True)
-                raw, ext = retrieve_video(comfy, reported, args.samba_root,
-                                          base, args.save_subdir)
+                raw, ext = retrieve_video(
+                    comfy, reported, args.comfyui_output_dir, base,
+                    args.save_subdir)
                 # Keep the video next to its still; normalize odd extensions to
                 # what the saver actually produced.
                 out = dest if ext.lower() == ".mp4" else dest.with_suffix(ext)

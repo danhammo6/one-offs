@@ -42,10 +42,11 @@ For each image under `input/` (recursively):
    patched into the `Ideogram4PromptBuilderKJ` node (`14`) of
    `workflows/krea2_regions_comfyui_t2i_aitrepeneur_jpg_api.json`. See
    [Region prompting](#region-prompting) below.
-3. **Retrieve** — the rendered JPEG is read back from a samba-mounted copy of the
-   ComfyUI `output/` dir (`--samba-root`), transcoded to JPEG q=90, and written
-   to `output/<mirrored path>.jpg`. If the samba file isn't found, it falls back
-   to ComfyUI's HTTP `/view` using what the Image Saver reported to `/history`.
+3. **Retrieve** — the rendered JPEG is read back from a local or mounted copy of
+   the ComfyUI `output/` dir (`--comfyui-output-dir`), transcoded to JPEG q=90,
+   and written to `output/<mirrored path>.jpg`. If the file isn't found there,
+   retrieval falls back to ComfyUI's HTTP `/view` using what the Image Saver
+   reported to `/history`.
 
 These stages run as a **sliding-window pipeline** (borrowed from
 `../genre-masher-prompts`): the prompt-writing step is the long pole per image,
@@ -63,34 +64,35 @@ uv venv --python 3.14 .venv
 uv pip install --python .venv -r requirements.txt
 ```
 
-**Samba share** (retrieval path). On the Windows ComfyUI box, share the ComfyUI
-`output/` directory. On the Mac, mount it:
+**ComfyUI output directory** (optional retrieval path). If ComfyUI is remote,
+share its `output/` directory and mount it locally. For example, on macOS:
 
 ```bash
-mount_smbfs '//story@192.168.33.101/e$/lib/ComfyUI_windows_portable/ComfyUI/output' ~/Desktop/MyShare
+mkdir -p ~/Desktop/MyShare
+mount_smbfs "//$COMFYUI_USER@127.0.0.1/$COMFYUI_SHARE" ~/Desktop/MyShare
 ```
 
-`./go.sh` checks whether that mount is connected and reminds you of the command
-if it isn't. (The mount path is personal config; `go.sh` is committed but the
-`.credits.json` scratch file and `.venv` are gitignored.)
+`./go.sh` checks whether that mount is connected and reports the expected path
+if it isn't. Set `COMFYUI_OUTPUT_DIR` if it is mounted somewhere other than
+`~/Desktop/MyShare`. The `.credits.json` scratch file and `.venv` are gitignored.
 
 ## Usage
 
 ```bash
 # Full run: all images under input/, render on the Windows ComfyUI box,
-# retrieve via the samba mount, write to output/ mirroring input/.
+# retrieve via a mounted ComfyUI output directory, write to output/ mirroring input/.
 .venv/bin/python reimagine.py \
-    --samba-root ~/Desktop/MyShare \
-    --comfy-server 192.168.33.101:8188
+    --comfyui-output-dir ~/Desktop/MyShare \
+    --comfy-server 127.0.0.1:8188
 
 # Prompts only — see what the LLM would send, no rendering (fast, no ComfyUI).
 .venv/bin/python reimagine.py --no-images
 
 # Force-overwrite everything, even if the output already exists.
-.venv/bin/python reimagine.py --samba-root ~/Desktop/MyShare --force
+.venv/bin/python reimagine.py --comfyui-output-dir ~/Desktop/MyShare --force
 
 # Region-based structured prompting (see below).
-.venv/bin/python reimagine.py --regions --samba-root ~/Desktop/MyShare
+.venv/bin/python reimagine.py --regions --comfyui-output-dir ~/Desktop/MyShare
 
 ```
 
@@ -112,8 +114,8 @@ skipped.
 | `--output-dir` | `output` | mirror tree for rendered JPEGs |
 | `--regions` | off | use region-based structured prompting (see below) instead of a single plain-text prompt |
 | `--workflow` | *(mode default)* | ComfyUI API workflow; defaults to the manual workflow, or the regions workflow under `--regions` |
-| `--comfy-server` | `192.168.33.101:8188` | ComfyUI host |
-| `--samba-root` | *(none)* | local mount of ComfyUI `output/`; falls back to HTTP `/view` if unset |
+| `--comfy-server` | `127.0.0.1:8188` | ComfyUI host |
+| `--comfyui-output-dir` | *(none)* | local or mounted ComfyUI `output/`; falls back to HTTP `/view` if unset |
 | `--claude-model` | `opus` | model for the Claude Code CLI |
 | `--llm-workers` | `3` | LLM prompt jobs kept in flight, drafting ahead of the serial renderer (Claude only; a local `--llm-server` is pinned to 1) |
 | `--seed` | `42` | base seed; image _i_ uses `seed + i` |
@@ -134,7 +136,7 @@ things sit in the frame, not just *what's* in it.
 .venv/bin/python reimagine.py --regions --no-images --llm-server 127.0.0.1:9503
 
 # Region mode, full render.
-.venv/bin/python reimagine.py --regions --samba-root ~/Desktop/MyShare
+.venv/bin/python reimagine.py --regions --comfyui-output-dir ~/Desktop/MyShare
 ```
 
 The LLM returns JSON inside `<regions>…</regions>` tags (retried up to 3× if it
@@ -163,9 +165,9 @@ outputs/claude-regions/animals/cat-pounce.jpg
 ```
 
 ```bash
-# Animate a rendered set. Same async pipeline + samba retrieval as reimagine.py.
+# Animate a rendered set. Same async pipeline + output-dir retrieval as reimagine.py.
 .venv/bin/python animate.py --set outputs/claude-regions \
-    --samba-root ~/Desktop/MyShare --comfy-server 192.168.33.101:8188
+    --comfyui-output-dir ~/Desktop/MyShare --comfy-server 127.0.0.1:8188
 
 # Prompts only — preview the motion prompts without rendering.
 .venv/bin/python animate.py --set outputs/claude-regions --no-videos \

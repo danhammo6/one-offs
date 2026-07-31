@@ -31,7 +31,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).parent.resolve()
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".gif", ".tiff"}
-# Video extensions animate.py may write next to a still (same stem). Ordered by
+# Video extensions render_media.py may write next to a still (same stem). Ordered by
 # preference when several exist for one still.
 VIDEO_EXTS = (".mp4", ".webm", ".mkv")
 
@@ -83,7 +83,7 @@ def load_prompts(dir_path, name="prompts.yaml"):
 
 def find_sibling_video(still_path):
     """Return the Path of a video sitting next to a still (same stem), or None.
-    animate.py writes e.g. cat-pounce.mp4 beside cat-pounce.jpg."""
+    render_media.py writes e.g. cat-pounce.mp4 beside cat-pounce.jpg."""
     for ext in VIDEO_EXTS:
         cand = still_path.with_suffix(ext)
         if cand.is_file():

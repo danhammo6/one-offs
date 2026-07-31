@@ -15,7 +15,7 @@ See the [project README](./genre-masher-prompts/README.md) for setup and usage.
 
 ### [`reimagine/`](./reimagine/)
 
-Recreate reference photos as **dynamic-posture** renders. Walks a tree of reference images, asks a multimodal LLM to describe each one as a krea2 prompt (plain-text or a structured, coordinate-placed region spec), renders it on a (Windows) ComfyUI box, and writes the results into an output tree mirroring the input. An optional second stage (`animate.py`) turns each rendered still into a short LTX 2.3 image-to-video action clip, and a tiny stdlib gallery (`serve.py`) browses stills, references, and videos side by side.
+Recreate reference photos as **dynamic-posture** stills and LTX 2.3 videos. An LLM-only planner (`generate_prompts.py`) writes a durable pipeline manifest containing both prompt types; a separate ComfyUI-only renderer (`render_media.py`) generates every still followed by its video. A tiny stdlib gallery (`serve.py`) browses stills, references, and videos side by side.
 
 See the [project README](./reimagine/README.md) for setup and usage.
 

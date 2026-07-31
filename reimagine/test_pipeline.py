@@ -1,0 +1,367 @@
+import dataclasses
+import tempfile
+import unittest
+from pathlib import Path
+from unittest import mock
+
+from PIL import Image
+
+from reimagine_pipeline.manifest import load_pipeline, save_pipeline
+from reimagine_pipeline.models import PipelineItem, PipelineManifest, StillSpec, VideoSpec
+from reimagine_pipeline.files import sha256_file
+from reimagine_pipeline.llm import ClaudeCodeLLM
+from reimagine_pipeline.workflows import patch_ltx_workflow, pick_artifact
+from reimagine_pipeline.comfy import ComfyArtifact
+from reimagine_pipeline.manifest import load_render_state
+
+import generate_prompts
+import render_media
+
+
+class PipelineManifestTests(unittest.TestCase):
+    def test_round_trip_preserves_still_and_video_specs(self):
+        manifest = PipelineManifest(
+            still_mode="manual",
+            item_count=1,
+            items=[PipelineItem(
+                index=0,
+                item_id="animals/cat-pounce",
+                source_path=Path("animals/cat-pounce.jpg"),
+                source_sha256="a" * 64,
+                still=StillSpec(
+                    output=Path("animals/cat-pounce.jpg"),
+                    width=1920,
+                    height=1088,
+                    prompt="A detailed action photograph of a leaping tabby cat.",
+                ),
+                video=VideoSpec(
+                    output=Path("animals/cat-pounce.mp4"),
+                    prompt="The cat lands smoothly as the camera tracks left; soft paw impacts and garden ambience are audible.",
+                    prompt_basis="reference",
+                    basis_sha256="a" * 64,
+                    duration=10,
+                ),
+            )],
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "pipeline.yaml"
+            save_pipeline(path, manifest)
+            loaded = load_pipeline(path)
+
+        self.assertEqual(loaded, manifest)
+
+    def test_ltx_patch_uses_video_plan_and_uploaded_first_frame(self):
+        workflow = {
+            "1070": {"inputs": {}},
+            "1077": {"inputs": {}},
+            "1073": {"inputs": {}},
+            "1074": {"inputs": {}},
+            "1087": {"inputs": {}},
+        }
+        patched = patch_ltx_workflow(
+            workflow, "A controlled motion prompt with camera and audio.",
+            "reimagine/run/cat.jpg", 43, 10, "videos/cat")
+
+        self.assertEqual(patched["1077"]["inputs"]["image"],
+                         "reimagine/run/cat.jpg")
+        self.assertEqual(patched["1070"]["inputs"]["text"],
+                         "A controlled motion prompt with camera and audio.")
+
+    def test_claude_request_includes_image_path(self):
+        client = ClaudeCodeLLM(add_dir=Path("/tmp"))
+        envelope = '{"subtype":"success","result":"ok"}'
+        with mock.patch("reimagine_pipeline.llm.subprocess.run") as run:
+            run.return_value.returncode = 0
+            run.return_value.stdout = envelope
+            run.return_value.stderr = ""
+            client.chat("system", "request", Path("/tmp/frame.jpg"))
+
+        self.assertIn("/tmp/frame.jpg", run.call_args.kwargs["input"])
+
+    def test_video_artifact_prefers_muxed_audio(self):
+        artifacts = [
+            ComfyArtifact("1087", "clip_00001.mp4", "video", "output"),
+            ComfyArtifact("1087", "clip_00001-audio.mp4", "video", "output"),
+        ]
+
+        chosen = pick_artifact(artifacts, "1087", video=True)
+
+        self.assertEqual(chosen.filename, "clip_00001-audio.mp4")
+
+
+class ProcessIsolationTests(unittest.TestCase):
+    def test_prompt_generation_never_constructs_comfyui(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            input_dir = root / "input"
+            input_dir.mkdir()
+            Image.new("RGB", (640, 480)).save(input_dir / "sample.jpg")
+            llm = mock.Mock()
+            llm.describe.return_value = "fake llm"
+            llm.chat.side_effect = [
+                "<prompt>A detailed action photograph of a moving subject in daylight.</prompt>",
+                "<video>The subject moves smoothly across the frame while the camera tracks steadily; quiet ambient sound follows the motion.</video>",
+            ]
+            with mock.patch.object(generate_prompts, "build_llm",
+                                   return_value=llm), \
+                    mock.patch("reimagine_pipeline.comfy.ComfyClient",
+                               side_effect=AssertionError):
+                code = generate_prompts.main([
+                    "--input-dir", str(input_dir),
+                    "--output-dir", str(root / "output"),
+                    "--stage", "all",
+                    "--video-basis", "reference",
+                ])
+
+            manifest = load_pipeline(root / "output" / "pipeline.yaml")
+
+        self.assertEqual(code, 0)
+        self.assertIsNotNone(manifest.items[0].still)
+        self.assertIsNotNone(manifest.items[0].video)
+
+    def test_render_never_constructs_llm_or_reads_input_tree(self):
+        manifest = PipelineManifest(
+            still_mode="manual",
+            item_count=1,
+            items=[PipelineItem(
+                index=0,
+                item_id="sample",
+                source_path=Path("sample.jpg"),
+                source_sha256="a" * 64,
+                still=StillSpec(
+                    output=Path("sample.jpg"), width=1920, height=1088,
+                    prompt="A detailed action photograph of a moving subject.",
+                ),
+            )],
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            output_dir = Path(tmp)
+            save_pipeline(output_dir / "pipeline.yaml", manifest)
+            with mock.patch.object(render_media, "build_llm",
+                                   side_effect=AssertionError, create=True), \
+                    mock.patch.object(render_media, "render_stills",
+                                      return_value=(1, 0, 0)) as render_stills:
+                code = render_media.main([
+                    "--output-dir", str(output_dir), "--stage", "stills",
+                ])
+
+        self.assertEqual(code, 0)
+        render_stills.assert_called_once()
+
+    def test_all_stage_delegates_to_serial_still_then_video_renderer(self):
+        manifest = PipelineManifest(
+            still_mode="manual", item_count=1,
+            items=[PipelineItem(
+                index=0, item_id="sample", source_path=Path("sample.jpg"),
+                source_sha256="a" * 64,
+                still=StillSpec(
+                    Path("sample.jpg"), 1920, 1088,
+                    prompt="A detailed action photograph of a moving subject."),
+                video=VideoSpec(
+                    Path("sample.mp4"),
+                    "The subject moves smoothly while the camera tracks; quiet ambience follows.",
+                    "reference", "a" * 64),
+            )],
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            output_dir = Path(tmp)
+            save_pipeline(output_dir / "pipeline.yaml", manifest)
+            with mock.patch.object(render_media, "render_all",
+                                   return_value=(2, 0, 0)) as render_all:
+                code = render_media.main([
+                    "--output-dir", str(output_dir), "--stage", "all",
+                ])
+
+        self.assertEqual(code, 0)
+        render_all.assert_called_once()
+
+    def test_rendered_basis_video_is_blocked_when_still_changed(self):
+        manifest = PipelineManifest(
+            still_mode="manual", item_count=1,
+            items=[PipelineItem(
+                index=0, item_id="sample", source_path=Path("sample.jpg"),
+                source_sha256="a" * 64,
+                still=StillSpec(
+                    Path("sample.jpg"), 1920, 1088,
+                    prompt="A detailed action photograph of a moving subject."),
+                video=VideoSpec(
+                    Path("sample.mp4"),
+                    "The subject moves smoothly while the camera tracks; quiet ambience follows.",
+                    "rendered", "b" * 64),
+            )],
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            output_dir = Path(tmp)
+            Image.new("RGB", (64, 64)).save(output_dir / "sample.jpg")
+            save_pipeline(output_dir / "pipeline.yaml", manifest)
+            with mock.patch("reimagine_pipeline.rendering.ComfyClient",
+                            side_effect=AssertionError):
+                code = render_media.main([
+                    "--output-dir", str(output_dir), "--stage", "videos",
+                ])
+
+        self.assertEqual(code, 1)
+
+    def test_force_video_generation_preserves_still_plan(self):
+        manifest = PipelineManifest(
+            still_mode="manual", item_count=1,
+            items=[PipelineItem(
+                index=0, item_id="sample", source_path=Path("sample.jpg"),
+                source_sha256="a" * 64,
+                still=StillSpec(
+                    Path("sample.jpg"), 1920, 1088,
+                    prompt="A detailed action photograph of a moving subject."),
+                video=VideoSpec(
+                    Path("sample.mp4"),
+                    "The subject moves smoothly while a camera tracks; quiet ambience follows.",
+                    "reference", "a" * 64),
+            )],
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            input_dir = root / "input"
+            input_dir.mkdir()
+            Image.new("RGB", (640, 480)).save(input_dir / "sample.jpg")
+            source_hash = sha256_file(input_dir / "sample.jpg")
+            item = dataclasses.replace(
+                manifest.items[0], source_sha256=source_hash,
+                video=dataclasses.replace(
+                    manifest.items[0].video, basis_sha256=source_hash))
+            manifest.items = [item]
+            output_dir = root / "output"
+            save_pipeline(output_dir / "pipeline.yaml", manifest)
+            llm = mock.Mock()
+            llm.describe.return_value = "fake"
+            llm.chat.return_value = (
+                "<video>The subject settles into controlled motion while the "
+                "camera tracks steadily; soft ambient sound is audible.</video>")
+            with mock.patch.object(generate_prompts, "build_llm",
+                                   return_value=llm):
+                code = generate_prompts.main([
+                    "--input-dir", str(input_dir),
+                    "--output-dir", str(output_dir),
+                    "--stage", "videos", "--force",
+                ])
+            loaded = load_pipeline(output_dir / "pipeline.yaml")
+
+        self.assertEqual(code, 0)
+        self.assertEqual(loaded.items[0].still, item.still)
+
+    def test_regenerating_still_invalidates_video_plan(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            input_dir = root / "input"
+            input_dir.mkdir()
+            Image.new("RGB", (640, 480)).save(input_dir / "sample.jpg")
+            source_hash = sha256_file(input_dir / "sample.jpg")
+            output_dir = root / "output"
+            manifest = PipelineManifest(
+                still_mode="manual", item_count=1,
+                items=[PipelineItem(
+                    index=0, item_id="sample",
+                    source_path=Path("sample.jpg"),
+                    source_sha256=source_hash,
+                    still=StillSpec(
+                        Path("sample.jpg"), 1920, 1088,
+                        prompt="An old detailed still prompt for the subject."),
+                    video=VideoSpec(
+                        Path("sample.mp4"),
+                        "An old motion prompt with camera movement and sound.",
+                        "reference", source_hash),
+                )],
+            )
+            save_pipeline(output_dir / "pipeline.yaml", manifest)
+            llm = mock.Mock()
+            llm.describe.return_value = "fake"
+            llm.chat.return_value = (
+                "<prompt>A new detailed action photograph of the moving subject."
+                "</prompt>")
+            with mock.patch.object(generate_prompts, "build_llm",
+                                   return_value=llm):
+                code = generate_prompts.main([
+                    "--input-dir", str(input_dir),
+                    "--output-dir", str(output_dir),
+                    "--stage", "stills", "--force",
+                ])
+            loaded = load_pipeline(output_dir / "pipeline.yaml")
+
+        self.assertEqual(code, 0)
+        self.assertIsNone(loaded.items[0].video)
+
+    def test_force_all_rebuilds_changed_inventory(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            input_dir = root / "input"
+            input_dir.mkdir()
+            Image.new("RGB", (640, 480)).save(input_dir / "new.jpg")
+            output_dir = root / "output"
+            old = PipelineManifest(
+                still_mode="manual", item_count=1,
+                items=[PipelineItem(
+                    index=0, item_id="old", source_path=Path("old.jpg"),
+                    source_sha256="a" * 64,
+                )],
+            )
+            save_pipeline(output_dir / "pipeline.yaml", old)
+            llm = mock.Mock()
+            llm.describe.return_value = "fake"
+            llm.chat.side_effect = [
+                "<prompt>A detailed action photograph of a moving subject.</prompt>",
+                "<video>The subject moves smoothly while the camera tracks; quiet ambience follows.</video>",
+            ]
+            with mock.patch.object(generate_prompts, "build_llm",
+                                   return_value=llm):
+                code = generate_prompts.main([
+                    "--input-dir", str(input_dir),
+                    "--output-dir", str(output_dir),
+                    "--stage", "all", "--force",
+                ])
+            loaded = load_pipeline(output_dir / "pipeline.yaml")
+
+        self.assertEqual(code, 0)
+        self.assertEqual(loaded.items[0].item_id, "new")
+
+    def test_partial_manifest_resumes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            input_dir = root / "input"
+            input_dir.mkdir()
+            Image.new("RGB", (640, 480)).save(input_dir / "a.jpg")
+            Image.new("RGB", (640, 480)).save(input_dir / "b.jpg")
+            first_hash = sha256_file(input_dir / "a.jpg")
+            output_dir = root / "output"
+            partial = PipelineManifest(
+                still_mode="manual", item_count=2,
+                items=[PipelineItem(
+                    index=0, item_id="a", source_path=Path("a.jpg"),
+                    source_sha256=first_hash,
+                    still=StillSpec(
+                        Path("a.jpg"), 1664, 1216,
+                        prompt="A detailed action photograph of the first subject."),
+                    video=VideoSpec(
+                        Path("a.mp4"),
+                        "The first subject moves smoothly while the camera tracks; quiet ambience follows.",
+                        "reference", first_hash),
+                )],
+            )
+            save_pipeline(output_dir / "pipeline.yaml", partial)
+            llm = mock.Mock()
+            llm.describe.return_value = "fake"
+            llm.chat.side_effect = [
+                "<prompt>A detailed action photograph of the second subject.</prompt>",
+                "<video>The second subject moves smoothly while the camera tracks; quiet ambience follows.</video>",
+            ]
+            with mock.patch.object(generate_prompts, "build_llm",
+                                   return_value=llm):
+                code = generate_prompts.main([
+                    "--input-dir", str(input_dir),
+                    "--output-dir", str(output_dir), "--stage", "all",
+                ])
+            loaded = load_pipeline(output_dir / "pipeline.yaml")
+
+        self.assertEqual(code, 0)
+        self.assertEqual([item.item_id for item in loaded.items], ["a", "b"])
+
+
+if __name__ == "__main__":
+    unittest.main()

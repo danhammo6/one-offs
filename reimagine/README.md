@@ -1,64 +1,16 @@
 # reimagine
 
-Recreate reference images as **dynamic-posture** renders. Walk a
-tree of reference photos, ask a multimodal LLM to describe each one as a plain
-krea2 prompt, render it on a (Windows) ComfyUI box, and write the results into an
-output tree that mirrors the input's structure and filenames.
+Recreate reference images as dynamic-posture stills and LTX 2.3 videos. The
+pipeline is deliberately split into two processes so an LLM server and ComfyUI
+never need to fit in VRAM at the same time:
 
+```text
+reference images -> generate_prompts.py -> pipeline.yaml
+pipeline.yaml     -> render_media.py     -> JPEGs + MP4s
 ```
-input/sports/sprint.jpg   ──►   output/sports/sprint.jpg   ──►   output/sports/sprint.mp4
-                                 (reimagine.py: still)            (animate.py: LTX video)
-```
 
-This is a sibling of `../genre-masher-prompts` and borrows its ComfyUI client and
-JPEG-transcode machinery, but is driven by an input-image walk instead of random
-genre mashups, and prompts the LLM **multimodally** (it looks at the reference).
-An optional second stage (`animate.py`) turns each rendered still into a short
-LTX 2.3 action video — see [Video (LTX 2.3)](#video-ltx-23).
-
-## How it works
-
-For each image under `input/` (recursively), either in one `run` command or in
-separate `describe` and `render` commands:
-
-1. **Prompt** — `claude -p` is invoked with only the read-only **Read** tool
-   enabled and `--add-dir input/`, so it can view the reference image but do
-   nothing else. A system prompt instructs it to write ONE plain-text
-   krea2-style prompt that recreates the image — emphasizing the subject's
-   **dynamic posture / motion** (and its **facing direction**, since image
-   models otherwise mirror the subject at random) — and to keep it fully clothed
-   and free of text/logos. The answer is returned inside `<prompt>…</prompt>`
-   tags (retried up to 3× if malformed). The system prompts live in editable
-   text files under `prompts/` (`system_manual.txt`, `system_regions.txt`) and
-   are loaded at startup; the short retry nudges stay in code.
-2. **Persist** — the exact manual prompt or validated region structure, output
-   path, dimensions, stable item index, and source content hash are written to
-   the output set's versioned `render_specs.yaml`. This manifest is sufficient
-   to render later without the LLM server or original reference images.
-   `prompts.yaml` remains a readable gallery projection.
-3. **Render** — the prompt is patched into node `143` of the krea2 workflow
-   (`workflows/krea2_comfyui_t2i_aitrepeneur_jpg_api.json`), along with a fresh
-   seed and render dimensions **derived from the reference image's own aspect
-   ratio** (scaled to a fixed ~2.07 MP budget — a 1920×1080 frame's worth of
-   pixels — and snapped to multiples of 64). The workflow's **Image Saver** node
-   (`159`) writes a JPEG on the ComfyUI host under `output/reimagine/`.
-
-   With **`--regions`**, step 1 instead asks the LLM for a structured JSON spec —
-   an overall description plus coordinate-placed regions (`elements`) — which is
-   patched into the `Ideogram4PromptBuilderKJ` node (`14`) of
-   `workflows/krea2_regions_comfyui_t2i_aitrepeneur_jpg_api.json`. See
-   [Region prompting](#region-prompting) below.
-4. **Retrieve** — the rendered JPEG is read back from a local or mounted copy of
-   the ComfyUI `output/` dir (`--comfyui-output-dir`), transcoded to JPEG q=90,
-   and written to `output/<mirrored path>.jpg`. If the file isn't found there,
-   retrieval falls back to ComfyUI's HTTP `/view` using what the Image Saver
-   reported to `/history`.
-
-Description generation uses an ordered sliding window: up to `--llm-workers`
-jobs run in a thread pool and results are consumed in reference order. Each
-`claude -p` call is its own subprocess and parallelizes cleanly (default 3
-workers); a local `--llm-server` is automatically pinned to one worker. Rendering
-is serial because ComfyUI's queue serializes these workflows.
+`serve.py` provides a gallery for comparing the generated media with its
+references.
 
 ## Setup
 
@@ -67,218 +19,135 @@ uv venv --python 3.14 .venv
 uv pip install --python .venv -r requirements.txt
 ```
 
-**ComfyUI output directory** (optional retrieval path). If ComfyUI is remote,
-share its `output/` directory and mount it locally. For example, on macOS:
+ComfyUI defaults to `127.0.0.1:8188`. `--comfyui-output-dir` is optional; when
+provided, artifacts are read directly from a local or mounted ComfyUI `output/`
+directory. HTTP `/view` is the fallback.
+
+## Two-phase workflow
+
+Generate both still and video prompts while only the LLM is loaded:
 
 ```bash
-mkdir -p ~/Desktop/MyShare
-mount_smbfs "//$COMFYUI_USER@127.0.0.1/$COMFYUI_SHARE" ~/Desktop/MyShare
+.venv/bin/python generate_prompts.py \
+  --stage all \
+  --still-mode regions \
+  --video-basis reference \
+  --llm-server 127.0.0.1:9503 \
+  --output-dir outputs/local-regions
 ```
 
-`./go.sh` checks whether that mount is connected and reports the expected path
-if it isn't. Set `COMFYUI_OUTPUT_DIR` if it is mounted somewhere other than
-`~/Desktop/MyShare`. The `.credits.json` scratch file and `.venv` are gitignored.
-
-## Usage
+Stop the LLM server, start ComfyUI, then render all stills followed by all
+videos:
 
 ```bash
-# Full run: describe and render in one process.
-.venv/bin/python reimagine.py run \
-    --comfyui-output-dir ~/Desktop/MyShare \
-    --comfy-server 127.0.0.1:8188
-
-# Run 1 on a memory-constrained machine: only the LLM server must be loaded.
-.venv/bin/python reimagine.py describe \
-    --llm-server 127.0.0.1:9503 \
-    --output-dir outputs/local-llm
-
-# Stop the LLM server and start ComfyUI. Run 2 needs only render_specs.yaml.
-.venv/bin/python reimagine.py render \
-    --output-dir outputs/local-llm \
-    --comfyui-output-dir ~/Desktop/MyShare
-
-# Optionally override model filenames embedded in the workflow.
-.venv/bin/python reimagine.py render \
-    --output-dir outputs/local-llm \
-    --clip-name qwen3vl_4b_fp8_scaled.safetensors \
-    --unet-name krea2_turbo_fp8.safetensors
-
-# Force only the relevant phase.
-.venv/bin/python reimagine.py describe --output-dir outputs/local-llm --force
-.venv/bin/python reimagine.py render --output-dir outputs/local-llm --force
-
+.venv/bin/python render_media.py \
+  --stage all \
+  --output-dir outputs/local-regions \
+  --comfyui-output-dir ~/Desktop/MyShare
 ```
 
-Each render matches its reference image's aspect ratio, scaled to a fixed
-~2.07 MP budget (1920×1080 worth of pixels) and snapped to /64.
+The renderer uploads each final local JPEG to ComfyUI's input directory before
+starting LTX. The exact image shown in the gallery is therefore the video's first
+frame; video rendering does not depend on stale ComfyUI output staging.
 
-Existing manifest entries and outputs are skipped unless `--force` is passed,
-so interrupted describe and render runs resume independently. Each successful
-description is persisted immediately. Each image uses `--seed + its saved index`
-for reproducibility.
-If a reference changes at the same path, its content hash prevents a stale
-description from being reused.
-Adding, removing, or renaming references changes stable item indexes; use
-`describe --force` to rebuild that output set's manifest after changing its
-reference inventory.
-There's always exactly one file per reference — before each render the pipeline
-clears any prior host-side copy, so the Image Saver never leaves `_NNNNN`
-counter versions behind. The run ends with a count of images generated vs.
-skipped.
+## Prompt stages
 
-### Options
+`generate_prompts.py` runs serially and checkpoints `pipeline.yaml` after each
+item. It never imports or contacts ComfyUI.
 
-| command / flag | default | meaning |
+| flag | default | meaning |
 | --- | --- | --- |
-| `describe` | — | generate and save descriptions; never starts ComfyUI |
-| `render` | — | render a complete manifest; never loads references or starts an LLM |
-| `run` | — | describe missing entries and render in one process |
-| `--input-dir` | `input` | reference-image tree (walked recursively) |
-| `--output-dir` | `output` | mirror tree for rendered JPEGs |
-| `--spec-file` | `<output-dir>/render_specs.yaml` | alternate render-manifest path |
-| `--regions` | off | use region-based structured prompting (see below) instead of a single plain-text prompt |
-| `--workflow` | *(mode default)* | ComfyUI API workflow; defaults from the manifest's manual or regions mode |
-| `--comfy-server` | `127.0.0.1:8188` | ComfyUI host |
-| `--comfyui-output-dir` | *(none)* | local or mounted ComfyUI `output/`; falls back to HTTP `/view` if unset |
-| `--claude-model` | `opus` | model for the Claude Code CLI |
-| `--llm-workers` | `3` | concurrent description jobs (Claude only; a local `--llm-server` is pinned to 1) |
-| `--seed` | `42` | base seed; image _i_ uses `seed + i` |
-| `--clip-name` | *(workflow value)* | override the CLIP model filename for `render` or `run` |
-| `--unet-name` | *(workflow value)* | override the UNet model filename for `render` or `run` |
-| `--force` | off | replace descriptions for `describe`, images for `render`, or both for `run` |
+| `--stage` | `all` | generate `stills`, `videos`, or `all` plans |
+| `--still-mode` | `manual` | plain `manual` prompt or structured `regions` spec |
+| `--video-basis` | `reference` | generate motion from the `reference` or actual `rendered` still |
+| `--input-dir` | `input` | reference-image tree |
+| `--output-dir` | `output` | output set and default manifest location |
+| `--manifest` | `<output-dir>/pipeline.yaml` | alternate manifest path |
+| `--duration` | `10` | video duration in seconds, 1-30 |
+| `--seed` | `42` | effective item seed is base plus sorted index |
+| `--llm-server` | *(none)* | OpenAI-compatible multimodal server; otherwise Claude Code |
+| `--force` | off | regenerate requested plan stages |
 
-## Region prompting
+The default `reference` video mode uses the original reference plus the
+validated still plan. Its dedicated system prompt deliberately requests
+conservative motion that does not depend on exact generated limb geometry.
 
-By default the LLM writes one plain-text prompt per image. With `--regions` it
-instead emits a **structured, coordinate-placed spec** that drives ComfyUI's
-`Ideogram4PromptBuilderKJ` node — an overall description plus a list of
-`elements`, each a box (`x, y, w, h` as fractions of the frame, top-left origin)
-with its own description. This gives the model explicit control over *where*
-things sit in the frame, not just *what's* in it.
+## Exact-frame prompting
+
+For higher fidelity, use an additional LLM phase that inspects the actual still:
 
 ```bash
-# Region mode, descriptions only.
-.venv/bin/python reimagine.py describe --regions \
-    --llm-server 127.0.0.1:9503 --output-dir outputs/local-regions
+# 1. LLM: still plans
+.venv/bin/python generate_prompts.py --stage stills --still-mode regions \
+  --output-dir outputs/exact
 
-# Render mode is inferred from the saved manifest; --regions is not needed.
-.venv/bin/python reimagine.py render --output-dir outputs/local-regions \
-    --comfyui-output-dir ~/Desktop/MyShare
+# 2. ComfyUI: still renders
+.venv/bin/python render_media.py --stage stills --output-dir outputs/exact
+
+# 3. LLM: video prompts grounded in those exact JPEGs
+.venv/bin/python generate_prompts.py --stage videos --still-mode regions \
+  --video-basis rendered --output-dir outputs/exact
+
+# 4. ComfyUI: videos
+.venv/bin/python render_media.py --stage videos --output-dir outputs/exact
 ```
 
-The LLM returns JSON inside `<regions>…</regions>` tags (retried up to 3× if it
-fails to parse or validate). Validation is deliberately lenient — every styling
-field (`aesthetics`, `lighting`, `style`, `palette`) is optional, and text
-elements are only used when the reference genuinely contains prominent lettering.
-The spec is patched into node `14` of
-`workflows/krea2_regions_comfyui_t2i_aitrepeneur_jpg_api.json`; the same
-seed / aspect-ratio / single-file-per-image machinery as manual mode applies. A
-complete validated spec is saved to `render_specs.yaml`; a readable rendering is
-also saved to `prompts.yaml` so it shows up in the gallery like a plain-text
-prompt.
+Rendered-basis video plans record the JPEG SHA-256. Rerendering a still requires
+regenerating its rendered-basis video prompt before the video phase.
 
-Manual (plain-text) prompting remains the default — pass `--regions` to opt in.
+## Render stages
 
-## Video (LTX 2.3)
+`render_media.py` never imports or constructs an LLM. It can run without the
+reference tree because `pipeline.yaml` contains every required prompt, path,
+dimension, seed, and duration.
 
-`animate.py` is a **second stage**: once a still set is rendered, it turns each
-still into a short action video with the LTX 2.3 image-to-video model. For every
-rendered still it asks the LLM to look at that frame (the video's first frame)
-and write a ~10-second motion prompt, then renders the clip and writes the `.mp4`
-**next to the still** (same stem):
+| flag | default | meaning |
+| --- | --- | --- |
+| `--stage` | `all` | render `stills`, `videos`, or all stills then all videos |
+| `--output-dir` | `output` | media output set |
+| `--manifest` | `<output-dir>/pipeline.yaml` | alternate pipeline manifest |
+| `--state-file` | `<output-dir>/render_state.yaml` | render fingerprints and output hashes |
+| `--comfy-server` | `127.0.0.1:8188` | ComfyUI server |
+| `--comfyui-output-dir` | *(none)* | optional local/mounted ComfyUI output directory |
+| `--still-workflow` | mode default | custom Krea API workflow |
+| `--video-workflow` | checked-in LTX workflow | custom LTX API workflow |
+| `--clip-name` | workflow value | optional still-workflow CLIP override |
+| `--unet-name` | workflow value | optional still-workflow UNet override |
+| `--force` | off | rerender requested stages |
 
-```
-outputs/claude-regions/animals/cat-pounce.jpg
-  -> outputs/claude-regions/animals/cat-pounce.mp4
-```
+`render_state.yaml` tracks plan fingerprints and output hashes. A changed still
+invalidates its dependent video. Corrupt or stale files are not silently
+accepted merely because a path exists.
+
+## Manifests and gallery metadata
+
+`pipeline.yaml` is the authoritative, versioned handoff between the two
+processes. Each item stores:
+
+- Stable source-relative ID, source path, and source SHA-256
+- Exact manual prompt or complete validated region spec
+- Still output path, dimensions, and effective seed
+- Video output path, prompt, duration, effective seed, prompt basis, and basis hash
+
+The pipeline also rebuilds per-directory `prompts.yaml` and
+`video_prompts.yaml`. These are gallery projections, not rendering inputs.
+
+## Batch scripts
 
 ```bash
-# Animate a rendered set. Same async pipeline + output-dir retrieval as reimagine.py.
-.venv/bin/python animate.py --set outputs/claude-regions \
-    --comfyui-output-dir ~/Desktop/MyShare --comfy-server 127.0.0.1:8188
-
-# Prompts only — preview the motion prompts without rendering.
-.venv/bin/python animate.py --set outputs/claude-regions --no-videos \
-    --llm-server 127.0.0.1:9503
+scripts/generate_plans.sh  # LLM-only pass
+scripts/render_plans.sh    # ComfyUI-only pass
 ```
 
-The prompt is patched into node `1070` of
-`workflows/ltx2-3_comfyui_i2v_aitrepeneur_api.json`; the first frame is read by
-the `LoadImage` node (`1077`). LoadImage resolves relative to ComfyUI's `input/`
-dir, so the default `--load-name-template` (`../output/reimagine/{base}.jpeg`)
-reaches the still that `reimagine.py` already staged on the host — no extra
-upload step. `{base}` is the still's path with `/` → `__` (matching reimagine's
-host filename); point the template elsewhere (or at an absolute path) if the
-stills were staged under a different `--save-subdir`. The video system prompt
-lives in `prompts/system_video.txt`; the retry nudge stays in code. `--duration`
-(default 10s), `--seed`, `--force`, and `--no-videos` control the video pipeline.
-The workflow derives its dimensions internally. The motion prompt for
-each clip is saved to a per-directory `video_prompts.yaml`.
+Both scripts accept environment overrides documented in their source.
 
 ## Gallery
 
-`serve.py` is a tiny stdlib HTTP server for browsing the results. It walks
-`output/` and `input/` live on every request, so new renders appear on a page
-refresh while a batch is still running.
-
 ```bash
-.venv/bin/python serve.py            # http://127.0.0.1:8000
+.venv/bin/python serve.py              # http://127.0.0.1:8000
 .venv/bin/python serve.py --port 9000
 ```
 
-Renders are grouped by category. Click any card for a lightbox that shows the
-render **side-by-side** with its reference (← / → to move between images, `S`
-to toggle the split, `Esc` to close), or tick "compare in grid" to show both
-in every tile. No build step and no third-party deps — it reads the disk directly.
-
-If a still has a sibling video (from `animate.py`), the card gets a **▶ video**
-badge; tick the **video** toggle in the header to swap the static render for the
-looping clip wherever one exists (cards play on hover; the lightbox autoplays and
-shows the motion prompt). Stills without a video fall back to the image.
-
-### Multiple output sets
-
-Output sets live side by side under a single top-level `outputs/` directory —
-one subdirectory per run, e.g.:
-
-```
-outputs/claude/              # renders from the Claude Code CLI
-outputs/local-llm/           # plain-text prompts from the local LLM
-outputs/local-llm-regions/   # region-based prompts from the local LLM
-```
-
-Point a run at its own folder with `--output-dir outputs/<name>`. The gallery
-discovers every set automatically and offers a **source switcher** in the header
-(labeled by directory name) so you can flip between them for side-by-side
-comparison; the current reference-image compare works within whichever set is
-selected. Kept sets stick around for posterity.
-
-```bash
-.venv/bin/python serve.py                       # browse all of outputs/
-.venv/bin/python serve.py --output-dir outputs/claude   # just one set
-```
-
-The `output` symlink (the default `--output-dir` for each `reimagine.py` command)
-points at whichever set is "current".
-
-## Reference images
-
-`input/` holds ~20 free-to-use reference photos from Wikimedia Commons (CC0 /
-CC BY / public domain), grouped into four **dynamic-posture** categories:
-
-- `sports/` — sprint, cycling, gymnastics, martial arts, climbing
-- `dance/` — ballet leap, breakdance, yoga, contemporary, flamenco
-- `everyday/` — construction, chef, gardener, musician, painter
-- `animals/` — horse gallop, dog leap, bird takeoff, cat pounce, dolphin breach
-
-Attribution for every image is recorded in `input/CREDITS.md`. They were fetched
-with `fetch_refs.py` (a one-shot seeding helper, polite-paced with backoff to
-respect Wikimedia's rate limits — not part of the render pipeline).
-
-## Future iterations
-
-Done: **rich krea prompts** — the LLM can now emit a structured,
-coordinate-placed spec (see [Region prompting](#region-prompting), `--regions`).
-
-Done: **video** — `animate.py` generates LTX 2.3 videos from the rendered stills
-(see [Video (LTX 2.3)](#video-ltx-23)).
+Output sets live under `outputs/`. The gallery discovers sets containing images,
+shows references beside generated stills, and switches to sibling videos when
+available.

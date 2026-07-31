@@ -1,0 +1,160 @@
+import io
+from pathlib import Path
+
+from .comfy import ComfyClient
+from .files import atomic_write_bytes, host_name, sha256_file
+from .manifest import plan_fingerprint, save_render_state
+from .workflows import (
+    MANUAL_WORKFLOW, REGIONS_WORKFLOW, STILL_SAVER, VIDEO_SAVER, VIDEO_WORKFLOW,
+    load_workflow, patch_ltx_workflow, patch_still_workflow, pick_artifact,
+)
+
+
+def _jpeg_bytes(raw):
+    from PIL import Image
+    image = Image.open(io.BytesIO(raw))
+    if image.mode in {"RGBA", "LA", "P"}:
+        image = image.convert("RGBA")
+        background = Image.new("RGB", image.size, (255, 255, 255))
+        background.paste(image, mask=image.split()[-1])
+        image = background
+    else:
+        image = image.convert("RGB")
+    output = io.BytesIO()
+    image.save(output, format="JPEG", quality=90, optimize=True, progressive=True)
+    return output.getvalue()
+
+
+def _client(args):
+    client = ComfyClient(args.comfy_server)
+    if not client.ping():
+        print(f"ComfyUI at {args.comfy_server} not reachable yet")
+    client.wait_until_up()
+    return client
+
+
+def _render_fingerprint(spec, workflow, overrides=None):
+    return plan_fingerprint({
+        "spec": spec,
+        "workflow": workflow,
+        "overrides": overrides or {},
+    })
+
+
+def render_stills(args, manifest, output_dir, state):
+    workflow_path = args.still_workflow or (
+        REGIONS_WORKFLOW if manifest.still_mode == "regions" else MANUAL_WORKFLOW)
+    workflow = load_workflow(workflow_path)
+    pending = []
+    for item in manifest.items:
+        if not item.still:
+            continue
+        destination = output_dir / item.still.output
+        record = state["items"].get(item.item_id, {}).get("still", {})
+        fingerprint = _render_fingerprint(item.still, workflow, {
+            "clip_name": args.clip_name, "unet_name": args.unet_name,
+            "save_subdir": args.still_save_subdir,
+        })
+        if (not args.force and destination.is_file()
+                and record.get("plan_fingerprint") == fingerprint
+                and record.get("output_sha256") == sha256_file(destination)):
+            continue
+        pending.append((item, destination, fingerprint))
+    if not pending:
+        return 0, len([item for item in manifest.items if item.still]), 0
+    client = _client(args)
+    rendered = failed = 0
+    for item, destination, fingerprint in pending:
+        try:
+            name = host_name(item.still.output)
+            patched = patch_still_workflow(
+                workflow, item.still, manifest.still_mode, args.still_save_subdir,
+                name, args.clip_name, args.unet_name)
+            artifacts = client.run_workflow(patched)
+            artifact = pick_artifact(artifacts, STILL_SAVER)
+            raw = client.read_artifact(artifact, args.comfyui_output_dir)
+            atomic_write_bytes(destination, _jpeg_bytes(raw))
+            item_state = state["items"].setdefault(item.item_id, {})
+            item_state["still"] = {
+                "plan_fingerprint": fingerprint,
+                "output_sha256": sha256_file(destination),
+            }
+            item_state.pop("video", None)
+            save_render_state(args.state_file, state)
+            rendered += 1
+            print(f"still {item.item_id}: rendered")
+        except Exception as error:
+            failed += 1
+            print(f"still {item.item_id}: failed: {error}")
+    return rendered, len(manifest.items) - len(pending), failed
+
+
+def render_videos(args, manifest, output_dir, state):
+    workflow = load_workflow(args.video_workflow or VIDEO_WORKFLOW)
+    pending = []
+    blocked = 0
+    for item in manifest.items:
+        if not item.video or not item.still:
+            continue
+        still_path = output_dir / item.still.output
+        if not still_path.is_file():
+            blocked += 1
+            print(f"video {item.item_id}: blocked; still is missing")
+            continue
+        still_hash = sha256_file(still_path)
+        if (item.video.prompt_basis == "rendered"
+                and item.video.basis_sha256 != still_hash):
+            blocked += 1
+            print(f"video {item.item_id}: blocked; rendered-basis prompt is stale")
+            continue
+        destination = output_dir / item.video.output
+        record = state["items"].get(item.item_id, {}).get("video", {})
+        fingerprint = _render_fingerprint(item.video, workflow, {
+            "save_subdir": args.video_save_subdir,
+        })
+        if (not args.force and destination.is_file()
+                and record.get("plan_fingerprint") == fingerprint
+                and record.get("input_still_sha256") == still_hash
+                and record.get("output_sha256") == sha256_file(destination)):
+            continue
+        pending.append((item, still_path, still_hash, destination, fingerprint))
+    if not pending:
+        return 0, len([item for item in manifest.items if item.video]) - blocked, blocked
+    client = _client(args)
+    rendered = failed = 0
+    for item, still_path, still_hash, destination, fingerprint in pending:
+        try:
+            remote_name = f"reimagine/{still_hash[:12]}/{host_name(item.still.output)}.jpg"
+            load_name = client.upload_image(still_path, remote_name)
+            prefix = f"{args.video_save_subdir}/{host_name(item.video.output)}"
+            patched = patch_ltx_workflow(
+                workflow, item.video.prompt, load_name, item.video.seed,
+                item.video.duration, prefix)
+            artifacts = client.run_workflow(patched)
+            artifact = pick_artifact(artifacts, VIDEO_SAVER, video=True)
+            if Path(artifact.filename).suffix.lower() != destination.suffix.lower():
+                raise RuntimeError(
+                    f"video workflow produced {artifact.filename}, expected "
+                    f"{destination.suffix} output")
+            raw = client.read_artifact(artifact, args.comfyui_output_dir)
+            atomic_write_bytes(destination, raw)
+            item_state = state["items"].setdefault(item.item_id, {})
+            item_state["video"] = {
+                "plan_fingerprint": fingerprint,
+                "input_still_sha256": still_hash,
+                "output_sha256": sha256_file(destination),
+            }
+            save_render_state(args.state_file, state)
+            rendered += 1
+            print(f"video {item.item_id}: rendered")
+        except Exception as error:
+            failed += 1
+            print(f"video {item.item_id}: failed: {error}")
+    return rendered, len(manifest.items) - len(pending) - blocked, failed + blocked
+
+
+def render_all(args, manifest, output_dir, state):
+    """Render every still before starting any video render."""
+    still_counts = render_stills(args, manifest, output_dir, state)
+    video_counts = render_videos(args, manifest, output_dir, state)
+    return tuple(still_counts[index] + video_counts[index] for index in range(3))

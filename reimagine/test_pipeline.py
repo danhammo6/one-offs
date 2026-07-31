@@ -86,6 +86,8 @@ class PipelineManifestTests(unittest.TestCase):
 
     def test_ltx_patch_uses_video_plan_and_uploaded_first_frame(self):
         workflow = {
+            "235": {"inputs": {"unet_name": "default-unet.gguf"}},
+            "914": {"inputs": {"clip_name1": "default-clip.safetensors"}},
             "1070": {"inputs": {}},
             "1077": {"inputs": {}},
             "1073": {"inputs": {}},
@@ -100,6 +102,36 @@ class PipelineManifestTests(unittest.TestCase):
                          "reimagine/run/cat.jpg")
         self.assertEqual(patched["1070"]["inputs"]["text"],
                          "A controlled motion prompt with camera and audio.")
+
+    def test_ltx_patch_overrides_video_models(self):
+        workflow = {
+            "235": {"inputs": {"unet_name": "default-unet.gguf"}},
+            "914": {"inputs": {"clip_name1": "default-clip.safetensors"}},
+            "1070": {"inputs": {}},
+            "1077": {"inputs": {}},
+            "1073": {"inputs": {}},
+            "1074": {"inputs": {}},
+            "1087": {"inputs": {}},
+        }
+
+        patched = patch_ltx_workflow(
+            workflow, "A controlled video prompt.", "frame.jpg", 42, 10,
+            "videos/sample", "custom-clip.safetensors", "custom-unet.gguf")
+
+        self.assertEqual(
+            patched["914"]["inputs"]["clip_name1"],
+            "custom-clip.safetensors")
+        self.assertEqual(
+            patched["235"]["inputs"]["unet_name"], "custom-unet.gguf")
+
+    def test_parser_accepts_video_model_overrides(self):
+        args = render_media.build_parser().parse_args([
+            "--video-clip-name", "custom-clip.safetensors",
+            "--video-unet-name", "custom-unet.gguf",
+        ])
+
+        self.assertEqual(args.video_clip_name, "custom-clip.safetensors")
+        self.assertEqual(args.video_unet_name, "custom-unet.gguf")
 
     def test_claude_request_includes_image_path(self):
         client = ClaudeCodeLLM(add_dir=Path("/tmp"))

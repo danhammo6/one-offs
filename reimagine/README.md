@@ -113,6 +113,8 @@ prompt manifest.
 | `--video-workflow` | checked-in LTX workflow | custom LTX API workflow |
 | `--clip-name` | workflow value | optional still-workflow CLIP override |
 | `--unet-name` | workflow value | optional still-workflow UNet override |
+| `--video-clip-name` | workflow value | optional LTX text-encoder override |
+| `--video-unet-name` | workflow value | optional LTX diffusion-model override |
 | `--seed` | `42` | base render seed; item i uses seed plus its sorted index |
 | `--force` | off | rerender requested stages |
 

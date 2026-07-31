@@ -52,7 +52,8 @@ def patch_still_workflow(base, spec, mode, seed, save_subdir, filename,
     return workflow
 
 
-def patch_ltx_workflow(base, prompt, load_name, seed, duration, save_prefix):
+def patch_ltx_workflow(base, prompt, load_name, seed, duration, save_prefix,
+                       clip_name=None, unet_name=None):
     workflow = copy.deepcopy(base)
     workflow["1070"]["inputs"]["text"] = prompt
     workflow["1077"]["inputs"]["image"] = load_name
@@ -60,6 +61,10 @@ def patch_ltx_workflow(base, prompt, load_name, seed, duration, save_prefix):
     workflow["1074"]["inputs"]["noise_seed"] = seed
     workflow[VIDEO_SAVER]["inputs"].update(
         filename_prefix=save_prefix, save_output=True)
+    if clip_name:
+        workflow["914"]["inputs"]["clip_name1"] = clip_name
+    if unet_name:
+        workflow["235"]["inputs"]["unet_name"] = unet_name
     return workflow
 
 

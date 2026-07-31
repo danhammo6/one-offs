@@ -142,6 +142,8 @@ def render_videos(args, manifest, output_dir, state):
         fingerprint = _render_fingerprint(item.video, workflow, {
             "save_subdir": args.video_save_subdir,
             "seed": args.seed + item.index,
+            "clip_name": args.video_clip_name,
+            "unet_name": args.video_unet_name,
         })
         if (not args.force and destination.is_file()
                 and record.get("plan_fingerprint") == fingerprint
@@ -162,7 +164,8 @@ def render_videos(args, manifest, output_dir, state):
             prefix = f"{args.video_save_subdir}/{host_name(item.video.output)}"
             patched = patch_ltx_workflow(
                 workflow, item.video.prompt, load_name, seed,
-                item.video.duration, prefix)
+                item.video.duration, prefix, args.video_clip_name,
+                args.video_unet_name)
             artifacts = client.run_workflow(patched)
             artifact = pick_artifact(artifacts, VIDEO_SAVER, video=True)
             if Path(artifact.filename).suffix.lower() != destination.suffix.lower():

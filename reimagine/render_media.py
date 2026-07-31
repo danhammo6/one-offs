@@ -25,6 +25,8 @@ def build_parser():
     parser.add_argument("--video-save-subdir", default="reimagine-video")
     parser.add_argument("--clip-name", default=None)
     parser.add_argument("--unet-name", default=None)
+    parser.add_argument("--video-clip-name", default=None)
+    parser.add_argument("--video-unet-name", default=None)
     parser.add_argument("--seed", type=int, default=42,
                         help="Base render seed; item i uses seed + its index.")
     parser.add_argument("--force", action="store_true")

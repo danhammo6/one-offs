@@ -9,7 +9,6 @@ class StillSpec:
     height: int
     prompt: str | None = None
     regions: dict | None = None
-    seed: int = 42
 
 
 @dataclass(frozen=True)
@@ -19,7 +18,6 @@ class VideoSpec:
     prompt_basis: str
     basis_sha256: str
     duration: int = 10
-    seed: int = 42
 
 
 @dataclass(frozen=True)

@@ -64,7 +64,6 @@ item. It never imports or contacts ComfyUI.
 | `--output-dir` | `output` | output set and default manifest location |
 | `--manifest` | `<output-dir>/pipeline.yaml` | alternate manifest path |
 | `--duration` | `10` | video duration in seconds, 1-30 |
-| `--seed` | `42` | effective item seed is base plus sorted index |
 | `--llm-server` | *(none)* | OpenAI-compatible multimodal server; otherwise Claude Code |
 | `--force` | off | regenerate requested plan stages |
 
@@ -99,7 +98,8 @@ regenerating its rendered-basis video prompt before the video phase.
 
 `render_media.py` never imports or constructs an LLM. It can run without the
 reference tree because `pipeline.yaml` contains every required prompt, path,
-dimension, seed, and duration.
+dimension, and duration. Seeds are a renderer concern and are not stored in the
+prompt manifest.
 
 | flag | default | meaning |
 | --- | --- | --- |
@@ -113,6 +113,7 @@ dimension, seed, and duration.
 | `--video-workflow` | checked-in LTX workflow | custom LTX API workflow |
 | `--clip-name` | workflow value | optional still-workflow CLIP override |
 | `--unet-name` | workflow value | optional still-workflow UNet override |
+| `--seed` | `42` | base render seed; item i uses seed plus its sorted index |
 | `--force` | off | rerender requested stages |
 
 `render_state.yaml` tracks plan fingerprints and output hashes. A changed still
@@ -126,8 +127,8 @@ processes. Each item stores:
 
 - Stable source-relative ID, source path, and source SHA-256
 - Exact manual prompt or complete validated region spec
-- Still output path, dimensions, and effective seed
-- Video output path, prompt, duration, effective seed, prompt basis, and basis hash
+- Still output path and dimensions
+- Video output path, prompt, duration, prompt basis, and basis hash
 
 The pipeline also rebuilds per-directory `prompts.yaml` and
 `video_prompts.yaml`. These are gallery projections, not rendering inputs.

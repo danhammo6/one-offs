@@ -31,7 +31,6 @@ def build_parser():
     parser.add_argument("--video-basis", choices=("reference", "rendered"),
                         default="reference")
     parser.add_argument("--duration", type=int, default=10)
-    parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--claude-model", default="opus")
     parser.add_argument("--llm-server", default=None)
     parser.add_argument("--llm-model", default=None)
@@ -39,7 +38,7 @@ def build_parser():
     return parser
 
 
-def discover(input_dir, seed):
+def discover(input_dir):
     images = list(iter_images(input_dir))
     if not images:
         raise ValueError(f"no reference images under {input_dir}")
@@ -56,8 +55,7 @@ def discover(input_dir, seed):
         outputs.add(output)
         width, height = derive_dims(source)
         jobs.append((
-            index, item_id, source, relative, sha256_file(source), width, height,
-            seed + index))
+            index, item_id, source, relative, sha256_file(source), width, height))
     return jobs
 
 
@@ -70,7 +68,7 @@ def main(argv=None):
     output_dir = args.output_dir.resolve()
     manifest_path = (args.manifest or output_dir / PIPELINE_FILENAME).resolve()
     try:
-        jobs = discover(input_dir, args.seed)
+        jobs = discover(input_dir)
         existing = None
         if manifest_path.is_file():
             existing = load_pipeline(manifest_path)
@@ -97,7 +95,7 @@ def main(argv=None):
         print(f"  llm:      {llm.describe()}")
         print(f"  manifest: {manifest_path}")
         failed = generated = skipped = 0
-        for index, item_id, source, relative, source_hash, width, height, seed in jobs:
+        for index, item_id, source, relative, source_hash, width, height in jobs:
             tag = f"[{index + 1}/{len(jobs)}] {relative}"
             item = by_id.get(item_id)
             if item and item.source_sha256 != source_hash:
@@ -105,15 +103,14 @@ def main(argv=None):
             still = item.still if item else None
             video = item.video if item else None
             try:
-                still_is_current = still is not None and still.seed == seed
+                still_is_current = still is not None
                 if args.stage in {"all", "stills"} and (
                         args.force or not still_is_current):
                     result = generate_still_prompt(llm, source, still_mode)
                     still = StillSpec(
                         relative.with_suffix(".jpg"), width, height,
                         prompt=result if still_mode == "manual" else None,
-                        regions=result if still_mode == "regions" else None,
-                        seed=seed)
+                        regions=result if still_mode == "regions" else None)
                     video = None
                 if args.stage in {"all", "videos"}:
                     if not still:
@@ -131,15 +128,14 @@ def main(argv=None):
                         video is not None
                         and video.prompt_basis == args.video_basis
                         and video.basis_sha256 == basis_hash
-                        and video.duration == args.duration
-                        and video.seed == seed)
+                        and video.duration == args.duration)
                     if args.force or not video_is_current:
                         prompt = generate_video_prompt(
                             llm, basis_image, args.video_basis, still,
                             args.duration)
                         video = VideoSpec(
                             still.output.with_suffix(".mp4"), prompt,
-                            args.video_basis, basis_hash, args.duration, seed)
+                            args.video_basis, basis_hash, args.duration)
             except Exception as error:
                 print(f"{tag}  failed: {error}")
                 failed += 1

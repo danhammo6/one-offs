@@ -31,7 +31,7 @@ def _validate_hash(value, label):
 def _still_to_data(spec):
     data = {
         "output": spec.output.as_posix(), "width": spec.width,
-        "height": spec.height, "seed": spec.seed,
+        "height": spec.height,
     }
     if spec.prompt is not None:
         data["prompt"] = spec.prompt
@@ -44,7 +44,7 @@ def _video_to_data(spec):
     return {
         "output": spec.output.as_posix(), "prompt": spec.prompt,
         "prompt_basis": spec.prompt_basis, "basis_sha256": spec.basis_sha256,
-        "duration": spec.duration, "seed": spec.seed,
+        "duration": spec.duration,
     }
 
 
@@ -83,8 +83,7 @@ def _load_still(data, mode):
         raise ValueError(f"invalid manual prompt for {output}")
     if mode == "regions" and not isinstance(regions, dict):
         raise ValueError(f"invalid region prompt for {output}")
-    return StillSpec(output, width, height, prompt=prompt, regions=regions,
-                     seed=int(data.get("seed", 42)))
+    return StillSpec(output, width, height, prompt=prompt, regions=regions)
 
 
 def _load_video(data):
@@ -103,7 +102,7 @@ def _load_video(data):
     return VideoSpec(
         output, prompt, basis,
         _validate_hash(data.get("basis_sha256"), "basis_sha256"),
-        duration, int(data.get("seed", 42)))
+        duration)
 
 
 def load_pipeline(path, require_stage=None):
@@ -161,10 +160,9 @@ def load_pipeline(path, require_stage=None):
 
 
 def plan_fingerprint(value):
-    if dataclasses.is_dataclass(value):
-        value = dataclasses.asdict(value)
-
     def normalize(item):
+        if dataclasses.is_dataclass(item):
+            return normalize(dataclasses.asdict(item))
         if isinstance(item, Path):
             return item.as_posix()
         if isinstance(item, dict):

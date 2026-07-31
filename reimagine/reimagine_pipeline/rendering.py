@@ -51,25 +51,26 @@ def render_stills(args, manifest, output_dir, state):
             continue
         destination = output_dir / item.still.output
         record = state["items"].get(item.item_id, {}).get("still", {})
+        seed = args.seed + item.index
         fingerprint = _render_fingerprint(item.still, workflow, {
             "clip_name": args.clip_name, "unet_name": args.unet_name,
-            "save_subdir": args.still_save_subdir,
+            "save_subdir": args.still_save_subdir, "seed": seed,
         })
         if (not args.force and destination.is_file()
                 and record.get("plan_fingerprint") == fingerprint
                 and record.get("output_sha256") == sha256_file(destination)):
             continue
-        pending.append((item, destination, fingerprint))
+        pending.append((item, destination, fingerprint, seed))
     if not pending:
         return 0, len([item for item in manifest.items if item.still]), 0
     client = _client(args)
     rendered = failed = 0
-    for item, destination, fingerprint in pending:
+    for item, destination, fingerprint, seed in pending:
         try:
             name = host_name(item.still.output)
             patched = patch_still_workflow(
-                workflow, item.still, manifest.still_mode, args.still_save_subdir,
-                name, args.clip_name, args.unet_name)
+                workflow, item.still, manifest.still_mode, seed,
+                args.still_save_subdir, name, args.clip_name, args.unet_name)
             artifacts = client.run_workflow(patched)
             artifact = pick_artifact(artifacts, STILL_SAVER)
             raw = client.read_artifact(artifact, args.comfyui_output_dir)
@@ -111,24 +112,27 @@ def render_videos(args, manifest, output_dir, state):
         record = state["items"].get(item.item_id, {}).get("video", {})
         fingerprint = _render_fingerprint(item.video, workflow, {
             "save_subdir": args.video_save_subdir,
+            "seed": args.seed + item.index,
         })
         if (not args.force and destination.is_file()
                 and record.get("plan_fingerprint") == fingerprint
                 and record.get("input_still_sha256") == still_hash
                 and record.get("output_sha256") == sha256_file(destination)):
             continue
-        pending.append((item, still_path, still_hash, destination, fingerprint))
+        pending.append((
+            item, still_path, still_hash, destination, fingerprint,
+            args.seed + item.index))
     if not pending:
         return 0, len([item for item in manifest.items if item.video]) - blocked, blocked
     client = _client(args)
     rendered = failed = 0
-    for item, still_path, still_hash, destination, fingerprint in pending:
+    for item, still_path, still_hash, destination, fingerprint, seed in pending:
         try:
             remote_name = f"reimagine/{still_hash[:12]}/{host_name(item.still.output)}.jpg"
             load_name = client.upload_image(still_path, remote_name)
             prefix = f"{args.video_save_subdir}/{host_name(item.video.output)}"
             patched = patch_ltx_workflow(
-                workflow, item.video.prompt, load_name, item.video.seed,
+                workflow, item.video.prompt, load_name, seed,
                 item.video.duration, prefix)
             artifacts = client.run_workflow(patched)
             artifact = pick_artifact(artifacts, VIDEO_SAVER, video=True)

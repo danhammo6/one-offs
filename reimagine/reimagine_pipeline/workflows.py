@@ -18,17 +18,17 @@ def load_workflow(path):
         raise ValueError(f"could not load workflow {path}: {error}") from error
 
 
-def _common_still(workflow, spec, save_subdir, filename):
-    workflow["78:75"]["inputs"]["seed"] = spec.seed
+def _common_still(workflow, spec, seed, save_subdir, filename):
+    workflow["78:75"]["inputs"]["seed"] = seed
     if "148" in workflow:
-        workflow["148"]["inputs"]["seed"] = spec.seed
+        workflow["148"]["inputs"]["seed"] = seed
     workflow["78:76"]["inputs"].update(width=spec.width, height=spec.height)
     workflow[STILL_SAVER]["inputs"].update(
-        path=save_subdir, filename=filename, seed_value=spec.seed,
+        path=save_subdir, filename=filename, seed_value=seed,
         width=spec.width, height=spec.height, time_format="")
 
 
-def patch_still_workflow(base, spec, mode, save_subdir, filename,
+def patch_still_workflow(base, spec, mode, seed, save_subdir, filename,
                          clip_name=None, unet_name=None):
     workflow = copy.deepcopy(base)
     if mode == "manual":
@@ -44,7 +44,7 @@ def patch_still_workflow(base, spec, mode, save_subdir, filename,
             **{"style.photo": region["style"]}, medium="photograph",
             style_palette_data=json.dumps(region["palette"]) if region["palette"] else "",
             elements_data=json.dumps(region["elements"]))
-    _common_still(workflow, spec, save_subdir, filename)
+    _common_still(workflow, spec, seed, save_subdir, filename)
     if clip_name:
         workflow["53"]["inputs"]["clip_name"] = clip_name
     if unet_name:

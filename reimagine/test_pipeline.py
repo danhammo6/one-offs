@@ -1,10 +1,13 @@
 import dataclasses
+import contextlib
+import io
 import tempfile
 import unittest
 from pathlib import Path
 from unittest import mock
 
 from PIL import Image
+import yaml
 
 from reimagine_pipeline.manifest import load_pipeline, save_pipeline
 from reimagine_pipeline.models import PipelineItem, PipelineManifest, StillSpec, VideoSpec
@@ -49,6 +52,36 @@ class PipelineManifestTests(unittest.TestCase):
             loaded = load_pipeline(path)
 
         self.assertEqual(loaded, manifest)
+
+    def test_pipeline_manifest_does_not_store_render_seeds(self):
+        manifest = PipelineManifest(
+            still_mode="manual", item_count=1,
+            items=[PipelineItem(
+                index=0, item_id="sample", source_path=Path("sample.jpg"),
+                source_sha256="a" * 64,
+                still=StillSpec(
+                    Path("sample.jpg"), 1920, 1088,
+                    prompt="A detailed action photograph of a moving subject."),
+                video=VideoSpec(
+                    Path("sample.mp4"),
+                    "The subject moves smoothly while the camera tracks; quiet ambience follows.",
+                    "reference", "a" * 64),
+            )],
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "pipeline.yaml"
+            save_pipeline(path, manifest)
+            data = yaml.safe_load(path.read_text())
+
+        self.assertNotIn("seed", data["items"][0]["still"])
+        self.assertNotIn("seed", data["items"][0]["video"])
+
+    def test_seed_is_only_a_renderer_option(self):
+        with contextlib.redirect_stderr(io.StringIO()), \
+                self.assertRaises(SystemExit):
+            generate_prompts.build_parser().parse_args(["--seed", "100"])
+        args = render_media.build_parser().parse_args(["--seed", "100"])
+        self.assertEqual(args.seed, 100)
 
     def test_ltx_patch_uses_video_plan_and_uploaded_first_frame(self):
         workflow = {
@@ -174,6 +207,38 @@ class ProcessIsolationTests(unittest.TestCase):
 
         self.assertEqual(code, 0)
         render_all.assert_called_once()
+
+    def test_renderer_seed_override_is_passed_to_still_workflow(self):
+        manifest = PipelineManifest(
+            still_mode="manual", item_count=1,
+            items=[PipelineItem(
+                index=0, item_id="sample", source_path=Path("sample.jpg"),
+                source_sha256="a" * 64,
+                still=StillSpec(
+                    Path("sample.jpg"), 1920, 1088,
+                    prompt="A detailed action photograph of a moving subject."),
+            )],
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            output_dir = Path(tmp)
+            save_pipeline(output_dir / "pipeline.yaml", manifest)
+            artifact = ComfyArtifact("159", "sample.jpeg", "", "output")
+            fake = mock.Mock()
+            fake.ping.return_value = True
+            fake.run_workflow.return_value = [artifact]
+            image = io.BytesIO()
+            Image.new("RGB", (64, 64)).save(image, format="JPEG")
+            fake.read_artifact.return_value = image.getvalue()
+            with mock.patch("reimagine_pipeline.rendering.ComfyClient",
+                            return_value=fake):
+                code = render_media.main([
+                    "--output-dir", str(output_dir), "--stage", "stills",
+                    "--seed", "100",
+                ])
+            workflow = fake.run_workflow.call_args.args[0]
+
+        self.assertEqual(code, 0)
+        self.assertEqual(workflow["78:75"]["inputs"]["seed"], 100)
 
     def test_rendered_basis_video_is_blocked_when_still_changed(self):
         manifest = PipelineManifest(

@@ -41,6 +41,32 @@ def _render_fingerprint(spec, workflow, overrides=None):
     })
 
 
+def _snapshot_still_outputs(output_dir, save_subdir, name):
+    if not output_dir:
+        return {}
+    directory = output_dir / save_subdir
+    return {
+        path: (path.stat().st_mtime_ns, path.stat().st_size)
+        for path in directory.glob(f"{name}*.jpeg")
+    } if directory.is_dir() else {}
+
+
+def _read_still_output(client, artifacts, output_dir, save_subdir, name, before):
+    try:
+        return client.read_artifact(pick_artifact(artifacts, STILL_SAVER), output_dir)
+    except RuntimeError:
+        if not output_dir:
+            raise
+        directory = output_dir / save_subdir
+        candidates = [
+            path for path in directory.glob(f"{name}*.jpeg")
+            if before.get(path) != (path.stat().st_mtime_ns, path.stat().st_size)
+        ]
+        if not candidates:
+            raise
+        return max(candidates, key=lambda path: path.stat().st_mtime_ns).read_bytes()
+
+
 def render_stills(args, manifest, output_dir, state):
     workflow_path = args.still_workflow or (
         REGIONS_WORKFLOW if manifest.still_mode == "regions" else MANUAL_WORKFLOW)
@@ -71,9 +97,12 @@ def render_stills(args, manifest, output_dir, state):
             patched = patch_still_workflow(
                 workflow, item.still, manifest.still_mode, seed,
                 args.still_save_subdir, name, args.clip_name, args.unet_name)
+            before = _snapshot_still_outputs(
+                args.comfyui_output_dir, args.still_save_subdir, name)
             artifacts = client.run_workflow(patched)
-            artifact = pick_artifact(artifacts, STILL_SAVER)
-            raw = client.read_artifact(artifact, args.comfyui_output_dir)
+            raw = _read_still_output(
+                client, artifacts, args.comfyui_output_dir,
+                args.still_save_subdir, name, before)
             atomic_write_bytes(destination, _jpeg_bytes(raw))
             item_state = state["items"].setdefault(item.item_id, {})
             item_state["still"] = {

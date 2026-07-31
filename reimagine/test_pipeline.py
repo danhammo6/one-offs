@@ -16,6 +16,7 @@ from reimagine_pipeline.llm import ClaudeCodeLLM
 from reimagine_pipeline.workflows import patch_ltx_workflow, pick_artifact
 from reimagine_pipeline.comfy import ComfyArtifact
 from reimagine_pipeline.manifest import load_render_state
+from reimagine_pipeline.rendering import _read_still_output
 
 import generate_prompts
 import render_media
@@ -120,6 +121,23 @@ class PipelineManifestTests(unittest.TestCase):
         chosen = pick_artifact(artifacts, "1087", video=True)
 
         self.assertEqual(chosen.filename, "clip_00001-audio.mp4")
+
+    def test_still_artifact_falls_back_to_new_shared_output(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            output_dir = Path(tmp)
+            save_dir = output_dir / "reimagine"
+            save_dir.mkdir()
+            old = save_dir / "animals__cat.jpeg"
+            old.write_bytes(b"old")
+            before = {old: (old.stat().st_mtime_ns, old.stat().st_size)}
+            new = save_dir / "animals__cat_01.jpeg"
+            new.write_bytes(b"new")
+
+            raw = _read_still_output(
+                mock.Mock(), [], output_dir, "reimagine",
+                "animals__cat", before)
+
+        self.assertEqual(raw, b"new")
 
 
 class ProcessIsolationTests(unittest.TestCase):

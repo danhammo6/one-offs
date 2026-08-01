@@ -16,6 +16,9 @@ from reimagine_pipeline.llm import ClaudeCodeLLM
 from reimagine_pipeline.workflows import patch_ltx_workflow, pick_artifact
 from reimagine_pipeline.comfy import ComfyArtifact
 from reimagine_pipeline.manifest import load_render_state
+from reimagine_pipeline.prompting import (
+    generate_video_prompt, video_prompt_word_range,
+)
 from reimagine_pipeline.rendering import _read_still_output
 
 import generate_prompts
@@ -132,6 +135,27 @@ class PipelineManifestTests(unittest.TestCase):
 
         self.assertEqual(args.video_clip_name, "custom-clip.safetensors")
         self.assertEqual(args.video_unet_name, "custom-unet.gguf")
+
+    def test_video_prompt_word_range_scales_with_duration(self):
+        self.assertEqual(video_prompt_word_range(10), (80, 160))
+        self.assertEqual(video_prompt_word_range(20), (160, 320))
+        self.assertEqual(video_prompt_word_range(30), (240, 480))
+
+    def test_video_prompt_request_includes_duration_word_range(self):
+        llm = mock.Mock()
+        llm.chat.return_value = (
+            "<video>A controlled sequence unfolds through several related "
+            "beats while the camera follows and ambient sound evolves.</video>")
+        still = StillSpec(
+            Path("sample.jpg"), 1920, 1088,
+            prompt="A detailed action photograph of a moving subject.")
+
+        generate_video_prompt(
+            llm, Path("/tmp/sample.jpg"), "rendered", still, duration=20)
+
+        request = llm.chat.call_args.args[1]
+        self.assertIn("20-second", request)
+        self.assertIn("160-320 words", request)
 
     def test_claude_request_includes_image_path(self):
         client = ClaudeCodeLLM(add_dir=Path("/tmp"))

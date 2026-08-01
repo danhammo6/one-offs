@@ -115,6 +115,10 @@ def generate_still_prompt(llm, source, mode):
     raise RuntimeError(f"no valid <regions> response: {last[:160]!r}")
 
 
+def video_prompt_word_range(duration):
+    return max(30, duration * 8), min(500, max(80, duration * 16))
+
+
 def generate_video_prompt(llm, image_path, basis, still_spec, duration=10):
     if basis == "rendered":
         system_name = "system_video.txt"
@@ -126,9 +130,12 @@ def generate_video_prompt(llm, image_path, basis, still_spec, duration=10):
         context = (
             "The supplied image is the original reference. The generated still "
             "will follow this validated still plan:\n" + still_context)
+    minimum_words, maximum_words = video_prompt_word_range(duration)
     return generate_tagged(
         llm, load_system_prompt(system_name),
-        f"{context}\nWrite a controlled {duration}-second LTX motion prompt.",
+        f"{context}\nWrite a controlled {duration}-second LTX motion prompt. "
+        f"Aim for {minimum_words}-{maximum_words} words so the described beats "
+        "fill the full runtime without rushing.",
         image_path, "video")
 
 

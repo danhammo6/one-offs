@@ -70,6 +70,11 @@ item. It never imports or contacts ComfyUI.
 The default `reference` video mode uses the original reference plus the
 validated still plan. Its dedicated system prompt deliberately requests
 conservative motion that does not depend on exact generated limb geometry.
+Video prompt detail scales with `--duration`: the planner targets roughly
+8-16 words per second (80-160 words for 10 seconds and 160-320 words for 20
+seconds), up to a 500-word maximum. Longer prompts use related temporal beats,
+evolving synchronized audio, and an explicit final state rather than adding
+unrelated action or re-describing the first frame.
 
 ## Exact-frame prompting
 

@@ -159,6 +159,113 @@ def load_pipeline(path, require_stage=None):
     return PipelineManifest(mode, count, sorted(items, key=lambda item: item.index))
 
 
+def pipeline_paths(root, filename="pipeline.yaml"):
+    return sorted(path for path in root.rglob(filename) if path.is_file())
+
+
+def load_pipeline_tree(root, require_stage=None, filename="pipeline.yaml"):
+    paths = pipeline_paths(root, filename)
+    if not paths:
+        raise ValueError(f"no {filename} files under {root}")
+    legacy = root / filename
+    if legacy in paths and len(paths) > 1:
+        paths = [legacy]
+    manifests = []
+    for path in paths:
+        manifest = load_pipeline(path)
+        parent = path.parent.relative_to(root)
+        manifests.append(PipelineManifest(
+            manifest.still_mode, manifest.item_count,
+            [_from_local_item(item, parent) for item in manifest.items]))
+    modes = {manifest.still_mode for manifest in manifests}
+    if len(modes) != 1:
+        raise ValueError("pipeline folders use different still modes")
+    items = [item for manifest in manifests for item in manifest.items]
+    ids = [item.item_id for item in items]
+    sources = [item.source_path for item in items]
+    if len(set(ids)) != len(ids) or len(set(sources)) != len(sources):
+        raise ValueError("pipeline folders contain duplicate IDs or source paths")
+    items = [
+        dataclasses.replace(item, index=index)
+        for index, item in enumerate(sorted(
+            items, key=lambda value: value.source_path.as_posix()))
+    ]
+    manifest = PipelineManifest(
+        modes.pop(), sum(part.item_count for part in manifests), items)
+    if require_stage in {"stills", "all"} and (
+            len(items) != manifest.item_count or any(not item.still for item in items)):
+        raise ValueError("pipeline has incomplete still plans")
+    if require_stage in {"videos", "all"} and (
+            len(items) != manifest.item_count
+            or any(not item.still or not item.video for item in items)):
+        raise ValueError("pipeline has incomplete video plans")
+    return manifest
+
+
+def _item_parent(item):
+    return (item.still.output.parent if item.still
+            else item.source_path.with_suffix(".jpg").parent)
+
+
+def _to_local_path(path, parent):
+    return path.relative_to(parent) if parent.parts else path
+
+
+def _to_local_item(item, parent, index):
+    still = item.still
+    if still:
+        still = dataclasses.replace(
+            still, output=_to_local_path(still.output, parent))
+    video = item.video
+    if video:
+        video = dataclasses.replace(
+            video, output=_to_local_path(video.output, parent))
+    return dataclasses.replace(
+        item, index=index,
+        item_id=_to_local_path(Path(item.item_id), parent).as_posix(),
+        source_path=_to_local_path(item.source_path, parent),
+        still=still, video=video)
+
+
+def _from_local_item(item, parent):
+    if not parent.parts:
+        return item
+    still = item.still
+    if still:
+        still = dataclasses.replace(still, output=parent / still.output)
+    video = item.video
+    if video:
+        video = dataclasses.replace(video, output=parent / video.output)
+    return dataclasses.replace(
+        item, item_id=(parent / item.item_id).as_posix(),
+        source_path=parent / item.source_path, still=still, video=video)
+
+
+def save_pipeline_folder(root, parent, manifest, filename="pipeline.yaml",
+                         item_count=None, prune_empty=False):
+    items = sorted(
+        (item for item in manifest.items if _item_parent(item) == parent),
+        key=lambda value: value.source_path.as_posix())
+    items = [_to_local_item(item, parent, index)
+             for index, item in enumerate(items)]
+    path = root / parent / filename
+    count = len(items) if item_count is None else item_count
+    if not count and prune_empty:
+        path.unlink(missing_ok=True)
+        return
+    save_pipeline(path, PipelineManifest(manifest.still_mode, count, items))
+
+
+def save_pipeline_tree(root, manifest, filename="pipeline.yaml"):
+    parents = {_item_parent(item) for item in manifest.items}
+    expected = {root / parent / filename for parent in parents}
+    for parent in sorted(parents):
+        save_pipeline_folder(root, parent, manifest, filename)
+    for path in pipeline_paths(root, filename):
+        if path not in expected:
+            path.unlink()
+
+
 def plan_fingerprint(value):
     def normalize(item):
         if dataclasses.is_dataclass(item):
@@ -189,3 +296,51 @@ def load_render_state(path):
 def save_render_state(path, state):
     atomic_write_text(path, yaml.safe_dump(
         state, sort_keys=True, allow_unicode=True, default_flow_style=False))
+
+
+def load_render_state_tree(root, filename="render_state.yaml"):
+    combined = {"schema_version": 1, "items": {}}
+    paths = sorted(root.rglob(filename))
+    legacy = root / filename
+    if legacy in paths and len(paths) > 1:
+        paths = [legacy]
+    for path in paths:
+        state = load_render_state(path)
+        parent = path.parent.relative_to(root)
+        items = {
+            (parent / item_id).as_posix() if parent.parts else item_id: item_state
+            for item_id, item_state in state["items"].items()
+        }
+        overlap = set(combined["items"]) & set(items)
+        if overlap:
+            raise ValueError(
+                f"duplicate render state for {sorted(overlap)[0]!r}")
+        combined["items"].update(items)
+    return combined
+
+
+def save_render_state_folder(root, item_id, state,
+                             filename="render_state.yaml"):
+    parent = Path(item_id).parent
+    items = {
+        _to_local_path(Path(key), parent).as_posix(): value
+        for key, value in state.get("items", {}).items()
+        if Path(key).parent == parent
+    }
+    path = root / parent / filename
+    if items:
+        save_render_state(path, {"schema_version": 1, "items": items})
+    elif path.is_file():
+        path.unlink()
+
+
+def save_render_state_tree(root, state, filename="render_state.yaml"):
+    parents = {Path(item_id).parent for item_id in state.get("items", {})}
+    expected = {root / parent / filename for parent in parents}
+    for parent in sorted(parents):
+        sample = next(item_id for item_id in state["items"]
+                      if Path(item_id).parent == parent)
+        save_render_state_folder(root, sample, state, filename)
+    for path in sorted(root.rglob(filename)):
+        if path not in expected:
+            path.unlink()

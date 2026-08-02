@@ -9,7 +9,10 @@ from unittest import mock
 from PIL import Image
 import yaml
 
-from reimagine_pipeline.manifest import load_pipeline, save_pipeline
+from reimagine_pipeline.manifest import (
+    load_pipeline, load_pipeline_tree, load_render_state_tree, save_pipeline,
+    save_pipeline_tree, save_render_state, save_render_state_tree,
+)
 from reimagine_pipeline.models import PipelineItem, PipelineManifest, StillSpec, VideoSpec
 from reimagine_pipeline.files import sha256_file
 from reimagine_pipeline.llm import ClaudeCodeLLM
@@ -79,6 +82,89 @@ class PipelineManifestTests(unittest.TestCase):
 
         self.assertNotIn("seed", data["items"][0]["still"])
         self.assertNotIn("seed", data["items"][0]["video"])
+
+    def test_pipeline_tree_round_trip_uses_one_manifest_per_folder(self):
+        items = []
+        for index, name in enumerate(("animals/cat", "sports/run")):
+            path = Path(name)
+            items.append(PipelineItem(
+                index=index, item_id=name,
+                source_path=path.with_suffix(".jpg"),
+                source_sha256=str(index + 1) * 64,
+                still=StillSpec(
+                    path.with_suffix(".jpg"), 1920, 1088,
+                    prompt=f"A detailed action photograph of {name}."),
+            ))
+        manifest = PipelineManifest("manual", 2, items)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            save_pipeline_tree(root, manifest)
+            loaded = load_pipeline_tree(root, require_stage="stills")
+
+            self.assertTrue((root / "animals/pipeline.yaml").is_file())
+            self.assertTrue((root / "sports/pipeline.yaml").is_file())
+            self.assertFalse((root / "pipeline.yaml").exists())
+            local = yaml.safe_load(
+                (root / "animals/pipeline.yaml").read_text())
+            self.assertEqual(local["items"][0]["id"], "cat")
+            self.assertEqual(local["items"][0]["source_path"], "cat.jpg")
+            self.assertEqual(local["items"][0]["still"]["output"], "cat.jpg")
+
+        self.assertEqual([item.item_id for item in loaded.items],
+                         ["animals/cat", "sports/run"])
+
+    def test_render_state_tree_round_trip_uses_one_state_per_folder(self):
+        state = {"schema_version": 1, "items": {
+            "animals/cat": {"still": {"output_sha256": "a" * 64}},
+            "sports/run": {"video": {"output_sha256": "b" * 64}},
+        }}
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            save_render_state_tree(root, state)
+            loaded = load_render_state_tree(root)
+
+            self.assertTrue((root / "animals/render_state.yaml").is_file())
+            self.assertTrue((root / "sports/render_state.yaml").is_file())
+            self.assertFalse((root / "render_state.yaml").exists())
+            local = yaml.safe_load(
+                (root / "animals/render_state.yaml").read_text())
+            self.assertEqual(list(local["items"]), ["cat"])
+
+        self.assertEqual(loaded, state)
+
+    def test_top_level_files_migrate_to_folder_layout(self):
+        item = PipelineItem(
+            index=0, item_id="animals/cat",
+            source_path=Path("animals/cat.jpg"),
+            source_sha256="a" * 64,
+            still=StillSpec(
+                Path("animals/cat.jpg"), 1920, 1088,
+                prompt="A detailed action photograph of a moving cat."),
+        )
+        manifest = PipelineManifest("manual", 1, [item])
+        state = {"schema_version": 1, "items": {
+            "animals/cat": {"still": {"output_sha256": "b" * 64}},
+        }}
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            save_pipeline(root / "pipeline.yaml", manifest)
+            save_render_state(root / "render_state.yaml", state)
+
+            loaded_manifest = load_pipeline_tree(root)
+            loaded_state = load_render_state_tree(root)
+            save_pipeline_tree(root, loaded_manifest)
+            save_render_state_tree(root, loaded_state)
+
+            self.assertFalse((root / "pipeline.yaml").exists())
+            self.assertFalse((root / "render_state.yaml").exists())
+            self.assertTrue((root / "animals/pipeline.yaml").is_file())
+            self.assertTrue((root / "animals/render_state.yaml").is_file())
+
+        self.assertEqual(loaded_manifest.items[0].item_id, "animals/cat")
+        self.assertIn("animals/cat", loaded_state["items"])
 
     def test_seed_is_only_a_renderer_option(self):
         with contextlib.redirect_stderr(io.StringIO()), \
@@ -225,6 +311,71 @@ class ProcessIsolationTests(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertIsNotNone(manifest.items[0].still)
         self.assertIsNotNone(manifest.items[0].video)
+
+    def test_prompt_generation_writes_one_manifest_per_image_folder(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            input_dir = root / "input"
+            for folder in ("animals", "sports"):
+                (input_dir / folder).mkdir(parents=True)
+                Image.new("RGB", (640, 480)).save(
+                    input_dir / folder / "sample.jpg")
+            llm = mock.Mock()
+            llm.describe.return_value = "fake"
+            llm.chat.side_effect = [
+                "<prompt>A detailed action photograph of an animal.</prompt>",
+                "<prompt>A detailed action photograph of an athlete.</prompt>",
+            ]
+
+            with mock.patch.object(generate_prompts, "build_llm",
+                                   return_value=llm):
+                code = generate_prompts.main([
+                    "--input-dir", str(input_dir),
+                    "--output-dir", str(root / "output"),
+                    "--stage", "stills",
+                ])
+
+            manifest = load_pipeline_tree(
+                root / "output", require_stage="stills")
+
+            self.assertTrue(
+                (root / "output/animals/pipeline.yaml").is_file())
+            self.assertTrue(
+                (root / "output/sports/pipeline.yaml").is_file())
+            self.assertFalse((root / "output/pipeline.yaml").exists())
+
+        self.assertEqual(code, 0)
+        self.assertEqual(manifest.item_count, 2)
+
+    def test_renderer_reads_folder_manifests_and_states(self):
+        manifest = PipelineManifest(
+            still_mode="manual", item_count=1,
+            items=[PipelineItem(
+                index=0, item_id="animals/cat",
+                source_path=Path("animals/cat.jpg"),
+                source_sha256="a" * 64,
+                still=StillSpec(
+                    Path("animals/cat.jpg"), 1920, 1088,
+                    prompt="A detailed action photograph of a moving cat."),
+            )],
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            output_dir = Path(tmp)
+            save_pipeline_tree(output_dir, manifest)
+            save_render_state_tree(output_dir, {
+                "schema_version": 1, "items": {
+                    "animals/cat": {"still": {"output_sha256": "a" * 64}},
+                },
+            })
+            with mock.patch.object(render_media, "render_stills",
+                                   return_value=(0, 1, 0)) as render_stills:
+                code = render_media.main([
+                    "--output-dir", str(output_dir), "--stage", "stills",
+                ])
+            loaded_state = render_stills.call_args.args[3]
+
+        self.assertEqual(code, 0)
+        self.assertIn("animals/cat", loaded_state["items"])
 
     def test_render_never_constructs_llm_or_reads_input_tree(self):
         manifest = PipelineManifest(

@@ -3,7 +3,9 @@ from pathlib import Path
 
 from .comfy import ComfyClient
 from .files import atomic_write_bytes, host_name, sha256_file
-from .manifest import plan_fingerprint, save_render_state
+from .manifest import (
+    plan_fingerprint, save_render_state, save_render_state_folder,
+)
 from .workflows import (
     MANUAL_WORKFLOW, REGIONS_WORKFLOW, STILL_SAVER, VIDEO_SAVER, VIDEO_WORKFLOW,
     load_workflow, patch_ltx_workflow, patch_still_workflow, pick_artifact,
@@ -39,6 +41,13 @@ def _render_fingerprint(spec, workflow, overrides=None):
         "workflow": workflow,
         "overrides": overrides or {},
     })
+
+
+def _save_state(args, item_id, state):
+    if args.state_file:
+        save_render_state(args.state_file, state)
+    else:
+        save_render_state_folder(args.state_root, item_id, state)
 
 
 def _snapshot_still_outputs(output_dir, save_subdir, name):
@@ -110,7 +119,7 @@ def render_stills(args, manifest, output_dir, state):
                 "output_sha256": sha256_file(destination),
             }
             item_state.pop("video", None)
-            save_render_state(args.state_file, state)
+            _save_state(args, item.item_id, state)
             rendered += 1
             print(f"still {item.item_id}: rendered")
         except Exception as error:
@@ -180,7 +189,7 @@ def render_videos(args, manifest, output_dir, state):
                 "input_still_sha256": still_hash,
                 "output_sha256": sha256_file(destination),
             }
-            save_render_state(args.state_file, state)
+            _save_state(args, item.item_id, state)
             rendered += 1
             print(f"video {item.item_id}: rendered")
         except Exception as error:

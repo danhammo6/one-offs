@@ -5,7 +5,10 @@ import sys
 from pathlib import Path
 
 from reimagine_pipeline import PIPELINE_FILENAME, RENDER_STATE_FILENAME
-from reimagine_pipeline.manifest import load_pipeline, load_render_state
+from reimagine_pipeline.manifest import (
+    load_pipeline, load_pipeline_tree, load_render_state,
+    load_render_state_tree, save_pipeline_tree, save_render_state_tree,
+)
 from reimagine_pipeline.projections import write_projections
 from reimagine_pipeline.rendering import render_all, render_stills, render_videos
 
@@ -13,8 +16,12 @@ from reimagine_pipeline.rendering import render_all, render_stills, render_video
 def build_parser():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output-dir", type=Path, default=Path("output"))
-    parser.add_argument("--manifest", type=Path, default=None)
-    parser.add_argument("--state-file", type=Path, default=None)
+    parser.add_argument(
+        "--manifest", type=Path, default=None,
+        help="Use one explicit manifest instead of per-folder pipeline.yaml files.")
+    parser.add_argument(
+        "--state-file", type=Path, default=None,
+        help="Use one explicit state file instead of per-folder render_state.yaml files.")
     parser.add_argument("--stage", choices=("all", "stills", "videos"),
                         default="all")
     parser.add_argument("--comfy-server", default="127.0.0.1:8188")
@@ -36,15 +43,24 @@ def build_parser():
 def main(argv=None):
     args = build_parser().parse_args(argv)
     output_dir = args.output_dir.resolve()
-    manifest_path = (args.manifest or output_dir / PIPELINE_FILENAME).resolve()
-    args.state_file = (
-        args.state_file or output_dir / RENDER_STATE_FILENAME).resolve()
+    manifest_path = args.manifest.resolve() if args.manifest else None
+    args.state_file = args.state_file.resolve() if args.state_file else None
+    args.state_root = output_dir
     if args.comfyui_output_dir:
         args.comfyui_output_dir = args.comfyui_output_dir.resolve()
     try:
-        manifest = load_pipeline(manifest_path, require_stage=args.stage)
+        manifest = (load_pipeline(manifest_path, require_stage=args.stage)
+                    if manifest_path else load_pipeline_tree(
+                        output_dir, require_stage=args.stage,
+                        filename=PIPELINE_FILENAME))
+        if not manifest_path and (output_dir / PIPELINE_FILENAME).is_file():
+            save_pipeline_tree(output_dir, manifest, PIPELINE_FILENAME)
         write_projections(output_dir, manifest)
-        state = load_render_state(args.state_file)
+        state = (load_render_state(args.state_file) if args.state_file
+                 else load_render_state_tree(
+                     output_dir, filename=RENDER_STATE_FILENAME))
+        if not args.state_file:
+            save_render_state_tree(output_dir, state, RENDER_STATE_FILENAME)
         rendered = skipped = failed = 0
         if args.stage == "all":
             counts = render_all(args, manifest, output_dir, state)

@@ -5,8 +5,8 @@ pipeline is deliberately split into two processes so an LLM server and ComfyUI
 never need to fit in VRAM at the same time:
 
 ```text
-reference images -> generate_prompts.py -> pipeline.yaml
-pipeline.yaml     -> render_media.py     -> JPEGs + MP4s
+reference images -> generate_prompts.py -> per-folder pipeline.yaml files
+pipeline tree    -> render_media.py     -> JPEGs + MP4s
 ```
 
 `serve.py` provides a gallery for comparing the generated media with its
@@ -52,8 +52,9 @@ frame; video rendering does not depend on stale ComfyUI output staging.
 
 ## Prompt stages
 
-`generate_prompts.py` runs serially and checkpoints `pipeline.yaml` after each
-item. It never imports or contacts ComfyUI.
+`generate_prompts.py` runs serially and checkpoints a `pipeline.yaml` in each
+image folder. It never imports or contacts ComfyUI. Startup and resume scan the
+whole output tree, so no top-level manifest grows with the total collection.
 
 | flag | default | meaning |
 | --- | --- | --- |
@@ -62,7 +63,7 @@ item. It never imports or contacts ComfyUI.
 | `--video-basis` | `reference` | generate motion from the `reference` or actual `rendered` still |
 | `--input-dir` | `input` | reference-image tree |
 | `--output-dir` | `output` | output set and default manifest location |
-| `--manifest` | `<output-dir>/pipeline.yaml` | alternate manifest path |
+| `--manifest` | per-folder tree | use one explicit legacy/single-file manifest instead |
 | `--duration` | `10` | video duration in seconds, 1-30 |
 | `--llm-server` | *(none)* | OpenAI-compatible multimodal server; otherwise Claude Code |
 | `--force` | off | regenerate requested plan stages |
@@ -102,16 +103,16 @@ regenerating its rendered-basis video prompt before the video phase.
 ## Render stages
 
 `render_media.py` never imports or constructs an LLM. It can run without the
-reference tree because `pipeline.yaml` contains every required prompt, path,
-dimension, and duration. Seeds are a renderer concern and are not stored in the
-prompt manifest.
+reference tree because the per-folder `pipeline.yaml` files contain every
+required prompt, path, dimension, and duration. Seeds are a renderer concern
+and are not stored in prompt manifests.
 
 | flag | default | meaning |
 | --- | --- | --- |
 | `--stage` | `all` | render `stills`, `videos`, or all stills then all videos |
 | `--output-dir` | `output` | media output set |
-| `--manifest` | `<output-dir>/pipeline.yaml` | alternate pipeline manifest |
-| `--state-file` | `<output-dir>/render_state.yaml` | render fingerprints and output hashes |
+| `--manifest` | per-folder tree | use one explicit legacy/single-file manifest instead |
+| `--state-file` | per-folder tree | use one explicit legacy/single-file render state instead |
 | `--comfy-server` | `127.0.0.1:8188` | ComfyUI server |
 | `--comfyui-output-dir` | *(none)* | optional local/mounted ComfyUI output directory |
 | `--still-workflow` | mode default | custom Krea API workflow |
@@ -123,22 +124,26 @@ prompt manifest.
 | `--seed` | `42` | base render seed; item i uses seed plus its sorted index |
 | `--force` | off | rerender requested stages |
 
-`render_state.yaml` tracks plan fingerprints and output hashes. A changed still
-invalidates its dependent video. Corrupt or stale files are not silently
-accepted merely because a path exists.
+Each image folder's `render_state.yaml` tracks its render fingerprints and
+output hashes. A changed still invalidates its dependent video. Corrupt or
+stale files are not silently accepted merely because a path exists.
 
 ## Manifests and gallery metadata
 
-`pipeline.yaml` is the authoritative, versioned handoff between the two
-processes. Each item stores:
+The per-folder `pipeline.yaml` files are the authoritative, versioned handoff
+between the two processes. Each item stores:
 
 - Stable source-relative ID, source path, and source SHA-256
 - Exact manual prompt or complete validated region spec
 - Still output path and dimensions
 - Video output path, prompt, duration, prompt basis, and basis hash
 
-The pipeline also rebuilds per-directory `prompts.yaml` and
-`video_prompts.yaml`. These are gallery projections, not rendering inputs.
+Each folder therefore contains `pipeline.yaml`, `render_state.yaml`,
+`prompts.yaml`, and `video_prompts.yaml` beside its media. The latter two are
+gallery projections, not rendering inputs. Existing top-level manifests and
+render-state files are migrated into the folder layout on the next default
+planner or renderer run; explicit `--manifest` and `--state-file` paths retain
+single-file behavior.
 
 ## Batch scripts
 

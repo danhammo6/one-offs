@@ -7,7 +7,10 @@ from pathlib import Path
 from reimagine_pipeline import PIPELINE_FILENAME
 from reimagine_pipeline.files import derive_dims, iter_images, sha256_file
 from reimagine_pipeline.llm import ClaudeCodeLLM, OpenAILLM
-from reimagine_pipeline.manifest import load_pipeline, save_pipeline
+from reimagine_pipeline.manifest import (
+    load_pipeline, load_pipeline_tree, pipeline_paths, save_pipeline,
+    save_pipeline_folder, save_pipeline_tree,
+)
 from reimagine_pipeline.models import PipelineItem, PipelineManifest, StillSpec, VideoSpec
 from reimagine_pipeline.projections import write_projections
 from reimagine_pipeline.prompting import generate_still_prompt, generate_video_prompt
@@ -23,7 +26,9 @@ def build_parser():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input-dir", type=Path, default=Path("input"))
     parser.add_argument("--output-dir", type=Path, default=Path("output"))
-    parser.add_argument("--manifest", type=Path, default=None)
+    parser.add_argument(
+        "--manifest", type=Path, default=None,
+        help="Use one explicit manifest instead of per-folder pipeline.yaml files.")
     parser.add_argument("--stage", choices=("all", "stills", "videos"),
                         default="all")
     parser.add_argument("--still-mode", choices=("manual", "regions"),
@@ -66,12 +71,18 @@ def main(argv=None):
         return 2
     input_dir = args.input_dir.resolve()
     output_dir = args.output_dir.resolve()
-    manifest_path = (args.manifest or output_dir / PIPELINE_FILENAME).resolve()
+    manifest_path = args.manifest.resolve() if args.manifest else None
     try:
         jobs = discover(input_dir)
         existing = None
-        if manifest_path.is_file():
+        folder_counts = {}
+        for job in jobs:
+            folder_counts[job[3].parent] = folder_counts.get(job[3].parent, 0) + 1
+        if manifest_path and manifest_path.is_file():
             existing = load_pipeline(manifest_path)
+        elif not manifest_path and pipeline_paths(output_dir, PIPELINE_FILENAME):
+            legacy_manifest = output_dir / PIPELINE_FILENAME
+            existing = load_pipeline_tree(output_dir, filename=PIPELINE_FILENAME)
             if (not args.force and (
                     existing.still_mode != args.still_mode
                     or existing.item_count != len(jobs))):
@@ -84,16 +95,21 @@ def main(argv=None):
         if existing and not (args.force and args.stage == "all"):
             for item_id, item in by_id.items():
                 job = jobs_by_id.get(item_id)
-                if (job is None or item.index != job[0]
-                        or item.source_path != job[3]):
+                if job is None or item.source_path != job[3]:
                     raise ValueError(
                         "existing pipeline inventory differs; use --force")
         if args.force and args.stage == "all":
             by_id = {}
+            if not manifest_path:
+                for parent in folder_counts:
+                    save_pipeline_folder(
+                        output_dir, parent,
+                        PipelineManifest(args.still_mode, 0, []),
+                        PIPELINE_FILENAME, prune_empty=True)
         llm = build_llm(args, input_dir if args.video_basis == "reference" else output_dir)
         print(f"generate prompts: {len(jobs)} item(s), stage={args.stage}")
         print(f"  llm:      {llm.describe()}")
-        print(f"  manifest: {manifest_path}")
+        print(f"  manifest: {manifest_path or f'{output_dir}/**/{PIPELINE_FILENAME}'}")
         failed = generated = skipped = 0
         for index, item_id, source, relative, source_hash, width, height in jobs:
             tag = f"[{index + 1}/{len(jobs)}] {relative}"
@@ -146,8 +162,15 @@ def main(argv=None):
             manifest = PipelineManifest(
                 still_mode, len(jobs),
                 sorted(by_id.values(), key=lambda value: value.index))
-            save_pipeline(manifest_path, manifest)
-            write_projections(output_dir, manifest)
+            if manifest_path:
+                save_pipeline(manifest_path, manifest)
+            else:
+                save_pipeline_folder(
+                    output_dir, relative.parent, manifest, PIPELINE_FILENAME,
+                    folder_counts[relative.parent])
+            write_projections(
+                output_dir, manifest,
+                None if manifest_path else {relative.parent})
             if changed:
                 generated += 1
                 print(f"{tag}  planned")
@@ -155,6 +178,8 @@ def main(argv=None):
                 skipped += 1
                 print(f"{tag}  saved plan unchanged")
         print(f"done: {generated} planned, {skipped} unchanged, {failed} failed")
+        if not manifest_path and not failed:
+            save_pipeline_tree(output_dir, manifest, PIPELINE_FILENAME)
         return 1 if failed else 0
     except (ValueError, OSError) as error:
         print(f"error: {error}", file=sys.stderr)

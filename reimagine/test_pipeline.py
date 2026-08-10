@@ -1,8 +1,10 @@
 import dataclasses
 import contextlib
 import io
+import json
 import tempfile
 import unittest
+import urllib.request
 from pathlib import Path
 from unittest import mock
 
@@ -15,12 +17,13 @@ from reimagine_pipeline.manifest import (
 )
 from reimagine_pipeline.models import PipelineItem, PipelineManifest, StillSpec, VideoSpec
 from reimagine_pipeline.files import sha256_file
-from reimagine_pipeline.llm import ClaudeCodeLLM
+from reimagine_pipeline.llm import ClaudeCodeLLM, OpenAILLM
 from reimagine_pipeline.workflows import patch_ltx_workflow, pick_artifact
 from reimagine_pipeline.comfy import ComfyArtifact
 from reimagine_pipeline.manifest import load_render_state
 from reimagine_pipeline.prompting import (
-    generate_video_prompt, video_prompt_word_range,
+    generate_still_prompt, generate_tagged, generate_video_prompt,
+    load_system_prompt, video_prompt_word_range,
 )
 from reimagine_pipeline.rendering import _read_still_output
 
@@ -243,6 +246,134 @@ class PipelineManifestTests(unittest.TestCase):
         self.assertIn("20-second", request)
         self.assertIn("160-320 words", request)
 
+    def test_region_validation_failure_consumes_retry_then_succeeds(self):
+        llm = mock.Mock()
+        llm.chat.side_effect = [
+            '<regions>{"elements": []}</regions>',
+            '<regions>{"high_level_description":"A moving subject",'
+            '"elements":[{"type":"obj","desc":"subject","x":0.1,'
+            '"y":0.1,"w":0.5,"h":0.5}]}</regions>',
+        ]
+
+        result = generate_still_prompt(
+            llm, Path("/tmp/sample.jpg"), "regions")
+
+        self.assertEqual(result["high_level_description"], "A moving subject")
+        self.assertEqual(llm.chat.call_count, 2)
+        self.assertIsNone(llm.chat.call_args_list[0].kwargs["correction"])
+        self.assertIn("high_level_description is required",
+                      llm.chat.call_args_list[1].kwargs["correction"])
+
+    def test_region_validation_exhausts_exact_retry_budget(self):
+        llm = mock.Mock()
+        llm.chat.return_value = '<regions>{"elements": []}</regions>'
+
+        with self.assertLogs("reimagine_pipeline.prompting", "WARNING") as logs, \
+                self.assertRaisesRegex(RuntimeError, "after 3 tries"):
+            generate_still_prompt(llm, Path("/tmp/sample.jpg"), "regions")
+
+        self.assertEqual(llm.chat.call_count, 3)
+        self.assertEqual(len(logs.output), 3)
+        self.assertIn("attempt 3/3", logs.output[-1])
+
+    def test_tagged_retry_logs_rejection_and_appends_correction(self):
+        llm = mock.Mock()
+        llm.chat.side_effect = ["not tagged", "<prompt>valid detailed prompt text</prompt>"]
+
+        with self.assertLogs("reimagine_pipeline.prompting", "WARNING") as logs:
+            result = generate_tagged(
+                llm, "system", "request", Path("/tmp/sample.jpg"), "prompt")
+
+        self.assertEqual(result, "valid detailed prompt text")
+        self.assertEqual(llm.chat.call_count, 2)
+        self.assertIn("attempt 1/3", logs.output[0])
+        self.assertIn("missing or too-short", logs.output[0])
+        self.assertIsNotNone(llm.chat.call_args_list[1].kwargs["correction"])
+
+    def test_verbose_retry_logs_rejected_response(self):
+        llm = mock.Mock()
+        llm.chat.side_effect = [
+            "complete but untagged response",
+            "<prompt>valid detailed prompt text</prompt>",
+        ]
+
+        with self.assertLogs("reimagine_pipeline.prompting", "DEBUG") as logs:
+            generate_tagged(
+                llm, "system", "request", Path("/tmp/sample.jpg"), "prompt")
+
+        self.assertTrue(any(
+            "complete but untagged response" in message
+            for message in logs.output))
+
+    def test_llm_transport_failure_is_not_retried(self):
+        llm = mock.Mock()
+        llm.chat.side_effect = RuntimeError("server unavailable")
+
+        with self.assertRaisesRegex(RuntimeError, "server unavailable"):
+            generate_tagged(
+                llm, "system", "request", Path("/tmp/sample.jpg"), "prompt")
+
+        llm.chat.assert_called_once()
+
+    def test_custom_prompt_directory_is_used(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            prompt_dir = Path(tmp)
+            (prompt_dir / "system_manual.txt").write_text("custom system")
+            llm = mock.Mock()
+            llm.chat.return_value = (
+                "<prompt>A sufficiently detailed custom image prompt.</prompt>")
+
+            generate_still_prompt(
+                llm, Path("/tmp/sample.jpg"), "manual", prompt_dir=prompt_dir)
+
+        self.assertEqual(llm.chat.call_args.args[0], "custom system")
+
+    def test_missing_custom_prompt_reports_full_path(self):
+        missing = Path("/tmp/reimagine-missing-prompts/system_manual.txt")
+
+        with self.assertRaisesRegex(ValueError, str(missing)):
+            load_system_prompt("system_manual.txt", missing.parent)
+
+    def test_openai_retry_payload_keeps_correction_after_image(self):
+        client = OpenAILLM("127.0.0.1:9503", model="test")
+        response = mock.MagicMock()
+        response.__enter__.return_value.read.return_value = json.dumps({
+            "choices": [{"message": {"content": "ok"}}]
+        }).encode()
+        with tempfile.TemporaryDirectory() as tmp:
+            image = Path(tmp) / "sample.jpg"
+            image.write_bytes(b"image")
+            with mock.patch.object(urllib.request, "urlopen",
+                                   return_value=response) as urlopen:
+                client.chat("system", "original", image, correction="retry")
+
+        request = urlopen.call_args.args[0]
+        payload = json.loads(request.data)
+        content = payload["messages"][1]["content"]
+        self.assertTrue(payload["cache_prompt"])
+        self.assertEqual(content[0], {"type": "text", "text": "original"})
+        self.assertEqual(content[1]["type"], "image_url")
+        self.assertEqual(content[2], {"type": "text", "text": "retry"})
+
+    def test_openai_double_verbose_logs_reasoning(self):
+        client = OpenAILLM("127.0.0.1:9503", model="test")
+        client.log_reasoning = True
+        response = mock.MagicMock()
+        response.__enter__.return_value.read.return_value = json.dumps({
+            "choices": [{"message": {
+                "content": "answer", "reasoning_content": "private reasoning"}}]
+        }).encode()
+        with tempfile.TemporaryDirectory() as tmp:
+            image = Path(tmp) / "sample.jpg"
+            image.write_bytes(b"image")
+            with mock.patch.object(urllib.request, "urlopen",
+                                   return_value=response), \
+                    self.assertLogs("reimagine_pipeline.llm", "DEBUG") as logs:
+                result = client.chat("system", "original", image)
+
+        self.assertEqual(result, "answer")
+        self.assertTrue(any("private reasoning" in line for line in logs.output))
+
     def test_claude_request_includes_image_path(self):
         client = ClaudeCodeLLM(add_dir=Path("/tmp"))
         envelope = '{"subtype":"success","result":"ok"}'
@@ -253,6 +384,26 @@ class PipelineManifestTests(unittest.TestCase):
             client.chat("system", "request", Path("/tmp/frame.jpg"))
 
         self.assertIn("/tmp/frame.jpg", run.call_args.kwargs["input"])
+
+    def test_parsers_show_defaults_and_prompt_prefix(self):
+        prompt_args = generate_prompts.build_parser().parse_args([])
+        self.assertEqual(prompt_args.prompt_path_prefix, Path("prompts"))
+        self.assertEqual(
+            generate_prompts.build_parser().parse_args(["-vv"]).verbose, 2)
+        prompt_help = " ".join(generate_prompts.build_parser().format_help().split())
+        render_help = " ".join(render_media.build_parser().format_help().split())
+        self.assertIn("(default: prompts)", prompt_help)
+        self.assertIn("(default: 127.0.0.1:8188)", render_help)
+
+    def test_serve_help_shows_defaults(self):
+        import serve
+
+        with mock.patch("sys.argv", ["serve.py", "--help"]), \
+                contextlib.redirect_stdout(io.StringIO()) as output, \
+                self.assertRaises(SystemExit):
+            serve.main()
+
+        self.assertIn("(default: 8000)", output.getvalue())
 
     def test_video_artifact_prefers_muxed_audio(self):
         artifacts = [
@@ -464,6 +615,41 @@ class ProcessIsolationTests(unittest.TestCase):
 
         self.assertEqual(code, 0)
         self.assertEqual(workflow["78:75"]["inputs"]["seed"], 100)
+
+    def test_video_render_logs_elapsed_time(self):
+        manifest = PipelineManifest(
+            still_mode="manual", item_count=1,
+            items=[PipelineItem(
+                index=0, item_id="sample", source_path=Path("sample.jpg"),
+                source_sha256="a" * 64,
+                still=StillSpec(
+                    Path("sample.jpg"), 1920, 1088,
+                    prompt="A detailed action photograph of a moving subject."),
+                video=VideoSpec(
+                    Path("sample.mp4"),
+                    "The subject moves smoothly while the camera tracks; quiet ambience follows.",
+                    "reference", "a" * 64),
+            )],
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            output_dir = Path(tmp)
+            Image.new("RGB", (64, 64)).save(output_dir / "sample.jpg")
+            save_pipeline(output_dir / "pipeline.yaml", manifest)
+            artifact = ComfyArtifact("1087", "sample.mp4", "video", "output")
+            fake = mock.Mock()
+            fake.upload_image.return_value = "reimagine/sample.jpg"
+            fake.run_workflow.return_value = [artifact]
+            fake.read_artifact.return_value = b"video"
+            with mock.patch("reimagine_pipeline.rendering.ComfyClient",
+                            return_value=fake), \
+                    self.assertLogs("reimagine_pipeline.rendering", "INFO") as logs:
+                code = render_media.main([
+                    "--output-dir", str(output_dir), "--stage", "videos",
+                ])
+
+        self.assertEqual(code, 0)
+        self.assertTrue(any(
+            "video sample: rendered in" in message for message in logs.output))
 
     def test_rendered_basis_video_is_blocked_when_still_changed(self):
         manifest = PipelineManifest(

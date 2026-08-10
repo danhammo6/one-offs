@@ -1,10 +1,13 @@
 import json
+import logging
 import mimetypes
 import time
 import urllib.parse
 import urllib.request
 import uuid
 from dataclasses import dataclass
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -34,7 +37,7 @@ class ComfyClient:
         announced = False
         while not self.ping():
             if not announced:
-                print(f"ComfyUI at {self.server} unreachable; waiting", flush=True)
+                logger.warning("ComfyUI at %s unreachable; waiting", self.server)
                 announced = True
             time.sleep(poll)
 

@@ -7,12 +7,15 @@ Not part of the render pipeline — just seeds the starter reference set.
 """
 import io
 import json
+import logging
 import time
 import urllib.parse
 import urllib.request
 from pathlib import Path
 
 from PIL import Image
+
+logger = logging.getLogger(__name__)
 
 API = "https://commons.wikimedia.org/w/api.php"
 UA = "reimagine-refs/0.1 (dev-day; contact: local)"
@@ -119,8 +122,8 @@ def pick_and_download(phrase, dest):
         try:
             raw = _get(src)
             img = Image.open(io.BytesIO(raw)).convert("RGB")
-        except Exception as e:
-            print(f"      skip (fetch/decode {e})")
+        except Exception as error:
+            logger.warning("      skip (fetch/decode %s)", error)
             continue
         img.save(dest, "JPEG", quality=90)
         md = ii.get("extmetadata") or {}
@@ -158,6 +161,7 @@ def render_credits(store):
 
 
 def main():
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
     store_path = INPUT / ".credits.json"
     store = json.loads(store_path.read_text()) if store_path.exists() else {}
     for cat, items in WANTED.items():
@@ -167,18 +171,19 @@ def main():
             key = f"{cat}/{slug}"
             dest = catdir / f"{slug}.jpg"
             if dest.exists() and key in store:
-                print(f"[{key}] already have {dest.name}, skipping")
+                logger.info("[%s] already have %s, skipping", key, dest.name)
                 continue
-            print(f"[{key}] {phrase!r}")
+            logger.info("[%s] %r", key, phrase)
             info = pick_and_download(phrase, dest)
             if not info:
-                print("      NO FREE HIT")
+                logger.warning("      NO FREE HIT")
                 continue
-            print(f"      -> {dest.name} ({info['wh']}) {info['license']}")
+            logger.info("      -> %s (%s) %s", dest.name, info["wh"],
+                        info["license"])
             store[key] = info
             store_path.write_text(json.dumps(store, indent=2))  # flush per hit
     render_credits(store)
-    print(f"\nWrote {INPUT / 'CREDITS.md'}  ({len(store)}/20 images)")
+    logger.info("\nWrote %s  (%d/20 images)", INPUT / "CREDITS.md", len(store))
 
 
 if __name__ == "__main__":

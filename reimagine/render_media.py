@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Render saved still and video plans using only ComfyUI."""
 import argparse
-import sys
+import logging
+import time
 from pathlib import Path
 
 from reimagine_pipeline import PIPELINE_FILENAME, RENDER_STATE_FILENAME
@@ -12,10 +13,14 @@ from reimagine_pipeline.manifest import (
 from reimagine_pipeline.projections import write_projections
 from reimagine_pipeline.rendering import render_all, render_stills, render_videos
 
+logger = logging.getLogger(__name__)
+
 
 def build_parser():
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--output-dir", type=Path, default=Path("output"))
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("--output-dir", type=Path, default=Path("output"),
+                        help="Media output and manifest directory.")
     parser.add_argument(
         "--manifest", type=Path, default=None,
         help="Use one explicit manifest instead of per-folder pipeline.yaml files.")
@@ -23,24 +28,36 @@ def build_parser():
         "--state-file", type=Path, default=None,
         help="Use one explicit state file instead of per-folder render_state.yaml files.")
     parser.add_argument("--stage", choices=("all", "stills", "videos"),
-                        default="all")
-    parser.add_argument("--comfy-server", default="127.0.0.1:8188")
-    parser.add_argument("--comfyui-output-dir", type=Path, default=None)
-    parser.add_argument("--still-workflow", type=Path, default=None)
-    parser.add_argument("--video-workflow", type=Path, default=None)
-    parser.add_argument("--still-save-subdir", default="reimagine")
-    parser.add_argument("--video-save-subdir", default="reimagine-video")
-    parser.add_argument("--clip-name", default=None)
-    parser.add_argument("--unet-name", default=None)
-    parser.add_argument("--video-clip-name", default=None)
-    parser.add_argument("--video-unet-name", default=None)
+                        default="all", help="Media stage to render.")
+    parser.add_argument("--comfy-server", default="127.0.0.1:8188",
+                        help="ComfyUI server address.")
+    parser.add_argument("--comfyui-output-dir", type=Path, default=None,
+                        help="Optional local or mounted ComfyUI output directory.")
+    parser.add_argument("--still-workflow", type=Path, default=None,
+                        help="Custom still workflow JSON path.")
+    parser.add_argument("--video-workflow", type=Path, default=None,
+                        help="Custom video workflow JSON path.")
+    parser.add_argument("--still-save-subdir", default="reimagine",
+                        help="ComfyUI still output subdirectory.")
+    parser.add_argument("--video-save-subdir", default="reimagine-video",
+                        help="ComfyUI video output subdirectory.")
+    parser.add_argument("--clip-name", default=None,
+                        help="Still workflow CLIP model override.")
+    parser.add_argument("--unet-name", default=None,
+                        help="Still workflow UNet model override.")
+    parser.add_argument("--video-clip-name", default=None,
+                        help="Video workflow text encoder override.")
+    parser.add_argument("--video-unet-name", default=None,
+                        help="Video workflow diffusion model override.")
     parser.add_argument("--seed", type=int, default=42,
                         help="Base render seed; item i uses seed + its index.")
-    parser.add_argument("--force", action="store_true")
+    parser.add_argument("--force", action="store_true",
+                        help="Rerender requested stages.")
     return parser
 
 
 def main(argv=None):
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
     args = build_parser().parse_args(argv)
     output_dir = args.output_dir.resolve()
     manifest_path = args.manifest.resolve() if args.manifest else None
@@ -49,6 +66,7 @@ def main(argv=None):
     if args.comfyui_output_dir:
         args.comfyui_output_dir = args.comfyui_output_dir.resolve()
     try:
+        started = time.perf_counter()
         manifest = (load_pipeline(manifest_path, require_stage=args.stage)
                     if manifest_path else load_pipeline_tree(
                         output_dir, require_stage=args.stage,
@@ -77,10 +95,11 @@ def main(argv=None):
             rendered += counts[0]
             skipped += counts[1]
             failed += counts[2]
-        print(f"done: {rendered} rendered, {skipped} skipped, {failed} failed")
+        logger.info("done in %.2fs: %d rendered, %d skipped, %d failed",
+                    time.perf_counter() - started, rendered, skipped, failed)
         return 1 if failed else 0
     except (ValueError, OSError) as error:
-        print(f"error: {error}", file=sys.stderr)
+        logger.error("error: %s", error)
         return 2
 
 

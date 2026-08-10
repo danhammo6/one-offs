@@ -1,8 +1,11 @@
 import base64
 import json
+import logging
 import mimetypes
 import subprocess
 import urllib.request
+
+logger = logging.getLogger(__name__)
 
 
 class ClaudeCodeLLM:
@@ -11,14 +14,17 @@ class ClaudeCodeLLM:
         self.timeout = timeout
         self.cli = cli
         self.add_dir = add_dir
+        self.log_reasoning = False
 
     def describe(self):
         return f"Claude Code CLI ({self.model}, multimodal via Read)"
 
-    def chat(self, system_prompt, user_prompt, image_path):
+    def chat(self, system_prompt, user_prompt, image_path, correction=None):
         user_prompt = (
             f"{user_prompt}\n\nUse the Read tool to inspect this image:\n"
             f"{image_path.resolve()}")
+        if correction:
+            user_prompt += f"\n\n{correction}"
         command = [
             self.cli, "-p", "--output-format", "json", "--model", self.model,
             "--system-prompt", system_prompt, "--allowedTools", "Read",
@@ -51,6 +57,7 @@ class OpenAILLM:
         self.model = model
         self.api_key = api_key
         self.timeout = timeout
+        self.log_reasoning = False
 
     def _headers(self):
         headers = {"Content-Type": "application/json"}
@@ -74,7 +81,7 @@ class OpenAILLM:
     def describe(self):
         return f"OpenAI-compatible server {self.base_url} (model={self.model})"
 
-    def chat(self, system_prompt, user_prompt, image_path):
+    def chat(self, system_prompt, user_prompt, image_path, correction=None):
         self.resolve_model()
         raw = image_path.read_bytes()
         mime = mimetypes.guess_type(image_path.name)[0] or "image/jpeg"
@@ -83,6 +90,8 @@ class OpenAILLM:
             {"type": "image_url", "image_url": {
                 "url": f"data:{mime};base64,{base64.b64encode(raw).decode('ascii')}"}},
         ]
+        if correction:
+            content.append({"type": "text", "text": correction})
         payload = {
             "model": self.model,
             "messages": [
@@ -91,7 +100,7 @@ class OpenAILLM:
             ],
             "temperature": 0.7,
             "max_tokens": 8192,
-            "cache_prompt": False,
+            "cache_prompt": True,
         }
         request = urllib.request.Request(
             self.base_url + "/v1/chat/completions",
@@ -102,4 +111,10 @@ class OpenAILLM:
         if not choices:
             raise RuntimeError(f"no choices in response: {str(body)[:200]}")
         message = choices[0].get("message", {})
-        return (message.get("content") or message.get("reasoning_content") or "").strip()
+        usage = body.get("usage") or {}
+        timings = body.get("timings") or {}
+        logger.debug("LLM usage=%s timings=%s", usage, timings)
+        reasoning = (message.get("reasoning_content") or "").strip()
+        if self.log_reasoning and reasoning:
+            logger.debug("LLM reasoning:\n%s", reasoning)
+        return (message.get("content") or reasoning).strip()

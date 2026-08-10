@@ -65,7 +65,9 @@ whole output tree, so no top-level manifest grows with the total collection.
 | `--output-dir` | `output` | output set and default manifest location |
 | `--manifest` | per-folder tree | use one explicit legacy/single-file manifest instead |
 | `--duration` | `10` | video duration in seconds, 1-30 |
+| `--prompt-path-prefix` | `prompts/` | directory containing the system prompt files |
 | `--llm-server` | *(none)* | OpenAI-compatible multimodal server; otherwise Claude Code |
+| `-v`, `--verbose` | off | log rejected LLM responses; repeat (`-vv`) to include available reasoning |
 | `--force` | off | regenerate requested plan stages |
 
 The default `reference` video mode uses the original reference plus the
@@ -76,6 +78,21 @@ Video prompt detail scales with `--duration`: the planner targets roughly
 seconds), up to a 500-word maximum. Longer prompts use related temporal beats,
 evolving synchronized audio, and an explicit final state rather than adding
 unrelated action or re-describing the first frame.
+
+`--prompt-path-prefix` must contain `system_manual.txt`, `system_regions.txt`,
+`system_video.txt`, and `system_video_reference.txt`. Relative paths are resolved
+from the directory where `generate_prompts.py` is run.
+
+Invalid tagged or region responses consume one of three prompt attempts. Retry
+logs include the rejection reason and elapsed time; region JSON that parses but
+fails validation is retried instead of failing the item immediately. The local
+`-v` option logs the complete rejected response for diagnosing parse failures;
+`-vv` also logs separate reasoning content when the backend provides it. The local
+OpenAI-compatible client enables llama.cpp prompt caching and places retry-only
+instructions after the image so llama.cpp can reuse the unchanged multimodal
+prefix. Requests still transfer and decode the image, but a cache hit avoids
+repeating the expensive vision-token evaluation. Cache usage and server timing
+metadata are logged at `DEBUG` when returned by the server.
 
 ## Exact-frame prompting
 
@@ -127,6 +144,11 @@ and are not stored in prompt manifests.
 Each image folder's `render_state.yaml` tracks its render fingerprints and
 output hashes. A changed still invalidates its dependent video. Corrupt or
 stale files are not silently accepted merely because a path exists.
+
+Planner and renderer progress uses Python logging. Normal runs emit per-item
+prompt or render durations and a total elapsed-time summary at `INFO`; retries,
+blocked work, and unavailable services use `WARNING`; failures use `ERROR`.
+All command help includes argument defaults.
 
 ## Manifests and gallery metadata
 

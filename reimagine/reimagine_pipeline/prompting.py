@@ -1,16 +1,20 @@
 import json
+import logging
 import re
+import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 PROMPTS_DIR = ROOT / "prompts"
+logger = logging.getLogger(__name__)
 
 
-def load_system_prompt(name):
+def load_system_prompt(name, prompt_dir=PROMPTS_DIR):
+    path = Path(prompt_dir) / name
     try:
-        return (PROMPTS_DIR / name).read_text(encoding="utf-8").strip()
+        return path.read_text(encoding="utf-8").strip()
     except OSError as error:
-        raise ValueError(f"could not read system prompt {name}: {error}") from error
+        raise ValueError(f"could not read system prompt {path}: {error}") from error
 
 
 def extract_tagged(text, tag, minimum=20):
@@ -23,20 +27,44 @@ def extract_tagged(text, tag, minimum=20):
     return value if len(value) >= minimum else None
 
 
-def generate_tagged(llm, system_prompt, user_prompt, image_path, tag, retries=3):
+def _generate_with_retries(
+        llm, system_prompt, user_prompt, image_path, kind, parse, retries=3):
     last = ""
+    last_error = "invalid response"
     for attempt in range(retries):
-        request = user_prompt
+        correction = None
         if attempt:
-            request += (
-                f"\n\nThe previous response was invalid. Output only one valid "
-                f"<{tag}>...</{tag}> block.")
-        last = llm.chat(system_prompt, request, image_path)
-        value = extract_tagged(last, tag)
-        if value:
-            return value
+            correction = (
+                f"The previous response was invalid ({last_error}). "
+                f"Output only one valid {kind} block.")
+        started = time.perf_counter()
+        last = llm.chat(
+            system_prompt, user_prompt, image_path, correction=correction)
+        try:
+            return parse(last)
+        except (json.JSONDecodeError, ValueError) as error:
+            last_error = str(error)
+            logger.warning(
+                "%s prompt attempt %d/%d rejected after %.2fs: %s",
+                kind, attempt + 1, retries, time.perf_counter() - started,
+                last_error)
+            logger.debug(
+                "%s prompt rejected response:\n%s", kind, last)
     raise RuntimeError(
-        f"no valid <{tag}> after {retries} tries; last reply: {last[:160]!r}")
+        f"no valid {kind} after {retries} tries ({last_error}); "
+        f"last reply: {last[:160]!r}")
+
+
+def generate_tagged(llm, system_prompt, user_prompt, image_path, tag, retries=3):
+    def parse(text):
+        value = extract_tagged(text, tag)
+        if value is None:
+            raise ValueError(f"missing or too-short <{tag}>...</{tag}> block")
+        return value
+
+    return _generate_with_retries(
+        llm, system_prompt, user_prompt, image_path, f"<{tag}>...</{tag}>",
+        parse, retries)
 
 
 def validate_regions(spec):
@@ -91,35 +119,33 @@ def validate_regions(spec):
     }
 
 
-def generate_still_prompt(llm, source, mode):
+def _parse_regions(text):
+    matches = re.findall(
+        r"<regions>(.*?)</regions>", text, re.DOTALL | re.IGNORECASE)
+    if not matches:
+        raise ValueError("missing <regions>...</regions> block")
+    return validate_regions(json.loads(matches[-1].strip()))
+
+
+def generate_still_prompt(llm, source, mode, prompt_dir=PROMPTS_DIR):
     if mode == "manual":
         return generate_tagged(
-            llm, load_system_prompt("system_manual.txt"),
+            llm, load_system_prompt("system_manual.txt", prompt_dir),
             f"Read this reference image and write the krea2 prompt:\n{source}",
             source, "prompt")
-    last = ""
-    system = load_system_prompt("system_regions.txt")
-    for attempt in range(3):
-        request = f"Read this reference image and write the region JSON spec:\n{source}"
-        if attempt:
-            request += "\n\nOutput only a valid <regions> JSON block."
-        last = llm.chat(system, request, source)
-        matches = re.findall(r"<regions>(.*?)</regions>", last,
-                             re.DOTALL | re.IGNORECASE)
-        if not matches:
-            continue
-        try:
-            return validate_regions(json.loads(matches[-1].strip()))
-        except (json.JSONDecodeError, ValueError):
-            continue
-    raise RuntimeError(f"no valid <regions> response: {last[:160]!r}")
+    return _generate_with_retries(
+        llm, load_system_prompt("system_regions.txt", prompt_dir),
+        f"Read this reference image and write the region JSON spec:\n{source}",
+        source, "<regions> JSON </regions>", _parse_regions)
 
 
 def video_prompt_word_range(duration):
     return max(30, duration * 8), min(500, max(80, duration * 16))
 
 
-def generate_video_prompt(llm, image_path, basis, still_spec, duration=10):
+def generate_video_prompt(
+        llm, image_path, basis, still_spec, duration=10,
+        prompt_dir=PROMPTS_DIR):
     if basis == "rendered":
         system_name = "system_video.txt"
         context = "The supplied image is the exact LTX first frame."
@@ -132,7 +158,7 @@ def generate_video_prompt(llm, image_path, basis, still_spec, duration=10):
             "will follow this validated still plan:\n" + still_context)
     minimum_words, maximum_words = video_prompt_word_range(duration)
     return generate_tagged(
-        llm, load_system_prompt(system_name),
+        llm, load_system_prompt(system_name, prompt_dir),
         f"{context}\nWrite a controlled {duration}-second LTX motion prompt. "
         f"Aim for {minimum_words}-{maximum_words} words so the described beats "
         "fill the full runtime without rushing.",

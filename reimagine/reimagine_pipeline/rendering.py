@@ -1,4 +1,6 @@
 import io
+import logging
+import time
 from pathlib import Path
 
 from .comfy import ComfyClient
@@ -10,6 +12,8 @@ from .workflows import (
     MANUAL_WORKFLOW, REGIONS_WORKFLOW, STILL_SAVER, VIDEO_SAVER, VIDEO_WORKFLOW,
     load_workflow, patch_ltx_workflow, patch_still_workflow, pick_artifact,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def _jpeg_bytes(raw):
@@ -29,8 +33,6 @@ def _jpeg_bytes(raw):
 
 def _client(args):
     client = ComfyClient(args.comfy_server)
-    if not client.ping():
-        print(f"ComfyUI at {args.comfy_server} not reachable yet")
     client.wait_until_up()
     return client
 
@@ -101,6 +103,7 @@ def render_stills(args, manifest, output_dir, state):
     client = _client(args)
     rendered = failed = 0
     for item, destination, fingerprint, seed in pending:
+        started = time.perf_counter()
         try:
             name = host_name(item.still.output)
             patched = patch_still_workflow(
@@ -121,10 +124,12 @@ def render_stills(args, manifest, output_dir, state):
             item_state.pop("video", None)
             _save_state(args, item.item_id, state)
             rendered += 1
-            print(f"still {item.item_id}: rendered")
+            logger.info("still %s: rendered in %.2fs", item.item_id,
+                        time.perf_counter() - started)
         except Exception as error:
             failed += 1
-            print(f"still {item.item_id}: failed: {error}")
+            logger.error("still %s: failed after %.2fs: %s", item.item_id,
+                         time.perf_counter() - started, error)
     return rendered, len(manifest.items) - len(pending), failed
 
 
@@ -138,13 +143,14 @@ def render_videos(args, manifest, output_dir, state):
         still_path = output_dir / item.still.output
         if not still_path.is_file():
             blocked += 1
-            print(f"video {item.item_id}: blocked; still is missing")
+            logger.warning("video %s: blocked; still is missing", item.item_id)
             continue
         still_hash = sha256_file(still_path)
         if (item.video.prompt_basis == "rendered"
                 and item.video.basis_sha256 != still_hash):
             blocked += 1
-            print(f"video {item.item_id}: blocked; rendered-basis prompt is stale")
+            logger.warning(
+                "video %s: blocked; rendered-basis prompt is stale", item.item_id)
             continue
         destination = output_dir / item.video.output
         record = state["items"].get(item.item_id, {}).get("video", {})
@@ -167,6 +173,7 @@ def render_videos(args, manifest, output_dir, state):
     client = _client(args)
     rendered = failed = 0
     for item, still_path, still_hash, destination, fingerprint, seed in pending:
+        started = time.perf_counter()
         try:
             remote_name = f"reimagine/{still_hash[:12]}/{host_name(item.still.output)}.jpg"
             load_name = client.upload_image(still_path, remote_name)
@@ -191,10 +198,12 @@ def render_videos(args, manifest, output_dir, state):
             }
             _save_state(args, item.item_id, state)
             rendered += 1
-            print(f"video {item.item_id}: rendered")
+            logger.info("video %s: rendered in %.2fs", item.item_id,
+                        time.perf_counter() - started)
         except Exception as error:
             failed += 1
-            print(f"video {item.item_id}: failed: {error}")
+            logger.error("video %s: failed after %.2fs: %s", item.item_id,
+                         time.perf_counter() - started, error)
     return rendered, len(manifest.items) - len(pending) - blocked, failed + blocked
 
 

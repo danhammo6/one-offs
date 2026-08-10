@@ -24,10 +24,19 @@ No third-party deps. Serve, then open the printed URL.
 """
 import argparse
 import json
+import logging
 import mimetypes
 import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
+
+
+class HelpFormatter(
+        argparse.ArgumentDefaultsHelpFormatter,
+        argparse.RawDescriptionHelpFormatter):
+    pass
 
 ROOT = Path(__file__).parent.resolve()
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".gif", ".tiff"}
@@ -198,17 +207,21 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main():
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
     parser = argparse.ArgumentParser(description=__doc__,
-                                     formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--host", default="127.0.0.1")
-    parser.add_argument("--port", type=int, default=8000)
+                                     formatter_class=HelpFormatter)
+    parser.add_argument("--host", default="127.0.0.1",
+                        help="Interface on which to listen.")
+    parser.add_argument("--port", type=int, default=8000,
+                        help="TCP port on which to listen.")
     parser.add_argument("--outputs-dir", type=Path, default=ROOT / "outputs",
                         help="Top-level dir whose immediate subdirectories are "
                              "the selectable output sources (labeled by name).")
     parser.add_argument("--output-dir", type=Path, default=None,
                         help="Serve a single flat output dir instead of the "
                              "outputs/ tree (labeled by its own name).")
-    parser.add_argument("--input-dir", type=Path, default=ROOT / "input")
+    parser.add_argument("--input-dir", type=Path, default=ROOT / "input",
+                        help="Reference-image directory tree.")
     args = parser.parse_args()
 
     if args.output_dir is not None:
@@ -220,19 +233,19 @@ def main():
 
     srv = ThreadingHTTPServer((args.host, args.port), Handler)
     if Handler.sources:
-        print(f"reimagine gallery: {len(Handler.sources)} source(s):")
+        logger.info("reimagine gallery: %d source(s):", len(Handler.sources))
         for name, d in Handler.sources.items():
             n = sum(1 for p in d.rglob("*")
                     if p.is_file() and p.suffix.lower() in IMAGE_EXTS)
-            print(f"    {name:<20} {n} render(s)  ({d})")
+            logger.info("    %-20s %d render(s)  (%s)", name, n, d)
     else:
-        print("reimagine gallery: no output sources found "
-              f"(looked under {args.outputs_dir})")
-    print(f"  serving http://{args.host}:{args.port}  (Ctrl-C to stop)")
+        logger.warning("reimagine gallery: no output sources found "
+                       "(looked under %s)", args.outputs_dir)
+    logger.info("  serving http://%s:%d  (Ctrl-C to stop)", args.host, args.port)
     try:
         srv.serve_forever()
     except KeyboardInterrupt:
-        print("\nbye")
+        logger.info("\nbye")
 
 
 if __name__ == "__main__":

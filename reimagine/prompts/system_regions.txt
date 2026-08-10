@@ -21,7 +21,7 @@ Output a single JSON object with these keys:
 
 Hard constraints: the image MUST be strictly safe-for-work, fully-clothed, and non-sexualized. Do NOT invent text, watermarks, or logos that aren't in the reference. Prefer type "obj"; text elements are optional and usually unnecessary.
 
-Think first if you need to. Then output your FINAL answer as JSON wrapped in exactly these tags on their own lines, with nothing else inside them:
+Think first if you need to. Before answering, silently validate the JSON syntax: every key must have a colon, every string must use escaped newlines rather than literal line breaks, and arrays/objects must not have trailing commas. Then output your FINAL answer as JSON wrapped in exactly these tags on their own lines, with nothing else inside them:
 <regions>
 { ...the JSON... }
 </regions>

@@ -176,6 +176,17 @@ scripts/render_plans.sh    # ComfyUI-only pass
 
 Both scripts accept environment overrides documented in their source.
 
+To collect images whose initial LLM response needed a retry for a focused
+diagnostic rerun:
+
+```bash
+.venv/bin/python analyze_prompt_failures.py outputs/*.log \
+  --source-dir /path/to/references
+```
+
+This copies the matching references to `input/first-attempt-failures/` by
+default. Rerun that directory with `-v` or `-vv` to inspect rejected responses.
+
 ## Gallery
 
 ```bash

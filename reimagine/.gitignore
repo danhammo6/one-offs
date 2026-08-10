@@ -21,3 +21,4 @@ outputs/
 
 # Fetcher local scratch (the committed credits file is CREDITS.md)
 input/.credits.json
+input/first-attempt-failures*/

@@ -4,6 +4,7 @@ import io
 import json
 import tempfile
 import unittest
+import urllib.error
 import urllib.request
 from pathlib import Path
 from unittest import mock
@@ -16,7 +17,7 @@ from reimagine_pipeline.manifest import (
     save_pipeline_tree, save_render_state, save_render_state_tree,
 )
 from reimagine_pipeline.models import PipelineItem, PipelineManifest, StillSpec, VideoSpec
-from reimagine_pipeline.files import sha256_file
+from reimagine_pipeline.files import iter_images, sha256_file
 from reimagine_pipeline.llm import ClaudeCodeLLM, OpenAILLM
 from reimagine_pipeline.workflows import patch_ltx_workflow, pick_artifact
 from reimagine_pipeline.comfy import ComfyArtifact
@@ -249,10 +250,11 @@ class PipelineManifestTests(unittest.TestCase):
     def test_region_validation_failure_consumes_retry_then_succeeds(self):
         llm = mock.Mock()
         llm.chat.side_effect = [
-            '<regions>{"elements": []}</regions>',
-            '<regions>{"high_level_description":"A moving subject",'
-            '"elements":[{"type":"obj","desc":"subject","x":0.1,'
-            '"y":0.1,"w":0.5,"h":0.5}]}</regions>',
+            '<regions>\nelements: []\n</regions>',
+            '<regions>\nhigh_level_description: "A moving subject"\n'
+            'elements:\n  - type: "obj"\n    desc: "subject"\n'
+            '    x: 0.1\n    y: 0.1\n    w: 0.5\n    h: 0.5\n'
+            '</regions>',
         ]
 
         result = generate_still_prompt(
@@ -263,10 +265,42 @@ class PipelineManifestTests(unittest.TestCase):
         self.assertIsNone(llm.chat.call_args_list[0].kwargs["correction"])
         self.assertIn("high_level_description is required",
                       llm.chat.call_args_list[1].kwargs["correction"])
+        self.assertIn("elements: []",
+                      llm.chat.call_args_list[1].kwargs["correction"])
+
+    def test_region_yaml_formatting_error_is_sent_back_for_correction(self):
+        llm = mock.Mock()
+        malformed = (
+            '<regions>\nhigh_level_description: "A moving subject"\n'
+            'elements:\n  - type: "obj"\n    desc: [broken\n</regions>')
+        llm.chat.side_effect = [
+            malformed,
+            '<regions>\nhigh_level_description: "A moving subject"\n'
+            'elements:\n  - type: "obj"\n    desc: "subject"\n'
+            '    x: 0.1\n    y: 0.1\n    w: 0.5\n    h: 0.5\n'
+            '</regions>',
+        ]
+
+        result = generate_still_prompt(
+            llm, Path("/tmp/sample.jpg"), "regions")
+
+        correction = llm.chat.call_args_list[1].kwargs["correction"]
+        self.assertEqual(result["high_level_description"], "A moving subject")
+        self.assertIn("invalid region YAML", correction)
+        self.assertIn(malformed, correction)
+        self.assertIn("region YAML spec", llm.chat.call_args_list[0].args[1])
+
+    def test_region_system_prompt_requires_compact_output_only_yaml(self):
+        prompt = load_system_prompt("system_regions.txt")
+
+        self.assertIn("first output token must be <regions>", prompt)
+        self.assertIn("under 700 words", prompt)
+        self.assertIn("2 to 6 useful regions", prompt)
+        self.assertIn("do not use JSON braces or Markdown code fences", prompt)
 
     def test_region_validation_exhausts_exact_retry_budget(self):
         llm = mock.Mock()
-        llm.chat.return_value = '<regions>{"elements": []}</regions>'
+        llm.chat.return_value = '<regions>\nelements: []\n</regions>'
 
         with self.assertLogs("reimagine_pipeline.prompting", "WARNING") as logs, \
                 self.assertRaisesRegex(RuntimeError, "after 3 tries"):
@@ -289,6 +323,23 @@ class PipelineManifestTests(unittest.TestCase):
         self.assertIn("attempt 1/3", logs.output[0])
         self.assertIn("missing or too-short", logs.output[0])
         self.assertIsNotNone(llm.chat.call_args_list[1].kwargs["correction"])
+
+    def test_retry_omits_oversized_previous_response(self):
+        llm = mock.Mock()
+        oversized = "analysis " * 1000
+        llm.chat.side_effect = [
+            oversized,
+            "<prompt>valid detailed prompt text</prompt>",
+        ]
+
+        result = generate_tagged(
+            llm, "system", "request", Path("/tmp/sample.jpg"), "prompt")
+
+        correction = llm.chat.call_args_list[1].kwargs["correction"]
+        self.assertEqual(result, "valid detailed prompt text")
+        self.assertIn("Start over", correction)
+        self.assertIn("Previous response omitted", correction)
+        self.assertNotIn(oversized, correction)
 
     def test_verbose_retry_logs_rejected_response(self):
         llm = mock.Mock()
@@ -354,6 +405,43 @@ class PipelineManifestTests(unittest.TestCase):
         self.assertEqual(content[0], {"type": "text", "text": "original"})
         self.assertEqual(content[1]["type"], "image_url")
         self.assertEqual(content[2], {"type": "text", "text": "retry"})
+
+    def test_openai_retries_http_500_once(self):
+        client = OpenAILLM("127.0.0.1:9503", model="test")
+        failure = urllib.error.HTTPError(
+            "http://127.0.0.1:9503/v1/chat/completions", 500,
+            "Internal Server Error", {}, None)
+        response = mock.MagicMock()
+        response.__enter__.return_value.read.return_value = json.dumps({
+            "choices": [{"message": {"content": "recovered"}}]
+        }).encode()
+        with tempfile.TemporaryDirectory() as tmp:
+            image = Path(tmp) / "sample.jpg"
+            image.write_bytes(b"image")
+            with mock.patch.object(
+                    urllib.request, "urlopen",
+                    side_effect=[failure, response]) as urlopen, \
+                    mock.patch("reimagine_pipeline.llm.time.sleep") as sleep:
+                result = client.chat("system", "request", image)
+
+        self.assertEqual(result, "recovered")
+        self.assertEqual(urlopen.call_count, 2)
+        sleep.assert_called_once_with(1)
+
+    def test_openai_does_not_retry_non_500_http_errors(self):
+        client = OpenAILLM("127.0.0.1:9503", model="test")
+        failure = urllib.error.HTTPError(
+            "http://127.0.0.1:9503/v1/chat/completions", 429,
+            "Too Many Requests", {}, None)
+        with tempfile.TemporaryDirectory() as tmp:
+            image = Path(tmp) / "sample.jpg"
+            image.write_bytes(b"image")
+            with mock.patch.object(
+                    urllib.request, "urlopen", side_effect=failure) as urlopen, \
+                    self.assertRaises(urllib.error.HTTPError):
+                client.chat("system", "request", image)
+
+        urlopen.assert_called_once()
 
     def test_openai_double_verbose_logs_reasoning(self):
         client = OpenAILLM("127.0.0.1:9503", model="test")
@@ -434,6 +522,23 @@ class PipelineManifestTests(unittest.TestCase):
 
 
 class ProcessIsolationTests(unittest.TestCase):
+    def test_image_discovery_follows_directory_symlinks(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            target = root / "target"
+            target.mkdir()
+            Image.new("RGB", (640, 480)).save(target / "sample.jpg")
+            input_dir = root / "input"
+            input_dir.mkdir()
+            (input_dir / "linked").symlink_to(target, target_is_directory=True)
+            (target / "cycle").symlink_to(input_dir, target_is_directory=True)
+
+            images = list(iter_images(input_dir))
+
+        self.assertEqual(
+            [path.relative_to(input_dir) for path in images],
+            [Path("linked/sample.jpg")])
+
     def test_prompt_generation_never_constructs_comfyui(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

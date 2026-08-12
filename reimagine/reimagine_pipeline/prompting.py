@@ -4,9 +4,12 @@ import re
 import time
 from pathlib import Path
 
+import yaml
+
 ROOT = Path(__file__).resolve().parent.parent
 PROMPTS_DIR = ROOT / "prompts"
 logger = logging.getLogger(__name__)
+MAX_CORRECTION_RESPONSE_CHARS = 2000
 
 
 def load_system_prompt(name, prompt_dir=PROMPTS_DIR):
@@ -34,8 +37,19 @@ def _generate_with_retries(
     for attempt in range(retries):
         correction = None
         if attempt:
+            if len(last) <= MAX_CORRECTION_RESPONSE_CHARS:
+                previous = last
+            else:
+                previous = (
+                    f"[Previous response omitted because it was {len(last)} "
+                    "characters and was likely truncated.]")
             correction = (
-                f"The previous response was invalid ({last_error}). "
+                "The previous response was invalid. Start over; do not "
+                "continue, quote, or discuss it. Correct the response using the "
+                f"error below.\nError: {last_error}\n"
+                "--- BEGIN PREVIOUS RESPONSE ---\n"
+                f"{previous}\n"
+                "--- END PREVIOUS RESPONSE ---\n"
                 f"Output only one valid {kind} block.")
         started = time.perf_counter()
         last = llm.chat(
@@ -124,7 +138,11 @@ def _parse_regions(text):
         r"<regions>(.*?)</regions>", text, re.DOTALL | re.IGNORECASE)
     if not matches:
         raise ValueError("missing <regions>...</regions> block")
-    return validate_regions(json.loads(matches[-1].strip()))
+    try:
+        spec = yaml.safe_load(matches[-1].strip())
+    except yaml.YAMLError as error:
+        raise ValueError(f"invalid region YAML: {error}") from error
+    return validate_regions(spec)
 
 
 def generate_still_prompt(llm, source, mode, prompt_dir=PROMPTS_DIR):
@@ -135,8 +153,8 @@ def generate_still_prompt(llm, source, mode, prompt_dir=PROMPTS_DIR):
             source, "prompt")
     return _generate_with_retries(
         llm, load_system_prompt("system_regions.txt", prompt_dir),
-        f"Read this reference image and write the region JSON spec:\n{source}",
-        source, "<regions> JSON </regions>", _parse_regions)
+        f"Read this reference image and write the region YAML spec:\n{source}",
+        source, "<regions> YAML </regions>", _parse_regions)
 
 
 def video_prompt_word_range(duration):

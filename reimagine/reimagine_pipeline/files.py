@@ -1,4 +1,5 @@
 import hashlib
+import os
 import tempfile
 from pathlib import Path
 
@@ -46,9 +47,21 @@ def sha256_file(path):
 
 
 def iter_images(root):
-    for path in sorted(root.rglob("*")):
-        if path.is_file() and path.suffix.lower() in IMAGE_EXTS:
-            yield path
+    images = []
+    seen_directories = set()
+    for directory, child_dirs, filenames in os.walk(root, followlinks=True):
+        stat = Path(directory).stat()
+        identity = (stat.st_dev, stat.st_ino)
+        if identity in seen_directories:
+            child_dirs.clear()
+            continue
+        seen_directories.add(identity)
+        child_dirs.sort()
+        for filename in sorted(filenames):
+            path = Path(directory) / filename
+            if path.is_file() and path.suffix.lower() in IMAGE_EXTS:
+                images.append(path)
+    yield from sorted(images, key=lambda path: path.relative_to(root).as_posix())
 
 
 def derive_dims(image_path):

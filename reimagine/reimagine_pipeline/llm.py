@@ -3,6 +3,8 @@ import json
 import logging
 import mimetypes
 import subprocess
+import time
+import urllib.error
 import urllib.request
 
 logger = logging.getLogger(__name__)
@@ -105,8 +107,18 @@ class OpenAILLM:
         request = urllib.request.Request(
             self.base_url + "/v1/chat/completions",
             data=json.dumps(payload).encode(), headers=self._headers())
-        with urllib.request.urlopen(request, timeout=self.timeout) as response:
-            body = json.loads(response.read())
+        for attempt in range(2):
+            try:
+                with urllib.request.urlopen(
+                        request, timeout=self.timeout) as response:
+                    body = json.loads(response.read())
+                break
+            except urllib.error.HTTPError as error:
+                if error.code != 500 or attempt:
+                    raise
+                logger.warning(
+                    "LLM request returned HTTP 500; retrying once in 1 second")
+                time.sleep(1)
         choices = body.get("choices") or []
         if not choices:
             raise RuntimeError(f"no choices in response: {str(body)[:200]}")

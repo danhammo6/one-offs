@@ -55,6 +55,7 @@ frame; video rendering does not depend on stale ComfyUI output staging.
 `generate_prompts.py` runs serially and checkpoints a `pipeline.yaml` in each
 image folder. It never imports or contacts ComfyUI. Startup and resume scan the
 whole output tree, so no top-level manifest grows with the total collection.
+The input path and directories linked from within its tree may be symbolic links.
 
 | flag | default | meaning |
 | --- | --- | --- |
@@ -84,15 +85,20 @@ unrelated action or re-describing the first frame.
 from the directory where `generate_prompts.py` is run.
 
 Invalid tagged or region responses consume one of three prompt attempts. Retry
-logs include the rejection reason and elapsed time; region JSON that parses but
-fails validation is retried instead of failing the item immediately. The local
+logs include the rejection reason and elapsed time; region YAML that parses but
+fails validation is retried instead of failing the item immediately. Formatting
+and validation retries send the error and rejected response back to the LLM so
+it can correct its prior output. Region responses are constrained to compact,
+output-only YAML to avoid exhausting the completion budget on narrated analysis.
+The local
 `-v` option logs the complete rejected response for diagnosing parse failures;
 `-vv` also logs separate reasoning content when the backend provides it. The local
 OpenAI-compatible client enables llama.cpp prompt caching and places retry-only
 instructions after the image so llama.cpp can reuse the unchanged multimodal
 prefix. Requests still transfer and decode the image, but a cache hit avoids
 repeating the expensive vision-token evaluation. Cache usage and server timing
-metadata are logged at `DEBUG` when returned by the server.
+metadata are logged at `DEBUG` when returned by the server. A transient HTTP 500
+from the completion endpoint is retried once after one second.
 
 ## Exact-frame prompting
 

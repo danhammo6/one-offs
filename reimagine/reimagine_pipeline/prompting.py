@@ -4,8 +4,6 @@ import re
 import time
 from pathlib import Path
 
-import yaml
-
 ROOT = Path(__file__).resolve().parent.parent
 PROMPTS_DIR = ROOT / "prompts"
 logger = logging.getLogger(__name__)
@@ -20,6 +18,16 @@ def load_system_prompt(name, prompt_dir=PROMPTS_DIR):
         raise ValueError(f"could not read system prompt {path}: {error}") from error
 
 
+def load_json_schema(name, prompt_dir=PROMPTS_DIR):
+    path = Path(prompt_dir) / name
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except OSError as error:
+        raise ValueError(f"could not read JSON schema {path}: {error}") from error
+    except json.JSONDecodeError as error:
+        raise ValueError(f"invalid JSON schema {path}: {error}") from error
+
+
 def extract_tagged(text, tag, minimum=20):
     matches = re.findall(
         rf"<{re.escape(tag)}>(.*?)</{re.escape(tag)}>", text,
@@ -31,7 +39,8 @@ def extract_tagged(text, tag, minimum=20):
 
 
 def _generate_with_retries(
-        llm, system_prompt, user_prompt, image_path, kind, parse, retries=3):
+        llm, system_prompt, user_prompt, image_path, kind, parse, retries=3,
+        json_schema=None):
     last = ""
     last_error = "invalid response"
     for attempt in range(retries):
@@ -50,10 +59,11 @@ def _generate_with_retries(
                 "--- BEGIN PREVIOUS RESPONSE ---\n"
                 f"{previous}\n"
                 "--- END PREVIOUS RESPONSE ---\n"
-                f"Output only one valid {kind} block.")
+                f"Output only one valid {kind}.")
         started = time.perf_counter()
         last = llm.chat(
-            system_prompt, user_prompt, image_path, correction=correction)
+            system_prompt, user_prompt, image_path, correction=correction,
+            json_schema=json_schema)
         try:
             return parse(last)
         except (json.JSONDecodeError, ValueError) as error:
@@ -87,30 +97,36 @@ def validate_regions(spec):
     high_level = str(spec.get("high_level_description") or "").strip()
     if not high_level:
         raise ValueError("high_level_description is required")
+    background = str(spec.get("background") or "").strip()
+    if not background:
+        raise ValueError("background is required")
     raw_elements = spec.get("elements")
-    if not isinstance(raw_elements, list) or not raw_elements:
-        raise ValueError("elements must be a non-empty array")
+    if not isinstance(raw_elements, list) or not 2 <= len(raw_elements) <= 6:
+        raise ValueError("elements must contain 2 to 6 entries")
     elements = []
     for raw in raw_elements:
         if not isinstance(raw, dict):
             continue
-        kind = "text" if str(raw.get("type", "")).lower() == "text" else "obj"
+        kind = str(raw.get("type") or "").lower()
+        if kind not in {"obj", "text"}:
+            raise ValueError("element type must be obj or text")
         text = str(raw.get("text") or "").strip()
         description = str(raw.get("desc") or "").strip()
         if kind == "text" and not text:
-            kind = "obj"
-        if not description and not text:
-            continue
+            raise ValueError("text elements require literal text")
+        if not description:
+            raise ValueError("element desc is required")
         try:
-            x, y = float(raw.get("x", 0)), float(raw.get("y", 0))
-            width, height = float(raw.get("w", 0.2)), float(raw.get("h", 0.2))
+            x, y = float(raw["x"]), float(raw["y"])
+            width, height = float(raw["w"]), float(raw["h"])
         except (TypeError, ValueError):
-            continue
-        x, y = max(0.0, min(1.0, x)), max(0.0, min(1.0, y))
-        width = min(max(0.0, width), 1.0 - x)
-        height = min(max(0.0, height), 1.0 - y)
-        if width <= 0 or height <= 0:
-            continue
+            raise ValueError("element coordinates must be numbers") from None
+        except KeyError as error:
+            raise ValueError(f"element coordinate {error.args[0]} is required") from None
+        if not (0 <= x <= 1 and 0 <= y <= 1
+                and width > 0 and height > 0
+                and x + width <= 1 and y + height <= 1):
+            raise ValueError("element box must be positive and fully on-canvas")
         palette = [str(color).strip() for color in raw.get("palette", [])
                    if re.fullmatch(r"#[0-9a-fA-F]{6}", str(color).strip())]
         elements.append({
@@ -118,13 +134,13 @@ def validate_regions(spec):
             "desc": description, "x": round(x, 4), "y": round(y, 4),
             "w": round(width, 4), "h": round(height, 4), "palette": palette,
         })
-    if not elements:
-        raise ValueError("no usable region elements")
+    if len(elements) != len(raw_elements):
+        raise ValueError("all region elements must be usable")
     palette = [str(color).strip() for color in spec.get("palette", [])
                if re.fullmatch(r"#[0-9a-fA-F]{6}", str(color).strip())]
     return {
         "high_level_description": high_level,
-        "background": str(spec.get("background") or "").strip(),
+        "background": background,
         "aesthetics": str(spec.get("aesthetics") or "").strip(),
         "lighting": str(spec.get("lighting") or "").strip(),
         "style": str(spec.get("style") or "").strip(),
@@ -134,14 +150,10 @@ def validate_regions(spec):
 
 
 def _parse_regions(text):
-    matches = re.findall(
-        r"<regions>(.*?)</regions>", text, re.DOTALL | re.IGNORECASE)
-    if not matches:
-        raise ValueError("missing <regions>...</regions> block")
     try:
-        spec = yaml.safe_load(matches[-1].strip())
-    except yaml.YAMLError as error:
-        raise ValueError(f"invalid region YAML: {error}") from error
+        spec = json.loads(text)
+    except json.JSONDecodeError as error:
+        raise ValueError(f"invalid region JSON: {error}") from error
     return validate_regions(spec)
 
 
@@ -153,8 +165,9 @@ def generate_still_prompt(llm, source, mode, prompt_dir=PROMPTS_DIR):
             source, "prompt")
     return _generate_with_retries(
         llm, load_system_prompt("system_regions.txt", prompt_dir),
-        f"Read this reference image and write the region YAML spec:\n{source}",
-        source, "<regions> YAML </regions>", _parse_regions)
+        f"Inspect this reference image and return its region JSON object:\n{source}",
+        source, "region JSON object", _parse_regions,
+        json_schema=load_json_schema("regions.schema.json", prompt_dir))
 
 
 def video_prompt_word_range(duration):

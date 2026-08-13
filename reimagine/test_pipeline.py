@@ -251,11 +251,14 @@ class PipelineManifestTests(unittest.TestCase):
     def test_region_validation_failure_consumes_retry_then_succeeds(self):
         llm = mock.Mock()
         llm.chat.side_effect = [
-            '<regions>\nelements: []\n</regions>',
-            '<regions>\nhigh_level_description: "A moving subject"\n'
-            'elements:\n  - type: "obj"\n    desc: "subject"\n'
-            '    x: 0.1\n    y: 0.1\n    w: 0.5\n    h: 0.5\n'
-            '</regions>',
+            '{"high_level_description":"A moving subject",'
+            '"background":"A field","elements":[]}',
+            '{"high_level_description":"A moving subject",'
+            '"background":"A field","elements":['
+            '{"type":"obj","desc":"subject","x":0.1,"y":0.1,'
+            '"w":0.5,"h":0.5},'
+            '{"type":"obj","desc":"field","x":0,"y":0.6,'
+            '"w":1,"h":0.4}]}',
         ]
 
         result = generate_still_prompt(
@@ -264,22 +267,24 @@ class PipelineManifestTests(unittest.TestCase):
         self.assertEqual(result["high_level_description"], "A moving subject")
         self.assertEqual(llm.chat.call_count, 2)
         self.assertIsNone(llm.chat.call_args_list[0].kwargs["correction"])
-        self.assertIn("high_level_description is required",
+        self.assertIn("elements must contain 2 to 6 entries",
                       llm.chat.call_args_list[1].kwargs["correction"])
-        self.assertIn("elements: []",
+        self.assertIn('"elements":[]',
                       llm.chat.call_args_list[1].kwargs["correction"])
+        schema = llm.chat.call_args_list[0].kwargs["json_schema"]
+        self.assertEqual(schema["properties"]["elements"]["minItems"], 2)
 
-    def test_region_yaml_formatting_error_is_sent_back_for_correction(self):
+    def test_region_json_formatting_error_is_sent_back_for_correction(self):
         llm = mock.Mock()
-        malformed = (
-            '<regions>\nhigh_level_description: "A moving subject"\n'
-            'elements:\n  - type: "obj"\n    desc: [broken\n</regions>')
+        malformed = '{"high_level_description":"A moving subject"'
         llm.chat.side_effect = [
             malformed,
-            '<regions>\nhigh_level_description: "A moving subject"\n'
-            'elements:\n  - type: "obj"\n    desc: "subject"\n'
-            '    x: 0.1\n    y: 0.1\n    w: 0.5\n    h: 0.5\n'
-            '</regions>',
+            '{"high_level_description":"A moving subject",'
+            '"background":"A field","elements":['
+            '{"type":"obj","desc":"subject","x":0.1,"y":0.1,'
+            '"w":0.5,"h":0.5},'
+            '{"type":"obj","desc":"field","x":0,"y":0.6,'
+            '"w":1,"h":0.4}]}',
         ]
 
         result = generate_still_prompt(
@@ -287,21 +292,30 @@ class PipelineManifestTests(unittest.TestCase):
 
         correction = llm.chat.call_args_list[1].kwargs["correction"]
         self.assertEqual(result["high_level_description"], "A moving subject")
-        self.assertIn("invalid region YAML", correction)
+        self.assertIn("invalid region JSON", correction)
         self.assertIn(malformed, correction)
-        self.assertIn("region YAML spec", llm.chat.call_args_list[0].args[1])
+        self.assertIn("region JSON object", llm.chat.call_args_list[0].args[1])
 
-    def test_region_system_prompt_requires_compact_output_only_yaml(self):
+    def test_region_system_prompt_requires_schema_compatible_json(self):
         prompt = load_system_prompt("system_regions.txt")
 
-        self.assertIn("first output token must be <regions>", prompt)
+        self.assertNotIn("<|think|>", prompt)
+        self.assertIn("bare JSON object", prompt)
         self.assertIn("under 700 words", prompt)
         self.assertIn("2 to 6 useful regions", prompt)
-        self.assertIn("do not use JSON braces or Markdown code fences", prompt)
+        self.assertIn("Do not use YAML, XML tags, or Markdown code fences", prompt)
+
+    def test_system_prompts_do_not_embed_thinking_control_tokens(self):
+        for name in (
+                "system_manual.txt", "system_regions.txt", "system_video.txt",
+                "system_video_reference.txt"):
+            self.assertNotIn("<|think|>", load_system_prompt(name), name)
 
     def test_region_validation_exhausts_exact_retry_budget(self):
         llm = mock.Mock()
-        llm.chat.return_value = '<regions>\nelements: []\n</regions>'
+        llm.chat.return_value = (
+            '{"high_level_description":"A moving subject",'
+            '"background":"A field","elements":[]}')
 
         with self.assertLogs("reimagine_pipeline.prompting", "WARNING") as logs, \
                 self.assertRaisesRegex(RuntimeError, "after 3 tries"):
@@ -310,6 +324,22 @@ class PipelineManifestTests(unittest.TestCase):
         self.assertEqual(llm.chat.call_count, 3)
         self.assertEqual(len(logs.output), 3)
         self.assertIn("attempt 3/3", logs.output[-1])
+
+    def test_region_semantic_validation_rejects_off_canvas_box(self):
+        llm = mock.Mock()
+        llm.chat.return_value = json.dumps({
+            "high_level_description": "A subject moving right",
+            "background": "A field",
+            "elements": [
+                {"type": "obj", "desc": "Subject facing right", "x": 0.8,
+                 "y": 0.1, "w": 0.4, "h": 0.6},
+                {"type": "obj", "desc": "Field", "x": 0, "y": 0.7,
+                 "w": 1, "h": 0.3},
+            ],
+        })
+
+        with self.assertRaisesRegex(RuntimeError, "fully on-canvas"):
+            generate_still_prompt(llm, Path("/tmp/sample.jpg"), "regions")
 
     def test_tagged_retry_logs_rejection_and_appends_correction(self):
         llm = mock.Mock()
@@ -380,6 +410,32 @@ class PipelineManifestTests(unittest.TestCase):
 
         self.assertEqual(llm.chat.call_args.args[0], "custom system")
 
+    def test_custom_region_prompt_directory_loads_schema(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            prompt_dir = Path(tmp)
+            (prompt_dir / "system_regions.txt").write_text("custom system")
+            schema = json.loads(
+                (Path("prompts") / "regions.schema.json").read_text())
+            (prompt_dir / "regions.schema.json").write_text(json.dumps(schema))
+            llm = mock.Mock()
+            llm.chat.return_value = json.dumps({
+                "high_level_description": "A subject moving left",
+                "background": "A field",
+                "elements": [
+                    {"type": "obj", "desc": "Subject facing left",
+                     "x": 0.1, "y": 0.1, "w": 0.5, "h": 0.6},
+                    {"type": "obj", "desc": "Field", "x": 0, "y": 0.7,
+                     "w": 1, "h": 0.3},
+                ],
+            })
+
+            generate_still_prompt(
+                llm, Path("/tmp/sample.jpg"), "regions",
+                prompt_dir=prompt_dir)
+
+        self.assertEqual(llm.chat.call_args.args[0], "custom system")
+        self.assertEqual(llm.chat.call_args.kwargs["json_schema"], schema)
+
     def test_missing_custom_prompt_reports_full_path(self):
         missing = Path("/tmp/reimagine-missing-prompts/system_manual.txt")
 
@@ -408,6 +464,56 @@ class PipelineManifestTests(unittest.TestCase):
         self.assertEqual(content[0], {"type": "text", "text": "original"})
         self.assertEqual(content[1]["type"], "image_url")
         self.assertEqual(content[2], {"type": "text", "text": "retry"})
+
+    def test_openai_payload_adds_llama_json_schema_per_request(self):
+        client = OpenAILLM("127.0.0.1:9503", model="test")
+        schema = {"type": "object", "required": ["answer"], "properties": {
+            "answer": {"type": "string"}}}
+        response = mock.MagicMock()
+        response.__enter__.return_value.read.return_value = json.dumps({
+            "choices": [{"message": {"content": '{"answer":"ok"}'}}]
+        }).encode()
+        with tempfile.TemporaryDirectory() as tmp:
+            image = Path(tmp) / "sample.jpg"
+            image.write_bytes(b"image")
+            with mock.patch.object(urllib.request, "urlopen",
+                                   return_value=response) as urlopen:
+                client.chat("system", "request", image, json_schema=schema)
+
+        payload = json.loads(urlopen.call_args.args[0].data)
+        self.assertEqual(payload["json_schema"], schema)
+
+    def test_openai_payload_enables_llama_reasoning_per_request(self):
+        client = OpenAILLM(
+            "127.0.0.1:9503", model="test", reasoning="on")
+        response = mock.MagicMock()
+        response.__enter__.return_value.read.return_value = json.dumps({
+            "choices": [{"message": {"content": "ok"}}]
+        }).encode()
+        with tempfile.TemporaryDirectory() as tmp:
+            image = Path(tmp) / "sample.jpg"
+            image.write_bytes(b"image")
+            with mock.patch.object(urllib.request, "urlopen",
+                                   return_value=response) as urlopen:
+                client.chat("system", "request", image)
+
+        payload = json.loads(urlopen.call_args.args[0].data)
+        self.assertEqual(payload["reasoning"], "on")
+
+    def test_claude_request_includes_json_schema_in_prompt(self):
+        client = ClaudeCodeLLM(add_dir=Path("/tmp"))
+        envelope = '{"subtype":"success","result":"{}"}'
+        schema = {"type": "object", "required": ["answer"]}
+        with mock.patch("reimagine_pipeline.llm.subprocess.run") as run:
+            run.return_value = mock.Mock(
+                returncode=0, stdout=envelope, stderr="")
+            client.chat(
+                "system", "request", Path("/tmp/sample.jpg"),
+                json_schema=schema)
+
+        request_prompt = run.call_args.kwargs["input"]
+        self.assertIn("Return JSON matching this schema", request_prompt)
+        self.assertIn(json.dumps(schema, separators=(",", ":")), request_prompt)
 
     def test_openai_retries_http_500_once(self):
         client = OpenAILLM("127.0.0.1:9503", model="test")
@@ -479,7 +585,8 @@ class PipelineManifestTests(unittest.TestCase):
     def test_parsers_show_defaults_and_prompt_prefix(self):
         prompt_args = generate_prompts.build_parser().parse_args([])
         self.assertEqual(prompt_args.prompt_path_prefix, Path("prompts"))
-        self.assertEqual(prompt_args.llm_max_tokens, 8192)
+        self.assertEqual(prompt_args.llm_max_tokens, 16384)
+        self.assertEqual(prompt_args.llm_reasoning, "on")
         self.assertEqual(
             generate_prompts.build_parser().parse_args(["-vv"]).verbose, 2)
         prompt_help = " ".join(generate_prompts.build_parser().format_help().split())

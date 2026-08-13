@@ -21,10 +21,16 @@ class ClaudeCodeLLM:
     def describe(self):
         return f"Claude Code CLI ({self.model}, multimodal via Read)"
 
-    def chat(self, system_prompt, user_prompt, image_path, correction=None):
+    def chat(
+            self, system_prompt, user_prompt, image_path, correction=None,
+            json_schema=None):
         user_prompt = (
             f"{user_prompt}\n\nUse the Read tool to inspect this image:\n"
             f"{image_path.resolve()}")
+        if json_schema is not None:
+            user_prompt += (
+                "\n\nReturn JSON matching this schema:\n" +
+                json.dumps(json_schema, separators=(",", ":")))
         if correction:
             user_prompt += f"\n\n{correction}"
         command = [
@@ -53,7 +59,7 @@ class ClaudeCodeLLM:
 class OpenAILLM:
     def __init__(
             self, base_url, model=None, api_key=None, timeout=300,
-            max_tokens=8192):
+            max_tokens=16384, reasoning="on"):
         if "://" not in base_url:
             base_url = "http://" + base_url
         base_url = base_url.rstrip("/")
@@ -62,6 +68,7 @@ class OpenAILLM:
         self.api_key = api_key
         self.timeout = timeout
         self.max_tokens = max_tokens
+        self.reasoning = reasoning
         self.log_reasoning = False
 
     def _headers(self):
@@ -86,7 +93,9 @@ class OpenAILLM:
     def describe(self):
         return f"OpenAI-compatible server {self.base_url} (model={self.model})"
 
-    def chat(self, system_prompt, user_prompt, image_path, correction=None):
+    def chat(
+            self, system_prompt, user_prompt, image_path, correction=None,
+            json_schema=None):
         self.resolve_model()
         raw = image_path.read_bytes()
         mime = mimetypes.guess_type(image_path.name)[0] or "image/jpeg"
@@ -106,7 +115,10 @@ class OpenAILLM:
             "temperature": 0.7,
             "max_tokens": self.max_tokens,
             "cache_prompt": True,
+            "reasoning": self.reasoning,
         }
+        if json_schema is not None:
+            payload["json_schema"] = json_schema
         request = urllib.request.Request(
             self.base_url + "/v1/chat/completions",
             data=json.dumps(payload).encode(), headers=self._headers())

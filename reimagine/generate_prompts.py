@@ -35,7 +35,7 @@ def build_llm(args, input_dir):
     if args.llm_server:
         llm = OpenAILLM(
             args.llm_server, model=args.llm_model,
-            max_tokens=args.llm_max_tokens)
+            max_tokens=args.llm_max_tokens, reasoning=args.llm_reasoning)
     else:
         llm = ClaudeCodeLLM(model=args.claude_model, add_dir=input_dir)
     llm.log_reasoning = args.verbose >= 2
@@ -70,8 +70,11 @@ def build_parser():
     parser.add_argument("--llm-model", default=None,
                         help="Model ID for the OpenAI-compatible server.")
     parser.add_argument(
-        "--llm-max-tokens", type=int, default=8192,
+        "--llm-max-tokens", type=int, default=16384,
         help="Maximum completion tokens for the OpenAI-compatible server.")
+    parser.add_argument(
+        "--llm-reasoning", choices=("off", "on"), default="on",
+        help="Model reasoning mode for llama.cpp requests.")
     parser.add_argument("--force", action="store_true",
                         help="Regenerate requested stages.")
     parser.add_argument(

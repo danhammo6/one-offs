@@ -1,0 +1,176 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Krea Region Prompt",
+  "description": "A region-based prompt that recreates a reference photograph. The main subject must be the first and largest element, and descriptions must preserve visible facing and motion direction.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "high_level_description": {
+      "type": "string",
+      "minLength": 1,
+      "description": "One sentence describing the whole image and the main subject's dynamic posture, including its left or right facing or motion direction when applicable."
+    },
+    "background": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The setting and backdrop."
+    },
+    "aesthetics": {
+      "type": "string",
+      "description": "Optional mood, composition, camera framing, and lens feel."
+    },
+    "lighting": {
+      "type": "string",
+      "description": "Optional description of the light in the scene."
+    },
+    "style": {
+      "type": "string",
+      "description": "Optional short photographic style phrase."
+    },
+    "palette": {
+      "type": "array",
+      "description": "Optional dominant colors sampled from the image.",
+      "items": {
+        "type": "string",
+        "pattern": "^#[0-9a-fA-F]{6}$"
+      },
+      "minItems": 1,
+      "maxItems": 8
+    },
+    "elements": {
+      "type": "array",
+      "description": "Two to six useful regions in importance order, with the main subject first.",
+      "minItems": 2,
+      "maxItems": 6,
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "const": "obj",
+                "description": "A normal object or subject region."
+              },
+              "desc": {
+                "type": "string",
+                "minLength": 1,
+                "description": "A vivid, grounded description of the region. Describe actual limb and torso positions and repeat visible facing or motion direction when applicable."
+              },
+              "x": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "description": "Normalized x coordinate of the box's top-left corner."
+              },
+              "y": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "description": "Normalized y coordinate of the box's top-left corner."
+              },
+              "w": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "maximum": 1,
+                "description": "Normalized box width. The box must also satisfy x + w <= 1."
+              },
+              "h": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "maximum": 1,
+                "description": "Normalized box height. The box must also satisfy y + h <= 1."
+              },
+              "palette": {
+                "type": "array",
+                "description": "Optional dominant colors sampled from this region.",
+                "items": {
+                  "type": "string",
+                  "pattern": "^#[0-9a-fA-F]{6}$"
+                },
+                "minItems": 1,
+                "maxItems": 8
+              }
+            },
+            "required": [
+              "type",
+              "desc",
+              "x",
+              "y",
+              "w",
+              "h"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "const": "text",
+                "description": "A region containing prominent lettering genuinely visible in the reference."
+              },
+              "desc": {
+                "type": "string",
+                "minLength": 1,
+                "description": "A vivid, grounded description of the text region and its visual treatment."
+              },
+              "text": {
+                "type": "string",
+                "minLength": 1,
+                "description": "The literal words visible in the reference; never invented text."
+              },
+              "x": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "description": "Normalized x coordinate of the box's top-left corner."
+              },
+              "y": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "description": "Normalized y coordinate of the box's top-left corner."
+              },
+              "w": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "maximum": 1,
+                "description": "Normalized box width. The box must also satisfy x + w <= 1."
+              },
+              "h": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "maximum": 1,
+                "description": "Normalized box height. The box must also satisfy y + h <= 1."
+              },
+              "palette": {
+                "type": "array",
+                "description": "Optional dominant colors sampled from this region.",
+                "items": {
+                  "type": "string",
+                  "pattern": "^#[0-9a-fA-F]{6}$"
+                },
+                "minItems": 1,
+                "maxItems": 8
+              }
+            },
+            "required": [
+              "type",
+              "desc",
+              "text",
+              "x",
+              "y",
+              "w",
+              "h"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "required": [
+    "high_level_description",
+    "background",
+    "elements"
+  ]
+}

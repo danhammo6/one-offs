@@ -6,7 +6,7 @@ Evaluate reliable structured region generation from Gemma 4 through llama.cpp,
 including output format, retry behavior, thinking mode, and completion-token
 budget. The reference benchmark contains 20 images under `input/`.
 
-## Current Implementation
+## Original YAML Implementation
 
 - Region responses use YAML inside `<regions>...</regions>` tags.
 - Parsing uses `yaml.safe_load`, followed by region validation.
@@ -19,15 +19,81 @@ budget. The reference benchmark contains 20 images under `input/`.
 - Symbolic-link directories are followed during deterministic image discovery,
   with directory identity tracking to prevent cycles.
 - Interrupted folder-sharded runs can resume from completed checkpoints.
-- `--llm-max-tokens` controls the OpenAI-compatible completion budget and
-  defaults to 8,192.
+- `--llm-max-tokens` controls the OpenAI-compatible completion budget and now
+  defaults to 16,384.
+- `--llm-reasoning` controls llama.cpp reasoning per request and now defaults to
+  `on`; both defaults remain explicitly overridable for experiments.
 
 The thinking experiments were run by locally prepending `<|think|>` to the
 prompt files. That local prompt change is intentionally not part of the recorded
 implementation; the results below motivate making thinking an explicit option
 instead.
 
+## Schema Experiment Implementation
+
+- Region responses are bare JSON objects constrained by
+  `prompts/regions.schema.json`.
+- The schema is attached to each llama.cpp chat-completion request as
+  the native top-level `json_schema` field; no server startup schema is required.
+- Local semantic validation still checks required descriptions, element count,
+  literal text, and fully on-canvas boxes.
+
 ## Runs
+
+### Schema-Constrained JSON, Non-Thinking 8k
+
+- Output: `outputs/input-json-schema-regions-v1/`
+- Log: `outputs/input-json-schema-regions-v1.log`
+- Completion budget: 8,192
+- Thinking: off
+- Outcome: 20/20 in one run
+- Calls: 22
+- Rejected responses: 2
+  - 1 JSON response truncated at the 8,192-token limit
+  - 1 response containing narrated analysis instead of JSON at the 8,192-token
+    limit
+- Responses at the 8,192-token limit: 2
+- Completions of at least 7,000 tokens: 3
+- Median completion tokens: 5,190
+- Elapsed time: 1,490 seconds
+- Region counts: 2-5, with every saved plan passing local semantic validation
+- Prompt-cache hits: 22/22 calls
+
+This was faster than the improved YAML baseline and matched the thinking 16k
+run's 22-call completion count while retaining the 8k budget. The schema
+reliably constrained successful responses, but this Gemma/llama.cpp combination
+still emitted long reasoning before the JSON content on two calls. Both failures
+reached the completion limit and succeeded through the existing corrective retry.
+The schema cannot enforce the semantic instruction that the first region be the
+largest by area; 12 plans use a larger background or secondary box and require
+visual review rather than automatic rejection.
+
+### Schema-Constrained JSON, Thinking 16k
+
+- Output: `outputs/input-json-schema-regions-thinking-16k/`
+- Log: `outputs/input-json-schema-regions-thinking-16k.log`
+- Completion budget: 16,384
+- Thinking: on via llama.cpp's per-request `reasoning` option
+- Outcome: 20/20 in one run
+- Calls: 20
+- Rejected responses: 0
+- Responses at the 16,384-token limit: 0
+- Responses over 8,192 tokens: 2
+- Completions of at least 7,000 tokens: 3
+- Median completion tokens: 3,856.5
+- Elapsed time: 1,321 seconds
+- Separate reasoning content appeared on 20/20 calls
+- Region counts: 2-5, with every saved plan passing local semantic validation
+- Prompt-cache hits: 19/20 calls
+
+This was the most reliable and fastest schema run: every initial response
+produced valid JSON and passed semantic validation. Despite the larger budget,
+it used fewer total completion tokens than schema-constrained non-thinking 8k
+(98,083 versus 110,251) and finished approximately 11% faster. Two responses
+used more than 8,192 tokens, so the 16k ceiling prevented potential truncation.
+Thirteen plans contain a background or secondary region larger by area than the
+first subject region, confirming that this remains a semantic/visual concern
+rather than a schema-format issue.
 
 ### YAML Baseline, Early Prompt and Retry Behavior
 
@@ -119,6 +185,8 @@ the timing comparison is directional rather than a controlled benchmark.
 
 | Configuration | Final output | Calls | Rejections | Budget hits | Median tokens | Recorded time |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Schema JSON, thinking 16k | 20/20 | 20 | 0 | 0 at 16k | 3,856.5 | 1,321s |
+| Schema JSON, non-thinking 8k | 20/20 | 22 | 2 | 2 at 8k | 5,190 | 1,490s |
 | Non-thinking 8k, improved retry | 20/20 | 23 | 3 | 3 at 8k | 5,218 | 1,716s |
 | Thinking 8k | 19/20 | 25 | 6 | 6 at 8k | 6,832 | 1,875s |
 | Thinking 16k | 20/20 | 22 | 2 | 1 at 16k | 5,396 | 2,200s |
@@ -184,22 +252,22 @@ thinking 8k plans. Selected 16k plans were then compared with the same images.
 
 ## Next Session TODOs
 
-- [ ] Define a JSON Schema for the complete region response.
-- [ ] Require `high_level_description`, `background`, and `elements`.
-- [ ] Constrain `elements` to 2-6 entries and require `type`, `desc`, `x`, `y`,
+- [x] Define a JSON Schema for the complete region response.
+- [x] Require `high_level_description`, `background`, and `elements`.
+- [x] Constrain `elements` to 2-6 entries and require `type`, `desc`, `x`, `y`,
       `w`, and `h` on each entry.
-- [ ] Constrain `type` to `obj` or `text`, with `text` conditionally required for
+- [x] Constrain `type` to `obj` or `text`, with `text` conditionally required for
       text regions if supported by the schema implementation.
-- [ ] Constrain coordinates to 0-1 and dimensions to values greater than zero.
-- [ ] Constrain palettes to quoted six-digit hex colors.
-- [ ] Investigate the llama.cpp OpenAI-compatible option for schema-constrained
+- [x] Constrain coordinates to 0-1 and dimensions to values greater than zero.
+- [x] Constrain palettes to quoted six-digit hex colors.
+- [x] Investigate the llama.cpp OpenAI-compatible option for schema-constrained
       JSON output, including the exact request field supported by the installed
       server version.
-- [ ] Add a structured-output transport option to `OpenAILLM` without affecting
+- [x] Add a structured-output transport option to `OpenAILLM` without affecting
       Claude Code or plain-text prompt generation.
-- [ ] Parse and validate schema-constrained JSON while retaining semantic
+- [x] Parse and validate schema-constrained JSON while retaining semantic
       validation for on-canvas boxes and usable descriptions.
-- [ ] Add an explicit experimental thinking flag instead of permanently adding
+- [x] Add an explicit experimental thinking flag instead of permanently adding
       `<|think|>` to prompt files.
 - [ ] Run the same 20-image set with schema-constrained JSON in these modes:
       non-thinking 8k, thinking 8k, and thinking 16k.

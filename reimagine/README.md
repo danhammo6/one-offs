@@ -68,7 +68,8 @@ The input path and directories linked from within its tree may be symbolic links
 | `--duration` | `10` | video duration in seconds, 1-30 |
 | `--prompt-path-prefix` | `prompts/` | directory containing the system prompt files |
 | `--llm-server` | *(none)* | OpenAI-compatible multimodal server; otherwise Claude Code |
-| `--llm-max-tokens` | `8192` | maximum completion-token budget for the OpenAI-compatible server |
+| `--llm-max-tokens` | `16384` | maximum completion-token budget for the OpenAI-compatible server |
+| `--llm-reasoning` | `on` | llama.cpp reasoning mode; use `off` to disable |
 | `-v`, `--verbose` | off | log rejected LLM responses; repeat (`-vv`) to include available reasoning |
 | `--force` | off | regenerate requested plan stages |
 
@@ -82,15 +83,19 @@ evolving synchronized audio, and an explicit final state rather than adding
 unrelated action or re-describing the first frame.
 
 `--prompt-path-prefix` must contain `system_manual.txt`, `system_regions.txt`,
-`system_video.txt`, and `system_video_reference.txt`. Relative paths are resolved
-from the directory where `generate_prompts.py` is run.
+`regions.schema.json`, `system_video.txt`, and `system_video_reference.txt`.
+Relative paths are resolved from the directory where `generate_prompts.py` is
+run.
 
 Invalid tagged or region responses consume one of three prompt attempts. Retry
-logs include the rejection reason and elapsed time; region YAML that parses but
-fails validation is retried instead of failing the item immediately. Formatting
-and validation retries send the error and rejected response back to the LLM so
-it can correct its prior output. Region responses are constrained to compact,
-output-only YAML to avoid exhausting the completion budget on narrated analysis.
+logs include the rejection reason and elapsed time; region JSON that parses but
+fails semantic validation is retried instead of failing the item immediately.
+Formatting and validation retries send the error and rejected response back to
+the LLM so it can correct its prior output. For OpenAI-compatible servers, the
+region schema is sent per request using llama.cpp's native `json_schema` field;
+the server does not need to be started with a schema. Region responses are
+constrained to compact, output-only JSON to avoid exhausting the completion
+budget on narrated analysis.
 The local
 `-v` option logs the complete rejected response for diagnosing parse failures;
 `-vv` also logs separate reasoning content when the backend provides it. The local
@@ -100,6 +105,10 @@ prefix. Requests still transfer and decode the image, but a cache hit avoids
 repeating the expensive vision-token evaluation. Cache usage and server timing
 metadata are logged at `DEBUG` when returned by the server. A transient HTTP 500
 from the completion endpoint is retried once after one second.
+`--llm-reasoning` sets llama.cpp's per-request `reasoning` option; changing it
+does not require restarting the server or modifying the system prompt. The 16k
+budget with reasoning enabled is the default because it was the fastest and most
+reliable configuration in the 20-image schema benchmark.
 
 ## Exact-frame prompting
 

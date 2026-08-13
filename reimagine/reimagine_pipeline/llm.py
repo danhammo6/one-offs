@@ -51,7 +51,9 @@ class ClaudeCodeLLM:
 
 
 class OpenAILLM:
-    def __init__(self, base_url, model=None, api_key=None, timeout=300):
+    def __init__(
+            self, base_url, model=None, api_key=None, timeout=300,
+            max_tokens=8192):
         if "://" not in base_url:
             base_url = "http://" + base_url
         base_url = base_url.rstrip("/")
@@ -59,6 +61,7 @@ class OpenAILLM:
         self.model = model
         self.api_key = api_key
         self.timeout = timeout
+        self.max_tokens = max_tokens
         self.log_reasoning = False
 
     def _headers(self):
@@ -101,7 +104,7 @@ class OpenAILLM:
                 {"role": "user", "content": content},
             ],
             "temperature": 0.7,
-            "max_tokens": 8192,
+            "max_tokens": self.max_tokens,
             "cache_prompt": True,
         }
         request = urllib.request.Request(

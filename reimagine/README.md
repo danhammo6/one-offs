@@ -68,6 +68,7 @@ The input path and directories linked from within its tree may be symbolic links
 | `--duration` | `10` | video duration in seconds, 1-30 |
 | `--prompt-path-prefix` | `prompts/` | directory containing the system prompt files |
 | `--llm-server` | *(none)* | OpenAI-compatible multimodal server; otherwise Claude Code |
+| `--llm-max-tokens` | `8192` | maximum completion-token budget for the OpenAI-compatible server |
 | `-v`, `--verbose` | off | log rejected LLM responses; repeat (`-vv`) to include available reasoning |
 | `--force` | off | regenerate requested plan stages |
 

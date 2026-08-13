@@ -14,7 +14,8 @@ import yaml
 
 from reimagine_pipeline.manifest import (
     load_pipeline, load_pipeline_tree, load_render_state_tree, save_pipeline,
-    save_pipeline_tree, save_render_state, save_render_state_tree,
+    save_pipeline_folder, save_pipeline_tree, save_render_state,
+    save_render_state_tree,
 )
 from reimagine_pipeline.models import PipelineItem, PipelineManifest, StillSpec, VideoSpec
 from reimagine_pipeline.files import iter_images, sha256_file
@@ -386,7 +387,8 @@ class PipelineManifestTests(unittest.TestCase):
             load_system_prompt("system_manual.txt", missing.parent)
 
     def test_openai_retry_payload_keeps_correction_after_image(self):
-        client = OpenAILLM("127.0.0.1:9503", model="test")
+        client = OpenAILLM(
+            "127.0.0.1:9503", model="test", max_tokens=16384)
         response = mock.MagicMock()
         response.__enter__.return_value.read.return_value = json.dumps({
             "choices": [{"message": {"content": "ok"}}]
@@ -402,6 +404,7 @@ class PipelineManifestTests(unittest.TestCase):
         payload = json.loads(request.data)
         content = payload["messages"][1]["content"]
         self.assertTrue(payload["cache_prompt"])
+        self.assertEqual(payload["max_tokens"], 16384)
         self.assertEqual(content[0], {"type": "text", "text": "original"})
         self.assertEqual(content[1]["type"], "image_url")
         self.assertEqual(content[2], {"type": "text", "text": "retry"})
@@ -476,6 +479,7 @@ class PipelineManifestTests(unittest.TestCase):
     def test_parsers_show_defaults_and_prompt_prefix(self):
         prompt_args = generate_prompts.build_parser().parse_args([])
         self.assertEqual(prompt_args.prompt_path_prefix, Path("prompts"))
+        self.assertEqual(prompt_args.llm_max_tokens, 8192)
         self.assertEqual(
             generate_prompts.build_parser().parse_args(["-vv"]).verbose, 2)
         prompt_help = " ".join(generate_prompts.build_parser().format_help().split())
@@ -942,6 +946,48 @@ class ProcessIsolationTests(unittest.TestCase):
 
         self.assertEqual(code, 0)
         self.assertEqual([item.item_id for item in loaded.items], ["a", "b"])
+
+    def test_partial_folder_tree_resumes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            input_dir = root / "input"
+            for folder in ("animals", "sports"):
+                (input_dir / folder).mkdir(parents=True)
+                Image.new("RGB", (640, 480)).save(
+                    input_dir / folder / "sample.jpg")
+            output_dir = root / "output"
+            first_hash = sha256_file(input_dir / "animals/sample.jpg")
+            first = PipelineManifest(
+                still_mode="manual", item_count=1,
+                items=[PipelineItem(
+                    index=0, item_id="animals/sample",
+                    source_path=Path("animals/sample.jpg"),
+                    source_sha256=first_hash,
+                    still=StillSpec(
+                        Path("animals/sample.jpg"), 1664, 1216,
+                        prompt="A detailed action photograph of an animal."),
+                )],
+            )
+            save_pipeline_folder(
+                output_dir, Path("animals"), first, item_count=1)
+            llm = mock.Mock()
+            llm.describe.return_value = "fake"
+            llm.chat.return_value = (
+                "<prompt>A detailed action photograph of an athlete.</prompt>")
+
+            with mock.patch.object(generate_prompts, "build_llm",
+                                   return_value=llm):
+                code = generate_prompts.main([
+                    "--input-dir", str(input_dir),
+                    "--output-dir", str(output_dir), "--stage", "stills",
+                ])
+            loaded = load_pipeline_tree(output_dir, require_stage="stills")
+
+        self.assertEqual(code, 0)
+        self.assertEqual(
+            [item.item_id for item in loaded.items],
+            ["animals/sample", "sports/sample"])
+        llm.chat.assert_called_once()
 
 
 if __name__ == "__main__":

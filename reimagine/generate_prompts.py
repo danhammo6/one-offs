@@ -33,7 +33,9 @@ class PromptJob:
 
 def build_llm(args, input_dir):
     if args.llm_server:
-        llm = OpenAILLM(args.llm_server, model=args.llm_model)
+        llm = OpenAILLM(
+            args.llm_server, model=args.llm_model,
+            max_tokens=args.llm_max_tokens)
     else:
         llm = ClaudeCodeLLM(model=args.claude_model, add_dir=input_dir)
     llm.log_reasoning = args.verbose >= 2
@@ -67,6 +69,9 @@ def build_parser():
                         help="OpenAI-compatible multimodal server address.")
     parser.add_argument("--llm-model", default=None,
                         help="Model ID for the OpenAI-compatible server.")
+    parser.add_argument(
+        "--llm-max-tokens", type=int, default=8192,
+        help="Maximum completion tokens for the OpenAI-compatible server.")
     parser.add_argument("--force", action="store_true",
                         help="Regenerate requested stages.")
     parser.add_argument(
@@ -106,9 +111,13 @@ def _load_planning_state(args, jobs, output_dir, manifest_path):
         existing = load_pipeline(manifest_path)
     elif not manifest_path and pipeline_paths(output_dir, PIPELINE_FILENAME):
         existing = load_pipeline_tree(output_dir, filename=PIPELINE_FILENAME)
+        checkpointed_parents = {
+            item.source_path.parent for item in existing.items}
+        checkpointed_count = sum(
+            folder_counts.get(parent, -1) for parent in checkpointed_parents)
         if (not args.force and (
                 existing.still_mode != args.still_mode
-                or existing.item_count != len(jobs))):
+                or existing.item_count != checkpointed_count)):
             raise ValueError("existing pipeline mode or inventory differs; use --force")
     still_mode = (existing.still_mode if existing and args.stage == "videos"
                   else args.still_mode)
@@ -254,6 +263,9 @@ def main(argv=None):
         format="%(message)s")
     if not 1 <= args.duration <= 30:
         logger.error("error: --duration must be between 1 and 30")
+        return 2
+    if args.llm_max_tokens <= 0:
+        logger.error("error: --llm-max-tokens must be positive")
         return 2
     try:
         return _run(args)

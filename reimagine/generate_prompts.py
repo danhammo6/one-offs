@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """Generate durable still and video prompt plans using only an LLM."""
 import argparse
 import logging

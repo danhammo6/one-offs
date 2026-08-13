@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """Render saved still and video plans using only ComfyUI."""
 import argparse
 import logging

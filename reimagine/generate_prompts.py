@@ -1,13 +1,17 @@
 #!/usr/bin/env python
 """Generate durable still and video prompt plans using only an LLM."""
 import argparse
+import contextlib
 import logging
+import tempfile
 import time
 from dataclasses import dataclass
 from pathlib import Path
 
 from reimagine_pipeline import PIPELINE_FILENAME
-from reimagine_pipeline.files import derive_dims, iter_images, sha256_file
+from reimagine_pipeline.files import (
+    derive_dims, iter_images, prepare_common_image, sha256_file,
+)
 from reimagine_pipeline.llm import ClaudeCodeLLM, OpenAILLM
 from reimagine_pipeline.manifest import (
     load_pipeline, load_pipeline_tree, pipeline_paths, save_pipeline,
@@ -25,6 +29,7 @@ class PromptJob:
     index: int
     item_id: str
     source: Path
+    prompt_source: Path
     relative: Path
     source_hash: str
     width: int
@@ -47,6 +52,10 @@ def build_parser():
         description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("--input-dir", type=Path, default=Path("input"),
                         help="Reference-image directory tree.")
+    parser.add_argument(
+        "--common-dims", action="store_true",
+        help="Center-crop temporary reference copies to the closest common "
+             "1.5 MP dimensions before prompting.")
     parser.add_argument("--output-dir", type=Path, default=Path("output"),
                         help="Prompt manifests and generated media directory.")
     parser.add_argument(
@@ -83,7 +92,7 @@ def build_parser():
     return parser
 
 
-def discover(input_dir):
+def discover(input_dir, common_dir=None):
     images = list(iter_images(input_dir))
     if not images:
         raise ValueError(f"no reference images under {input_dir}")
@@ -98,9 +107,15 @@ def discover(input_dir):
             raise ValueError(f"duplicate pipeline identity at {relative}")
         ids.add(item_id)
         outputs.add(output)
-        width, height = derive_dims(source)
+        if common_dir is None:
+            prompt_source = source
+            width, height = derive_dims(source)
+        else:
+            prompt_source = common_dir / relative.with_suffix(".jpg")
+            width, height = prepare_common_image(source, prompt_source)
         jobs.append(PromptJob(
-            index, item_id, source, relative, sha256_file(source), width, height))
+            index, item_id, source, prompt_source, relative,
+            sha256_file(source), width, height))
     return jobs
 
 
@@ -118,12 +133,26 @@ def _load_planning_state(args, jobs, output_dir, manifest_path):
             item.source_path.parent for item in existing.items}
         checkpointed_count = sum(
             folder_counts.get(parent, -1) for parent in checkpointed_parents)
-        if (not args.force and (
+        if (not args.force and args.stage != "videos" and (
                 existing.still_mode != args.still_mode
+                or existing.common_dims != args.common_dims
                 or existing.item_count != checkpointed_count)):
-            raise ValueError("existing pipeline mode or inventory differs; use --force")
+            raise ValueError(
+                "existing pipeline mode, preprocessing, or inventory differs; "
+                "use --force")
+    if (existing and args.stage != "videos" and not args.force
+            and existing.common_dims != args.common_dims):
+        raise ValueError(
+            "existing pipeline source preprocessing differs; use --force")
+    if (existing and args.stage == "videos"
+            and existing.common_dims != args.common_dims):
+        raise ValueError(
+            "existing pipeline source preprocessing differs; use the matching "
+            "--common-dims setting")
     still_mode = (existing.still_mode if existing and args.stage == "videos"
                   else args.still_mode)
+    if existing and args.stage == "videos" and existing.item_count != len(jobs):
+        raise ValueError("existing pipeline inventory differs; use --force")
     by_id = {} if not existing else {
         item.item_id: item for item in existing.items}
     jobs_by_id = {job.item_id: job for job in jobs}
@@ -138,7 +167,8 @@ def _load_planning_state(args, jobs, output_dir, manifest_path):
             for parent in folder_counts:
                 save_pipeline_folder(
                     output_dir, parent,
-                    PipelineManifest(args.still_mode, 0, []),
+                    PipelineManifest(
+                        args.still_mode, 0, [], common_dims=args.common_dims),
                     PIPELINE_FILENAME, prune_empty=True)
     return still_mode, by_id, folder_counts
 
@@ -150,7 +180,7 @@ def _plan_item(args, llm, job, item, still_mode, output_dir, prompt_dir):
         started = time.perf_counter()
         try:
             result = generate_still_prompt(
-                llm, job.source, still_mode, prompt_dir=prompt_dir)
+                llm, job.prompt_source, still_mode, prompt_dir=prompt_dir)
         except Exception:
             logger.error("still prompt %s: failed after %.2fs",
                          job.item_id, time.perf_counter() - started)
@@ -171,8 +201,8 @@ def _plan_item(args, llm, job, item, still_mode, output_dir, prompt_dir):
                 raise ValueError(f"rendered video basis is missing: {basis_image}")
             basis_hash = sha256_file(basis_image)
         else:
-            basis_image = job.source
-            basis_hash = job.source_hash
+            basis_image = job.prompt_source
+            basis_hash = sha256_file(basis_image)
         video_is_current = (
             video is not None
             and video.prompt_basis == args.video_basis
@@ -214,49 +244,63 @@ def _run(args):
     output_dir = args.output_dir.resolve()
     prompt_dir = args.prompt_path_prefix.resolve()
     manifest_path = args.manifest.resolve() if args.manifest else None
-    jobs = discover(input_dir)
-    still_mode, by_id, folder_counts = _load_planning_state(
-        args, jobs, output_dir, manifest_path)
-    llm = build_llm(
-        args, input_dir if args.video_basis == "reference" else output_dir)
-    logger.info("generate prompts: %d item(s), stage=%s", len(jobs), args.stage)
-    logger.info("  llm:      %s", llm.describe())
-    logger.info("  prompts:  %s", prompt_dir)
-    logger.info("  manifest: %s", manifest_path or f"{output_dir}/**/{PIPELINE_FILENAME}")
-    failed = generated = skipped = 0
-    manifest = PipelineManifest(still_mode, len(jobs), [])
-    started = time.perf_counter()
-    for job in jobs:
-        tag = f"[{job.index + 1}/{len(jobs)}] {job.relative}"
-        item = by_id.get(job.item_id)
-        if item and item.source_sha256 != job.source_hash:
-            item = None
-        try:
-            planned = _plan_item(
-                args, llm, job, item, still_mode, output_dir, prompt_dir)
-        except Exception as error:
-            logger.error("%s  failed: %s", tag, error)
-            failed += 1
-            continue
-        changed = planned != item
-        by_id[job.item_id] = planned
+    preprocess = args.common_dims
+    directory = (tempfile.TemporaryDirectory(prefix="reimagine-common-")
+                 if preprocess else contextlib.nullcontext(None))
+    with directory as common_dir:
+        common_dir = Path(common_dir) if common_dir else None
+        jobs = discover(input_dir, common_dir)
+        still_mode, by_id, folder_counts = _load_planning_state(
+            args, jobs, output_dir, manifest_path)
+        llm = build_llm(
+            args, (common_dir or input_dir)
+            if args.video_basis == "reference" else output_dir)
+        logger.info("generate prompts: %d item(s), stage=%s", len(jobs), args.stage)
+        logger.info("  llm:      %s", llm.describe())
+        logger.info("  prompts:  %s", prompt_dir)
+        logger.info("  manifest: %s", manifest_path or f"{output_dir}/**/{PIPELINE_FILENAME}")
+        if common_dir:
+            logger.info("  source:   temporary common-dimension crops")
+        failed = generated = skipped = 0
         manifest = PipelineManifest(
-            still_mode, len(jobs),
-            sorted(by_id.values(), key=lambda value: value.index))
-        _save_checkpoint(
-            output_dir, manifest_path, folder_counts, job, manifest)
-        if changed:
-            generated += 1
-            logger.info("%s  planned", tag)
-        else:
-            skipped += 1
-            logger.info("%s  saved plan unchanged", tag)
-    logger.info(
-        "done in %.2fs: %d planned, %d unchanged, %d failed",
-        time.perf_counter() - started, generated, skipped, failed)
-    if not manifest_path and not failed:
-        save_pipeline_tree(output_dir, manifest, PIPELINE_FILENAME)
-    return 1 if failed else 0
+            still_mode, len(jobs), [], common_dims=args.common_dims)
+        started = time.perf_counter()
+        for job in jobs:
+            tag = f"[{job.index + 1}/{len(jobs)}] {job.relative}"
+            item = by_id.get(job.item_id)
+            dimensions_changed = (
+                args.stage in {"all", "stills"} and item and item.still
+                and (item.still.width, item.still.height) != (job.width, job.height))
+            if item and (item.source_sha256 != job.source_hash
+                         or dimensions_changed):
+                item = None
+            try:
+                planned = _plan_item(
+                    args, llm, job, item, still_mode, output_dir, prompt_dir)
+            except Exception as error:
+                logger.error("%s  failed: %s", tag, error)
+                failed += 1
+                continue
+            changed = planned != item
+            by_id[job.item_id] = planned
+            manifest = PipelineManifest(
+                still_mode, len(jobs),
+                sorted(by_id.values(), key=lambda value: value.index),
+                common_dims=args.common_dims)
+            _save_checkpoint(
+                output_dir, manifest_path, folder_counts, job, manifest)
+            if changed:
+                generated += 1
+                logger.info("%s  planned", tag)
+            else:
+                skipped += 1
+                logger.info("%s  saved plan unchanged", tag)
+        logger.info(
+            "done in %.2fs: %d planned, %d unchanged, %d failed",
+            time.perf_counter() - started, generated, skipped, failed)
+        if not manifest_path and not failed:
+            save_pipeline_tree(output_dir, manifest, PIPELINE_FILENAME)
+        return 1 if failed else 0
 
 
 def main(argv=None):

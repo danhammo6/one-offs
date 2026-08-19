@@ -18,7 +18,10 @@ from reimagine_pipeline.manifest import (
     save_render_state_tree,
 )
 from reimagine_pipeline.models import PipelineItem, PipelineManifest, StillSpec, VideoSpec
-from reimagine_pipeline.files import iter_images, sha256_file
+from reimagine_pipeline.files import (
+    COMMON_DIMS, iter_images, prepare_common_image, select_common_dims,
+    sha256_file,
+)
 from reimagine_pipeline.llm import ClaudeCodeLLM, OpenAILLM
 from reimagine_pipeline.workflows import patch_ltx_workflow, pick_artifact
 from reimagine_pipeline.comfy import ComfyArtifact
@@ -34,10 +37,53 @@ import render_media
 
 
 class PipelineManifestTests(unittest.TestCase):
+    def test_common_dimensions_cover_supported_aspect_ratios(self):
+        cases = [
+            ((1200, 1800), (1024, 1536)),  # 2:3 portrait
+            ((1000, 1497), (1024, 1536)),  # near 2:3
+            ((1080, 1440), (1088, 1440)),  # 3:4 portrait
+            ((1080, 1439), (1088, 1440)),  # near 3:4
+            ((1080, 1920), (928, 1664)),   # 9:16 mobile
+            ((1077, 1920), (928, 1664)),   # near 9:16
+            ((1920, 1280), (1536, 1024)),  # 3:2 landscape
+            ((1917, 1280), (1536, 1024)),  # near 3:2
+            ((640, 480), (1440, 1088)),    # 4:3 standard definition
+            ((644, 484), (1440, 1088)),    # near 4:3
+            ((1920, 1080), (1664, 928)),   # 16:9 full HD
+            ((1918, 1080), (1664, 928)),   # near 16:9
+            ((1024, 1024), (1248, 1248)),  # square
+            ((1000, 1003), (1248, 1248)),  # near square
+        ]
+
+        self.assertEqual(
+            set(COMMON_DIMS.values()), {expected for _, expected in cases})
+        for source, expected in cases:
+            with self.subTest(source=source):
+                self.assertEqual(select_common_dims(*source), expected)
+
+    def test_prepare_common_image_center_crops_and_saves_jpeg(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "source.png"
+            destination = root / "prepared/reference.jpg"
+            image = Image.new("RGB", (2000, 1000), "red")
+            image.paste((0, 255, 0), (250, 0, 1750, 1000))
+            image.save(source)
+
+            dimensions = prepare_common_image(source, destination)
+            with Image.open(destination) as prepared:
+                size = prepared.size
+                center = prepared.getpixel((size[0] // 2, size[1] // 2))
+
+        self.assertEqual(dimensions, (1664, 928))
+        self.assertEqual(size, dimensions)
+        self.assertGreater(center[1], center[0])
+
     def test_round_trip_preserves_still_and_video_specs(self):
         manifest = PipelineManifest(
             still_mode="manual",
             item_count=1,
+            common_dims=True,
             items=[PipelineItem(
                 index=0,
                 item_id="animals/cat-pounce",
@@ -87,6 +133,19 @@ class PipelineManifestTests(unittest.TestCase):
 
         self.assertNotIn("seed", data["items"][0]["still"])
         self.assertNotIn("seed", data["items"][0]["video"])
+
+    def test_legacy_manifest_defaults_common_dims_off(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "pipeline.yaml"
+            path.write_text(
+                "schema_version: 2\n"
+                "still_mode: manual\n"
+                "item_count: 0\n"
+                "items: []\n")
+
+            manifest = load_pipeline(path)
+
+        self.assertFalse(manifest.common_dims)
 
     def test_pipeline_tree_round_trip_uses_one_manifest_per_folder(self):
         items = []
@@ -310,6 +369,12 @@ class PipelineManifestTests(unittest.TestCase):
                 "system_manual.txt", "system_regions.txt", "system_video.txt",
                 "system_video_reference.txt"):
             self.assertNotIn("<|think|>", load_system_prompt(name), name)
+
+    def test_manual_system_prompt_does_not_request_reasoning(self):
+        prompt = load_system_prompt("system_manual.txt")
+
+        self.assertNotIn("Think first", prompt)
+        self.assertIn("without narrating analysis", prompt)
 
     def test_region_validation_exhausts_exact_retry_budget(self):
         llm = mock.Mock()
@@ -678,6 +743,99 @@ class ProcessIsolationTests(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertIsNotNone(manifest.items[0].still)
         self.assertIsNotNone(manifest.items[0].video)
+
+    def test_common_dims_prompts_with_temporary_crop_and_records_dimensions(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            input_dir = root / "input"
+            input_dir.mkdir()
+            source = input_dir / "sample.png"
+            Image.new("RGB", (2000, 1000), "green").save(source)
+            source_hash = sha256_file(source)
+            seen = []
+            llm = mock.Mock()
+            llm.describe.return_value = "fake"
+
+            def chat(_system, _user, image_path, **_kwargs):
+                with Image.open(image_path) as image:
+                    seen.append((image_path, image.size))
+                return ("<prompt>A detailed action photograph of a moving "
+                        "subject in a wide landscape.</prompt>")
+
+            llm.chat.side_effect = chat
+            with mock.patch.object(generate_prompts, "build_llm",
+                                   return_value=llm) as build_llm:
+                code = generate_prompts.main([
+                    "--input-dir", str(input_dir),
+                    "--output-dir", str(root / "output"),
+                    "--stage", "stills", "--common-dims",
+                ])
+            manifest = load_pipeline(root / "output/pipeline.yaml")
+            still = manifest.items[0].still
+            add_dir = build_llm.call_args.args[1]
+
+        self.assertEqual(code, 0)
+        self.assertEqual((still.width, still.height), (1664, 928))
+        self.assertTrue(manifest.common_dims)
+        self.assertEqual(manifest.items[0].source_path, Path("sample.png"))
+        self.assertEqual(manifest.items[0].source_sha256, source_hash)
+        self.assertEqual(seen[0][1], (1664, 928))
+        self.assertNotEqual(seen[0][0], source)
+        self.assertEqual(seen[0][0].parent, add_dir)
+
+    def test_default_prompting_uses_original_source_and_derived_dimensions(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            input_dir = root / "input"
+            input_dir.mkdir()
+            source = input_dir / "sample.jpg"
+            Image.new("RGB", (640, 480), "green").save(source)
+            llm = mock.Mock()
+            llm.describe.return_value = "fake"
+            llm.chat.return_value = (
+                "<prompt>A detailed action photograph of a moving subject in "
+                "a landscape.</prompt>")
+            with mock.patch.object(generate_prompts, "build_llm",
+                                   return_value=llm):
+                code = generate_prompts.main([
+                    "--input-dir", str(input_dir),
+                    "--output-dir", str(root / "output"),
+                    "--stage", "stills",
+                ])
+            manifest = load_pipeline(root / "output/pipeline.yaml")
+
+        self.assertEqual(code, 0)
+        self.assertEqual(llm.chat.call_args.args[2], source.resolve())
+        self.assertEqual(
+            (manifest.items[0].still.width, manifest.items[0].still.height),
+            (1664, 1216))
+        self.assertFalse(manifest.common_dims)
+
+    def test_video_resume_rejects_mismatched_common_dims(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            input_dir = root / "input"
+            input_dir.mkdir()
+            source = input_dir / "sample.jpg"
+            Image.new("RGB", (640, 480), "green").save(source)
+            output_dir = root / "output"
+            save_pipeline(output_dir / "pipeline.yaml", PipelineManifest(
+                "manual", 1, [PipelineItem(
+                    0, "sample", Path("sample.jpg"), sha256_file(source),
+                    still=StillSpec(
+                        Path("sample.jpg"), 1440, 1088,
+                        prompt="A detailed action photograph of a subject."),
+                )], common_dims=True))
+
+            with self.assertLogs("generate_prompts", "ERROR") as logs:
+                code = generate_prompts.main([
+                    "--input-dir", str(input_dir),
+                    "--output-dir", str(output_dir),
+                    "--stage", "videos",
+                ])
+
+        self.assertEqual(code, 2)
+        self.assertIn("matching --common-dims", logs.output[-1])
 
     def test_prompt_generation_writes_one_manifest_per_image_folder(self):
         with tempfile.TemporaryDirectory() as tmp:

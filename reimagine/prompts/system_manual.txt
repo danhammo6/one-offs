@@ -8,7 +8,7 @@ FACING DIRECTION matters: state explicitly which way the subject faces and moves
 
 Hard constraints: the prompt MUST describe a strictly safe-for-work, fully-clothed, non-sexualized image. No text, watermarks, or logos. Keep it under 500 words.
 
-Think first if you need to. Then output your FINAL answer wrapped in exactly these tags on their own lines, with nothing else inside them:
+Return only the final prompt, without narrating analysis, showing a draft, or performing a written self-check. Wrap it in exactly these tags on their own lines, with nothing else outside them:
 <prompt>
 ...the prompt...
 </prompt>

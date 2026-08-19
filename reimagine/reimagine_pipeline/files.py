@@ -6,6 +6,15 @@ from pathlib import Path
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".gif", ".tiff"}
 TARGET_PIXELS = 1920 * 1080
 MAX_EDGE = 2048
+COMMON_DIMS = {
+    "Base portrait - 2:3": (1024, 1536),
+    "Stable portrait - 3:4": (1088, 1440),
+    "Tall mobile - 9:16": (928, 1664),
+    "Base landscape - 3:2": (1536, 1024),
+    "Balanced landscape - 4:3": (1440, 1088),
+    "Widescreen - 16:9": (1664, 928),
+    "Square format - 1:1": (1248, 1248),
+}
 
 
 def atomic_write_text(path, text):
@@ -75,6 +84,31 @@ def derive_dims(image_path):
         return max(64, int(round(value / 64.0)) * 64)
 
     return round64(width * scale), round64(height * scale)
+
+
+def select_common_dims(width, height):
+    if width <= 0 or height <= 0:
+        raise ValueError("image dimensions must be positive")
+    source_ratio = width / height
+    return min(
+        COMMON_DIMS.values(),
+        key=lambda dims: abs(source_ratio - dims[0] / dims[1]))
+
+
+def prepare_common_image(source, destination):
+    from PIL import Image, ImageOps
+
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    with Image.open(source) as raw:
+        image = ImageOps.exif_transpose(raw)
+        target = select_common_dims(*image.size)
+        image = ImageOps.fit(
+            image, target, method=Image.Resampling.LANCZOS,
+            centering=(0.5, 0.5))
+        if image.mode != "RGB":
+            image = image.convert("RGB")
+        image.save(destination, format="JPEG", quality=95, subsampling=0)
+    return target
 
 
 def host_name(path):

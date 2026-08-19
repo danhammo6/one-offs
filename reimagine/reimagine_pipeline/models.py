@@ -36,6 +36,7 @@ class PipelineManifest:
     item_count: int
     items: list[PipelineItem] = field(default_factory=list)
     schema_version: int = 2
+    common_dims: bool = False
 
 
 @dataclass

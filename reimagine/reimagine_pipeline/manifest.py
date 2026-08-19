@@ -52,6 +52,7 @@ def save_pipeline(path, manifest):
     data = {
         "schema_version": SCHEMA_VERSION,
         "still_mode": manifest.still_mode,
+        "common_dims": manifest.common_dims,
         "item_count": manifest.item_count,
         "items": [],
     }
@@ -76,7 +77,7 @@ def _load_still(data, mode):
         raise ValueError("still spec is not a mapping")
     output = _safe_path(data.get("output"), {".jpg"})
     width, height = int(data.get("width", 0)), int(data.get("height", 0))
-    if width <= 0 or height <= 0 or width % 64 or height % 64:
+    if width <= 0 or height <= 0 or width % 32 or height % 32:
         raise ValueError(f"invalid still dimensions for {output}")
     prompt, regions = data.get("prompt"), data.get("regions")
     if mode == "manual" and (not isinstance(prompt, str) or len(prompt) < 20):
@@ -115,6 +116,9 @@ def load_pipeline(path, require_stage=None):
     mode = data.get("still_mode")
     if mode not in {"manual", "regions"}:
         raise ValueError(f"invalid still mode: {mode!r}")
+    common_dims = data.get("common_dims", False)
+    if not isinstance(common_dims, bool):
+        raise ValueError("pipeline common_dims is not a boolean")
     try:
         count = int(data.get("item_count", -1))
     except (TypeError, ValueError) as error:
@@ -156,7 +160,9 @@ def load_pipeline(path, require_stage=None):
             indexes != set(range(count))
             or any(not item.still or not item.video for item in items)):
         raise ValueError("pipeline has incomplete video plans")
-    return PipelineManifest(mode, count, sorted(items, key=lambda item: item.index))
+    return PipelineManifest(
+        mode, count, sorted(items, key=lambda item: item.index),
+        common_dims=common_dims)
 
 
 def pipeline_paths(root, filename="pipeline.yaml"):
@@ -176,10 +182,14 @@ def load_pipeline_tree(root, require_stage=None, filename="pipeline.yaml"):
         parent = path.parent.relative_to(root)
         manifests.append(PipelineManifest(
             manifest.still_mode, manifest.item_count,
-            [_from_local_item(item, parent) for item in manifest.items]))
+            [_from_local_item(item, parent) for item in manifest.items],
+            common_dims=manifest.common_dims))
     modes = {manifest.still_mode for manifest in manifests}
     if len(modes) != 1:
         raise ValueError("pipeline folders use different still modes")
+    common_dims = {manifest.common_dims for manifest in manifests}
+    if len(common_dims) != 1:
+        raise ValueError("pipeline folders use different source preprocessing")
     items = [item for manifest in manifests for item in manifest.items]
     ids = [item.item_id for item in items]
     sources = [item.source_path for item in items]
@@ -191,7 +201,8 @@ def load_pipeline_tree(root, require_stage=None, filename="pipeline.yaml"):
             items, key=lambda value: value.source_path.as_posix()))
     ]
     manifest = PipelineManifest(
-        modes.pop(), sum(part.item_count for part in manifests), items)
+        modes.pop(), sum(part.item_count for part in manifests), items,
+        common_dims=common_dims.pop())
     if require_stage in {"stills", "all"} and (
             len(items) != manifest.item_count or any(not item.still for item in items)):
         raise ValueError("pipeline has incomplete still plans")
@@ -253,7 +264,8 @@ def save_pipeline_folder(root, parent, manifest, filename="pipeline.yaml",
     if not count and prune_empty:
         path.unlink(missing_ok=True)
         return
-    save_pipeline(path, PipelineManifest(manifest.still_mode, count, items))
+    save_pipeline(path, PipelineManifest(
+        manifest.still_mode, count, items, common_dims=manifest.common_dims))
 
 
 def save_pipeline_tree(root, manifest, filename="pipeline.yaml"):

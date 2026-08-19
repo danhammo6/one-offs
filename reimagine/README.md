@@ -63,6 +63,7 @@ The input path and directories linked from within its tree may be symbolic links
 | `--still-mode` | `manual` | plain `manual` prompt or structured `regions` spec |
 | `--video-basis` | `reference` | generate motion from the `reference` or actual `rendered` still |
 | `--input-dir` | `input` | reference-image tree |
+| `--common-dims` | off | center-crop temporary reference copies to the closest common 1.5 MP size |
 | `--output-dir` | `output` | output set and default manifest location |
 | `--manifest` | per-folder tree | use one explicit legacy/single-file manifest instead |
 | `--duration` | `10` | video duration in seconds, 1-30 |
@@ -86,6 +87,29 @@ unrelated action or re-describing the first frame.
 `regions.schema.json`, `system_video.txt`, and `system_video_reference.txt`.
 Relative paths are resolved from the directory where `generate_prompts.py` is
 run.
+
+`--common-dims` EXIF-normalizes each reference, scales it with Lanczos
+resampling, and center-crops it to the closest supported aspect ratio. The
+temporary JPEG copies are used for still prompting and for reference-basis
+video prompting; source files are never modified. The selected dimensions are
+also saved as the still render dimensions:
+
+| Format | Dimensions |
+| --- | ---: |
+| Base portrait (2:3) | 1024 x 1536 |
+| Stable portrait (3:4) | 1088 x 1440 |
+| Tall mobile (9:16) | 928 x 1664 |
+| Base landscape (3:2) | 1536 x 1024 |
+| Balanced landscape (4:3) | 1440 x 1088 |
+| Widescreen (16:9) | 1664 x 928 |
+| Square format (1:1) | 1248 x 1248 |
+
+When splitting still and reference-basis video planning into separate commands,
+pass `--common-dims` to both so each temporary copy uses the same deterministic
+crop. The manifest records this preprocessing mode and rejects a mismatched
+resume rather than silently planning against different framing. Omitting the
+flag preserves the existing aspect-ratio-derived dimensions and original
+reference image behavior.
 
 Invalid tagged or region responses consume one of three prompt attempts. Retry
 logs include the rejection reason and elapsed time; region JSON that parses but

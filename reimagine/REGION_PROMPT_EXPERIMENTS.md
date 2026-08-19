@@ -250,6 +250,31 @@ thinking 8k plans. Selected 16k plans were then compared with the same images.
 5. The next major experiment should constrain decoding with a JSON Schema rather
    than spend more tokens attempting to prompt the model into valid YAML.
 
+## Manual Prompt Benchmark
+
+The same 20-image set was run through `system_manual.txt` after removing its
+explicit "Think first" instruction. Both modes used a 16,384-token ceiling and
+the same local Gemma 4 / llama.cpp server.
+
+| Configuration | Final output | Calls | Rejections | Completion tokens | Median item time | Recorded time |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Manual, reasoning off | 20/20 | 20 | 0 | 45,393 | 29.62s | 658.35s |
+| Manual, reasoning on | 20/20 | 22 | 2 | 76,957 | 38.17s | 1,143.65s |
+
+- Reasoning off finished in 10m 58s, about 50% of the schema-JSON region
+  reasoning run's 22m 01s and 44% of the region non-reasoning run's 24m 50s.
+- Reasoning on finished in 19m 04s, 74% slower than reasoning off. One image
+  (`everyday/chef.jpg`) consumed two rejected attempts, including one response
+  that reached the 16,384-token ceiling, before succeeding on the third call.
+- The model still returned separate `reasoning_content` on 19 of 20 requests
+  with the request-level mode set to `off`. The flag changes model behavior and
+  latency, but for this model/template it does not literally suppress all
+  extracted reasoning content.
+- The manual output contract is validated independently of the YAML manifest
+  serialization. Region-generation YAML has been fully replaced by bare,
+  schema-constrained JSON; `pipeline.yaml`, `render_state.yaml`, and gallery
+  projection YAML remain intentional durable file formats.
+
 ## Next Session TODOs
 
 - [x] Define a JSON Schema for the complete region response.

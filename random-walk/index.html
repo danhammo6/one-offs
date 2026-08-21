@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Random Walk Heatmap — Bounded vs Unbounded</title>
+<title>Random Walk Heatmap — Lattice vs Any-angle</title>
 <script src="js/mathjax-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
 <link rel="stylesheet" href="css/app.css">
@@ -11,7 +11,9 @@
 <body>
   <div id="main">
   <h1>Random Walk: Bounded vs Unbounded</h1>
-  <div class="subtitle">Both walkers take the <em>same</em> random step each tick — only the boundary rule differs. <span class="hint">Click any stat or caption to explain it →</span></div>
+  <div class="subtitle">Each row shares one random step across Recenter and Pan — only the
+    boundary rule differs. Top row: four directions. Bottom row: any heading, still length 1.
+    <span class="hint">Click any stat or caption to explain it →</span></div>
   <div id="controls">
     <button id="pauseBtn">Pause</button>
     <button id="resetBtn">Reset</button>
@@ -22,27 +24,55 @@
       <span id="fadeVal">30</span></label>
   </div>
 
-  <div id="boards">
-    <div class="board">
-      <h2>Recenter</h2>
-      <div class="tag">bounded — falls off the edge, restarts at center</div>
-      <canvas id="boundedCanvas"></canvas>
-      <div id="bStats" class="stats">&nbsp;</div>
-      <div id="bDiag" class="stats diag">&nbsp;</div>
-      <div id="bBoundary" class="stats boundary">&nbsp;</div>
-      <canvas id="chiPlot" class="plot"></canvas>
-      <div class="tag" data-explain="chiPlot">χ² vs N — jitters around mean 3 (df=3); a fair RNG never settles</div>
+  <section class="row">
+    <h2 class="row-title">4-direction · lattice</h2>
+    <div class="boards">
+      <div class="board">
+        <h2>Recenter</h2>
+        <div class="tag">bounded — falls off the edge, restarts at center</div>
+        <canvas id="latBoundedCanvas"></canvas>
+        <div id="latBStats" class="stats">&nbsp;</div>
+        <div id="latBDiag" class="stats diag">&nbsp;</div>
+        <div id="latBBoundary" class="stats boundary">&nbsp;</div>
+        <canvas id="latChiPlot" class="plot"></canvas>
+        <div class="tag" data-explain="chiPlot">χ² vs N — jitters around mean 3 (df=3); a fair RNG never settles</div>
+      </div>
+      <div class="board">
+        <h2>Pan</h2>
+        <div class="tag">unbounded — roams inside the box, camera pans only at the edge</div>
+        <canvas id="latPanCanvas"></canvas>
+        <div id="latPStats" class="stats msd">&nbsp;</div>
+        <div id="latPDiag" class="stats msd">&nbsp;</div>
+        <canvas id="latMsdPlot" class="plot"></canvas>
+        <div class="tag" data-explain="msdPlot">⟨r²⟩/N vs N — converges to the dashed line at 1</div>
+      </div>
     </div>
-    <div class="board">
-      <h2>Pan</h2>
-      <div class="tag">unbounded — roams inside the box, camera pans only at the edge</div>
-      <canvas id="panCanvas"></canvas>
-      <div id="pStats" class="stats msd">&nbsp;</div>
-      <div id="pDiag" class="stats msd">&nbsp;</div>
-      <canvas id="msdPlot" class="plot"></canvas>
-      <div class="tag" data-explain="msdPlot">⟨r²⟩/N vs N — converges to the dashed line at 1</div>
+  </section>
+
+  <section class="row">
+    <h2 class="row-title">Any angle · unit steps</h2>
+    <div class="boards">
+      <div class="board">
+        <h2>Recenter</h2>
+        <div class="tag">bounded — same walls, headings free on the circle</div>
+        <canvas id="isoBoundedCanvas"></canvas>
+        <div id="isoBStats" class="stats">&nbsp;</div>
+        <div id="isoBDiag" class="stats diag">&nbsp;</div>
+        <div id="isoBBoundary" class="stats boundary">&nbsp;</div>
+        <canvas id="isoRayleighPlot" class="plot"></canvas>
+        <div class="tag" data-explain="rayleighPlot">Rayleigh 2N R̄² vs N — jitters around mean 2 (df=2)</div>
+      </div>
+      <div class="board">
+        <h2>Pan</h2>
+        <div class="tag">unbounded — same dead-zone camera, any-angle trail</div>
+        <canvas id="isoPanCanvas"></canvas>
+        <div id="isoPStats" class="stats msd">&nbsp;</div>
+        <div id="isoPDiag" class="stats msd">&nbsp;</div>
+        <canvas id="isoMsdPlot" class="plot"></canvas>
+        <div class="tag" data-explain="msdPlot">⟨r²⟩/N vs N — still converges to 1 (unit steps)</div>
+      </div>
     </div>
-  </div>
+  </section>
   </div><!-- /#main -->
 
   <aside id="sidebar">
@@ -55,6 +85,9 @@
     </div>
   </aside>
 
+  <script src="js/draw.js"></script>
+  <script src="js/walk.js"></script>
+  <script src="js/explain.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

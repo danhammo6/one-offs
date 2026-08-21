@@ -26,9 +26,18 @@ button {
 button:hover { background: #3a3a3a; }
 label { font-size: 15px; }
 input[type=range] { vertical-align: middle; width: 130px; }
-#boards {
-  display: flex; gap: 40px; flex-wrap: wrap; justify-content: center;
+.row {
   width: 100%; max-width: 1280px;
+  margin-bottom: 32px;
+}
+.row-title {
+  margin: 0 0 14px; font-size: 13px; font-weight: 600;
+  text-align: center; text-transform: uppercase; letter-spacing: 0.08em;
+  color: #7ba7ff;
+}
+.boards {
+  display: flex; gap: 40px; flex-wrap: wrap; justify-content: center;
+  width: 100%;
 }
 .board { display: flex; flex-direction: column; align-items: center; flex: 1 1 560px; max-width: 600px; }
 .board h2 { margin: 0 0 2px; font-size: 19px; font-weight: 600; }

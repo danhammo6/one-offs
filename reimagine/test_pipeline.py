@@ -972,7 +972,7 @@ class ProcessIsolationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             output_dir = Path(tmp)
             save_pipeline(output_dir / "pipeline.yaml", manifest)
-            artifact = ComfyArtifact("159", "sample.jpeg", "", "output")
+            artifact = ComfyArtifact("885", "sample.jpeg", "", "output")
             fake = mock.Mock()
             fake.ping.return_value = True
             fake.run_workflow.return_value = [artifact]
@@ -988,7 +988,8 @@ class ProcessIsolationTests(unittest.TestCase):
             workflow = fake.run_workflow.call_args.args[0]
 
         self.assertEqual(code, 0)
-        self.assertEqual(workflow["78:75"]["inputs"]["seed"], 100)
+        self.assertEqual(workflow["273"]["inputs"]["seed"], 100)
+        self.assertEqual(workflow["265"]["inputs"]["seed"], 100)
 
     def test_video_render_logs_elapsed_time(self):
         manifest = PipelineManifest(

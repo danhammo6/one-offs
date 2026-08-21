@@ -7,7 +7,15 @@ MANUAL_WORKFLOW = ROOT / "workflows/krea2_comfyui_t2i_aitrepeneur_jpg_api.json"
 REGIONS_WORKFLOW = ROOT / "workflows/krea2_regions_comfyui_t2i_aitrepeneur_jpg_api.json"
 VIDEO_WORKFLOW = ROOT / "workflows/ltx2-3_comfyui_i2v_aitrepeneur_api.json"
 
-STILL_SAVER = "159"
+STILL_SAVER = "885"
+STILL_FIRST_SAMPLER = "273"
+STILL_SECOND_SAMPLER = "265"
+STILL_SMART_SEED = "282"
+STILL_LATENT = "870"
+STILL_MANUAL_PROMPT = "278"
+STILL_REGIONS_BUILDER = "217"
+STILL_CLIP = "53"
+STILL_UNET = "879"
 VIDEO_SAVER = "1087"
 
 
@@ -19,10 +27,11 @@ def load_workflow(path):
 
 
 def _common_still(workflow, spec, seed, save_subdir, filename):
-    workflow["78:75"]["inputs"]["seed"] = seed
-    if "148" in workflow:
-        workflow["148"]["inputs"]["seed"] = seed
-    workflow["78:76"]["inputs"].update(width=spec.width, height=spec.height)
+    workflow[STILL_FIRST_SAMPLER]["inputs"]["seed"] = seed
+    workflow[STILL_SECOND_SAMPLER]["inputs"]["seed"] = seed
+    if STILL_SMART_SEED in workflow:
+        workflow[STILL_SMART_SEED]["inputs"]["seed"] = seed
+    workflow[STILL_LATENT]["inputs"].update(width=spec.width, height=spec.height)
     workflow[STILL_SAVER]["inputs"].update(
         path=save_subdir, filename=filename, seed_value=seed,
         width=spec.width, height=spec.height, time_format="")
@@ -32,10 +41,10 @@ def patch_still_workflow(base, spec, mode, seed, save_subdir, filename,
                          clip_name=None, unet_name=None):
     workflow = copy.deepcopy(base)
     if mode == "manual":
-        workflow["143"]["inputs"]["value"] = spec.prompt
+        workflow[STILL_MANUAL_PROMPT]["inputs"]["value"] = spec.prompt
     else:
         region = spec.regions
-        builder = workflow["14"]["inputs"]
+        builder = workflow[STILL_REGIONS_BUILDER]["inputs"]
         builder.update(
             width=spec.width, height=spec.height,
             high_level_description=region["high_level_description"],
@@ -46,9 +55,9 @@ def patch_still_workflow(base, spec, mode, seed, save_subdir, filename,
             elements_data=json.dumps(region["elements"]))
     _common_still(workflow, spec, seed, save_subdir, filename)
     if clip_name:
-        workflow["53"]["inputs"]["clip_name"] = clip_name
+        workflow[STILL_CLIP]["inputs"]["clip_name"] = clip_name
     if unet_name:
-        workflow["162"]["inputs"]["unet_name"] = unet_name
+        workflow[STILL_UNET]["inputs"]["unet_name"] = unet_name
     return workflow
 
 

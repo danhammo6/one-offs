@@ -2,12 +2,136 @@ import base64
 import json
 import logging
 import mimetypes
+import os
+import signal
+import socket
 import subprocess
+import sys
+import threading
 import time
 import urllib.error
 import urllib.request
 
 logger = logging.getLogger(__name__)
+_INTERRUPT_POLL_S = 0.05
+
+
+def _uses_windows_process_tree():
+    if os.name == "nt":
+        return True
+    platform = sys.platform
+    return platform == "msys" or platform.startswith("cygwin")
+
+
+def _cli_popen_kwargs():
+    kwargs = dict(
+        stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE, text=True)
+    if os.name == "nt":
+        kwargs["creationflags"] = getattr(
+            subprocess, "CREATE_NEW_PROCESS_GROUP", 0x00000200)
+    else:
+        kwargs["start_new_session"] = True
+    return kwargs
+
+
+def _close_quietly(stream):
+    if stream is None:
+        return
+    try:
+        fp = getattr(stream, "fp", stream)
+        raw = getattr(fp, "raw", fp)
+        sock = getattr(raw, "_sock", None)
+        if sock is not None:
+            try:
+                sock.shutdown(socket.SHUT_RDWR)
+            except OSError:
+                pass
+    except Exception:
+        pass
+    try:
+        stream.close()
+    except Exception:
+        pass
+
+
+def _taskkill_tree(pid):
+    if not pid:
+        return
+    if os.name == "nt":
+        command = ["taskkill.exe", "/F", "/T", "/PID", str(pid)]
+        extra = {"creationflags": getattr(subprocess, "CREATE_NO_WINDOW", 0)}
+    else:
+        # MSYS converts "/F" into a filesystem path; "//F" reaches taskkill as /F.
+        command = ["taskkill.exe", "//F", "//T", "//PID", str(pid)]
+        extra = {}
+    try:
+        subprocess.Popen(
+            command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            **extra)
+    except OSError:
+        pass
+
+
+def _kill_process_group(process):
+    if process.poll() is not None:
+        return
+    if _uses_windows_process_tree():
+        _taskkill_tree(process.pid)
+    else:
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except (AttributeError, ProcessLookupError, PermissionError, OSError):
+            pass
+    try:
+        process.kill()
+    except OSError:
+        pass
+
+
+def _run_interruptible(func, on_interrupt=None, poll=_INTERRUPT_POLL_S):
+    """Run *func* in a daemon thread so Ctrl-C is not stuck in a blocking call."""
+    result = {}
+
+    def worker():
+        try:
+            result["value"] = func()
+        except BaseException as error:
+            result["error"] = error
+
+    thread = threading.Thread(target=worker, daemon=True)
+    thread.start()
+    try:
+        while thread.is_alive():
+            # time.sleep is more reliably interrupted by Ctrl-C under MSYS2
+            # than Thread.join; join still returns as soon as work finishes.
+            if _uses_windows_process_tree():
+                time.sleep(poll)
+            else:
+                thread.join(poll)
+    except BaseException:
+        if on_interrupt is not None:
+            try:
+                on_interrupt()
+            except Exception:
+                pass
+        raise
+    error = result.get("error")
+    if error is not None:
+        raise error
+    return result.get("value")
+
+
+def _urlopen_read(request, timeout):
+    holder = {"response": None}
+
+    def fetch():
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            holder["response"] = response
+            return response.read()
+
+    return _run_interruptible(
+        fetch, on_interrupt=lambda: _close_quietly(holder["response"]))
 
 
 class ClaudeCodeLLM:
@@ -39,17 +163,23 @@ class ClaudeCodeLLM:
         ]
         if self.add_dir:
             command += ["--add-dir", str(self.add_dir)]
-        process = subprocess.run(
-            command, input=user_prompt, capture_output=True, text=True,
-            timeout=self.timeout)
+        process = subprocess.Popen(command, **_cli_popen_kwargs())
+        try:
+            stdout, stderr = _run_interruptible(
+                lambda: process.communicate(
+                    input=user_prompt, timeout=self.timeout),
+                on_interrupt=lambda: _kill_process_group(process))
+        except subprocess.TimeoutExpired:
+            _kill_process_group(process)
+            raise
         if process.returncode != 0:
             raise RuntimeError(
-                f"claude exited {process.returncode}: {process.stderr.strip()[:200]}")
+                f"claude exited {process.returncode}: {stderr.strip()[:200]}")
         try:
-            envelope = json.loads(process.stdout)
+            envelope = json.loads(stdout)
         except json.JSONDecodeError as error:
             raise RuntimeError(
-                f"claude returned non-JSON: {process.stdout.strip()[:200]!r}") from error
+                f"claude returned non-JSON: {stdout.strip()[:200]!r}") from error
         if envelope.get("is_error") or envelope.get("subtype") != "success":
             raise RuntimeError(
                 f"claude error envelope: subtype={envelope.get('subtype')}")
@@ -82,8 +212,7 @@ class OpenAILLM:
             return self.model
         request = urllib.request.Request(
             self.base_url + "/v1/models", headers=self._headers())
-        with urllib.request.urlopen(request, timeout=30) as response:
-            body = json.loads(response.read())
+        body = json.loads(_urlopen_read(request, timeout=30))
         models = body.get("data") or body.get("models") or []
         if not models:
             raise RuntimeError(f"no models listed at {self.base_url}/v1/models")
@@ -124,9 +253,7 @@ class OpenAILLM:
             data=json.dumps(payload).encode(), headers=self._headers())
         for attempt in range(2):
             try:
-                with urllib.request.urlopen(
-                        request, timeout=self.timeout) as response:
-                    body = json.loads(response.read())
+                body = json.loads(_urlopen_read(request, timeout=self.timeout))
                 break
             except urllib.error.HTTPError as error:
                 if error.code != 500 or attempt:

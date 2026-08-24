@@ -2,7 +2,11 @@ import dataclasses
 import contextlib
 import io
 import json
+import os
+import signal
+import subprocess
 import tempfile
+import threading
 import unittest
 import urllib.error
 import urllib.request
@@ -22,7 +26,10 @@ from reimagine_pipeline.files import (
     COMMON_DIMS, iter_images, prepare_common_image, select_common_dims,
     sha256_file,
 )
-from reimagine_pipeline.llm import ClaudeCodeLLM, OpenAILLM
+from reimagine_pipeline.llm import (
+    ClaudeCodeLLM, OpenAILLM, _cli_popen_kwargs, _kill_process_group,
+    _run_interruptible,
+)
 from reimagine_pipeline.workflows import patch_ltx_workflow, pick_artifact
 from reimagine_pipeline.comfy import ComfyArtifact
 from reimagine_pipeline.manifest import load_render_state
@@ -569,14 +576,22 @@ class PipelineManifestTests(unittest.TestCase):
         client = ClaudeCodeLLM(add_dir=Path("/tmp"))
         envelope = '{"subtype":"success","result":"{}"}'
         schema = {"type": "object", "required": ["answer"]}
-        with mock.patch("reimagine_pipeline.llm.subprocess.run") as run:
-            run.return_value = mock.Mock(
-                returncode=0, stdout=envelope, stderr="")
+        process = mock.Mock(returncode=0)
+        process.communicate.return_value = (envelope, "")
+        with mock.patch(
+                "reimagine_pipeline.llm.subprocess.Popen",
+                return_value=process) as popen:
             client.chat(
                 "system", "request", Path("/tmp/sample.jpg"),
                 json_schema=schema)
 
-        request_prompt = run.call_args.kwargs["input"]
+        if os.name == "nt":
+            self.assertEqual(
+                popen.call_args.kwargs.get("creationflags"),
+                getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0x00000200))
+        else:
+            self.assertTrue(popen.call_args.kwargs.get("start_new_session"))
+        request_prompt = process.communicate.call_args.kwargs["input"]
         self.assertIn("Return JSON matching this schema", request_prompt)
         self.assertIn(json.dumps(schema, separators=(",", ":")), request_prompt)
 
@@ -639,13 +654,115 @@ class PipelineManifestTests(unittest.TestCase):
     def test_claude_request_includes_image_path(self):
         client = ClaudeCodeLLM(add_dir=Path("/tmp"))
         envelope = '{"subtype":"success","result":"ok"}'
-        with mock.patch("reimagine_pipeline.llm.subprocess.run") as run:
-            run.return_value.returncode = 0
-            run.return_value.stdout = envelope
-            run.return_value.stderr = ""
+        process = mock.Mock(returncode=0)
+        process.communicate.return_value = (envelope, "")
+        with mock.patch(
+                "reimagine_pipeline.llm.subprocess.Popen", return_value=process):
             client.chat("system", "request", Path("/tmp/frame.jpg"))
 
-        self.assertIn("/tmp/frame.jpg", run.call_args.kwargs["input"])
+        self.assertIn("/tmp/frame.jpg", process.communicate.call_args.kwargs["input"])
+
+    def test_run_interruptible_returns_worker_result(self):
+        self.assertEqual(_run_interruptible(lambda: 7), 7)
+
+    def test_run_interruptible_reraises_worker_error(self):
+        with self.assertRaises(ValueError):
+            _run_interruptible(lambda: (_ for _ in ()).throw(ValueError("x")))
+
+    def test_run_interruptible_invokes_on_interrupt(self):
+        called = []
+        hold = threading.Event()
+
+        def worker():
+            hold.wait(5)
+
+        try:
+            with mock.patch(
+                    "reimagine_pipeline.llm.threading.Thread.join",
+                    side_effect=KeyboardInterrupt):
+                with self.assertRaises(KeyboardInterrupt):
+                    _run_interruptible(
+                        worker, on_interrupt=lambda: called.append(True))
+        finally:
+            hold.set()
+        self.assertEqual(called, [True])
+
+    def test_kill_process_group_sends_sigkill(self):
+        process = mock.Mock(pid=99)
+        process.poll.return_value = None
+        with mock.patch("reimagine_pipeline.llm.os.killpg") as killpg:
+            _kill_process_group(process)
+        killpg.assert_called_once_with(99, signal.SIGKILL)
+        process.kill.assert_called_once()
+
+    def test_kill_process_group_skips_exited_child(self):
+        process = mock.Mock(pid=99)
+        process.poll.return_value = 0
+        with mock.patch("reimagine_pipeline.llm.os.killpg") as killpg:
+            _kill_process_group(process)
+        killpg.assert_not_called()
+        process.kill.assert_not_called()
+
+    def test_kill_process_group_uses_taskkill_on_windows(self):
+        process = mock.Mock(pid=99)
+        process.poll.return_value = None
+        with mock.patch("reimagine_pipeline.llm.os.name", "nt"), \
+                mock.patch("reimagine_pipeline.llm.subprocess.Popen") as popen, \
+                mock.patch("reimagine_pipeline.llm.os.killpg") as killpg:
+            _kill_process_group(process)
+        self.assertEqual(
+            popen.call_args.args[0][:4],
+            ["taskkill.exe", "/F", "/T", "/PID"])
+        self.assertEqual(popen.call_args.args[0][4], "99")
+        killpg.assert_not_called()
+        process.kill.assert_called_once()
+
+    def test_kill_process_group_uses_msys_taskkill_flags(self):
+        process = mock.Mock(pid=99)
+        process.poll.return_value = None
+        with mock.patch("reimagine_pipeline.llm.os.name", "posix"), \
+                mock.patch("reimagine_pipeline.llm.sys.platform", "msys"), \
+                mock.patch("reimagine_pipeline.llm.subprocess.Popen") as popen, \
+                mock.patch("reimagine_pipeline.llm.os.killpg") as killpg:
+            _kill_process_group(process)
+        self.assertEqual(
+            popen.call_args.args[0][:4],
+            ["taskkill.exe", "//F", "//T", "//PID"])
+        killpg.assert_not_called()
+        process.kill.assert_called_once()
+
+    def test_cli_popen_kwargs_use_windows_process_group(self):
+        with mock.patch("reimagine_pipeline.llm.os.name", "nt"):
+            kwargs = _cli_popen_kwargs()
+        self.assertEqual(
+            kwargs["creationflags"],
+            getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0x00000200))
+        self.assertNotIn("start_new_session", kwargs)
+
+    def test_claude_keyboard_interrupt_kills_process_group(self):
+        client = ClaudeCodeLLM(add_dir=Path("/tmp"))
+        hold = threading.Event()
+        process = mock.Mock(pid=4242, returncode=None)
+        process.poll.return_value = None
+        process.communicate.side_effect = lambda *args, **kwargs: hold.wait(5)
+        try:
+            with mock.patch(
+                    "reimagine_pipeline.llm.subprocess.Popen",
+                    return_value=process), \
+                    mock.patch(
+                        "reimagine_pipeline.llm.threading.Thread.join",
+                        side_effect=KeyboardInterrupt), \
+                    mock.patch("reimagine_pipeline.llm.os.killpg") as killpg, \
+                    self.assertRaises(KeyboardInterrupt):
+                client.chat("system", "request", Path("/tmp/frame.jpg"))
+            killpg.assert_called_once_with(4242, signal.SIGKILL)
+        finally:
+            hold.set()
+
+    def test_generate_prompts_interrupt_returns_130(self):
+        with mock.patch.object(
+                generate_prompts, "_run", side_effect=KeyboardInterrupt):
+            self.assertEqual(generate_prompts.main([]), 130)
 
     def test_parsers_show_defaults_and_prompt_prefix(self):
         prompt_args = generate_prompts.build_parser().parse_args([])

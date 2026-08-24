@@ -316,6 +316,9 @@ def main(argv=None):
         return 2
     try:
         return _run(args)
+    except KeyboardInterrupt:
+        logger.info("interrupted")
+        return 130
     except (ValueError, OSError) as error:
         logger.error("error: %s", error)
         return 2

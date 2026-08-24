@@ -7,8 +7,9 @@ from pathlib import Path
 
 from reimagine_pipeline import PIPELINE_FILENAME, RENDER_STATE_FILENAME
 from reimagine_pipeline.manifest import (
-    load_pipeline, load_pipeline_tree, load_render_state,
-    load_render_state_tree, save_pipeline_tree, save_render_state_tree,
+    incomplete_plan_messages, load_pipeline, load_pipeline_tree,
+    load_render_state, load_render_state_tree, save_pipeline_tree,
+    save_render_state_tree,
 )
 from reimagine_pipeline.projections import write_projections
 from reimagine_pipeline.rendering import render_all, render_stills, render_videos
@@ -67,10 +68,11 @@ def main(argv=None):
         args.comfyui_output_dir = args.comfyui_output_dir.resolve()
     try:
         started = time.perf_counter()
-        manifest = (load_pipeline(manifest_path, require_stage=args.stage)
+        manifest = (load_pipeline(manifest_path)
                     if manifest_path else load_pipeline_tree(
-                        output_dir, require_stage=args.stage,
-                        filename=PIPELINE_FILENAME))
+                        output_dir, filename=PIPELINE_FILENAME))
+        for message in incomplete_plan_messages(manifest, args.stage):
+            logger.warning("%s; rendering available items", message)
         if not manifest_path and (output_dir / PIPELINE_FILENAME).is_file():
             save_pipeline_tree(output_dir, manifest, PIPELINE_FILENAME)
         write_projections(output_dir, manifest)

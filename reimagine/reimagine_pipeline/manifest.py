@@ -153,16 +153,13 @@ def load_pipeline(path, require_stage=None):
             or len(still_outputs) != len([item for item in items if item.still])
             or len(video_outputs) != len([item for item in items if item.video])):
         raise ValueError("pipeline contains duplicate IDs or paths")
-    if require_stage in {"stills", "all"} and (
-            indexes != set(range(count)) or any(not item.still for item in items)):
-        raise ValueError("pipeline has incomplete still plans")
-    if require_stage in {"videos", "all"} and (
-            indexes != set(range(count))
-            or any(not item.still or not item.video for item in items)):
-        raise ValueError("pipeline has incomplete video plans")
-    return PipelineManifest(
+    manifest = PipelineManifest(
         mode, count, sorted(items, key=lambda item: item.index),
         common_dims=common_dims)
+    message = next(iter(incomplete_plan_messages(manifest, require_stage)), None)
+    if message:
+        raise ValueError(message)
+    return manifest
 
 
 def pipeline_paths(root, filename="pipeline.yaml"):
@@ -203,14 +200,27 @@ def load_pipeline_tree(root, require_stage=None, filename="pipeline.yaml"):
     manifest = PipelineManifest(
         modes.pop(), sum(part.item_count for part in manifests), items,
         common_dims=common_dims.pop())
-    if require_stage in {"stills", "all"} and (
-            len(items) != manifest.item_count or any(not item.still for item in items)):
-        raise ValueError("pipeline has incomplete still plans")
-    if require_stage in {"videos", "all"} and (
-            len(items) != manifest.item_count
-            or any(not item.still or not item.video for item in items)):
-        raise ValueError("pipeline has incomplete video plans")
+    message = next(iter(incomplete_plan_messages(manifest, require_stage)), None)
+    if message:
+        raise ValueError(message)
     return manifest
+
+
+def incomplete_plan_messages(manifest, stage):
+    if not stage:
+        return []
+    items = manifest.items
+    indexes = {item.index for item in items}
+    expected = set(range(manifest.item_count))
+    messages = []
+    if stage in {"stills", "all"} and (
+            indexes != expected or any(not item.still for item in items)):
+        messages.append("pipeline has incomplete still plans")
+    if stage in {"videos", "all"} and (
+            indexes != expected
+            or any(not item.still or not item.video for item in items)):
+        messages.append("pipeline has incomplete video plans")
+    return messages
 
 
 def _item_parent(item):

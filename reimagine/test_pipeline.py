@@ -1019,6 +1019,53 @@ class ProcessIsolationTests(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertIn("animals/cat", loaded_state["items"])
 
+    def test_load_pipeline_still_requires_complete_plans_when_requested(self):
+        ready = PipelineItem(
+            index=0, item_id="ready", source_path=Path("ready.jpg"),
+            source_sha256="a" * 64,
+            still=StillSpec(
+                Path("ready.jpg"), 1920, 1088,
+                prompt="A detailed action photograph of a moving subject."),
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "pipeline.yaml"
+            save_pipeline(path, PipelineManifest("manual", 2, [ready]))
+            with self.assertRaisesRegex(ValueError, "incomplete still plans"):
+                load_pipeline(path, require_stage="stills")
+            loaded = load_pipeline(path)
+
+        self.assertEqual([item.item_id for item in loaded.items], ["ready"])
+
+    def test_render_warns_and_continues_when_still_plans_are_incomplete(self):
+        ready = PipelineItem(
+            index=0, item_id="ready", source_path=Path("ready.jpg"),
+            source_sha256="a" * 64,
+            still=StillSpec(
+                Path("ready.jpg"), 1920, 1088,
+                prompt="A detailed action photograph of a moving subject."),
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            output_dir = Path(tmp)
+            save_pipeline(
+                output_dir / "pipeline.yaml",
+                PipelineManifest("manual", 2, [ready]))
+            with mock.patch.object(
+                    render_media, "render_stills",
+                    return_value=(1, 0, 0)) as render_stills, \
+                    self.assertLogs("render_media", "WARNING") as logs:
+                code = render_media.main([
+                    "--output-dir", str(output_dir), "--stage", "stills",
+                ])
+
+        self.assertEqual(code, 0)
+        render_stills.assert_called_once()
+        passed = render_stills.call_args.args[1]
+        self.assertEqual([item.item_id for item in passed.items], ["ready"])
+        self.assertTrue(any(
+            "incomplete still plans" in message
+            and "rendering available items" in message
+            for message in logs.output))
+
     def test_render_never_constructs_llm_or_reads_input_tree(self):
         manifest = PipelineManifest(
             still_mode="manual",

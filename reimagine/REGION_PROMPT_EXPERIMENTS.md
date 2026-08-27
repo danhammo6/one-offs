@@ -33,8 +33,9 @@ instead.
 
 - Region responses are bare JSON objects constrained by
   `prompts/regions.schema.json`.
-- The schema is attached to each llama.cpp chat-completion request as
-  the native top-level `json_schema` field; no server startup schema is required.
+- The schema is attached to each OpenAI-compatible chat-completion request as
+  `response_format.json_schema`, supported by llama.cpp and vLLM; no server
+  startup schema is required.
 - Local semantic validation still checks required descriptions, element count,
   literal text, and fully on-canvas boxes.
 

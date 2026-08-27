@@ -116,10 +116,11 @@ logs include the rejection reason and elapsed time; region JSON that parses but
 fails semantic validation is retried instead of failing the item immediately.
 Formatting and validation retries send the error and rejected response back to
 the LLM so it can correct its prior output. For OpenAI-compatible servers, the
-region schema is sent per request using llama.cpp's native `json_schema` field;
-the server does not need to be started with a schema. Region responses are
-constrained to compact, output-only JSON to avoid exhausting the completion
-budget on narrated analysis.
+region schema is sent per request using the standard
+`response_format.json_schema` field supported by llama.cpp and vLLM; the server
+does not need to be started with a schema. Region responses are constrained to
+compact, output-only JSON to avoid exhausting the completion budget on narrated
+analysis.
 The local
 `-v` option logs the complete rejected response for diagnosing parse failures;
 `-vv` also logs separate reasoning content when the backend provides it. The local

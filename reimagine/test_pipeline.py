@@ -537,7 +537,7 @@ class PipelineManifestTests(unittest.TestCase):
         self.assertEqual(content[1]["type"], "image_url")
         self.assertEqual(content[2], {"type": "text", "text": "retry"})
 
-    def test_openai_payload_adds_llama_json_schema_per_request(self):
+    def test_openai_payload_adds_standard_json_schema_per_request(self):
         client = OpenAILLM("127.0.0.1:9503", model="test")
         schema = {"type": "object", "required": ["answer"], "properties": {
             "answer": {"type": "string"}}}
@@ -553,7 +553,15 @@ class PipelineManifestTests(unittest.TestCase):
                 client.chat("system", "request", image, json_schema=schema)
 
         payload = json.loads(urlopen.call_args.args[0].data)
-        self.assertEqual(payload["json_schema"], schema)
+        self.assertNotIn("json_schema", payload)
+        self.assertEqual(payload["response_format"], {
+            "type": "json_schema",
+            "json_schema": {
+                "name": "structured_response",
+                "schema": schema,
+                "strict": True,
+            },
+        })
 
     def test_openai_payload_enables_llama_reasoning_per_request(self):
         client = OpenAILLM(

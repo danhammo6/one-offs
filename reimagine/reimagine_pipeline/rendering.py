@@ -93,9 +93,17 @@ def render_stills(args, manifest, output_dir, state):
             "clip_name": args.clip_name, "unet_name": args.unet_name,
             "save_subdir": args.still_save_subdir, "seed": seed,
         })
-        if (not args.force and destination.is_file()
-                and record.get("plan_fingerprint") == fingerprint
-                and record.get("output_sha256") == sha256_file(destination)):
+        if not args.force and destination.is_file():
+            fingerprint_mismatch = record.get("plan_fingerprint") != fingerprint
+            output_path_mismatch = record.get("output_sha256") != sha256_file(destination)
+            if fingerprint_mismatch or output_path_mismatch:
+                msg = 'Error on ' + str(item.still.output) + ': force not enabled'
+                if fingerprint_mismatch:
+                    msg += ' and plan fingerprint mismatch'
+                if output_path_mismatch:
+                    msg += ' and output file mismatch'
+                raise Exception(msg)
+
             continue
         pending.append((item, destination, fingerprint, seed))
     if not pending:

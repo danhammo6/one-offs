@@ -26,7 +26,7 @@ def project_relative_input(value):
                 f"input directory must be inside {ROOT}") from error
     else:
         relative = path
-    if ".." in relative.parts or not relative.parts:
+    if not relative.parts:
         raise ValueError("input directory must be relative to the reimagine folder")
     if not (ROOT / relative).is_dir():
         raise ValueError(f"input directory does not exist: {ROOT / relative}")

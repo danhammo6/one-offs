@@ -55,14 +55,15 @@ frame; video rendering does not depend on stale ComfyUI output staging.
 `generate_prompts.py` runs serially and checkpoints a `pipeline.yaml` in each
 image folder. It never imports or contacts ComfyUI. Startup and resume scan the
 whole output tree, so no top-level manifest grows with the total collection.
-The input path and directories linked from within its tree may be symbolic links.
+Each manifest stores its input directory as a path relative to this `reimagine/`
+folder. The default is `input`; directories linked from within the input tree may
+be symbolic links.
 
 | flag | default | meaning |
 | --- | --- | --- |
 | `--stage` | `all` | generate `stills`, `videos`, or `all` plans |
 | `--still-mode` | `manual` | plain `manual` prompt or structured `regions` spec |
 | `--video-basis` | `reference` | generate motion from the `reference` or actual `rendered` still |
-| `--input-dir` | `input` | reference-image tree |
 | `--common-dims` | off | center-crop temporary reference copies to the closest common 1.5 MP size |
 | `--output-dir` | `output` | output set and default manifest location |
 | `--manifest` | per-folder tree | use one explicit legacy/single-file manifest instead |
@@ -87,6 +88,21 @@ unrelated action or re-describing the first frame.
 `regions.schema.json`, `system_video.txt`, and `system_video_reference.txt`.
 Relative paths are resolved from the directory where `generate_prompts.py` is
 run.
+
+To use a different input tree for an output set, seed that set with an
+input-only `pipeline.yaml` before its first prompt run:
+
+```bash
+mkdir -p outputs/sports-omlx-16k
+printf 'input_dir: input/sports\n' > outputs/sports-omlx-16k/pipeline.yaml
+.venv/bin/python generate_prompts.py \
+  --output-dir outputs/sports-omlx-16k \
+  --llm-server 127.0.0.1:9503
+```
+
+The generated manifests retain `input_dir: input/sports`. Subsequent prompt runs
+and the gallery read it from those manifests; no input-directory command-line
+option is needed.
 
 `--common-dims` EXIF-normalizes each reference, scales it with Lanczos
 resampling, and center-crops it to the closest supported aspect ratio. The
@@ -201,12 +217,12 @@ between the two processes. Each item stores:
 - Still output path and dimensions
 - Video output path, prompt, duration, prompt basis, and basis hash
 
-Each folder therefore contains `pipeline.yaml`, `render_state.yaml`,
-`prompts.yaml`, and `video_prompts.yaml` beside its media. The latter two are
-gallery projections, not rendering inputs. Existing top-level manifests and
-render-state files are migrated into the folder layout on the next default
-planner or renderer run; explicit `--manifest` and `--state-file` paths retain
-single-file behavior.
+Each folder therefore contains `pipeline.yaml` and `render_state.yaml` beside
+its media. The gallery reads prompts and the configured reference directory
+directly from `pipeline.yaml`. Existing top-level manifests and render-state
+files are migrated into the folder layout on the next default planner or
+renderer run; explicit `--manifest` and `--state-file` paths retain single-file
+behavior.
 
 ## Batch scripts
 
@@ -236,5 +252,6 @@ default. Rerun that directory with `-v` or `-vv` to inspect rejected responses.
 ```
 
 Output sets live under `outputs/`. The gallery discovers sets containing images,
-shows references beside generated stills, and switches to sibling videos when
-available.
+uses each set's `pipeline.yaml` to find its references, shows those references
+beside generated stills, and switches to sibling videos when available. In the
+lightbox, use the arrow buttons or swipe left and right on an image to navigate.

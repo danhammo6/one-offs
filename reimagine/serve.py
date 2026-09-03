@@ -18,9 +18,9 @@ Routes:
     /api/sources               JSON: the available output sources + the default
     /api/list?source=NAME      JSON: every output image in NAME + its reference
     /img/output/NAME/<path>    raw bytes of an output image in source NAME
-    /img/input/<path>          raw bytes of a reference image
+    /img/input/NAME/<path>     raw bytes of a reference image
 
-No third-party deps. Serve, then open the printed URL.
+Uses the project's PyYAML dependency. Serve, then open the printed URL.
 """
 import argparse
 import json
@@ -29,6 +29,12 @@ import mimetypes
 import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+
+from reimagine_pipeline import PIPELINE_FILENAME
+from reimagine_pipeline.manifest import (
+    load_pipeline_tree, load_pipeline_tree_input_dir,
+)
+from reimagine_pipeline.prompting import regions_to_text
 
 logger = logging.getLogger(__name__)
 
@@ -76,18 +82,32 @@ def find_reference(rel, input_dir):
     return None
 
 
-def load_prompts(dir_path, name="prompts.yaml"):
-    """Read a directory's prompts.yaml (filename -> prompt) if present. Tolerant
-    of a missing file or malformed YAML — returns {} rather than raising."""
-    import yaml
-    yaml_path = dir_path / name
-    if not yaml_path.is_file():
-        return {}
+def load_pipeline_metadata(output_dir):
+    """Return the configured input directory and prompt metadata for a source."""
     try:
-        data = yaml.safe_load(yaml_path.read_text())
-    except (OSError, yaml.YAMLError):
-        return {}
-    return data if isinstance(data, dict) else {}
+        configured_input = load_pipeline_tree_input_dir(
+            output_dir, PIPELINE_FILENAME)
+    except ValueError as error:
+        logger.warning("could not load gallery configuration for %s: %s",
+                       output_dir, error)
+        return None, {}
+    input_dir = (ROOT / configured_input).resolve()
+    try:
+        manifest = load_pipeline_tree(output_dir, filename=PIPELINE_FILENAME)
+    except ValueError as error:
+        logger.warning("could not load gallery metadata for %s: %s",
+                       output_dir, error)
+        return input_dir, {}
+    metadata = {}
+    for item in manifest.items:
+        if not item.still:
+            continue
+        prompt = (item.still.prompt or regions_to_text(item.still.regions))
+        metadata[item.still.output.as_posix()] = {
+            "prompt": prompt,
+            "video_prompt": item.video.prompt if item.video else None,
+        }
+    return input_dir, metadata
 
 
 def find_sibling_video(still_path):
@@ -100,47 +120,71 @@ def find_sibling_video(still_path):
     return None
 
 
-def list_pairs(source_name, output_dir, input_dir):
+def list_pairs(source_name, output_dir):
     """Walk one source's output dir recursively; return one entry per rendered
     image, grouped by its top-level category (first path segment), each with its
-    reference (if any) and the prompt used (from the dir's prompts.yaml)."""
+    reference (if any) and prompts read from pipeline.yaml."""
     items = []
-    prompt_cache = {}
-    video_prompt_cache = {}
+    input_dir, metadata = load_pipeline_metadata(output_dir)
     if output_dir.is_dir():
         for p in sorted(output_dir.rglob("*")):
             if not (p.is_file() and p.suffix.lower() in IMAGE_EXTS):
                 continue
             rel = p.relative_to(output_dir)
-            ref = find_reference(rel, input_dir)
+            ref = find_reference(rel, input_dir) if input_dir else None
             parts = rel.parts
             category = parts[0] if len(parts) > 1 else "(root)"
-            if p.parent not in prompt_cache:
-                prompt_cache[p.parent] = load_prompts(p.parent)
-                video_prompt_cache[p.parent] = load_prompts(
-                    p.parent, "video_prompts.yaml")
             src_q = urllib.parse.quote(source_name)
             vid = find_sibling_video(p)
             vid_rel = vid.relative_to(output_dir).as_posix() if vid else None
+            prompts = metadata.get(rel.as_posix(), {})
             items.append({
                 "name": rel.name,
                 "path": rel.as_posix(),
                 "category": category,
                 "output_url": f"/img/output/{src_q}/" + urllib.parse.quote(rel.as_posix()),
-                "input_url": ("/img/input/" + urllib.parse.quote(ref)) if ref else None,
+                "input_url": (f"/img/input/{src_q}/" + urllib.parse.quote(ref))
+                             if ref else None,
                 "video_url": (f"/img/output/{src_q}/" + urllib.parse.quote(vid_rel))
                              if vid_rel else None,
-                "prompt": prompt_cache[p.parent].get(rel.name),
-                "video_prompt": (video_prompt_cache[p.parent].get(vid.name)
-                                 if vid else None),
+                "prompt": prompts.get("prompt"),
+                "video_prompt": prompts.get("video_prompt") if vid else None,
             })
     return items
 
 
+def reference_paths(output_dir, input_dir):
+    """Return references that correspond to discoverable output images."""
+    return {
+        reference
+        for path in output_dir.rglob("*")
+        if path.is_file() and path.suffix.lower() in IMAGE_EXTS
+        for reference in [find_reference(path.relative_to(output_dir), input_dir)]
+        if reference
+    }
+
+
+def safe_media_path(base, rel, extensions, allowed_paths=None,
+                    allow_linked_dirs=False):
+    """Resolve an allowed media path without permitting file-symlink spoofing."""
+    rel_path = Path(rel)
+    if (rel_path.is_absolute() or ".." in rel_path.parts
+            or rel_path.suffix.lower() not in extensions
+            or (allowed_paths is not None
+                and rel_path.as_posix() not in allowed_paths)):
+        return None
+    target = base / rel_path
+    if target.is_symlink() or not target.is_file():
+        return None
+    resolved = target.resolve()
+    if (not allow_linked_dirs and base.resolve() not in resolved.parents):
+        return None
+    return target
+
+
 class Handler(BaseHTTPRequestHandler):
-    # Injected by main(): the output sources ({name: dir}) and the input/ dir.
+    # Injected by main(): the output sources ({name: dir}).
     sources = {}
-    input_dir = ROOT / "input"
 
     def log_message(self, *_):  # keep the console quiet
         pass
@@ -161,11 +205,13 @@ class Handler(BaseHTTPRequestHandler):
         self._send(200, json.dumps(obj), "application/json",
                    extra={"Cache-Control": "no-cache"})
 
-    def _send_file(self, base, rel_quoted):
-        """Serve a file under `base`, guarding against path traversal."""
+    def _send_file(self, base, rel_quoted, extensions, allowed_paths=None,
+                   allow_linked_dirs=False):
+        """Serve an allowed media file under base, guarding path traversal."""
         rel = urllib.parse.unquote(rel_quoted)
-        target = (base / rel).resolve()
-        if base.resolve() not in target.parents or not target.is_file():
+        target = safe_media_path(
+            base, rel, extensions, allowed_paths, allow_linked_dirs)
+        if target is None:
             return self._send(404, "not found")
         ctype = mimetypes.guess_type(str(target))[0] or "application/octet-stream"
         self._send(200, target.read_bytes(), ctype,
@@ -190,7 +236,7 @@ class Handler(BaseHTTPRequestHandler):
             if name is None:
                 return self._send_json([])
             return self._send_json(
-                list_pairs(name, self.sources[name], self.input_dir))
+                list_pairs(name, self.sources[name]))
         if path.startswith("/img/output/"):
             # /img/output/<source>/<path>
             rest = path[len("/img/output/"):]
@@ -198,9 +244,24 @@ class Handler(BaseHTTPRequestHandler):
             src = urllib.parse.unquote(src_q)
             if src not in self.sources:
                 return self._send(404, "unknown source")
-            return self._send_file(self.sources[src], rel_q)
+            return self._send_file(
+                self.sources[src], rel_q, IMAGE_EXTS | set(VIDEO_EXTS))
         if path.startswith("/img/input/"):
-            return self._send_file(self.input_dir, path[len("/img/input/"):])
+            rest = path[len("/img/input/"):]
+            src_q, _, rel_q = rest.partition("/")
+            src = urllib.parse.unquote(src_q)
+            if src not in self.sources:
+                return self._send(404, "unknown source")
+            try:
+                input_dir, _ = load_pipeline_metadata(self.sources[src])
+            except ValueError:
+                return self._send(500, "invalid pipeline input directory")
+            if input_dir is None:
+                return self._send(500, "invalid pipeline input directory")
+            allowed = reference_paths(self.sources[src], input_dir)
+            return self._send_file(
+                input_dir, rel_q, IMAGE_EXTS, allowed_paths=allowed,
+                allow_linked_dirs=True)
         return self._send(404, "not found")
 
     do_HEAD = do_GET
@@ -220,8 +281,6 @@ def main():
     parser.add_argument("--output-dir", type=Path, default=None,
                         help="Serve a single flat output dir instead of the "
                              "outputs/ tree (labeled by its own name).")
-    parser.add_argument("--input-dir", type=Path, default=ROOT / "input",
-                        help="Reference-image directory tree.")
     args = parser.parse_args()
 
     if args.output_dir is not None:
@@ -229,8 +288,6 @@ def main():
         Handler.sources = {d.name: d}
     else:
         Handler.sources = discover_sources(args.outputs_dir.resolve())
-    Handler.input_dir = args.input_dir.resolve()
-
     srv = ThreadingHTTPServer((args.host, args.port), Handler)
     if Handler.sources:
         logger.info("reimagine gallery: %d source(s):", len(Handler.sources))

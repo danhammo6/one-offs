@@ -14,6 +14,7 @@
     margin: 0; background: var(--bg); color: var(--fg);
     font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
+  body.lightbox-open { position: fixed; width: 100%; overflow: hidden; }
   header {
     position: sticky; top: 0; z-index: 5;
     display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
@@ -40,7 +41,9 @@
   }
   .card {
     background: var(--panel); border: 1px solid var(--edge); border-radius: 12px;
-    overflow: hidden; cursor: pointer; transition: border-color .15s, transform .05s;
+    width: 100%; padding: 0; overflow: hidden; color: inherit; font: inherit;
+    text-align: left; cursor: pointer;
+    transition: border-color .15s, transform .05s;
   }
   .card:hover { border-color: var(--accent); }
   .card:active { transform: scale(.996); }
@@ -59,7 +62,7 @@
   #lb {
     position: fixed; inset: 0; z-index: 20; display: none;
     background: rgba(7,8,11,.94); padding: 24px;
-    flex-direction: column; gap: 14px;
+    flex-direction: column; gap: 14px; overscroll-behavior: contain;
   }
   #lb.open { display: flex; }
   #lb .bar { display: flex; align-items: center; gap: 16px; color: var(--muted); }
@@ -68,6 +71,8 @@
   #lb .stage {
     flex: 1; min-height: 0; display: grid; gap: 14px;
     grid-template-columns: 1fr; align-items: center; justify-items: center;
+    overflow: auto; overscroll-behavior: contain;
+    touch-action: pan-x pan-y pinch-zoom;
   }
   #lb .stage.side { grid-template-columns: 1fr 1fr; }
   #lb figure { margin: 0; height: 100%; width: 100%;
@@ -85,6 +90,20 @@
     letter-spacing: .08em; font-weight: 600; margin-bottom: 4px; }
   #lb .prompt.empty { color: var(--muted); font-style: italic; }
   #lb .hint { color: var(--muted); font-size: 12px; text-align: center; }
+  #lb .nav {
+    position: absolute; z-index: 2; top: 50%; translate: 0 -50%;
+    width: 48px; height: 56px; padding: 0; border-radius: 12px;
+    background: rgba(23,26,33,.88); font-size: 28px; line-height: 1;
+    touch-action: manipulation;
+  }
+  #lbPrev { left: max(8px, env(safe-area-inset-left)); }
+  #lbNext { right: max(8px, env(safe-area-inset-right)); }
+  @media (pointer: coarse) {
+    #lb { padding: 16px; }
+    #lb .nav { width: 56px; height: 64px; }
+    #lb .hint { font-size: 0; }
+    #lb .hint::after { content: "Swipe or use arrows to move · pinch to zoom"; font-size: 12px; }
+  }
 </style>
 </head>
 <body>
@@ -102,7 +121,7 @@
 
 <main id="main"><div class="empty">loading…</div></main>
 
-<div id="lb">
+<div id="lb" role="dialog" aria-modal="true" aria-labelledby="lbName">
   <div class="bar">
     <span class="name" id="lbName"></span>
     <span id="lbMeta"></span>
@@ -110,7 +129,9 @@
     <label class="toggle"><input type="checkbox" id="lbSide" checked> side-by-side</label>
     <button id="lbClose">close ✕</button>
   </div>
+  <button class="nav" id="lbPrev" type="button" aria-label="Previous image">‹</button>
   <div class="stage side" id="lbStage"></div>
+  <button class="nav" id="lbNext" type="button" aria-label="Next image">›</button>
   <div class="prompt" id="lbPrompt"></div>
   <div class="hint">← / → to move · S to toggle side-by-side · Esc to close</div>
 </div>
@@ -120,10 +141,16 @@ let ITEMS = [];
 let VIEW = [];        // filtered list currently shown (for lightbox nav)
 let cur = -1;
 let SOURCES = [];     // available output sets (dir names)
+let pageScrollY = 0;
+let returnFocus = null;
 
 const $ = (id) => document.getElementById(id);
 const escapeHtml = (s) => s.replace(/[&<>"']/g, c =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const setBackgroundInert = (inert) => {
+  document.querySelector("header").inert = inert;
+  $("main").inert = inert;
+};
 
 const SOURCE_KEY = "reimagine.source";  // persists the pick across full reloads
 
@@ -152,7 +179,7 @@ async function load() {
   const cats = [...new Set(ITEMS.map(i => i.category))].sort();
   const sel = $("catFilter"), prev = sel.value;
   sel.innerHTML = '<option value="">all categories</option>' +
-    cats.map(c => `<option value="${c}">${c}</option>`).join("");
+    cats.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
   if (cats.includes(prev)) sel.value = prev;
   render();
 }
@@ -177,7 +204,7 @@ function render() {
 
   main.innerHTML = Object.keys(groups).sort().map(c => `
     <section class="cat">
-      <h2>${c} <span class="stat">(${groups[c].length})</span></h2>
+      <h2>${escapeHtml(c)} <span class="stat">(${groups[c].length})</span></h2>
       <div class="grid">
         ${groups[c].map(({ it, idx }) => card(it, idx, compareAll)).join("")}
       </div>
@@ -195,18 +222,19 @@ function card(it, idx, compareAll) {
   const outCell = useVideo
     ? `<video src="${it.video_url}" muted loop playsinline preload="metadata"
               onmouseenter="this.play()" onmouseleave="this.pause()"></video>`
-    : `<img loading="lazy" src="${it.output_url}">`;
+    : `<img loading="lazy" src="${it.output_url}" alt="Reimagined ${escapeHtml(it.path)}">`;
   const showBoth = compareAll && it.input_url;
   const imgs = showBoth
-    ? `<img loading="lazy" src="${it.input_url}" title="reference">${outCell}`
+    ? `<img loading="lazy" src="${it.input_url}" alt="Reference ${escapeHtml(it.path)}">${outCell}`
     : outCell;
   const badges =
     (it.input_url ? "" : '<span class="badge">no ref</span>') +
     (it.video_url ? '<span class="badge vid">▶ video</span>' : "");
-  return `<div class="card" data-idx="${idx}">
+  return `<button class="card" type="button" data-idx="${idx}"
+                  aria-label="View ${escapeHtml(it.path)}">
       <div class="imgwrap${showBoth ? " compare" : ""}">${imgs}${badges}</div>
-      <div class="cap">${it.path}</div>
-    </div>`;
+      <div class="cap">${escapeHtml(it.path)}</div>
+    </button>`;
 }
 
 function openLb(idx) {
@@ -218,13 +246,13 @@ function openLb(idx) {
   // else the static render.
   const outMedia = useVideo
     ? `<video src="${it.video_url}" autoplay muted loop playsinline controls></video>`
-    : `<img src="${it.output_url}">`;
+    : `<img src="${it.output_url}" alt="Reimagined ${escapeHtml(it.path)}">`;
   const outLabel = useVideo ? "reimagined (video)" : "reimagined";
   const side = $("lbSide").checked && !!it.input_url;
   const stage = $("lbStage");
   stage.classList.toggle("side", side);
   stage.innerHTML = side
-    ? `<figure><figcaption>reference</figcaption><img src="${it.input_url}"></figure>
+    ? `<figure><figcaption>reference</figcaption><img src="${it.input_url}" alt="Reference ${escapeHtml(it.path)}"></figure>
        <figure><figcaption>${outLabel}</figcaption>${outMedia}</figure>`
     : `<figure><figcaption>${outLabel}${it.input_url ? "" : " (no reference)"}</figcaption>${outMedia}</figure>`;
   $("lbMeta").textContent = it.input_url ? "" : "no matching reference";
@@ -240,10 +268,28 @@ function openLb(idx) {
     pr.classList.add("empty");
     pr.textContent = "no saved prompt for this render";
   }
-  $("lb").classList.add("open");
+  if (!$("lb").classList.contains("open")) {
+    pageScrollY = window.scrollY;
+    returnFocus = document.activeElement;
+    document.body.style.top = `-${pageScrollY}px`;
+    document.body.classList.add("lightbox-open");
+    setBackgroundInert(true);
+    $("lb").classList.add("open");
+    $("lbClose").focus();
+  }
 }
 
-function closeLb() { $("lb").classList.remove("open"); cur = -1; }
+function closeLb() {
+  if (!$("lb").classList.contains("open")) return;
+  $("lb").classList.remove("open");
+  setBackgroundInert(false);
+  document.body.classList.remove("lightbox-open");
+  document.body.style.top = "";
+  window.scrollTo(0, pageScrollY);
+  cur = -1;
+  if (returnFocus?.isConnected) returnFocus.focus();
+  returnFocus = null;
+}
 function step(d) {
   if (cur < 0 || !VIEW.length) return;
   openLb((cur + d + VIEW.length) % VIEW.length);
@@ -258,11 +304,53 @@ $("catFilter").addEventListener("change", render);
 $("compareAll").addEventListener("change", render);
 $("videoMode").addEventListener("change", () => { render(); if (cur >= 0) openLb(cur); });
 $("lbClose").addEventListener("click", closeLb);
+$("lbPrev").addEventListener("click", () => step(-1));
+$("lbNext").addEventListener("click", () => step(1));
 $("lbSide").addEventListener("change", () => cur >= 0 && openLb(cur));
 $("lb").addEventListener("click", (e) => { if (e.target.id === "lb") closeLb(); });
+
+let swipeStart = null;
+$("lbStage").addEventListener("touchstart", (e) => {
+  if (e.touches.length !== 1 || !e.target.closest("img")) {
+    swipeStart = null;
+    return;
+  }
+  const touch = e.touches[0];
+  swipeStart = {
+    x: touch.clientX,
+    y: touch.clientY,
+    scale: window.visualViewport?.scale || 1,
+  };
+}, { passive: true });
+$("lbStage").addEventListener("touchend", (e) => {
+  if (!swipeStart || e.changedTouches.length !== 1) return;
+  const touch = e.changedTouches[0];
+  const dx = touch.clientX - swipeStart.x;
+  const dy = touch.clientY - swipeStart.y;
+  const scale = window.visualViewport?.scale || 1;
+  if (swipeStart.scale <= 1.05 && scale <= 1.05
+      && Math.abs(dx) >= 60 && Math.abs(dx) > Math.abs(dy) * 1.25) {
+    step(dx < 0 ? 1 : -1);
+  }
+  swipeStart = null;
+}, { passive: true });
+$("lbStage").addEventListener("touchcancel", () => { swipeStart = null; });
 document.addEventListener("keydown", (e) => {
   if (!$("lb").classList.contains("open")) return;
-  if (e.key === "Escape") closeLb();
+  if (e.key === "Tab") {
+    const focusable = [...$("lb").querySelectorAll(
+      'button:not([disabled]), input:not([disabled]), video[controls], [tabindex]:not([tabindex="-1"])'
+    )];
+    const first = focusable[0], last = focusable[focusable.length - 1];
+    if (e.shiftKey && (document.activeElement === first
+                       || !$("lb").contains(document.activeElement))) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  } else if (e.key === "Escape") closeLb();
   else if (e.key === "ArrowRight") step(1);
   else if (e.key === "ArrowLeft") step(-1);
   else if (e.key === "s" || e.key === "S") { $("lbSide").checked = !$("lbSide").checked; openLb(cur); }

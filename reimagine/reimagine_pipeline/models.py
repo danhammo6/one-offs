@@ -37,6 +37,7 @@ class PipelineManifest:
     items: list[PipelineItem] = field(default_factory=list)
     schema_version: int = 2
     common_dims: bool = False
+    input_dir: Path = Path("input")
 
 
 @dataclass

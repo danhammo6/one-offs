@@ -14,14 +14,15 @@ from reimagine_pipeline.files import (
 )
 from reimagine_pipeline.llm import ClaudeCodeLLM, OpenAILLM
 from reimagine_pipeline.manifest import (
-    load_pipeline, load_pipeline_tree, pipeline_paths, save_pipeline,
-    save_pipeline_folder, save_pipeline_tree,
+    is_input_only_pipeline, load_pipeline, load_pipeline_input_dir,
+    load_pipeline_tree, load_pipeline_tree_input_dir, pipeline_paths,
+    save_pipeline, save_pipeline_folder, save_pipeline_tree,
 )
 from reimagine_pipeline.models import PipelineItem, PipelineManifest, StillSpec, VideoSpec
-from reimagine_pipeline.projections import write_projections
 from reimagine_pipeline.prompting import generate_still_prompt, generate_video_prompt
 
 logger = logging.getLogger(__name__)
+ROOT = Path(__file__).parent.resolve()
 
 
 @dataclass(frozen=True)
@@ -50,8 +51,6 @@ def build_llm(args, input_dir):
 def build_parser():
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("--input-dir", type=Path, default=Path("input"),
-                        help="Reference-image directory tree.")
     parser.add_argument(
         "--common-dims", action="store_true",
         help="Center-crop temporary reference copies to the closest common "
@@ -92,6 +91,13 @@ def build_parser():
     return parser
 
 
+def configured_input_dir(output_dir, manifest_path=None):
+    """Return the project-relative input directory configured by pipeline.yaml."""
+    if manifest_path and manifest_path.is_file():
+        return load_pipeline_input_dir(manifest_path)
+    return load_pipeline_tree_input_dir(output_dir, PIPELINE_FILENAME)
+
+
 def discover(input_dir, common_dir=None):
     images = list(iter_images(input_dir))
     if not images:
@@ -119,15 +125,19 @@ def discover(input_dir, common_dir=None):
     return jobs
 
 
-def _load_planning_state(args, jobs, output_dir, manifest_path):
+def _load_planning_state(
+        args, jobs, output_dir, manifest_path, configured_input):
     existing = None
     folder_counts = {}
     for job in jobs:
         folder_counts[job.relative.parent] = (
             folder_counts.get(job.relative.parent, 0) + 1)
-    if manifest_path and manifest_path.is_file():
+    if (manifest_path and manifest_path.is_file()
+            and not is_input_only_pipeline(manifest_path)):
         existing = load_pipeline(manifest_path)
-    elif not manifest_path and pipeline_paths(output_dir, PIPELINE_FILENAME):
+    elif (not manifest_path
+          and any(not is_input_only_pipeline(path)
+                  for path in pipeline_paths(output_dir, PIPELINE_FILENAME))):
         existing = load_pipeline_tree(output_dir, filename=PIPELINE_FILENAME)
         checkpointed_parents = {
             item.source_path.parent for item in existing.items}
@@ -168,7 +178,8 @@ def _load_planning_state(args, jobs, output_dir, manifest_path):
                 save_pipeline_folder(
                     output_dir, parent,
                     PipelineManifest(
-                        args.still_mode, 0, [], common_dims=args.common_dims),
+                        args.still_mode, 0, [], common_dims=args.common_dims,
+                        input_dir=configured_input),
                     PIPELINE_FILENAME, prune_empty=True)
     return still_mode, by_id, folder_counts
 
@@ -234,16 +245,14 @@ def _save_checkpoint(output_dir, manifest_path, folder_counts, job, manifest):
         save_pipeline_folder(
             output_dir, job.relative.parent, manifest, PIPELINE_FILENAME,
             folder_counts[job.relative.parent])
-    write_projections(
-        output_dir, manifest,
-        None if manifest_path else {job.relative.parent})
 
 
 def _run(args):
-    input_dir = args.input_dir.resolve()
     output_dir = args.output_dir.resolve()
-    prompt_dir = args.prompt_path_prefix.resolve()
     manifest_path = args.manifest.resolve() if args.manifest else None
+    configured_input = configured_input_dir(output_dir, manifest_path)
+    input_dir = (ROOT / configured_input).resolve()
+    prompt_dir = args.prompt_path_prefix.resolve()
     preprocess = args.common_dims
     directory = (tempfile.TemporaryDirectory(prefix="reimagine-common-")
                  if preprocess else contextlib.nullcontext(None))
@@ -251,7 +260,7 @@ def _run(args):
         common_dir = Path(common_dir) if common_dir else None
         jobs = discover(input_dir, common_dir)
         still_mode, by_id, folder_counts = _load_planning_state(
-            args, jobs, output_dir, manifest_path)
+            args, jobs, output_dir, manifest_path, configured_input)
         llm = build_llm(
             args, (common_dir or input_dir)
             if args.video_basis == "reference" else output_dir)
@@ -263,7 +272,8 @@ def _run(args):
             logger.info("  source:   temporary common-dimension crops")
         failed = generated = skipped = 0
         manifest = PipelineManifest(
-            still_mode, len(jobs), [], common_dims=args.common_dims)
+            still_mode, len(jobs), [], common_dims=args.common_dims,
+            input_dir=configured_input)
         started = time.perf_counter()
         for job in jobs:
             tag = f"[{job.index + 1}/{len(jobs)}] {job.relative}"
@@ -286,7 +296,7 @@ def _run(args):
             manifest = PipelineManifest(
                 still_mode, len(jobs),
                 sorted(by_id.values(), key=lambda value: value.index),
-                common_dims=args.common_dims)
+                common_dims=args.common_dims, input_dir=configured_input)
             _save_checkpoint(
                 output_dir, manifest_path, folder_counts, job, manifest)
             if changed:

@@ -11,7 +11,6 @@ from reimagine_pipeline.manifest import (
     load_render_state, load_render_state_tree, save_pipeline_tree,
     save_render_state_tree,
 )
-from reimagine_pipeline.projections import write_projections
 from reimagine_pipeline.rendering import render_all, render_stills, render_videos
 
 logger = logging.getLogger(__name__)
@@ -75,7 +74,6 @@ def main(argv=None):
             logger.warning("%s; rendering available items", message)
         if not manifest_path and (output_dir / PIPELINE_FILENAME).is_file():
             save_pipeline_tree(output_dir, manifest, PIPELINE_FILENAME)
-        write_projections(output_dir, manifest)
         state = (load_render_state(args.state_file) if args.state_file
                  else load_render_state_tree(
                      output_dir, filename=RENDER_STATE_FILENAME))

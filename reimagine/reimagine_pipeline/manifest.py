@@ -21,6 +21,53 @@ def _safe_path(value, suffixes):
     return path
 
 
+def _safe_directory_path(value):
+    try:
+        path = Path(value)
+    except TypeError as error:
+        raise ValueError(f"invalid pipeline input directory: {value!r}") from error
+    if path.is_absolute() or ".." in path.parts or not path.parts:
+        raise ValueError(
+            f"pipeline input directory must be relative to the project: {value!r}")
+    return path
+
+
+def _input_dir_from_data(data):
+    return _safe_directory_path(data.get("input_dir", "input"))
+
+
+def load_pipeline_input_dir(path):
+    """Read input_dir from either a full or input-only pipeline.yaml."""
+    try:
+        data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    except (OSError, yaml.YAMLError) as error:
+        raise ValueError(f"could not read pipeline {path}: {error}") from error
+    if not isinstance(data, dict):
+        raise ValueError(f"pipeline configuration is not a mapping: {path}")
+    return _input_dir_from_data(data)
+
+
+def load_pipeline_tree_input_dir(root, filename="pipeline.yaml"):
+    """Read the single input directory configured across a pipeline tree."""
+    paths = pipeline_paths(root, filename)
+    if not paths:
+        return Path("input")
+    input_dirs = {load_pipeline_input_dir(path) for path in paths}
+    if len(input_dirs) != 1:
+        raise ValueError("pipeline files use different input directories")
+    return input_dirs.pop()
+
+
+def is_input_only_pipeline(path):
+    """Return whether path is a valid seed config containing only input_dir."""
+    try:
+        data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    except (OSError, yaml.YAMLError):
+        return False
+    return (isinstance(data, dict) and set(data) == {"input_dir"}
+            and isinstance(data["input_dir"], str))
+
+
 def _validate_hash(value, label):
     value = str(value)
     if len(value) != 64 or any(c not in "0123456789abcdef" for c in value):
@@ -51,6 +98,7 @@ def _video_to_data(spec):
 def save_pipeline(path, manifest):
     data = {
         "schema_version": SCHEMA_VERSION,
+        "input_dir": _safe_directory_path(manifest.input_dir).as_posix(),
         "still_mode": manifest.still_mode,
         "common_dims": manifest.common_dims,
         "item_count": manifest.item_count,
@@ -70,6 +118,8 @@ def save_pipeline(path, manifest):
     atomic_write_text(path, yaml.safe_dump(
         data, sort_keys=False, allow_unicode=True, default_flow_style=False,
         width=1000))
+    for obsolete in ("prompts.yaml", "video_prompts.yaml"):
+        (path.parent / obsolete).unlink(missing_ok=True)
 
 
 def _load_still(data, mode):
@@ -119,6 +169,7 @@ def load_pipeline(path, require_stage=None):
     common_dims = data.get("common_dims", False)
     if not isinstance(common_dims, bool):
         raise ValueError("pipeline common_dims is not a boolean")
+    input_dir = _input_dir_from_data(data)
     try:
         count = int(data.get("item_count", -1))
     except (TypeError, ValueError) as error:
@@ -155,7 +206,7 @@ def load_pipeline(path, require_stage=None):
         raise ValueError("pipeline contains duplicate IDs or paths")
     manifest = PipelineManifest(
         mode, count, sorted(items, key=lambda item: item.index),
-        common_dims=common_dims)
+        common_dims=common_dims, input_dir=input_dir)
     message = next(iter(incomplete_plan_messages(manifest, require_stage)), None)
     if message:
         raise ValueError(message)
@@ -167,12 +218,17 @@ def pipeline_paths(root, filename="pipeline.yaml"):
 
 
 def load_pipeline_tree(root, require_stage=None, filename="pipeline.yaml"):
-    paths = pipeline_paths(root, filename)
+    paths = [
+        path for path in pipeline_paths(root, filename)
+        if not is_input_only_pipeline(path)
+    ]
     if not paths:
         raise ValueError(f"no {filename} files under {root}")
     legacy = root / filename
     if legacy in paths and len(paths) > 1:
-        paths = [legacy]
+        root_manifest = load_pipeline(legacy)
+        if any(item.source_path.parent.parts for item in root_manifest.items):
+            paths = [legacy]
     manifests = []
     for path in paths:
         manifest = load_pipeline(path)
@@ -180,13 +236,16 @@ def load_pipeline_tree(root, require_stage=None, filename="pipeline.yaml"):
         manifests.append(PipelineManifest(
             manifest.still_mode, manifest.item_count,
             [_from_local_item(item, parent) for item in manifest.items],
-            common_dims=manifest.common_dims))
+            common_dims=manifest.common_dims, input_dir=manifest.input_dir))
     modes = {manifest.still_mode for manifest in manifests}
     if len(modes) != 1:
         raise ValueError("pipeline folders use different still modes")
     common_dims = {manifest.common_dims for manifest in manifests}
     if len(common_dims) != 1:
         raise ValueError("pipeline folders use different source preprocessing")
+    input_dirs = {manifest.input_dir for manifest in manifests}
+    if len(input_dirs) != 1:
+        raise ValueError("pipeline folders use different input directories")
     items = [item for manifest in manifests for item in manifest.items]
     ids = [item.item_id for item in items]
     sources = [item.source_path for item in items]
@@ -199,7 +258,7 @@ def load_pipeline_tree(root, require_stage=None, filename="pipeline.yaml"):
     ]
     manifest = PipelineManifest(
         modes.pop(), sum(part.item_count for part in manifests), items,
-        common_dims=common_dims.pop())
+        common_dims=common_dims.pop(), input_dir=input_dirs.pop())
     message = next(iter(incomplete_plan_messages(manifest, require_stage)), None)
     if message:
         raise ValueError(message)
@@ -272,10 +331,16 @@ def save_pipeline_folder(root, parent, manifest, filename="pipeline.yaml",
     path = root / parent / filename
     count = len(items) if item_count is None else item_count
     if not count and prune_empty:
-        path.unlink(missing_ok=True)
+        if parent.parts:
+            path.unlink(missing_ok=True)
+        else:
+            input_dir = _safe_directory_path(manifest.input_dir).as_posix()
+            atomic_write_text(path, yaml.safe_dump(
+                {"input_dir": input_dir}, sort_keys=False))
         return
     save_pipeline(path, PipelineManifest(
-        manifest.still_mode, count, items, common_dims=manifest.common_dims))
+        manifest.still_mode, count, items, common_dims=manifest.common_dims,
+        input_dir=manifest.input_dir))
 
 
 def save_pipeline_tree(root, manifest, filename="pipeline.yaml"):

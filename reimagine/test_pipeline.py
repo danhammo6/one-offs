@@ -91,6 +91,7 @@ class PipelineManifestTests(unittest.TestCase):
             still_mode="manual",
             item_count=1,
             common_dims=True,
+            input_dir=Path("input/sports"),
             items=[PipelineItem(
                 index=0,
                 item_id="animals/cat-pounce",
@@ -153,6 +154,7 @@ class PipelineManifestTests(unittest.TestCase):
             manifest = load_pipeline(path)
 
         self.assertFalse(manifest.common_dims)
+        self.assertEqual(manifest.input_dir, Path("input"))
 
     def test_pipeline_tree_round_trip_uses_one_manifest_per_folder(self):
         items = []
@@ -166,7 +168,8 @@ class PipelineManifestTests(unittest.TestCase):
                     path.with_suffix(".jpg"), 1920, 1088,
                     prompt=f"A detailed action photograph of {name}."),
             ))
-        manifest = PipelineManifest("manual", 2, items)
+        manifest = PipelineManifest(
+            "manual", 2, items, input_dir=Path("input/collection"))
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -181,9 +184,63 @@ class PipelineManifestTests(unittest.TestCase):
             self.assertEqual(local["items"][0]["id"], "cat")
             self.assertEqual(local["items"][0]["source_path"], "cat.jpg")
             self.assertEqual(local["items"][0]["still"]["output"], "cat.jpg")
+            self.assertEqual(local["input_dir"], "input/collection")
 
         self.assertEqual([item.item_id for item in loaded.items],
                          ["animals/cat", "sports/run"])
+        self.assertEqual(loaded.input_dir, Path("input/collection"))
+
+    def test_pipeline_tree_preserves_root_and_nested_items(self):
+        items = [
+            PipelineItem(
+                0, "root", Path("root.jpg"), "a" * 64,
+                still=StillSpec(
+                    Path("root.jpg"), 640, 480,
+                    prompt="A detailed action photograph of a root subject.")),
+            PipelineItem(
+                1, "nested/child", Path("nested/child.jpg"), "b" * 64,
+                still=StillSpec(
+                    Path("nested/child.jpg"), 640, 480,
+                    prompt="A detailed action photograph of a nested subject.")),
+        ]
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            save_pipeline_tree(root, PipelineManifest("manual", 2, items))
+
+            loaded = load_pipeline_tree(root)
+            save_pipeline_tree(root, loaded)
+
+            self.assertTrue((root / "pipeline.yaml").is_file())
+            self.assertTrue((root / "nested/pipeline.yaml").is_file())
+
+        self.assertEqual(
+            [item.item_id for item in loaded.items],
+            ["nested/child", "root"])
+
+    def test_pipeline_save_removes_obsolete_prompt_projections(self):
+        manifest = PipelineManifest("manual", 0)
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "prompts.yaml").write_text("old: prompt\n")
+            (root / "video_prompts.yaml").write_text("old: prompt\n")
+
+            save_pipeline(root / "pipeline.yaml", manifest)
+
+            self.assertFalse((root / "prompts.yaml").exists())
+            self.assertFalse((root / "video_prompts.yaml").exists())
+
+    def test_pruning_root_manifest_preserves_input_only_configuration(self):
+        manifest = PipelineManifest(
+            "manual", 0, input_dir=Path("input/sports"))
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+
+            save_pipeline_folder(
+                root, Path(), manifest, prune_empty=True)
+
+            data = yaml.safe_load((root / "pipeline.yaml").read_text())
+
+        self.assertEqual(data, {"input_dir": "input/sports"})
 
     def test_render_state_tree_round_trip_uses_one_state_per_folder(self):
         state = {"schema_version": 1, "items": {
@@ -852,12 +909,12 @@ class ProcessIsolationTests(unittest.TestCase):
                 "<prompt>A detailed action photograph of a moving subject in daylight.</prompt>",
                 "<video>The subject moves smoothly across the frame while the camera tracks steadily; quiet ambient sound follows the motion.</video>",
             ]
-            with mock.patch.object(generate_prompts, "build_llm",
+            with mock.patch.object(generate_prompts, "ROOT", root), \
+                    mock.patch.object(generate_prompts, "build_llm",
                                    return_value=llm), \
                     mock.patch("reimagine_pipeline.comfy.ComfyClient",
                                side_effect=AssertionError):
                 code = generate_prompts.main([
-                    "--input-dir", str(input_dir),
                     "--output-dir", str(root / "output"),
                     "--stage", "all",
                     "--video-basis", "reference",
@@ -868,6 +925,116 @@ class ProcessIsolationTests(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertIsNotNone(manifest.items[0].still)
         self.assertIsNotNone(manifest.items[0].video)
+
+    def test_input_only_pipeline_selects_project_relative_input(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            input_dir = root / "input/sports"
+            input_dir.mkdir(parents=True)
+            Image.new("RGB", (640, 480)).save(input_dir / "sample.jpg")
+            output_dir = root / "outputs/sports-model"
+            output_dir.mkdir(parents=True)
+            (output_dir / "pipeline.yaml").write_text(
+                "input_dir: input/sports\n")
+            llm = mock.Mock()
+            llm.describe.return_value = "fake"
+            llm.chat.return_value = (
+                "<prompt>A detailed action photograph of a moving athlete."
+                "</prompt>")
+
+            with mock.patch.object(generate_prompts, "ROOT", root), \
+                    mock.patch.object(
+                        generate_prompts, "build_llm", return_value=llm):
+                code = generate_prompts.main([
+                    "--output-dir", str(output_dir), "--stage", "stills",
+                ])
+            manifest = load_pipeline(output_dir / "pipeline.yaml")
+
+        self.assertEqual(code, 0)
+        self.assertEqual(manifest.input_dir, Path("input/sports"))
+        self.assertEqual(manifest.items[0].source_path, Path("sample.jpg"))
+
+    def test_prompt_generator_no_longer_accepts_input_dir_option(self):
+        with contextlib.redirect_stderr(io.StringIO()), \
+                self.assertRaises(SystemExit):
+            generate_prompts.build_parser().parse_args([
+                "--input-dir", "input/sports",
+            ])
+
+    def test_gallery_reads_prompts_and_input_dir_from_pipeline(self):
+        import serve
+
+        manifest = PipelineManifest(
+            "manual", 1,
+            [PipelineItem(
+                0, "sample", Path("sample.png"), "a" * 64,
+                still=StillSpec(
+                    Path("sample.jpg"), 640, 480,
+                    prompt="A detailed action photograph of a moving athlete."),
+            )],
+            input_dir=Path("input/sports"),
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            input_dir = root / "input/sports"
+            input_dir.mkdir(parents=True)
+            Image.new("RGB", (640, 480)).save(input_dir / "sample.png")
+            output_dir = root / "outputs/model"
+            output_dir.mkdir(parents=True)
+            Image.new("RGB", (640, 480)).save(output_dir / "sample.jpg")
+            save_pipeline(output_dir / "pipeline.yaml", manifest)
+
+            with mock.patch.object(serve, "ROOT", root):
+                items = serve.list_pairs("model", output_dir)
+
+        self.assertEqual(items[0]["input_url"], "/img/input/model/sample.png")
+        self.assertEqual(
+            items[0]["prompt"],
+            "A detailed action photograph of a moving athlete.")
+
+    def test_gallery_rejects_malformed_input_configuration(self):
+        import serve
+
+        with tempfile.TemporaryDirectory() as tmp:
+            output_dir = Path(tmp)
+            (output_dir / "pipeline.yaml").write_text(
+                "input_dir: ../../private\n")
+
+            input_dir, metadata = serve.load_pipeline_metadata(output_dir)
+
+        self.assertIsNone(input_dir)
+        self.assertEqual(metadata, {})
+
+    def test_gallery_reference_allowlist_supports_input_symlinks(self):
+        import serve
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            target = root / "references"
+            target.mkdir()
+            Image.new("RGB", (64, 64)).save(target / "sample.png")
+            input_dir = root / "input"
+            input_dir.mkdir()
+            (input_dir / "linked").symlink_to(target, target_is_directory=True)
+            output_dir = root / "output"
+            (output_dir / "linked").mkdir(parents=True)
+            Image.new("RGB", (64, 64)).save(
+                output_dir / "linked/sample.jpg")
+            (input_dir / "unrelated.txt").write_text("private")
+            (input_dir / "spoof.png").symlink_to(input_dir / "unrelated.txt")
+
+            allowed = serve.reference_paths(output_dir, input_dir)
+            linked_reference = serve.safe_media_path(
+                input_dir, "linked/sample.png", serve.IMAGE_EXTS,
+                allowed_paths=allowed, allow_linked_dirs=True)
+            spoofed_reference = serve.safe_media_path(
+                input_dir, "spoof.png", serve.IMAGE_EXTS,
+                allowed_paths={"spoof.png"}, allow_linked_dirs=True)
+
+        self.assertEqual(allowed, {"linked/sample.png"})
+        self.assertNotIn("unrelated.txt", allowed)
+        self.assertIsNotNone(linked_reference)
+        self.assertIsNone(spoofed_reference)
 
     def test_common_dims_prompts_with_temporary_crop_and_records_dimensions(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -888,10 +1055,10 @@ class ProcessIsolationTests(unittest.TestCase):
                         "subject in a wide landscape.</prompt>")
 
             llm.chat.side_effect = chat
-            with mock.patch.object(generate_prompts, "build_llm",
+            with mock.patch.object(generate_prompts, "ROOT", root), \
+                    mock.patch.object(generate_prompts, "build_llm",
                                    return_value=llm) as build_llm:
                 code = generate_prompts.main([
-                    "--input-dir", str(input_dir),
                     "--output-dir", str(root / "output"),
                     "--stage", "stills", "--common-dims",
                 ])
@@ -920,10 +1087,10 @@ class ProcessIsolationTests(unittest.TestCase):
             llm.chat.return_value = (
                 "<prompt>A detailed action photograph of a moving subject in "
                 "a landscape.</prompt>")
-            with mock.patch.object(generate_prompts, "build_llm",
+            with mock.patch.object(generate_prompts, "ROOT", root), \
+                    mock.patch.object(generate_prompts, "build_llm",
                                    return_value=llm):
                 code = generate_prompts.main([
-                    "--input-dir", str(input_dir),
                     "--output-dir", str(root / "output"),
                     "--stage", "stills",
                 ])
@@ -952,9 +1119,9 @@ class ProcessIsolationTests(unittest.TestCase):
                         prompt="A detailed action photograph of a subject."),
                 )], common_dims=True))
 
-            with self.assertLogs("generate_prompts", "ERROR") as logs:
+            with mock.patch.object(generate_prompts, "ROOT", root), \
+                    self.assertLogs("generate_prompts", "ERROR") as logs:
                 code = generate_prompts.main([
-                    "--input-dir", str(input_dir),
                     "--output-dir", str(output_dir),
                     "--stage", "videos",
                 ])
@@ -977,10 +1144,10 @@ class ProcessIsolationTests(unittest.TestCase):
                 "<prompt>A detailed action photograph of an athlete.</prompt>",
             ]
 
-            with mock.patch.object(generate_prompts, "build_llm",
+            with mock.patch.object(generate_prompts, "ROOT", root), \
+                    mock.patch.object(generate_prompts, "build_llm",
                                    return_value=llm):
                 code = generate_prompts.main([
-                    "--input-dir", str(input_dir),
                     "--output-dir", str(root / "output"),
                     "--stage", "stills",
                 ])
@@ -1258,10 +1425,10 @@ class ProcessIsolationTests(unittest.TestCase):
             llm.chat.return_value = (
                 "<video>The subject settles into controlled motion while the "
                 "camera tracks steadily; soft ambient sound is audible.</video>")
-            with mock.patch.object(generate_prompts, "build_llm",
+            with mock.patch.object(generate_prompts, "ROOT", root), \
+                    mock.patch.object(generate_prompts, "build_llm",
                                    return_value=llm):
                 code = generate_prompts.main([
-                    "--input-dir", str(input_dir),
                     "--output-dir", str(output_dir),
                     "--stage", "videos", "--force",
                 ])
@@ -1299,10 +1466,10 @@ class ProcessIsolationTests(unittest.TestCase):
             llm.chat.return_value = (
                 "<prompt>A new detailed action photograph of the moving subject."
                 "</prompt>")
-            with mock.patch.object(generate_prompts, "build_llm",
+            with mock.patch.object(generate_prompts, "ROOT", root), \
+                    mock.patch.object(generate_prompts, "build_llm",
                                    return_value=llm):
                 code = generate_prompts.main([
-                    "--input-dir", str(input_dir),
                     "--output-dir", str(output_dir),
                     "--stage", "stills", "--force",
                 ])
@@ -1332,10 +1499,10 @@ class ProcessIsolationTests(unittest.TestCase):
                 "<prompt>A detailed action photograph of a moving subject.</prompt>",
                 "<video>The subject moves smoothly while the camera tracks; quiet ambience follows.</video>",
             ]
-            with mock.patch.object(generate_prompts, "build_llm",
+            with mock.patch.object(generate_prompts, "ROOT", root), \
+                    mock.patch.object(generate_prompts, "build_llm",
                                    return_value=llm):
                 code = generate_prompts.main([
-                    "--input-dir", str(input_dir),
                     "--output-dir", str(output_dir),
                     "--stage", "all", "--force",
                 ])
@@ -1374,10 +1541,10 @@ class ProcessIsolationTests(unittest.TestCase):
                 "<prompt>A detailed action photograph of the second subject.</prompt>",
                 "<video>The second subject moves smoothly while the camera tracks; quiet ambience follows.</video>",
             ]
-            with mock.patch.object(generate_prompts, "build_llm",
+            with mock.patch.object(generate_prompts, "ROOT", root), \
+                    mock.patch.object(generate_prompts, "build_llm",
                                    return_value=llm):
                 code = generate_prompts.main([
-                    "--input-dir", str(input_dir),
                     "--output-dir", str(output_dir), "--stage", "all",
                 ])
             loaded = load_pipeline(output_dir / "pipeline.yaml")
@@ -1413,10 +1580,10 @@ class ProcessIsolationTests(unittest.TestCase):
             llm.chat.return_value = (
                 "<prompt>A detailed action photograph of an athlete.</prompt>")
 
-            with mock.patch.object(generate_prompts, "build_llm",
+            with mock.patch.object(generate_prompts, "ROOT", root), \
+                    mock.patch.object(generate_prompts, "build_llm",
                                    return_value=llm):
                 code = generate_prompts.main([
-                    "--input-dir", str(input_dir),
                     "--output-dir", str(output_dir), "--stage", "stills",
                 ])
             loaded = load_pipeline_tree(output_dir, require_stage="stills")

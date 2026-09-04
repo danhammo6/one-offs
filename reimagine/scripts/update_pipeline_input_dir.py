@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Set input_dir in every pipeline.yaml beneath an output directory."""
+"""Set input_dir in every pipeline.yaml beneath an output directory.
+
+Both directory arguments may be symbolic links.
+"""
 import argparse
 import json
 import os
@@ -50,12 +53,43 @@ def updated_yaml(text, input_dir):
     return f"{replacement}\n{text}"
 
 
+def path_identity(path):
+    stat = path.stat()
+    return stat.st_dev, stat.st_ino
+
+
+def find_pipeline_files(root):
+    """Find pipeline files through linked directories without following cycles."""
+    pending = [root]
+    seen_directories = set()
+    seen_files = set()
+    paths = []
+    while pending:
+        directory = pending.pop()
+        directory_identity = path_identity(directory)
+        if directory_identity in seen_directories:
+            continue
+        seen_directories.add(directory_identity)
+        for child in directory.iterdir():
+            if child.is_dir():
+                pending.append(child)
+            elif child.name == "pipeline.yaml" and child.is_file():
+                target = child.resolve()
+                target_identity = path_identity(target)
+                if target_identity not in seen_files:
+                    seen_files.add(target_identity)
+                    paths.append(target)
+    return sorted(paths)
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "input_dir", help="Input path relative to the reimagine folder.")
+        "input_dir",
+        help="Input path or symlink relative to the reimagine folder.")
     parser.add_argument(
-        "output_dir", help="Output tree containing pipeline.yaml files.")
+        "output_dir",
+        help="Output tree or symlink containing pipeline.yaml files.")
     args = parser.parse_args(argv)
 
     try:
@@ -65,7 +99,7 @@ def main(argv=None):
                       else ROOT / output_arg)
         if not output_dir.is_dir():
             raise ValueError(f"output directory does not exist: {output_dir}")
-        paths = sorted(output_dir.rglob("pipeline.yaml"))
+        paths = find_pipeline_files(output_dir)
         if not paths:
             raise ValueError(f"no pipeline.yaml files under {output_dir}")
         changes = []

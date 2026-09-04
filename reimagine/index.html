@@ -74,15 +74,29 @@
   /* lightbox */
   #lb {
     position: fixed; inset: 0; z-index: 20; display: none;
-    background: rgba(7,8,11,.94); padding: 24px;
-    flex-direction: column; gap: 14px; overscroll-behavior: contain;
+    width: 100%; height: 100dvh;
+    background: rgba(7,8,11,.94);
+    padding:
+      max(8px, env(safe-area-inset-top))
+      max(8px, env(safe-area-inset-right))
+      max(8px, env(safe-area-inset-bottom))
+      max(8px, env(safe-area-inset-left));
+    flex-direction: column; gap: 8px; overscroll-behavior: contain;
   }
   #lb.open { display: flex; }
-  #lb .bar { display: flex; align-items: center; gap: 16px; color: var(--muted); }
-  #lb .bar .name { color: var(--fg); font-weight: 600; }
+  #lb .bar {
+    display: flex; align-items: center; gap: 10px; color: var(--muted);
+    min-width: 0;
+  }
+  #lb .bar .name {
+    color: var(--fg); font-weight: 600; min-width: 0;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
   #lb .bar .grow { flex: 1; }
+  #lb .bar .toggle, #lbClose { white-space: nowrap; }
+  #lbClose { min-width: 44px; min-height: 44px; }
   #lb .stage {
-    flex: 1; min-height: 0; display: grid; gap: 14px;
+    flex: 1; min-height: 0; display: grid; gap: 8px;
     grid-template-columns: 1fr; align-items: center; justify-items: center;
     overflow: auto; overscroll-behavior: contain;
     touch-action: pan-x pan-y pinch-zoom;
@@ -91,9 +105,11 @@
   #lb figure { margin: 0; height: 100%; width: 100%;
     display: flex; flex-direction: column; min-height: 0; }
   #lb figcaption { color: var(--muted); font-size: 12px; text-align: center;
-    padding-bottom: 6px; }
-  #lb img, #lb video { max-width: 100%; max-height: 100%; object-fit: contain;
-    margin: auto; border-radius: 8px; }
+    padding-bottom: 3px; flex: 0 0 auto; }
+  #lb img, #lb video {
+    flex: 1 1 auto; width: 100%; height: 0; min-height: 0;
+    object-fit: contain; margin: auto; border-radius: 6px;
+  }
   #lb .prompt {
     flex: 0 0 auto; max-height: none; overflow: hidden;
     background: var(--panel); border: 1px solid var(--edge); border-radius: 10px;
@@ -121,10 +137,28 @@
     #lb .prompt { max-height: none; overflow: hidden; padding: 8px 14px; }
     #lb .prompt.expanded { max-height: 28vh; overflow-y: auto; }
   }
+  @media (orientation: portrait) and (max-width: 640px) {
+    #lb .stage.side {
+      grid-template-columns: 1fr;
+      grid-template-rows: repeat(2, minmax(0, 1fr));
+    }
+  }
   @media (pointer: coarse) {
-    #lb { padding: 16px; }
+    #lb {
+      padding:
+        max(4px, env(safe-area-inset-top))
+        max(4px, env(safe-area-inset-right))
+        max(4px, env(safe-area-inset-bottom))
+        max(4px, env(safe-area-inset-left));
+      gap: 6px;
+    }
+    #lb .bar { gap: 6px; }
+    #lb .stage { gap: 4px; }
     #lb .hint { font-size: 0; }
     #lb .hint::after { content: "Swipe or tap edges to move · pinch to zoom"; font-size: 12px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .card, button { transition: none; }
   }
 </style>
 </head>
@@ -149,12 +183,12 @@
     <span class="name" id="lbName"></span>
     <span id="lbMeta"></span>
     <span class="grow"></span>
-    <label class="toggle"><input type="checkbox" id="lbSide" checked> side-by-side</label>
+    <label class="toggle"><input type="checkbox" id="lbSide" checked> compare both</label>
     <button id="lbClose">close ✕</button>
   </div>
   <div class="stage side" id="lbStage"></div>
   <div class="prompt" id="lbPrompt" aria-live="polite"></div>
-  <div class="hint">← / → or click edges to move · S to toggle side-by-side · Esc to close</div>
+  <div class="hint">← / → or click edges to move · S to toggle comparison · Esc to close</div>
 </div>
 
 <script>
@@ -163,7 +197,7 @@ const MIN_CARD_WIDTH = 220;
 const GRID_GAP = 14;
 const CARD_CAP_HEIGHT = 35;
 const CATEGORY_HEADER_HEIGHT = 38;
-const OVERSCAN_ROWS = 3;
+const OVERSCAN_ROWS = 6;
 
 let ITEMS = [];
 let VIEW = [];        // filtered list currently shown (for lightbox nav)
@@ -346,8 +380,9 @@ function renderWindow(force = false) {
   const units = visibleLayout();
   const compareAll = $("compareAll").checked;
   const videoMode = $("videoMode").checked;
+  const source = $("sourceSel").value;
   const key = [
-    compareAll, videoMode, layoutColumns,
+    source, compareAll, videoMode, layoutColumns, VIEW.length,
     ...units.map(unit => [
       unit.type, unit.category, unit.top,
       ...(unit.entries || []).map(entry => entry.item.path),
@@ -355,20 +390,56 @@ function renderWindow(force = false) {
   ].join("|");
   if (!force && key === renderedWindowKey) return;
   const activeIndex = document.activeElement?.closest?.(".card")?.dataset.idx;
-  gallery.innerHTML = units.map(unit => {
+  const existing = new Map(
+    [...gallery.children].map(node => [node.dataset.virtualKey, node]));
+  const variant = `${compareAll}:${videoMode}`;
+  const wanted = [];
+  for (const unit of units) {
     if (unit.type === "heading") {
-      return `<li class="virtual-heading" role="presentation"
-                  style="top:${unit.top}px;height:${unit.height}px">
-        <h2>${escapeHtml(unit.category)}</h2>
-      </li>`;
+      const virtualKey = `heading:${unit.category}`;
+      let node = existing.get(virtualKey);
+      if (!node) {
+        node = document.createElement("li");
+        node.className = "virtual-heading";
+        node.setAttribute("role", "presentation");
+        node.dataset.virtualKey = virtualKey;
+        const heading = document.createElement("h2");
+        heading.textContent = unit.category;
+        node.append(heading);
+      }
+      node.style.top = `${unit.top}px`;
+      node.style.height = `${unit.height}px`;
+      wanted.push(node);
+      continue;
     }
-    return unit.entries.map(({ item, idx }, column) => `
-      <li class="virtual-item"
-          aria-setsize="${VIEW.length}" aria-posinset="${idx + 1}"
-          style="top:${unit.top}px;left:${column * (unit.cardWidth + GRID_GAP)}px;width:${unit.cardWidth}px">
-        ${card(item, idx, compareAll, videoMode)}
-      </li>`).join("");
-  }).join("");
+    unit.entries.forEach(({ item, idx }, column) => {
+      const virtualKey = `item:${source}:${item.path}`;
+      let node = existing.get(virtualKey);
+      if (!node || node.dataset.variant !== variant) {
+        node = document.createElement("li");
+        node.className = "virtual-item";
+        node.dataset.virtualKey = virtualKey;
+        node.dataset.variant = variant;
+        node.innerHTML = card(item, idx, compareAll, videoMode);
+        prepareCardImages(node);
+      }
+      node.querySelector(".card").dataset.idx = idx;
+      node.setAttribute("aria-setsize", VIEW.length);
+      node.setAttribute("aria-posinset", idx + 1);
+      node.style.top = `${unit.top}px`;
+      node.style.left = `${column * (unit.cardWidth + GRID_GAP)}px`;
+      node.style.width = `${unit.cardWidth}px`;
+      wanted.push(node);
+    });
+  }
+  const wantedNodes = new Set(wanted);
+  for (const node of [...gallery.children]) {
+    if (!wantedNodes.has(node)) node.remove();
+  }
+  wanted.forEach((node, index) => {
+    const current = gallery.children[index];
+    if (current !== node) gallery.insertBefore(node, current || null);
+  });
   renderedWindowKey = key;
   if (activeIndex !== undefined) {
     const replacement = gallery.querySelector(
@@ -468,12 +539,12 @@ function card(it, idx, compareAll, videoMode) {
     ? `<video src="${it.video_url}" muted loop playsinline preload="metadata"
               aria-label="Video preview for ${escapeHtml(it.path)}"
               onmouseenter="this.play()" onmouseleave="this.pause()"></video>`
-    : `<img loading="lazy" src="${it.output_thumbnail_url || it.output_url}"
+    : `<img loading="eager" decoding="async" src="${it.output_thumbnail_url || it.output_url}"
             onerror="this.onerror=null;this.src='${escapeHtml(it.output_url)}'"
             alt="Reimagined ${escapeHtml(it.path)}">`;
   const showBoth = compareAll && it.input_url;
   const imgs = showBoth
-    ? `<img loading="lazy" src="${it.input_thumbnail_url || it.input_url}"
+    ? `<img loading="eager" decoding="async" src="${it.input_thumbnail_url || it.input_url}"
             onerror="this.onerror=null;this.src='${escapeHtml(it.input_url)}'"
             alt="Reference ${escapeHtml(it.path)}">${outCell}`
     : outCell;
@@ -485,6 +556,15 @@ function card(it, idx, compareAll, videoMode) {
       <div class="imgwrap${showBoth ? " compare" : ""}">${imgs}${badges}</div>
       <div class="cap">${escapeHtml(it.path)}</div>
     </button>`;
+}
+
+function prepareCardImages(node) {
+  for (const image of node.querySelectorAll("img")) {
+    if (typeof image.decode !== "function") continue;
+    const decode = () => image.decode().catch(() => {});
+    if (image.complete) decode();
+    else image.addEventListener("load", decode, { once: true });
+  }
 }
 
 function updatePromptNodes(label, text) {
@@ -655,7 +735,6 @@ window.addEventListener("scroll", scheduleWindowRender, { passive: true });
 window.addEventListener("resize", scheduleWindowRender);
 $("lbClose").addEventListener("click", closeLb);
 $("lbSide").addEventListener("change", () => cur >= 0 && openLb(cur));
-$("lb").addEventListener("click", (e) => { if (e.target.id === "lb") closeLb(); });
 $("lbPrompt").addEventListener("click", (e) => {
   if (!e.target.closest(".lbl")) return;
   const pr = $("lbPrompt");

@@ -76,11 +76,13 @@
     position: fixed; inset: 0; z-index: 20; display: none;
     width: 100%; height: 100dvh;
     background: rgba(7,8,11,.94);
+    --lb-pad-top: max(8px, env(safe-area-inset-top));
+    --lb-pad-right: max(8px, env(safe-area-inset-right));
+    --lb-pad-bottom: max(8px, env(safe-area-inset-bottom));
+    --lb-pad-left: max(8px, env(safe-area-inset-left));
     padding:
-      max(8px, env(safe-area-inset-top))
-      max(8px, env(safe-area-inset-right))
-      max(8px, env(safe-area-inset-bottom))
-      max(8px, env(safe-area-inset-left));
+      var(--lb-pad-top) var(--lb-pad-right)
+      var(--lb-pad-bottom) var(--lb-pad-left);
     flex-direction: column; gap: 8px; overscroll-behavior: contain;
   }
   #lb.open { display: flex; }
@@ -89,7 +91,8 @@
     min-width: 0;
   }
   #lb .bar .name {
-    color: var(--fg); font-weight: 600; min-width: 0;
+    color: var(--fg); font-size: 12px; line-height: 1.25;
+    font-weight: 600; min-width: 0; max-width: min(48vw, 520px);
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
   #lb .bar .grow { flex: 1; }
@@ -117,46 +120,47 @@
     flex: 1 1 auto; width: 100%; height: 0; min-height: 0;
     object-fit: contain; margin: auto; border-radius: 6px;
   }
+  #lb .utility {
+    flex: 0 0 44px; min-height: 44px; display: flex;
+    align-items: center; gap: 8px; min-width: 0;
+  }
+  #lb .hint {
+    flex: 1; min-width: 0; color: var(--muted); font-size: 11px;
+    line-height: 1.25; text-align: center;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  #lb .prompt-toggle {
+    flex: 0 0 auto; min-width: 44px; min-height: 44px;
+    margin: 0; padding: 4px 9px; color: var(--accent);
+    font: inherit; font-size: 11px; font-weight: 600;
+    letter-spacing: .06em; text-transform: uppercase;
+  }
+  #lb .prompt-toggle::after { content: " ▸"; color: var(--muted); }
+  #lb .prompt-toggle[aria-expanded="true"]::after { content: " ▾"; }
   #lb .prompt {
-    flex: 0 0 auto; max-height: none; overflow: hidden;
+    display: none; position: absolute; z-index: 3;
+    left: var(--lb-pad-left); right: var(--lb-pad-right);
+    bottom: calc(var(--lb-pad-bottom) + 52px);
+    max-height: min(50dvh, 360px); overflow: auto;
     background: var(--panel); border: 1px solid var(--edge); border-radius: 10px;
     padding: 10px 14px; color: var(--fg); font-size: 13px; line-height: 1.55;
+    box-shadow: 0 8px 28px rgba(0,0,0,.45);
   }
-  #lb .prompt .lbl {
-    display: flex; align-items: center; justify-content: space-between;
-    width: 100%; min-height: 28px; margin: 0; padding: 0;
-    background: none; border: 0; color: var(--accent); font: inherit;
-    font-size: 11px; text-transform: uppercase; letter-spacing: .08em;
-    font-weight: 600; text-align: left; cursor: pointer;
-  }
-  #lb .prompt .lbl::after {
-    content: "▸"; color: var(--muted); font-size: 12px;
-    letter-spacing: 0; text-transform: none;
-  }
-  #lb .prompt .prompt-body { display: none; }
-  #lb .prompt.expanded { max-height: 22vh; overflow-y: auto; }
-  #lb .prompt.expanded .lbl { margin-bottom: 6px; }
-  #lb .prompt.expanded .lbl::after { content: "▾"; }
-  #lb .prompt.expanded .prompt-body { display: block; }
+  #lb .prompt.expanded { display: block; }
   #lb .prompt.empty .prompt-body { color: var(--muted); font-style: italic; }
-  #lb .hint { color: var(--muted); font-size: 12px; text-align: center; }
-  @media (orientation: portrait) {
-    #lb .prompt { max-height: none; overflow: hidden; padding: 8px 14px; }
-    #lb .prompt.expanded { max-height: 28vh; overflow-y: auto; }
-  }
   @media (pointer: coarse) {
     #lb {
+      --lb-pad-top: max(4px, env(safe-area-inset-top));
+      --lb-pad-right: max(4px, env(safe-area-inset-right));
+      --lb-pad-bottom: max(4px, env(safe-area-inset-bottom));
+      --lb-pad-left: max(4px, env(safe-area-inset-left));
       padding:
-        max(4px, env(safe-area-inset-top))
-        max(4px, env(safe-area-inset-right))
-        max(4px, env(safe-area-inset-bottom))
-        max(4px, env(safe-area-inset-left));
+        var(--lb-pad-top) var(--lb-pad-right)
+        var(--lb-pad-bottom) var(--lb-pad-left);
       gap: 6px;
     }
     #lb .bar { gap: 6px; }
     #lb .stage { gap: 4px; }
-    #lb .hint { font-size: 0; }
-    #lb .hint::after { content: "Swipe or tap edges to move · pinch to zoom"; font-size: 12px; }
   }
   @media (prefers-reduced-motion: reduce) {
     .card, button { transition: none; }
@@ -188,8 +192,17 @@
     <button id="lbClose">close ✕</button>
   </div>
   <div class="stage" id="lbStage"></div>
-  <div class="prompt" id="lbPrompt" aria-live="polite"></div>
-  <div class="hint">← / → or click edges to move · S to toggle comparison · Esc to close</div>
+  <div class="utility" id="lbUtility">
+    <div class="hint" id="lbHint">
+      Swipe or tap edges to move · pinch to zoom · S toggles comparison · Esc closes
+    </div>
+    <button type="button" class="prompt-toggle" id="lbPromptToggle"
+            aria-controls="lbPromptBody" aria-expanded="false">prompt</button>
+  </div>
+  <div class="prompt" id="lbPrompt" role="region"
+       aria-labelledby="lbPromptToggle" tabindex="-1">
+    <div class="prompt-body" id="lbPromptBody" aria-live="polite"></div>
+  </div>
 </div>
 
 <script>
@@ -589,21 +602,14 @@ function prepareCardMedia(node) {
 }
 
 function updatePromptNodes(label, text) {
-  const prompt = $("lbPrompt");
-  let button = prompt.querySelector(".lbl");
-  let body = prompt.querySelector("#lbPromptBody");
-  if (!button || !body) {
-    prompt.innerHTML =
-      `<button type="button" class="lbl" aria-controls="lbPromptBody"></button>
-       <div class="prompt-body" id="lbPromptBody"></div>`;
-    button = prompt.querySelector(".lbl");
-    body = prompt.querySelector("#lbPromptBody");
-  }
-  button.textContent = label;
-  button.setAttribute(
-    "aria-expanded",
-    prompt.classList.contains("expanded") ? "true" : "false");
-  body.textContent = text;
+  $("lbPromptToggle").textContent = label;
+  $("lbPromptBody").textContent = text;
+}
+
+function setPromptExpanded(expanded) {
+  $("lbPrompt").classList.toggle("expanded", expanded);
+  $("lbPrompt").tabIndex = expanded ? 0 : -1;
+  $("lbPromptToggle").setAttribute("aria-expanded", String(expanded));
 }
 
 function renderPrompt(useVideo, metadata) {
@@ -616,7 +622,6 @@ function renderPrompt(useVideo, metadata) {
   prompt.removeAttribute("aria-busy");
   updatePromptNodes(
     label, text || "no saved prompt for this render");
-  scheduleComparisonLayout();
 }
 
 async function loadPrompt(item, useVideo) {
@@ -749,6 +754,7 @@ function openLb(idx) {
   const it = VIEW[cur];
   const opening = !$("lb").classList.contains("open");
   $("lbName").textContent = it.path;
+  $("lbName").title = it.path;
   const useVideo = $("videoMode").checked && it.video_url;
   // The reimagined cell is a looping video in video mode (when one exists),
   // else the static render.
@@ -780,9 +786,7 @@ function openLb(idx) {
   $("lbMeta").textContent = it.input_url ? "" : "no matching reference";
   const prompt = $("lbPrompt");
   if (opening) {
-    prompt.classList.toggle(
-      "expanded",
-      !window.matchMedia("(orientation: portrait)").matches);
+    setPromptExpanded(false);
   }
   prompt.classList.remove("empty");
   prompt.setAttribute("aria-busy", "true");
@@ -808,7 +812,7 @@ function closeLb() {
   lightboxLayoutFrame = 0;
   const returnIndex = returnFocus?.dataset.idx;
   $("lb").classList.remove("open");
-  $("lbPrompt").classList.remove("expanded");
+  setPromptExpanded(false);
   setBackgroundInert(false);
   document.body.classList.remove("lightbox-open");
   document.body.style.top = "";
@@ -873,19 +877,14 @@ window.addEventListener("resize", scheduleComparisonLayout);
 window.visualViewport?.addEventListener("resize", scheduleComparisonLayout);
 $("lbClose").addEventListener("click", closeLb);
 $("lbSide").addEventListener("change", () => cur >= 0 && openLb(cur));
-$("lbPrompt").addEventListener("click", (e) => {
-  if (!e.target.closest(".lbl")) return;
-  const pr = $("lbPrompt");
-  const open = !pr.classList.contains("expanded");
-  pr.classList.toggle("expanded", open);
-  e.target.closest(".lbl").setAttribute("aria-expanded", open ? "true" : "false");
-  scheduleComparisonLayout();
+$("lbPromptToggle").addEventListener("click", () => {
+  setPromptExpanded(!$("lbPrompt").classList.contains("expanded"));
 });
 
 const EDGE_RATIO = 0.2;
 const TAP_SLOP = 14;
 const isNavChrome = (el) => el.closest(
-  ".bar, .prompt, .hint, button, input, label, video, a, select"
+  ".bar, .utility, .prompt, button, input, label, video, a, select"
 );
 const visualPoint = (clientX, clientY) => {
   const vv = window.visualViewport;

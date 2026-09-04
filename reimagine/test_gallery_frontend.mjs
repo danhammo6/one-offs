@@ -26,7 +26,10 @@ function fixtureImage(url) {
 }
 const ITEMS = Array.from({ length: 4000 }, (_, index) => {
   const category = index < 2000 ? "alpha" : "beta";
-  const path = `${category}/item-${String(index).padStart(4, "0")}.jpg`;
+  const filename = index === 0
+    ? "a-deliberately-long-gallery-filename-for-truncation-item-0000.jpg"
+    : `item-${String(index).padStart(4, "0")}.jpg`;
+  const path = `${category}/${filename}`;
   return {
     name: path.split("/").at(-1),
     path,
@@ -357,12 +360,20 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
       return {
         padding: Number.parseFloat(getComputedStyle(lightbox).paddingLeft),
         stageWidth: stage.width,
+        stageHeight: stage.height,
         viewportWidth: innerWidth,
+        viewportHeight: innerHeight,
+        promptExpanded: document.querySelector("#lbPrompt")
+          .classList.contains("expanded"),
       };
     });
     assert.ok(lightboxGeometry.padding <= 8, "desktop lightbox padding is compact");
     assert.ok(lightboxGeometry.stageWidth / lightboxGeometry.viewportWidth > 0.98,
       "lightbox media stage uses the desktop viewport");
+    assert.ok(lightboxGeometry.stageHeight
+      / lightboxGeometry.viewportHeight >= 0.84,
+    "collapsed overlay prompt preserves desktop stage height");
+    assert.equal(lightboxGeometry.promptExpanded, false);
     await page.mouse.click(2, 400);
     assert.equal(await page.locator("#lb").evaluate(
       lightbox => lightbox.classList.contains("open")), true,
@@ -582,19 +593,88 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
     const promptButton = page.getByRole("button", { name: "prompt" });
     await promptButton.waitFor();
     assert.equal(await promptButton.getAttribute("aria-expanded"), "false");
+    const compactChrome = await page.evaluate(() => {
+      const bounds = selector =>
+        document.querySelector(selector).getBoundingClientRect();
+      const title = document.querySelector("#lbName");
+      const titleStyle = getComputedStyle(title);
+      const stage = bounds("#lbStage");
+      const utility = bounds("#lbUtility");
+      const hint = bounds("#lbHint");
+      const toggle = bounds("#lbPromptToggle");
+      return {
+        stageHeight: stage.height,
+        stageBottom: stage.bottom,
+        utilityTop: utility.top,
+        utilityBottom: utility.bottom,
+        hintTop: hint.top,
+        hintBottom: hint.bottom,
+        hintRight: hint.right,
+        toggleTop: toggle.top,
+        toggleBottom: toggle.bottom,
+        toggleLeft: toggle.left,
+        toggleWidth: toggle.width,
+        toggleHeight: toggle.height,
+        title: title.textContent,
+        titleAttribute: title.title,
+        titleFontSize: Number.parseFloat(titleStyle.fontSize),
+        titleWhiteSpace: titleStyle.whiteSpace,
+        titleOverflow: titleStyle.overflow,
+      };
+    });
+    assert.ok(compactChrome.stageBottom <= compactChrome.utilityTop);
+    assert.ok(compactChrome.hintRight <= compactChrome.toggleLeft);
+    assert.ok(compactChrome.hintTop >= compactChrome.utilityTop
+      && compactChrome.hintBottom <= compactChrome.utilityBottom);
+    assert.ok(compactChrome.toggleTop >= compactChrome.utilityTop
+      && compactChrome.toggleBottom <= compactChrome.utilityBottom);
+    assert.ok(compactChrome.toggleWidth >= 44
+      && compactChrome.toggleHeight >= 44,
+    "prompt toggle retains a 44px pointer target");
+    assert.equal(compactChrome.titleAttribute, compactChrome.title);
+    assert.ok(compactChrome.titleFontSize >= 11
+      && compactChrome.titleFontSize <= 12);
+    assert.equal(compactChrome.titleWhiteSpace, "nowrap");
+    assert.equal(compactChrome.titleOverflow, "hidden");
     await page.locator("#lbClose").press("Tab");
     assert.equal(await promptButton.evaluate(
       element => element === document.activeElement), true);
     await promptButton.press("Enter");
     assert.equal(await promptButton.getAttribute("aria-expanded"), "true");
+    assert.equal(await promptButton.evaluate(
+      element => element === document.activeElement), true);
+    assert.equal(await page.locator("#lbPrompt").getAttribute("tabindex"), "0");
+    await promptButton.press("Tab");
+    assert.equal(await page.locator("#lbPrompt").evaluate(
+      element => element === document.activeElement), true,
+    "expanded scrollable prompt is keyboard reachable");
+    await page.locator("#lbPrompt").press("Shift+Tab");
+    assert.equal(await promptButton.evaluate(
+      element => element === document.activeElement), true);
+    const expandedPrompt = await page.evaluate(() => {
+      const stage = document.querySelector("#lbStage").getBoundingClientRect();
+      const utility = document.querySelector("#lbUtility").getBoundingClientRect();
+      const prompt = document.querySelector("#lbPrompt").getBoundingClientRect();
+      return {
+        stageHeight: stage.height,
+        promptBottom: prompt.bottom,
+        utilityTop: utility.top,
+      };
+    });
+    assert.ok(Math.abs(
+      expandedPrompt.stageHeight - compactChrome.stageHeight) < 1,
+    "expanded prompt overlays rather than shrinking the media stage");
+    assert.ok(expandedPrompt.promptBottom <= expandedPrompt.utilityTop,
+      "expanded prompt does not overlap its utility-row control");
     await page.setViewportSize({ width: 1000, height: 600 });
     assert.equal(await promptButton.evaluate(
       element => element === document.activeElement), true);
     await promptButton.press("Space");
     assert.equal(await promptButton.getAttribute("aria-expanded"), "false");
+    assert.equal(await page.locator("#lbPrompt").getAttribute("tabindex"), "-1");
 
     assert.equal(await page.locator("#lbPromptBody").getAttribute("id"), "lbPromptBody");
-    assert.equal(await page.locator("#lbPrompt .lbl").getAttribute("aria-controls"),
+    assert.equal(await page.locator("#lbPromptToggle").getAttribute("aria-controls"),
       "lbPromptBody");
     assert.equal(await page.locator("#lb img:not([alt])").count(), 0);
     assert.equal(await page.locator("#gallery img:not([alt])").count(), 0);
@@ -624,7 +704,7 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
     );
     assert.equal(await page.evaluate(() =>
       document.activeElement === window.__focusedPromptNode
-      && document.querySelector("#lbPrompt .lbl") === window.__focusedPromptNode
+      && document.querySelector("#lbPromptToggle") === window.__focusedPromptNode
       && document.querySelector("#lb").contains(document.activeElement)), true);
 
     const touchContext = await browser.newContext({
@@ -645,27 +725,52 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
       const stage = document.querySelector("#lbStage").getBoundingClientRect();
       const image = document.querySelector("#lbStage img").getBoundingClientRect();
       const close = document.querySelector("#lbClose").getBoundingClientRect();
+      const utility = document.querySelector("#lbUtility").getBoundingClientRect();
+      const hint = document.querySelector("#lbHint").getBoundingClientRect();
+      const toggle = document.querySelector("#lbPromptToggle").getBoundingClientRect();
+      const title = document.querySelector("#lbName");
       return {
         height: lightbox.getBoundingClientRect().height,
         padding: Number.parseFloat(getComputedStyle(lightbox).paddingLeft),
         imageWidth: image.width,
         stageWidth: stage.width,
+        stageHeight: stage.height,
         closeWidth: close.width,
         closeHeight: close.height,
         viewportHeight: visualViewport?.height || innerHeight,
         viewportWidth: innerWidth,
+        stageBottom: stage.bottom,
+        utilityTop: utility.top,
+        hintRight: hint.right,
+        toggleLeft: toggle.left,
+        promptWidth: toggle.width,
+        promptHeight: toggle.height,
+        title: title.textContent,
+        titleAttribute: title.title,
+        titleClientWidth: title.clientWidth,
+        titleScrollWidth: title.scrollWidth,
       };
     });
     assert.ok(phoneGeometry.padding <= 8, "touch lightbox padding is compact");
     assert.ok(phoneGeometry.stageWidth
       >= phoneGeometry.viewportWidth - phoneGeometry.padding * 2 - 1,
     "lightbox media stage uses the phone viewport within its safe padding");
+    assert.ok(phoneGeometry.stageHeight / phoneGeometry.viewportHeight >= 0.85,
+      "combined utility row preserves phone-portrait stage height");
     assert.ok(phoneGeometry.imageWidth / phoneGeometry.stageWidth > 0.95,
       "portrait comparison media uses the full stage width");
     assert.ok(Math.abs(phoneGeometry.height - phoneGeometry.viewportHeight) < 1,
       "lightbox follows the dynamic visual viewport");
     assert.ok(phoneGeometry.closeWidth >= 44 && phoneGeometry.closeHeight >= 44,
       "touch close control retains a 44px target");
+    assert.ok(phoneGeometry.promptWidth >= 44 && phoneGeometry.promptHeight >= 44,
+      "touch prompt control retains a 44px target");
+    assert.ok(phoneGeometry.stageBottom <= phoneGeometry.utilityTop
+      && phoneGeometry.hintRight <= phoneGeometry.toggleLeft,
+    "combined utility row does not overlap the stage or prompt control");
+    assert.equal(phoneGeometry.titleAttribute, phoneGeometry.title);
+    assert.ok(phoneGeometry.titleScrollWidth > phoneGeometry.titleClientWidth,
+      "long phone filename is visually truncated with full title available");
     await touchPage.touchscreen.tap(2, 422);
     assert.equal(await touchPage.locator("#lb").evaluate(
       lightbox => lightbox.classList.contains("open")), true,
@@ -681,6 +786,27 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
     "short-wide iPhone landscape overrides landscape media to columns");
     assert.equal(await touchPage.locator("#lbStage").getAttribute(
       "data-comparison-reason"), "short-wide");
+    const compactLandscape = await touchPage.evaluate(() => {
+      const stage = document.querySelector("#lbStage").getBoundingClientRect();
+      const utility = document.querySelector("#lbUtility").getBoundingClientRect();
+      const toggle = document.querySelector("#lbPromptToggle").getBoundingClientRect();
+      return {
+        stageHeight: stage.height,
+        stageRatio: stage.height / innerHeight,
+        chromeHeight: innerHeight - stage.height,
+        stageBottom: stage.bottom,
+        utilityTop: utility.top,
+        toggleWidth: toggle.width,
+        toggleHeight: toggle.height,
+      };
+    });
+    assert.ok(compactLandscape.stageHeight >= 269
+      && compactLandscape.stageRatio >= 0.69
+      && compactLandscape.chromeHeight <= 121,
+    "compact phone-landscape chrome materially increases media-stage height");
+    assert.ok(compactLandscape.stageBottom <= compactLandscape.utilityTop);
+    assert.ok(compactLandscape.toggleWidth >= 44
+      && compactLandscape.toggleHeight >= 44);
     await touchPage.setViewportSize({ width: 844, height: 420 });
     assert.equal(await touchPage.locator("#lbStage").getAttribute(
       "data-comparison-layout"), "side-by-side",
@@ -710,6 +836,9 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
     assert.ok(await touchPage.locator("#lbStage").evaluate(stage =>
       stage.getBoundingClientRect().width / innerWidth > 0.98),
     "lightbox media stage uses the iPad viewport");
+    assert.ok(await touchPage.locator("#lbStage").evaluate(stage =>
+      stage.getBoundingClientRect().height / innerHeight > 0.895),
+    "combined utility row preserves iPad stage height");
     assert.equal((await comparisonGeometry(touchPage, "stacked")).overflow, false,
       "landscape comparison stacks on iPad");
     await touchPage.keyboard.press("ArrowRight");
@@ -723,7 +852,9 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
       + `deep=${deepCardCount}, resized=${deepIndexes.length}, `
       + `scrollAdds=${scrollMetrics.addedCards}, `
       + `replacements=${scrollMetrics.identityReplacements}, `
-      + `maxCards=${scrollMetrics.maxCards}, logical=4000`,
+      + `maxCards=${scrollMetrics.maxCards}, `
+      + `phoneLandscapeStage=${compactLandscape.stageHeight}, `
+      + `phoneLandscapeChrome=${compactLandscape.chromeHeight}, logical=4000`,
     );
   } finally {
     releaseInitialStream?.();

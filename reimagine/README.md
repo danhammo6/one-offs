@@ -312,9 +312,3 @@ item opens and is served from the startup manifest cache. The page uses a
 windowed grid with a small overscan buffer, keeping card and media-node counts
 bounded as the collection grows while retaining navigation across the full
 logical result set.
-
-## Future improvements
-
-- In phone landscape with portrait-image side-by-side comparison, right-align
-  the left/reference image and left-align the right/result image so the images
-  sit together across the center gap and zooming works better.

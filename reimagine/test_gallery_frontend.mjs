@@ -72,25 +72,115 @@ async function comparisonGeometry(page, expectedLayout) {
   await page.waitForFunction(layout =>
     document.querySelector("#lbStage")?.dataset.comparisonLayout === layout,
   expectedLayout);
+  await page.waitForFunction(() =>
+    [...document.querySelectorAll("#lbStage img, #lbStage video")]
+      .every(media => media.tagName === "IMG"
+        ? media.complete && media.naturalWidth && media.naturalHeight
+        : media.videoWidth && media.videoHeight));
   return page.evaluate(() => {
     const stage = document.querySelector("#lbStage");
-    const figures = [...stage.querySelectorAll("figure")]
-      .map(figure => {
-        const bounds = figure.getBoundingClientRect();
-        return {
-          left: bounds.left,
-          right: bounds.right,
-          top: bounds.top,
-          bottom: bounds.bottom,
-          width: bounds.width,
-        };
-      });
+    const figures = [...stage.querySelectorAll("figure")];
+    const figureBounds = figures.map(figure => {
+      const bounds = figure.getBoundingClientRect();
+      return {
+        left: bounds.left,
+        right: bounds.right,
+        top: bounds.top,
+        bottom: bounds.bottom,
+        width: bounds.width,
+      };
+    });
+    const media = figures.map(figure => {
+      const element = figure.querySelector("img, video");
+      const bounds = element.getBoundingClientRect();
+      const intrinsicWidth = element.naturalWidth || element.videoWidth;
+      const intrinsicHeight = element.naturalHeight || element.videoHeight;
+      const scale = Math.min(
+        bounds.width / intrinsicWidth,
+        bounds.height / intrinsicHeight,
+      );
+      const width = intrinsicWidth * scale;
+      const height = intrinsicHeight * scale;
+      const objectPosition = getComputedStyle(element).objectPosition;
+      const [horizontal = "50%", vertical = "50%"] = objectPosition.split(" ");
+      const positionFraction = value => {
+        if (value === "left" || value === "top") return 0;
+        if (value === "right" || value === "bottom") return 1;
+        return Number.parseFloat(value) / 100;
+      };
+      const left = bounds.left
+        + (bounds.width - width) * positionFraction(horizontal);
+      const top = bounds.top
+        + (bounds.height - height) * positionFraction(vertical);
+      return {
+        left,
+        right: left + width,
+        top,
+        bottom: top + height,
+        width,
+        height,
+        boxWidth: bounds.width,
+        boxHeight: bounds.height,
+        intrinsicWidth,
+        intrinsicHeight,
+        objectFit: getComputedStyle(element).objectFit,
+        objectPosition,
+        role: element.dataset.comparisonRole,
+        tag: element.tagName,
+        transform: getComputedStyle(element).transform,
+      };
+    });
+    const stageStyle = getComputedStyle(stage);
     return {
-      figures,
+      figures: figureBounds,
+      media,
+      imagePair: stage.classList.contains("image-pair"),
+      stage: {
+        gap: Number.parseFloat(stageStyle.gap),
+        width: stage.getBoundingClientRect().width,
+        height: stage.getBoundingClientRect().height,
+      },
       overflow: stage.scrollWidth > stage.clientWidth
         || stage.scrollHeight > stage.clientHeight,
     };
   });
+}
+
+function assertImagePairMeetsAtCenter(geometry, label) {
+  assert.equal(geometry.imagePair, true, `${label}: image-pair state is active`);
+  assert.deepEqual(
+    geometry.media.map(media => media.role),
+    ["reference", "primary"],
+    `${label}: reference/result visual order is unchanged`,
+  );
+  assert.ok(geometry.media.every(media =>
+    media.tag === "IMG"
+      && media.objectFit === "contain"
+      && media.transform === "none"),
+  `${label}: images remain untransformed and uncropped`);
+  for (const media of geometry.media) {
+    const expectedScale = Math.min(
+      media.boxWidth / media.intrinsicWidth,
+      media.boxHeight / media.intrinsicHeight,
+    );
+    assert.ok(
+      Math.abs(media.width - media.intrinsicWidth * expectedScale) < 0.6
+        && Math.abs(media.height - media.intrinsicHeight * expectedScale) < 0.6,
+      `${label}: image dimensions continue to maximize the available box`,
+    );
+  }
+  const centerGap = geometry.media[1].left - geometry.media[0].right;
+  assert.ok(geometry.stage.gap >= 5.5 && geometry.stage.gap <= 10.5,
+    `${label}: responsive gutter is 6–10px (${geometry.stage.gap}px)`);
+  assert.ok(Math.abs(centerGap - geometry.stage.gap) < 0.6,
+    `${label}: visible center gutter is small (${centerGap}px)`);
+  assert.ok(Math.abs(
+    geometry.media[0].right - geometry.figures[0].right,
+  ) < 0.6, `${label}: reference is right-aligned`);
+  assert.ok(Math.abs(
+    geometry.media[1].left - geometry.figures[1].left,
+  ) < 0.6, `${label}: result is left-aligned`);
+  return geometry.stage.gap;
 }
 
 const BROWSERS = [
@@ -435,6 +525,11 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
       >= landscapeComparison.figures[0].bottom,
     "landscape media compares top-to-bottom");
     assert.equal(landscapeComparison.overflow, false);
+    assert.deepEqual(
+      landscapeComparison.media.map(media => media.objectPosition),
+      ["50% 50%", "50% 50%"],
+      "stacked landscape media remains centered",
+    );
 
     await page.keyboard.press("ArrowLeft");
     await page.waitForFunction(
@@ -446,6 +541,9 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
       >= portraitComparison.figures[0].right,
     "portrait media compares side-by-side");
     assert.equal(portraitComparison.overflow, false);
+    const desktopPortraitGap = assertImagePairMeetsAtCenter(
+      portraitComparison, "desktop portrait comparison",
+    );
 
     await page.keyboard.press("ArrowRight");
     assert.deepEqual(await page.evaluate(() => ({
@@ -465,7 +563,16 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
     assert.deepEqual(await page.evaluate(() => ({
       layout: document.querySelector("#lbStage").dataset.comparisonLayout,
       figures: document.querySelectorAll("#lbStage figure").length,
-    })), { layout: "single", figures: 1 });
+      imagePair: document.querySelector("#lbStage").classList.contains("image-pair"),
+      objectPosition: getComputedStyle(
+        document.querySelector("#lbStage img"),
+      ).objectPosition,
+    })), {
+      layout: "single",
+      figures: 1,
+      imagePair: false,
+      objectPosition: "50% 50%",
+    });
     await page.locator("#lbSide").check();
     await comparisonGeometry(page, "side-by-side");
 
@@ -536,6 +643,15 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
         === "beta/item-2001.jpg",
     );
     const lightboxVideo = page.locator("#lbStage video");
+    assert.deepEqual(await page.locator("#lbStage").evaluate(stage => ({
+      imagePair: stage.classList.contains("image-pair"),
+      referencePosition: getComputedStyle(
+        stage.querySelector('[data-comparison-role="reference"]'),
+      ).objectPosition,
+    })), {
+      imagePair: false,
+      referencePosition: "50% 50%",
+    }, "video comparison keeps its previous centering behavior");
     assert.deepEqual(await lightboxVideo.evaluate(video => ({
       autoplay: video.autoplay,
       controls: video.controls,
@@ -784,6 +900,9 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
     assert.ok(phoneLandscape.figures[1].left
       >= phoneLandscape.figures[0].right,
     "short-wide iPhone landscape overrides landscape media to columns");
+    const shortWideGap = assertImagePairMeetsAtCenter(
+      phoneLandscape, "short-wide iPhone landscape comparison",
+    );
     assert.equal(await touchPage.locator("#lbStage").getAttribute(
       "data-comparison-reason"), "short-wide");
     const compactLandscape = await touchPage.evaluate(() => {
@@ -828,6 +947,16 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
       "portrait comparison fits the narrow iPhone viewport");
     assert.ok(narrowPortrait.figures.every(figure => figure.width >= 180),
       "narrow iPhone retains usable side-by-side portrait columns");
+    const phonePortraitGap = assertImagePairMeetsAtCenter(
+      narrowPortrait, "iPhone portrait comparison",
+    );
+    await touchPage.setViewportSize({ width: 844, height: 390 });
+    const phonePortraitLandscape = await comparisonGeometry(
+      touchPage, "side-by-side");
+    const phoneLandscapePortraitGap = assertImagePairMeetsAtCenter(
+      phonePortraitLandscape, "portrait media in iPhone landscape",
+    );
+    await touchPage.setViewportSize({ width: 390, height: 844 });
     await touchPage.locator("#lbClose").click();
 
     await touchPage.setViewportSize({ width: 820, height: 1180 });
@@ -842,8 +971,15 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
     assert.equal((await comparisonGeometry(touchPage, "stacked")).overflow, false,
       "landscape comparison stacks on iPad");
     await touchPage.keyboard.press("ArrowRight");
-    assert.equal((await comparisonGeometry(touchPage, "side-by-side")).overflow, false,
+    const iPadPortrait = await comparisonGeometry(touchPage, "side-by-side");
+    assert.equal(iPadPortrait.overflow, false,
       "portrait comparison uses columns on iPad");
+    const iPadPortraitGap = assertImagePairMeetsAtCenter(
+      iPadPortrait, "iPad portrait comparison",
+    );
+    assert.ok(phonePortraitGap < iPadPortraitGap
+      && iPadPortraitGap < desktopPortraitGap,
+    "comparison gutter responds to viewport width");
     await touchPage.locator("#lbClose").click();
     await touchContext.close();
 
@@ -854,7 +990,12 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
       + `replacements=${scrollMetrics.identityReplacements}, `
       + `maxCards=${scrollMetrics.maxCards}, `
       + `phoneLandscapeStage=${compactLandscape.stageHeight}, `
-      + `phoneLandscapeChrome=${compactLandscape.chromeHeight}, logical=4000`,
+      + `phoneLandscapeChrome=${compactLandscape.chromeHeight}, `
+      + `portraitGaps={desktop:${desktopPortraitGap.toFixed(1)},`
+      + `phonePortrait:${phonePortraitGap.toFixed(1)},`
+      + `phoneLandscape:${phoneLandscapePortraitGap.toFixed(1)},`
+      + `shortWide:${shortWideGap.toFixed(1)},`
+      + `iPad:${iPadPortraitGap.toFixed(1)}}, logical=4000`,
     );
   } finally {
     releaseInitialStream?.();

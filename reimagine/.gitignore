@@ -8,8 +8,8 @@ __pycache__/
 # Frontend tests
 node_modules/
 
-# Server-specific derived media
-.thumbnails/
+# Disposable server/renderer metadata and thumbnails
+.reimagine-cache/
 
 # macOS
 .DS_Store

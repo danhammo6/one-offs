@@ -24,8 +24,9 @@ from reimagine_pipeline.manifest import (
 )
 from reimagine_pipeline.models import PipelineItem, PipelineManifest, StillSpec, VideoSpec
 from reimagine_pipeline.files import (
-    COMMON_DIMS, DEFAULT_THUMBNAIL_CACHE_ROOT, ensure_thumbnail, iter_images,
-    prepare_common_image, select_common_dims, sha256_file,
+    COMMON_DIMS, DEFAULT_CACHE_ROOT, DEFAULT_THUMBNAIL_CACHE_ROOT,
+    THUMBNAIL_CACHE_SUBDIR, ensure_thumbnail, iter_images, prepare_common_image,
+    select_common_dims, sha256_file,
     thumbnail_cache_path, thumbnail_source_fingerprint,
 )
 from reimagine_pipeline.llm import (
@@ -235,12 +236,13 @@ class PipelineManifestTests(unittest.TestCase):
     def test_thumbnail_cache_is_centralized_and_root_namespaced(self):
         expected_default = (
             Path(pipeline_files.__file__).resolve().parents[1]
-            / ".thumbnails")
+            / ".reimagine-cache" / "thumbnails")
         self.assertEqual(DEFAULT_THUMBNAIL_CACHE_ROOT, expected_default)
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             cache_root = root / "project-cache"
+            thumbnail_root = cache_root / THUMBNAIL_CACHE_SUBDIR
             media_a = root / "pipeline-a" / "renders"
             media_b = root / "pipeline-b" / "renders"
             relative = Path("shared/example.png")
@@ -251,13 +253,13 @@ class PipelineManifestTests(unittest.TestCase):
             fingerprint = thumbnail_source_fingerprint(source, relative)
 
             output_a = thumbnail_cache_path(
-                cache_root, media_a, relative, namespace="output",
+                thumbnail_root, media_a, relative, namespace="output",
                 fingerprint=fingerprint)
             input_a = thumbnail_cache_path(
-                cache_root, media_a, relative, namespace="input",
+                thumbnail_root, media_a, relative, namespace="input",
                 fingerprint=fingerprint)
             output_b = thumbnail_cache_path(
-                cache_root, media_b, relative, namespace="output",
+                thumbnail_root, media_b, relative, namespace="output",
                 fingerprint=fingerprint)
             result = ensure_thumbnail(
                 source, output_a, relative=relative,
@@ -266,6 +268,9 @@ class PipelineManifestTests(unittest.TestCase):
             self.assertEqual(result, output_a)
             self.assertTrue(
                 output_a.is_relative_to(cache_root.resolve()))
+            self.assertEqual(
+                output_a.relative_to(cache_root.resolve()).parts[0],
+                THUMBNAIL_CACHE_SUBDIR)
             self.assertNotEqual(output_a, input_a)
             self.assertNotEqual(output_a, output_b)
             self.assertNotIn(str(media_a), str(output_a))
@@ -696,12 +701,13 @@ class PipelineManifestTests(unittest.TestCase):
         custom_args = render_media.build_parser().parse_args([
             "--thumbnail-cache-root", "custom-cache",
         ])
+        unified_args = render_media.build_parser().parse_args([
+            "--cache-root", "unified-cache",
+        ])
 
-        self.assertEqual(
-            default_args.thumbnail_cache_root,
-            DEFAULT_THUMBNAIL_CACHE_ROOT)
-        self.assertEqual(
-            custom_args.thumbnail_cache_root, Path("custom-cache"))
+        self.assertEqual(default_args.cache_root, DEFAULT_CACHE_ROOT)
+        self.assertEqual(custom_args.cache_root, Path("custom-cache"))
+        self.assertEqual(unified_args.cache_root, Path("unified-cache"))
 
     def test_ltx_patch_uses_video_plan_and_uploaded_first_frame(self):
         workflow = {
@@ -1282,6 +1288,18 @@ class PipelineManifestTests(unittest.TestCase):
 
 
 class ProcessIsolationTests(unittest.TestCase):
+    @staticmethod
+    def _save_gallery_manifest(path, name, prompt=None):
+        save_pipeline(path, PipelineManifest(
+            "manual", 1,
+            [PipelineItem(
+                0, name, Path(f"{name}.png"), "a" * 64,
+                still=StillSpec(
+                    Path(f"{name}.jpg"), 64, 64,
+                    prompt=prompt or f"A detailed photograph of {name}."),
+            )],
+        ))
+
     def test_image_discovery_follows_directory_symlinks(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -1514,6 +1532,394 @@ class ProcessIsolationTests(unittest.TestCase):
 
         self.assertEqual(after, before)
         self.assertEqual(after[1], {"sample.png"})
+
+    def test_manifest_index_cold_and_warm_startup(self):
+        import serve
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            output_dir = root / "outputs/model"
+            self._save_gallery_manifest(
+                output_dir / "animals/pipeline.yaml", "antelope")
+            self._save_gallery_manifest(
+                output_dir / "sports/pipeline.yaml", "runner")
+            sources = {"model": output_dir}
+            cache_root = root / ".reimagine-cache"
+
+            with mock.patch.object(serve, "ROOT", root), mock.patch.object(
+                    serve, "load_pipeline_document",
+                    wraps=serve.load_pipeline_document) as load:
+                cold = serve.build_pipeline_metadata_cache(
+                    sources, cache_root)
+                self.assertEqual(load.call_count, 2)
+                warm = serve.build_pipeline_metadata_cache(
+                    sources, cache_root)
+                self.assertEqual(load.call_count, 2)
+
+            index_path = serve.manifest_index_path(cache_root, sources)
+            index = json.loads(index_path.read_text())
+            index_mode = index_path.stat().st_mode & 0o777
+
+        self.assertEqual(cold, warm)
+        self.assertEqual(
+            list(cold["model"][1]), ["animals/antelope.jpg",
+                                     "sports/runner.jpg"])
+        self.assertEqual(index["schema_version"],
+                         serve.MANIFEST_INDEX_SCHEMA_VERSION)
+        self.assertEqual(len(index["manifests"]), 2)
+        self.assertTrue(all(
+            key.startswith("project:outputs/model/")
+            for key in index["manifests"]))
+        self.assertEqual(index_mode, 0o600)
+
+    def test_manifest_index_reparses_semantically_invalid_cached_input_dir(self):
+        import serve
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            output_dir = root / "outputs/model"
+            manifest_path = output_dir / "pipeline.yaml"
+            self._save_gallery_manifest(
+                manifest_path, "sample")
+            sources = {"model": output_dir}
+            cache_root = root / "cache"
+            index_path = serve.manifest_index_path(cache_root, sources)
+            with mock.patch.object(serve, "ROOT", root):
+                serve.build_pipeline_metadata_cache(sources, cache_root)
+                for invalid in (
+                        "/private/references", "../references",
+                        "input/../references", "", ".", None, [], {}):
+                    with self.subTest(input_dir=invalid):
+                        index = json.loads(index_path.read_text())
+                        record = next(iter(index["manifests"].values()))
+                        record["document"]["input_dir"] = invalid
+                        index_path.write_text(
+                            json.dumps(index), encoding="utf-8")
+                        with mock.patch.object(
+                                serve, "load_pipeline_document",
+                                wraps=serve.load_pipeline_document) as load:
+                            repaired = serve.build_pipeline_metadata_cache(
+                                sources, cache_root)
+                            self.assertEqual(load.call_count, 1)
+                            warm = serve.build_pipeline_metadata_cache(
+                                sources, cache_root)
+                            self.assertEqual(load.call_count, 1)
+                        self.assertEqual(
+                            repaired["model"][0], (root / "input").resolve())
+                        self.assertEqual(warm, repaired)
+                        repaired_index = json.loads(index_path.read_text())
+                        repaired_record = next(iter(
+                            repaired_index["manifests"].values()))
+                        self.assertEqual(
+                            repaired_record["document"]["input_dir"], "input")
+
+                manifest_path.write_text(
+                    "input_dir: ../references\n", encoding="utf-8")
+                index = json.loads(index_path.read_text())
+                record = next(iter(index["manifests"].values()))
+                record["identity"] = serve._manifest_identity(manifest_path)
+                record["document"]["input_dir"] = "../references"
+                index_path.write_text(json.dumps(index), encoding="utf-8")
+                with mock.patch.object(
+                        serve, "load_pipeline_document",
+                        wraps=serve.load_pipeline_document) as load:
+                    malformed = serve.build_pipeline_metadata_cache(
+                        sources, cache_root)
+                    self.assertEqual(load.call_count, 1)
+                    malformed_warm = serve.build_pipeline_metadata_cache(
+                        sources, cache_root)
+                    self.assertEqual(load.call_count, 1)
+
+        self.assertEqual(malformed["model"], (None, {}))
+        self.assertEqual(malformed_warm, malformed)
+
+    def test_manifest_index_scope_name_is_stable_and_non_revealing(self):
+        import serve
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            first = root / "outputs/first"
+            second = root / "outputs/second"
+            cache_root = root / "cache"
+            ordered = {"first": first, "second": second}
+            reversed_order = {"second": second, "first": first}
+
+            first_path = serve.manifest_index_path(cache_root, ordered)
+            cwd = Path.cwd()
+            try:
+                os.chdir(root)
+                reordered_path = serve.manifest_index_path(
+                    cache_root, reversed_order)
+            finally:
+                os.chdir(cwd)
+            distinct_path = serve.manifest_index_path(
+                cache_root, {"first": first})
+
+        self.assertEqual(first_path, reordered_path)
+        self.assertNotEqual(first_path, distinct_path)
+        self.assertRegex(
+            first_path.name, r"^manifest-index-v1-[0-9a-f]{24}\.json$")
+        self.assertNotIn("outputs", first_path.name)
+        self.assertNotIn("first", first_path.name)
+
+    def test_manifest_index_sequential_disjoint_scopes_remain_warm(self):
+        import serve
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            first = root / "outputs/first"
+            second = root / "outputs/second"
+            self._save_gallery_manifest(first / "pipeline.yaml", "first")
+            self._save_gallery_manifest(second / "pipeline.yaml", "second")
+            first_sources = {"first": first}
+            second_sources = {"second": second}
+            cache_root = root / "cache"
+            with mock.patch.object(serve, "ROOT", root), mock.patch.object(
+                    serve, "load_pipeline_document",
+                    wraps=serve.load_pipeline_document) as load:
+                serve.build_pipeline_metadata_cache(
+                    first_sources, cache_root)
+                serve.build_pipeline_metadata_cache(
+                    second_sources, cache_root)
+                self.assertEqual(load.call_count, 2)
+                load.reset_mock()
+                first_warm = serve.build_pipeline_metadata_cache(
+                    first_sources, cache_root)
+                second_warm = serve.build_pipeline_metadata_cache(
+                    second_sources, cache_root)
+                self.assertEqual(load.call_count, 0)
+            indexes = list(cache_root.glob("manifest-index-v1-*.json"))
+
+        self.assertIn("first.jpg", first_warm["first"][1])
+        self.assertIn("second.jpg", second_warm["second"][1])
+        self.assertEqual(len(indexes), 2)
+
+    def test_manifest_index_concurrent_disjoint_scopes_remain_warm(self):
+        import serve
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            first = root / "outputs/first"
+            second = root / "outputs/second"
+            self._save_gallery_manifest(first / "pipeline.yaml", "first")
+            self._save_gallery_manifest(second / "pipeline.yaml", "second")
+            scopes = [
+                {"first": first},
+                {"second": second},
+            ]
+            cache_root = root / "cache"
+
+            def run_concurrently():
+                barrier = threading.Barrier(len(scopes))
+                results = []
+                errors = []
+
+                def build(sources):
+                    try:
+                        barrier.wait()
+                        results.append(serve.build_pipeline_metadata_cache(
+                            sources, cache_root))
+                    except Exception as error:
+                        errors.append(error)
+
+                threads = [
+                    threading.Thread(target=build, args=(sources,))
+                    for sources in scopes
+                ]
+                for thread in threads:
+                    thread.start()
+                for thread in threads:
+                    thread.join()
+                return results, errors
+
+            with mock.patch.object(serve, "ROOT", root), mock.patch.object(
+                    serve, "load_pipeline_document",
+                    wraps=serve.load_pipeline_document) as load:
+                cold, cold_errors = run_concurrently()
+                self.assertEqual(load.call_count, 2)
+                load.reset_mock()
+                warm, warm_errors = run_concurrently()
+                self.assertEqual(load.call_count, 0)
+            indexes = list(cache_root.glob("manifest-index-v1-*.json"))
+
+        self.assertEqual(cold_errors + warm_errors, [])
+        self.assertEqual(len(cold), 2)
+        self.assertEqual(len(warm), 2)
+        self.assertEqual(len(indexes), 2)
+
+    def test_manifest_index_updates_only_changed_new_and_deleted_files(self):
+        import serve
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            output_dir = root / "outputs/model"
+            first = output_dir / "a/pipeline.yaml"
+            second = output_dir / "b/pipeline.yaml"
+            third = output_dir / "c/pipeline.yaml"
+            self._save_gallery_manifest(first, "a")
+            self._save_gallery_manifest(second, "b")
+            sources = {"model": output_dir}
+            cache_root = root / "cache"
+            with mock.patch.object(serve, "ROOT", root), mock.patch.object(
+                    serve, "load_pipeline_document",
+                    wraps=serve.load_pipeline_document) as load:
+                serve.build_pipeline_metadata_cache(sources, cache_root)
+                load.reset_mock()
+
+                changed_prompt = (
+                    "A detailed changed photograph of an athlete in motion.")
+                self._save_gallery_manifest(first, "a", changed_prompt)
+                changed = serve.build_pipeline_metadata_cache(
+                    sources, cache_root)
+                self.assertEqual(load.call_count, 1)
+                self.assertEqual(
+                    changed["model"][1]["a/a.jpg"]["prompt"],
+                    changed_prompt)
+                load.reset_mock()
+
+                self._save_gallery_manifest(third, "c")
+                added = serve.build_pipeline_metadata_cache(
+                    sources, cache_root)
+                self.assertEqual(load.call_count, 1)
+                self.assertIn("c/c.jpg", added["model"][1])
+                load.reset_mock()
+
+                second.unlink()
+                deleted = serve.build_pipeline_metadata_cache(
+                    sources, cache_root)
+                self.assertEqual(load.call_count, 0)
+                self.assertNotIn("b/b.jpg", deleted["model"][1])
+                load.reset_mock()
+
+                first.write_text("not: [valid", encoding="utf-8")
+                malformed = serve.build_pipeline_metadata_cache(
+                    sources, cache_root)
+                self.assertEqual(load.call_count, 1)
+                load.reset_mock()
+                malformed_warm = serve.build_pipeline_metadata_cache(
+                    sources, cache_root)
+                self.assertEqual(load.call_count, 0)
+
+            index = json.loads(
+                serve.manifest_index_path(cache_root, sources).read_text())
+
+        self.assertEqual(malformed["model"], (None, {}))
+        self.assertEqual(malformed_warm, malformed)
+        self.assertEqual(len(index["manifests"]), 2)
+        self.assertTrue(any(
+            "error" in record for record in index["manifests"].values()))
+
+    def test_manifest_index_recovers_from_corrupt_and_incompatible_json(self):
+        import serve
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            output_dir = root / "outputs/model"
+            self._save_gallery_manifest(
+                output_dir / "pipeline.yaml", "sample")
+            sources = {"model": output_dir}
+            cache_root = root / "cache"
+            index_path = serve.manifest_index_path(cache_root, sources)
+            with mock.patch.object(serve, "ROOT", root):
+                serve.build_pipeline_metadata_cache(sources, cache_root)
+                index_path.write_text("{broken", encoding="utf-8")
+                with mock.patch.object(
+                        serve, "load_pipeline_document",
+                        wraps=serve.load_pipeline_document) as load, \
+                        self.assertLogs("serve", "WARNING") as corrupt_logs:
+                    corrupt = serve.build_pipeline_metadata_cache(
+                        sources, cache_root)
+                self.assertEqual(load.call_count, 1)
+                index_path.write_text(json.dumps({
+                    "schema_version": 999, "manifests": {},
+                }), encoding="utf-8")
+                with mock.patch.object(
+                        serve, "load_pipeline_document",
+                        wraps=serve.load_pipeline_document) as load, \
+                        self.assertLogs("serve", "WARNING") as schema_logs:
+                    incompatible = serve.build_pipeline_metadata_cache(
+                        sources, cache_root)
+                self.assertEqual(load.call_count, 1)
+
+        self.assertEqual(corrupt, incompatible)
+        self.assertIn("rebuilding", corrupt_logs.output[0])
+        self.assertIn("incompatible schema", schema_logs.output[0])
+
+    def test_manifest_index_write_failure_does_not_block_startup(self):
+        import serve
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            output_dir = root / "outputs/model"
+            self._save_gallery_manifest(
+                output_dir / "pipeline.yaml", "sample")
+            sources = {"model": output_dir}
+            cache_root = root / "cache"
+            with mock.patch.object(serve, "ROOT", root), \
+                    mock.patch.object(
+                        serve, "_atomic_write_manifest_index",
+                        side_effect=OSError("simulated replace failure")), \
+                    self.assertLogs("serve", "WARNING") as logs:
+                metadata = serve.build_pipeline_metadata_cache(
+                    sources, cache_root)
+            index_path = serve.manifest_index_path(cache_root, sources)
+            index_path.write_text('{"existing":true}\n', encoding="utf-8")
+            with mock.patch.object(
+                    pipeline_files.Path, "replace",
+                    side_effect=OSError("simulated atomic replace failure")):
+                with self.assertRaisesRegex(
+                        OSError, "simulated atomic replace failure"):
+                    serve._atomic_write_manifest_index(index_path, {
+                        "schema_version": serve.MANIFEST_INDEX_SCHEMA_VERSION,
+                        "manifests": {},
+                    })
+            temporary_files = list(
+                cache_root.glob(f".{index_path.name}.*"))
+            preserved = index_path.read_text(encoding="utf-8")
+
+        self.assertIn("sample.jpg", metadata["model"][1])
+        self.assertIn("simulated replace failure", logs.output[-1])
+        self.assertEqual(temporary_files, [])
+        self.assertEqual(preserved, '{"existing":true}\n')
+
+    def test_manifest_index_concurrent_writers_remain_valid(self):
+        import serve
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            output_dir = root / "outputs/model"
+            for number in range(12):
+                self._save_gallery_manifest(
+                    output_dir / f"{number:02d}/pipeline.yaml",
+                    f"sample-{number:02d}")
+            sources = {"model": output_dir}
+            cache_root = root / "cache"
+            barrier = threading.Barrier(4)
+            results = []
+            errors = []
+
+            def build():
+                try:
+                    barrier.wait()
+                    results.append(serve.build_pipeline_metadata_cache(
+                        sources, cache_root))
+                except Exception as error:
+                    errors.append(error)
+
+            with mock.patch.object(serve, "ROOT", root):
+                threads = [threading.Thread(target=build) for _ in range(4)]
+                for thread in threads:
+                    thread.start()
+                for thread in threads:
+                    thread.join()
+            index = json.loads(
+                serve.manifest_index_path(cache_root, sources).read_text())
+
+        self.assertEqual(errors, [])
+        self.assertEqual(len(results), 4)
+        self.assertTrue(all(len(result["model"][1]) == 12
+                            for result in results))
+        self.assertEqual(len(index["manifests"]), 12)
 
     def test_gallery_eager_cache_prevents_request_reparsing(self):
         import serve
@@ -1759,8 +2165,8 @@ class ProcessIsolationTests(unittest.TestCase):
         events = []
         cached = {"model": (Path("/input"), {})}
 
-        def build_cache(sources):
-            events.append(("cache", dict(sources)))
+        def build_cache(sources, cache_root):
+            events.append(("cache", dict(sources), cache_root))
             return cached
 
         class FakeServer:
@@ -1778,7 +2184,7 @@ class ProcessIsolationTests(unittest.TestCase):
             with (
                 mock.patch("sys.argv", [
                     "serve.py", "--output-dir", tmp,
-                    "--thumbnail-cache-root", str(cache_root),
+                    "--cache-root", str(cache_root),
                 ]),
                 mock.patch.object(
                     serve, "build_pipeline_metadata_cache",
@@ -1788,6 +2194,8 @@ class ProcessIsolationTests(unittest.TestCase):
                 mock.patch.object(
                     serve.Handler, "pipeline_metadata_cache", {}),
                 mock.patch.object(
+                    serve.Handler, "cache_root", DEFAULT_CACHE_ROOT),
+                mock.patch.object(
                     serve.Handler, "thumbnail_cache_root",
                     DEFAULT_THUMBNAIL_CACHE_ROOT),
             ):
@@ -1795,8 +2203,10 @@ class ProcessIsolationTests(unittest.TestCase):
 
         self.assertEqual([event[0] for event in events],
                          ["cache", "server", "serve"])
+        self.assertEqual(events[0][2], cache_root)
         self.assertIs(events[1][2], cached)
-        self.assertEqual(events[1][3], cache_root)
+        self.assertEqual(
+            events[1][3], cache_root / THUMBNAIL_CACHE_SUBDIR)
 
     def test_gallery_rejects_malformed_input_configuration(self):
         import serve
@@ -2137,9 +2547,12 @@ class ProcessIsolationTests(unittest.TestCase):
             workflow = fake.run_workflow.call_args.args[0]
             nested_cache_exists = (
                 output_dir / ".thumbnails").exists()
+            unified_thumbnails = list(
+                (cache_root / THUMBNAIL_CACHE_SUBDIR).rglob("*.webp"))
 
         self.assertEqual(code, 0)
         self.assertFalse(nested_cache_exists)
+        self.assertEqual(len(unified_thumbnails), 1)
         self.assertEqual(workflow["273"]["inputs"]["seed"], 100)
         self.assertEqual(workflow["265"]["inputs"]["seed"], 100)
 

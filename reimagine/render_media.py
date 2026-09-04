@@ -2,11 +2,14 @@
 """Render saved still and video plans using only ComfyUI."""
 import argparse
 import logging
+import sys
 import time
 from pathlib import Path
 
 from reimagine_pipeline import PIPELINE_FILENAME, RENDER_STATE_FILENAME
-from reimagine_pipeline.files import DEFAULT_THUMBNAIL_CACHE_ROOT
+from reimagine_pipeline.files import (
+    DEFAULT_CACHE_ROOT, THUMBNAIL_CACHE_SUBDIR,
+)
 from reimagine_pipeline.manifest import (
     incomplete_plan_messages, load_pipeline, load_pipeline_tree,
     load_render_state, load_render_state_tree, save_pipeline_tree,
@@ -22,10 +25,15 @@ def build_parser():
         description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("--output-dir", type=Path, default=Path("output"),
                         help="Media output and manifest directory.")
-    parser.add_argument(
-        "--thumbnail-cache-root", type=Path,
-        default=DEFAULT_THUMBNAIL_CACHE_ROOT,
-        help="Server-specific thumbnail cache directory.")
+    cache_group = parser.add_mutually_exclusive_group()
+    cache_group.add_argument(
+        "--cache-root", dest="cache_root", type=Path,
+        default=DEFAULT_CACHE_ROOT,
+        help="Disposable manifest-index and thumbnail cache directory.")
+    cache_group.add_argument(
+        "--thumbnail-cache-root", dest="cache_root", type=Path,
+        default=argparse.SUPPRESS,
+        help="Deprecated alias for --cache-root; now names the unified cache.")
     parser.add_argument(
         "--manifest", type=Path, default=None,
         help="Use one explicit manifest instead of per-folder pipeline.yaml files.")
@@ -63,9 +71,17 @@ def build_parser():
 
 def main(argv=None):
     logging.basicConfig(level=logging.INFO, format="%(message)s")
-    args = build_parser().parse_args(argv)
+    raw_args = list(argv) if argv is not None else sys.argv[1:]
+    args = build_parser().parse_args(raw_args)
+    if any(
+            value == "--thumbnail-cache-root"
+            or value.startswith("--thumbnail-cache-root=")
+            for value in raw_args):
+        logger.warning(
+            "--thumbnail-cache-root is deprecated; use --cache-root")
     output_dir = args.output_dir.resolve()
-    args.thumbnail_cache_root = args.thumbnail_cache_root.expanduser()
+    args.cache_root = args.cache_root.expanduser()
+    args.thumbnail_cache_root = args.cache_root / THUMBNAIL_CACHE_SUBDIR
     manifest_path = args.manifest.resolve() if args.manifest else None
     args.state_file = args.state_file.resolve() if args.state_file else None
     args.state_root = output_dir

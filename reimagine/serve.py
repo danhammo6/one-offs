@@ -24,10 +24,12 @@ Routes:
 Uses the project's PyYAML dependency. Serve, then open the printed URL.
 """
 import argparse
+import hashlib
 import json
 import logging
 import mimetypes
 import os
+import stat
 import threading
 import time
 import urllib.parse
@@ -36,11 +38,12 @@ from pathlib import Path
 
 from reimagine_pipeline import PIPELINE_FILENAME
 from reimagine_pipeline.files import (
-    DEFAULT_THUMBNAIL_CACHE_ROOT, IMAGE_EXTS, ensure_thumbnail,
-    thumbnail_cache_path, thumbnail_source_fingerprint,
+    DEFAULT_CACHE_ROOT, IMAGE_EXTS, THUMBNAIL_CACHE_SUBDIR,
+    atomic_write_text, ensure_thumbnail, thumbnail_cache_path,
+    thumbnail_source_fingerprint,
 )
 from reimagine_pipeline.manifest import (
-    load_pipeline_document, pipeline_paths,
+    load_pipeline_document, pipeline_paths, validate_pipeline_input_dir,
 )
 from reimagine_pipeline.prompting import regions_to_text
 
@@ -56,6 +59,9 @@ ROOT = Path(__file__).parent.resolve()
 # Video extensions render_media.py may write next to a still (same stem). Ordered by
 # preference when several exist for one still.
 VIDEO_EXTS = (".mp4", ".webm", ".mkv")
+# Bump when the normalized document fields or gallery validation semantics change.
+MANIFEST_INDEX_SCHEMA_VERSION = 1
+MANIFEST_INDEX_PREFIX = f"manifest-index-v{MANIFEST_INDEX_SCHEMA_VERSION}"
 
 
 def discover_sources(outputs_dir):
@@ -86,22 +92,172 @@ def find_reference(rel, input_dir):
     return None
 
 
-def load_pipeline_metadata(output_dir):
-    """Parse each pipeline once and return its input directory and prompts."""
-    paths = pipeline_paths(output_dir, PIPELINE_FILENAME)
+def _manifest_index_key(path):
+    resolved = path.resolve()
+    try:
+        return f"project:{resolved.relative_to(Path(ROOT).resolve()).as_posix()}"
+    except ValueError:
+        # Output roots may intentionally live outside the project. This JSON is
+        # server-local and never exposed over HTTP.
+        return f"absolute:{resolved}"
+
+
+def manifest_index_path(cache_root, sources):
+    """Return the stable, non-revealing index path for discovery roots."""
+    roots = sorted({
+        os.path.normcase(str(Path(output_dir).resolve()))
+        for output_dir in sources.values()
+    })
+    scope = json.dumps({
+        "pipeline_filename": PIPELINE_FILENAME,
+        "roots": roots,
+    }, sort_keys=True, separators=(",", ":")).encode()
+    digest = hashlib.sha256(scope).hexdigest()[:24]
+    return Path(cache_root) / f"{MANIFEST_INDEX_PREFIX}-{digest}.json"
+
+
+def _manifest_identity(path):
+    info = path.stat()
+    if not stat.S_ISREG(info.st_mode):
+        raise ValueError(f"pipeline is not a regular file: {path}")
+    return {
+        "size": info.st_size,
+        "mtime_ns": getattr(
+            info, "st_mtime_ns", int(info.st_mtime * 1_000_000_000)),
+        "ctime_ns": getattr(
+            info, "st_ctime_ns", int(info.st_ctime * 1_000_000_000)),
+        "device": getattr(info, "st_dev", 0),
+        "inode": getattr(info, "st_ino", 0),
+        "mode": stat.S_IMODE(info.st_mode),
+    }
+
+
+def _manifest_item_record(item):
+    still_output = prompt = None
+    if item.still:
+        still_output = item.still.output.as_posix()
+        prompt = item.still.prompt or regions_to_text(item.still.regions)
+    return {
+        "item_id": item.item_id,
+        "source_path": item.source_path.as_posix(),
+        "still_output": still_output,
+        "prompt": prompt,
+        "video_prompt": item.video.prompt if item.video else None,
+    }
+
+
+def _parse_manifest_record(path):
+    input_dir, manifest = load_pipeline_document(path)
+    document = {
+        "input_dir": input_dir.as_posix(),
+        "manifest": None,
+    }
+    if manifest is None:
+        return {"document": document}
+    document["manifest"] = {
+        "still_mode": manifest.still_mode,
+        "common_dims": manifest.common_dims,
+        "items": [_manifest_item_record(item) for item in manifest.items],
+    }
+    return {"document": document}
+
+
+def _safe_cache_root(cache_root):
+    cache_root = Path(cache_root).expanduser()
+    if cache_root.is_symlink():
+        raise ValueError(f"unsafe cache root: {cache_root}")
+    cache_root.mkdir(mode=0o700, parents=True, exist_ok=True)
+    return cache_root.resolve()
+
+
+def _read_manifest_index(path):
+    try:
+        info = path.lstat()
+        if not stat.S_ISREG(info.st_mode):
+            raise ValueError("index is not a regular file")
+        data = json.loads(path.read_text(encoding="utf-8"))
+        if (not isinstance(data, dict)
+                or data.get("schema_version")
+                != MANIFEST_INDEX_SCHEMA_VERSION
+                or not isinstance(data.get("manifests"), dict)):
+            raise ValueError("incompatible schema")
+        return data["manifests"], True
+    except FileNotFoundError:
+        logger.info("gallery manifest index: not found; rebuilding")
+    except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as error:
+        logger.warning("gallery manifest index: %s; rebuilding", error)
+    return {}, False
+
+
+def _cached_manifest_record(record, identity):
+    if not isinstance(record, dict) or record.get("identity") != identity:
+        return None
+    if isinstance(record.get("error"), str):
+        return record
+    document = record.get("document")
+    if not isinstance(document, dict):
+        return None
+    try:
+        validate_pipeline_input_dir(document.get("input_dir"))
+    except ValueError:
+        return None
+    manifest = document.get("manifest")
+    if manifest is None:
+        return record
+    if (not isinstance(manifest, dict)
+            or manifest.get("still_mode") not in {"manual", "regions"}
+            or not isinstance(manifest.get("common_dims"), bool)
+            or not isinstance(manifest.get("items"), list)):
+        return None
+    required = {
+        "item_id", "source_path", "still_output", "prompt", "video_prompt"}
+    for item in manifest["items"]:
+        if not isinstance(item, dict) or set(item) != required:
+            return None
+        if (not isinstance(item["item_id"], str)
+                or not isinstance(item["source_path"], str)
+                or (item["still_output"] is not None
+                    and not isinstance(item["still_output"], str))
+                or (item["prompt"] is not None
+                    and not isinstance(item["prompt"], str))
+                or (item["video_prompt"] is not None
+                    and not isinstance(item["video_prompt"], str))):
+            return None
+        for value in (
+                item["item_id"], item["source_path"], item["still_output"]):
+            if value is None:
+                continue
+            path = Path(value)
+            if path.is_absolute() or ".." in path.parts:
+                return None
+    return record
+
+
+def _atomic_write_manifest_index(path, payload):
+    serialized = json.dumps(
+        payload, sort_keys=True, separators=(",", ":")) + "\n"
+    atomic_write_text(path, serialized, durable=True)
+
+
+def _load_source_metadata(output_dir, records):
+    """Aggregate normalized manifest records with the legacy validation rules."""
+    paths = [path for path, _ in records]
     if not paths:
         logger.warning("could not load gallery metadata for %s: no %s files",
                        output_dir, PIPELINE_FILENAME)
         return (ROOT / "input").resolve(), {}
     try:
         documents = []
-        for path in paths:
-            input_dir, manifest = load_pipeline_document(path)
-            documents.append((path, input_dir, manifest))
+        for path, record in records:
+            if "error" in record:
+                raise ValueError(record["error"])
+            document = record["document"]
+            documents.append((
+                path, Path(document["input_dir"]), document["manifest"]))
         input_dirs = {input_dir for _, input_dir, _ in documents}
         if len(input_dirs) != 1:
             raise ValueError("pipeline files use different input directories")
-    except ValueError as error:
+    except (KeyError, TypeError, ValueError) as error:
         logger.warning("could not cache gallery metadata for %s: %s",
                        output_dir, error)
         return None, {}
@@ -120,13 +276,15 @@ def load_pipeline_metadata(output_dir):
         root_manifest = next(
             manifest for path, manifest in manifest_documents
             if path == legacy)
-        if any(item.source_path.parent.parts for item in root_manifest.items):
+        if any(
+                Path(item["source_path"]).parent.parts
+                for item in root_manifest["items"]):
             manifest_documents = [(legacy, root_manifest)]
     modes = {
-        manifest.still_mode for _, manifest in manifest_documents
+        manifest["still_mode"] for _, manifest in manifest_documents
     }
     common_dims = {
-        manifest.common_dims for _, manifest in manifest_documents
+        manifest["common_dims"] for _, manifest in manifest_documents
     }
     if len(modes) != 1 or len(common_dims) != 1:
         logger.warning("could not cache gallery metadata for %s: "
@@ -138,37 +296,106 @@ def load_pipeline_metadata(output_dir):
     source_paths = set()
     for path, manifest in manifest_documents:
         parent = path.parent.relative_to(output_dir)
-        for item in manifest.items:
-            item_id = (parent / item.item_id).as_posix()
-            source_path = (parent / item.source_path).as_posix()
+        for item in manifest["items"]:
+            item_id = (parent / item["item_id"]).as_posix()
+            source_path = (parent / item["source_path"]).as_posix()
             if item_id in item_ids or source_path in source_paths:
                 logger.warning("could not cache gallery metadata for %s: "
                                "duplicate IDs or source paths", output_dir)
                 return None, {}
             item_ids.add(item_id)
             source_paths.add(source_path)
-            if not item.still:
+            if not item["still_output"]:
                 continue
-            output = (parent / item.still.output).as_posix()
+            output = (parent / item["still_output"]).as_posix()
             if output in metadata:
                 logger.warning("could not cache gallery metadata for %s: "
                                "duplicate still output %s", output_dir, output)
                 return None, {}
-            prompt = (item.still.prompt or regions_to_text(item.still.regions))
             metadata[output] = {
-                "prompt": prompt,
-                "video_prompt": item.video.prompt if item.video else None,
+                "prompt": item["prompt"],
+                "video_prompt": item["video_prompt"],
             }
     return input_dir, metadata
 
 
-def build_pipeline_metadata_cache(sources):
+def load_pipeline_metadata(output_dir):
+    """Parse each pipeline once and return its input directory and prompts."""
+    records = []
+    for path in pipeline_paths(output_dir, PIPELINE_FILENAME):
+        try:
+            record = _parse_manifest_record(path)
+        except ValueError as error:
+            record = {"error": str(error)}
+        records.append((path, record))
+    return _load_source_metadata(output_dir, records)
+
+
+def build_pipeline_metadata_cache(sources, cache_root=None):
     """Build metadata for every source before the server begins listening."""
     started = time.perf_counter()
+    if cache_root is None:
+        cache = {
+            name: load_pipeline_metadata(output_dir)
+            for name, output_dir in sources.items()
+        }
+        logger.info("gallery metadata cache: %d source(s) initialized in %.2fs",
+                    len(cache), time.perf_counter() - started)
+        return cache
+
+    try:
+        cache_root = _safe_cache_root(cache_root)
+        index_path = manifest_index_path(cache_root, sources)
+        previous, valid_index = _read_manifest_index(index_path)
+    except (OSError, ValueError) as error:
+        logger.warning("gallery manifest index unavailable: %s", error)
+        previous, valid_index = {}, False
+        cache_root = None
+        index_path = None
+
+    current = {}
+    source_records = {}
+    parsed = unchanged = 0
+    for name, output_dir in sources.items():
+        records = []
+        for path in pipeline_paths(output_dir, PIPELINE_FILENAME):
+            key = _manifest_index_key(path)
+            try:
+                identity = _manifest_identity(path)
+                cached = _cached_manifest_record(previous.get(key), identity)
+                if cached is not None:
+                    record = cached
+                    unchanged += 1
+                else:
+                    parsed += 1
+                    try:
+                        record = _parse_manifest_record(path)
+                    except ValueError as error:
+                        record = {"error": str(error)}
+                    record["identity"] = identity
+                current[key] = record
+                records.append((path, record))
+            except (OSError, ValueError) as error:
+                records.append((path, {"error": str(error)}))
+        source_records[name] = records
+
+    deleted = len(set(previous) - set(current))
     cache = {
-        name: load_pipeline_metadata(output_dir)
-        for name, output_dir in sources.items()
+        name: _load_source_metadata(sources[name], source_records[name])
+        for name in sources
     }
+    if index_path is not None and (not valid_index or current != previous):
+        payload = {
+            "schema_version": MANIFEST_INDEX_SCHEMA_VERSION,
+            "manifests": current,
+        }
+        try:
+            _atomic_write_manifest_index(index_path, payload)
+        except OSError as error:
+            logger.warning("could not update gallery manifest index: %s", error)
+    logger.info(
+        "gallery manifest index: %d parsed, %d unchanged, %d deleted in %.2fs",
+        parsed, unchanged, deleted, time.perf_counter() - started)
     logger.info("gallery metadata cache: %d source(s) initialized in %.2fs",
                 len(cache), time.perf_counter() - started)
     return cache
@@ -286,7 +513,8 @@ class Handler(BaseHTTPRequestHandler):
     allowed_references = {}
     gallery_lock = threading.Lock()
     thumbnail_locks = tuple(threading.Lock() for _ in range(32))
-    thumbnail_cache_root = DEFAULT_THUMBNAIL_CACHE_ROOT
+    cache_root = DEFAULT_CACHE_ROOT
+    thumbnail_cache_root = DEFAULT_CACHE_ROOT / THUMBNAIL_CACHE_SUBDIR
 
     def log_message(self, *_):  # keep the console quiet
         pass
@@ -517,10 +745,13 @@ def main():
     parser.add_argument("--output-dir", type=Path, default=None,
                         help="Serve a single flat output dir instead of the "
                              "outputs/ tree (labeled by its own name).")
-    parser.add_argument(
-        "--thumbnail-cache-root", type=Path,
-        default=DEFAULT_THUMBNAIL_CACHE_ROOT,
-        help="Server-specific thumbnail cache directory.")
+    cache_group = parser.add_mutually_exclusive_group()
+    cache_group.add_argument(
+        "--cache-root", type=Path, default=DEFAULT_CACHE_ROOT,
+        help="Disposable manifest-index and thumbnail cache directory.")
+    cache_group.add_argument(
+        "--thumbnail-cache-root", type=Path, default=None,
+        help="Deprecated alias for --cache-root; now names the unified cache.")
     args = parser.parse_args()
 
     if args.output_dir is not None:
@@ -528,9 +759,15 @@ def main():
         Handler.sources = {d.name: d}
     else:
         Handler.sources = discover_sources(args.outputs_dir.resolve())
-    Handler.thumbnail_cache_root = args.thumbnail_cache_root.expanduser()
+    if args.thumbnail_cache_root is not None:
+        logger.warning(
+            "--thumbnail-cache-root is deprecated; use --cache-root")
+        args.cache_root = args.thumbnail_cache_root
+    Handler.cache_root = args.cache_root.expanduser()
+    Handler.thumbnail_cache_root = (
+        Handler.cache_root / THUMBNAIL_CACHE_SUBDIR)
     Handler.pipeline_metadata_cache = build_pipeline_metadata_cache(
-        Handler.sources)
+        Handler.sources, Handler.cache_root)
     srv = ThreadingHTTPServer((args.host, args.port), Handler)
     if Handler.sources:
         logger.info("reimagine gallery: %d source(s):", len(Handler.sources))

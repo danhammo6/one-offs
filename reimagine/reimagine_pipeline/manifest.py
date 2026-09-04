@@ -21,7 +21,8 @@ def _safe_path(value, suffixes):
     return path
 
 
-def _safe_directory_path(value):
+def validate_pipeline_input_dir(value):
+    """Return a safe project-relative input directory or raise ValueError."""
     try:
         path = Path(value)
     except TypeError as error:
@@ -33,7 +34,7 @@ def _safe_directory_path(value):
 
 
 def _input_dir_from_data(data):
-    return _safe_directory_path(data.get("input_dir", "input"))
+    return validate_pipeline_input_dir(data.get("input_dir", "input"))
 
 
 def _read_pipeline_data(path):
@@ -102,7 +103,8 @@ def _video_to_data(spec):
 def save_pipeline(path, manifest):
     data = {
         "schema_version": SCHEMA_VERSION,
-        "input_dir": _safe_directory_path(manifest.input_dir).as_posix(),
+        "input_dir": validate_pipeline_input_dir(
+            manifest.input_dir).as_posix(),
         "still_mode": manifest.still_mode,
         "common_dims": manifest.common_dims,
         "item_count": manifest.item_count,
@@ -355,7 +357,8 @@ def save_pipeline_folder(root, parent, manifest, filename="pipeline.yaml",
         if parent.parts:
             path.unlink(missing_ok=True)
         else:
-            input_dir = _safe_directory_path(manifest.input_dir).as_posix()
+            input_dir = validate_pipeline_input_dir(
+                manifest.input_dir).as_posix()
             atomic_write_text(path, yaml.safe_dump(
                 {"input_dir": input_dir}, sort_keys=False))
         return

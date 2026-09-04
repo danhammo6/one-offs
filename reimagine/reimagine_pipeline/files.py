@@ -7,9 +7,11 @@ from functools import lru_cache
 from pathlib import Path
 
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".gif", ".tiff"}
-THUMBNAIL_CACHE_DIR = ".thumbnails"
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_THUMBNAIL_CACHE_ROOT = PROJECT_ROOT / THUMBNAIL_CACHE_DIR
+CACHE_DIR = ".reimagine-cache"
+THUMBNAIL_CACHE_SUBDIR = "thumbnails"
+DEFAULT_CACHE_ROOT = PROJECT_ROOT / CACHE_DIR
+DEFAULT_THUMBNAIL_CACHE_ROOT = DEFAULT_CACHE_ROOT / THUMBNAIL_CACHE_SUBDIR
 THUMBNAIL_MAX_EDGE = 512
 THUMBNAIL_QUALITY = 80
 TARGET_PIXELS = 1920 * 1080
@@ -25,34 +27,42 @@ COMMON_DIMS = {
 }
 
 
-def atomic_write_text(path, text):
+def _atomic_write(path, data, mode, encoding=None, durable=False):
     path.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.NamedTemporaryFile(
-            mode="w", encoding="utf-8", dir=path.parent,
-            prefix=f".{path.name}.", delete=False) as handle:
-        temporary = Path(handle.name)
-        try:
-            handle.write(text)
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(
+                mode=mode, encoding=encoding, dir=path.parent,
+                prefix=f".{path.name}.", delete=False) as handle:
+            temporary = Path(handle.name)
+            os.fchmod(handle.fileno(), 0o600)
+            handle.write(data)
             handle.flush()
-        except Exception:
+            if durable:
+                os.fsync(handle.fileno())
+        temporary.replace(path)
+        temporary = None
+        if durable:
+            try:
+                directory = os.open(path.parent, os.O_RDONLY)
+                try:
+                    os.fsync(directory)
+                finally:
+                    os.close(directory)
+            except OSError:
+                pass
+    finally:
+        if temporary is not None:
             temporary.unlink(missing_ok=True)
-            raise
-    temporary.replace(path)
+
+
+def atomic_write_text(path, text, durable=False):
+    _atomic_write(
+        path, text, mode="w", encoding="utf-8", durable=durable)
 
 
 def atomic_write_bytes(path, data):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.NamedTemporaryFile(
-            mode="wb", dir=path.parent, prefix=f".{path.name}.",
-            delete=False) as handle:
-        temporary = Path(handle.name)
-        try:
-            handle.write(data)
-            handle.flush()
-        except Exception:
-            temporary.unlink(missing_ok=True)
-            raise
-    temporary.replace(path)
+    _atomic_write(path, data, mode="wb")
 
 
 def _thumbnail_media_root_key(media_root):

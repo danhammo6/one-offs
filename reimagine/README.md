@@ -255,20 +255,39 @@ Output sets live under `outputs/`. The gallery discovers each set directory,
 uses each set's `pipeline.yaml` to find its references, shows those references
 beside generated stills, and switches to sibling videos when available. In the
 lightbox, use the arrow buttons or swipe left and right on an image to navigate.
-Pipeline metadata is parsed once before the server starts listening and cached
-for the lifetime of the process; restart the gallery after changing a manifest.
-A source with malformed or inconsistent manifests is logged and remains
-browseable without reference or prompt metadata. Media files are still
-discovered live on each request.
+Pipeline metadata is loaded before the server starts listening and remains
+fixed for the lifetime of the process; restart the gallery after changing a
+manifest. A disposable
+`.reimagine-cache/manifest-index-v1-<scope-hash>.json` index keeps the validated
+result of each YAML manifest. The scope hash is a stable SHA-256 prefix derived
+from the sorted canonical discovery roots and relevant discovery options; it
+contains no root names or paths. A normal invocation creates one obvious index,
+while servers using the same cache root for different discovery scopes keep
+separate indexes and cannot discard each other's warm entries. On restart,
+unchanged manifests are recognized by canonical path, size, and high-resolution
+file identity fields and do not need to be parsed again. New and changed
+manifests are parsed, deleted manifests are dropped from that scope's index, and
+missing, incompatible, or corrupt indexes are rebuilt from the authoritative
+YAML files. Cached input-directory values are revalidated with the same
+authoritative path rules as YAML before reuse. A source with malformed or
+inconsistent manifests is logged and remains browseable without reference or
+prompt metadata. Media files are still discovered live on each request.
+Project manifests use project-relative index keys. If an explicitly served
+output root is outside the project, its canonical absolute manifest key may
+appear only in this server-local JSON; index contents are never returned by the
+HTTP API.
 
-Still rendering writes 512 px maximum-edge WebP thumbnails to the project-level
-`.thumbnails/` directory, preserving aspect ratio and EXIF orientation without
-upscaling. The gallery uses the same cache for lazy fallback; input and output
-media trees remain read-only. `render_media.py` and `serve.py` both accept
-`--thumbnail-cache-root` when a different server-local cache is needed.
+Still rendering writes 512 px maximum-edge WebP thumbnails under the same
+project-level disposable cache, preserving aspect ratio and EXIF orientation
+without upscaling. The gallery uses the cache for lazy fallback; input and
+output media trees remain read-only. `render_media.py` and `serve.py` both
+accept `--cache-root` to relocate the complete cache. The older
+`--thumbnail-cache-root` spelling remains a deprecated alias and now also names
+the unified cache root, so thumbnails for either spelling are written beneath
+the selected root's `thumbnails/` subdirectory.
 
-The cache layout is
-`.thumbnails/{input|output}/<media-root-name>-<root-hash>/<relative-path>.<source-fingerprint>.webp`.
+The thumbnail layout is
+`.reimagine-cache/thumbnails/{input|output}/<media-root-name>-<root-hash>/<relative-path>.<source-fingerprint>.webp`.
 The root hash namespaces different pipeline and reference roots without placing
 absolute paths in URLs or cache paths. Complete source filenames and immutable
 source fingerprints prevent extension, root, and version collisions. Thumbnail
@@ -280,9 +299,22 @@ active request may still need them; perform cleanup offline while renderers and
 gallery servers are stopped. Versioned responses use long-lived immutable
 browser caching, while the lightbox loads full-resolution media.
 
+Manifest indexes and thumbnails can be deleted while the renderer and gallery
+are stopped; the next render or server startup recreates what it needs.
+Deleting a scope's index forces a full YAML rebuild for that scope. Existing `.thumbnails/` data is
+not migrated and can be removed because it contains only generated artifacts.
+If cache permissions or stale local state cause startup warnings, stop all
+gallery/renderer processes, remove `.reimagine-cache/`, and restart.
+
 Gallery records are streamed as they are discovered, without embedding prompt
 text. Prompt metadata is requested from `/api/metadata` only when a lightbox
 item opens and is served from the startup manifest cache. The page uses a
 windowed grid with a small overscan buffer, keeping card and media-node counts
 bounded as the collection grows while retaining navigation across the full
 logical result set.
+
+## Future improvements
+
+- In phone landscape with portrait-image side-by-side comparison, right-align
+  the left/reference image and left-align the right/result image so the images
+  sit together across the center gap and zooming works better.

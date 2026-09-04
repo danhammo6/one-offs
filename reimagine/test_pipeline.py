@@ -992,6 +992,118 @@ class ProcessIsolationTests(unittest.TestCase):
             items[0]["prompt"],
             "A detailed action photograph of a moving athlete.")
 
+    def test_gallery_pair_iterator_registers_references_progressively(self):
+        import serve
+
+        manifest = PipelineManifest(
+            "manual", 1,
+            [PipelineItem(
+                0, "sample", Path("sample.png"), "a" * 64,
+                still=StillSpec(
+                    Path("sample.jpg"), 640, 480,
+                    prompt="A detailed action photograph of a moving athlete."),
+            )],
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            input_dir = root / "input"
+            input_dir.mkdir()
+            Image.new("RGB", (64, 64)).save(input_dir / "sample.png")
+            output_dir = root / "output"
+            output_dir.mkdir()
+            Image.new("RGB", (64, 64)).save(output_dir / "sample.jpg")
+            save_pipeline(output_dir / "pipeline.yaml", manifest)
+            references = []
+
+            with mock.patch.object(serve, "ROOT", root):
+                records = serve.iter_pairs(
+                    "model", output_dir,
+                    lambda base, relative: references.append((base, relative)))
+                self.assertEqual(references, [])
+                first = next(records)
+
+        self.assertEqual(first["path"], "sample.jpg")
+        self.assertEqual(references, [(input_dir.resolve(), "sample.png")])
+
+    def test_gallery_source_discovery_does_not_scan_for_images(self):
+        import serve
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "empty-source").mkdir()
+            (root / ".hidden").mkdir()
+
+            sources = serve.discover_sources(root)
+
+        self.assertEqual(list(sources), ["empty-source"])
+
+    def test_gallery_ignores_references_from_an_aborted_stream(self):
+        import serve
+
+        source = "model"
+        self.addCleanup(serve.Handler.input_dirs.pop, source, None)
+        self.addCleanup(serve.Handler.allowed_references.pop, source, None)
+        stale = serve.Handler._begin_gallery_load(source)
+        current = serve.Handler._begin_gallery_load(source)
+
+        serve.Handler._register_reference(
+            source, stale, Path("/stale"), "stale.png")
+        serve.Handler._register_reference(
+            source, current, Path("/current"), "current.png")
+        input_dir, allowed = serve.Handler._reference_access(source)
+
+        self.assertEqual(input_dir, Path("/current"))
+        self.assertEqual(allowed, {"current.png"})
+
+    def test_gallery_head_request_preserves_reference_access(self):
+        import serve
+
+        source = "head-test"
+        manifest = PipelineManifest(
+            "manual", 1,
+            [PipelineItem(
+                0, "sample", Path("sample.png"), "a" * 64,
+                still=StillSpec(
+                    Path("sample.jpg"), 64, 64,
+                    prompt="A detailed action photograph of a moving athlete."),
+            )],
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            input_dir = root / "input"
+            input_dir.mkdir()
+            Image.new("RGB", (64, 64)).save(input_dir / "sample.png")
+            output_dir = root / "output"
+            output_dir.mkdir()
+            Image.new("RGB", (64, 64)).save(output_dir / "sample.jpg")
+            save_pipeline(output_dir / "pipeline.yaml", manifest)
+
+            class TestHandler(serve.Handler):
+                sources = {source: output_dir}
+
+            server = serve.ThreadingHTTPServer(("127.0.0.1", 0), TestHandler)
+            thread = threading.Thread(target=server.serve_forever, daemon=True)
+            thread.start()
+            base = f"http://127.0.0.1:{server.server_port}"
+            try:
+                with mock.patch.object(serve, "ROOT", root):
+                    urllib.request.urlopen(
+                        f"{base}/api/list?source={source}").read()
+                    before = TestHandler._reference_access(source)
+                    request = urllib.request.Request(
+                        f"{base}/api/stream?source={source}", method="HEAD")
+                    urllib.request.urlopen(request).read()
+                    after = TestHandler._reference_access(source)
+            finally:
+                server.shutdown()
+                server.server_close()
+                thread.join()
+                TestHandler.input_dirs.pop(source, None)
+                TestHandler.allowed_references.pop(source, None)
+
+        self.assertEqual(after, before)
+        self.assertEqual(after[1], {"sample.png"})
+
     def test_gallery_rejects_malformed_input_configuration(self):
         import serve
 

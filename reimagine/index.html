@@ -57,6 +57,11 @@
     letter-spacing: .04em; }
   .badge.vid { left: auto; right: 6px; background: rgba(110,168,254,.85); }
   .empty { color: var(--muted); padding: 40px; text-align: center; }
+  .progress {
+    display: flex; justify-content: center; padding: 8px 0 28px;
+    color: var(--muted);
+  }
+  .progress button { min-width: 180px; min-height: 44px; }
 
   /* lightbox */
   #lb {
@@ -137,12 +142,24 @@
 </div>
 
 <script>
+const DISPLAY_BATCH = 60;
+const STREAM_RENDER_BATCH = 20;
+
 let ITEMS = [];
 let VIEW = [];        // filtered list currently shown (for lightbox nav)
 let cur = -1;
 let SOURCES = [];     // available output sets (dir names)
 let pageScrollY = 0;
 let returnFocus = null;
+let loadController = null;
+let loadVersion = 0;
+let loading = false;
+let loadError = "";
+let displayLimit = DISPLAY_BATCH;
+let moreObserver = null;
+let renderDeferred = false;
+let preferredCategory = "";
+let renderedKey = "";
 
 const $ = (id) => document.getElementById(id);
 const escapeHtml = (s) => s.replace(/[&<>"']/g, c =>
@@ -154,8 +171,8 @@ const setBackgroundInert = (inert) => {
 
 const SOURCE_KEY = "reimagine.source";  // persists the pick across full reloads
 
-async function loadSources() {
-  const r = await fetch("/api/sources", { cache: "no-store" });
+async function loadSources(signal) {
+  const r = await fetch("/api/sources", { cache: "no-store", signal });
   const data = await r.json();
   SOURCES = data.sources || [];
   const sel = $("sourceSel");
@@ -171,36 +188,155 @@ async function loadSources() {
 }
 
 async function load() {
-  await loadSources();
-  const source = $("sourceSel").value;
-  const url = source ? `/api/list?source=${encodeURIComponent(source)}` : "/api/list";
-  const r = await fetch(url, { cache: "no-store" });
-  ITEMS = await r.json();
+  const version = ++loadVersion;
+  loadController?.abort();
+  loadController = new AbortController();
+  loading = true;
+  loadError = "";
+  ITEMS = [];
+  displayLimit = DISPLAY_BATCH;
+  preferredCategory = $("catFilter").value;
+  $("catFilter").innerHTML = '<option value="">all categories</option>';
+  renderedKey = "";
+  render();
+  try {
+    await loadSources(loadController.signal);
+    if (version !== loadVersion) return;
+    const source = $("sourceSel").value;
+    const url = source
+      ? `/api/stream?source=${encodeURIComponent(source)}`
+      : "/api/stream";
+    const response = await fetch(url, {
+      cache: "no-store", signal: loadController.signal,
+    });
+    if (!response.ok || !response.body) {
+      throw new Error(`gallery request failed (${response.status})`);
+    }
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    let sinceRender = 0;
+    while (true) {
+      const { value, done } = await reader.read();
+      buffer += decoder.decode(value || new Uint8Array(), { stream: !done });
+      const lines = buffer.split("\n");
+      buffer = lines.pop();
+      for (const line of lines) {
+        if (!line) continue;
+        ITEMS.push(JSON.parse(line));
+        sinceRender++;
+        if (sinceRender === STREAM_RENDER_BATCH) {
+          updateCategoryFilter();
+          render();
+          sinceRender = 0;
+          await new Promise(requestAnimationFrame);
+          if (version !== loadVersion) return;
+        }
+      }
+      if (done) break;
+    }
+    if (buffer.trim()) ITEMS.push(JSON.parse(buffer));
+  } catch (error) {
+    if (error.name === "AbortError") return;
+    loadError = error.message;
+  } finally {
+    if (version !== loadVersion) return;
+    loading = false;
+    updateCategoryFilter();
+    render();
+  }
+}
+
+function updateCategoryFilter() {
   const cats = [...new Set(ITEMS.map(i => i.category))].sort();
-  const sel = $("catFilter"), prev = sel.value;
+  const sel = $("catFilter");
+  const want = sel.value || preferredCategory;
   sel.innerHTML = '<option value="">all categories</option>' +
     cats.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
-  if (cats.includes(prev)) sel.value = prev;
-  render();
+  if (cats.includes(want)) {
+    sel.value = want;
+    preferredCategory = "";
+  } else if (!loading) {
+    preferredCategory = "";
+  }
+}
+
+function progressHtml(remaining) {
+  if (remaining) {
+    return `<div class="progress"><button id="loadMore" type="button">
+      Show ${Math.min(DISPLAY_BATCH, remaining)} more
+    </button></div>`;
+  }
+  return loading
+    ? '<div class="progress" role="status">Loading more images…</div>'
+    : "";
+}
+
+function setupProgress() {
+  const more = $("loadMore");
+  if (!more) return;
+  const showMore = (restoreFocus) => {
+    const firstNewIndex = displayLimit;
+    displayLimit += DISPLAY_BATCH;
+    render();
+    if (restoreFocus) {
+      $("main").querySelector(
+        `.card[data-idx="${firstNewIndex}"]`
+      )?.focus();
+    }
+  };
+  more.addEventListener("click", () => showMore(true));
+  if ("IntersectionObserver" in window) {
+    moreObserver = new IntersectionObserver(entries => {
+      if (entries.some(entry => entry.isIntersecting)) showMore(false);
+    }, { rootMargin: "400px" });
+    moreObserver.observe(more);
+  }
 }
 
 function render() {
-  const cat = $("catFilter").value;
+  const cat = $("catFilter").value || preferredCategory;
   const compareAll = $("compareAll").checked;
   VIEW = ITEMS.filter(i => !cat || i.category === cat);
   const src = $("sourceSel").value;
   $("stat").textContent =
     (src ? `${src} · ` : "") +
     `${ITEMS.length} render${ITEMS.length === 1 ? "" : "s"}` +
+    (loading ? " loaded…" : "") +
     (cat ? ` · ${VIEW.length} in ${cat}` : "");
 
-  const main = $("main");
-  if (!VIEW.length) {
-    main.innerHTML = '<div class="empty">No renders yet. They appear here as the batch completes — hit refresh.</div>';
+  if ($("lb").classList.contains("open")) {
+    renderDeferred = true;
     return;
   }
+  moreObserver?.disconnect();
+  moreObserver = null;
+  const main = $("main");
+  if (!VIEW.length) {
+    renderedKey = "";
+    const message = loadError
+      ? `Could not load gallery: ${escapeHtml(loadError)}`
+      : loading
+        ? "Loading images…"
+        : "No renders yet. They appear here as the batch completes — hit refresh.";
+    main.innerHTML = `<div class="empty">${message}</div>`;
+    return;
+  }
+  const visible = VIEW.slice(0, displayLimit);
   const groups = {};
-  VIEW.forEach((it, idx) => (groups[it.category] ??= []).push({ it, idx }));
+  visible.forEach((it, idx) => (groups[it.category] ??= []).push({ it, idx }));
+  const remaining = VIEW.length - visible.length;
+  const progress = progressHtml(remaining);
+  const nextKey = [
+    cat, compareAll, $("videoMode").checked,
+    ...visible.map(item => item.path),
+  ].join("\n");
+  if (renderedKey === nextKey && main.querySelector(".card")) {
+    main.querySelector(".progress")?.remove();
+    if (progress) main.insertAdjacentHTML("beforeend", progress);
+    setupProgress();
+    return;
+  }
 
   main.innerHTML = Object.keys(groups).sort().map(c => `
     <section class="cat">
@@ -208,10 +344,12 @@ function render() {
       <div class="grid">
         ${groups[c].map(({ it, idx }) => card(it, idx, compareAll)).join("")}
       </div>
-    </section>`).join("");
+    </section>`).join("") + progress;
+  renderedKey = nextKey;
 
   [...main.querySelectorAll(".card")].forEach(el =>
     el.addEventListener("click", () => openLb(+el.dataset.idx)));
+  setupProgress();
 }
 
 function card(it, idx, compareAll) {
@@ -281,13 +419,23 @@ function openLb(idx) {
 
 function closeLb() {
   if (!$("lb").classList.contains("open")) return;
+  const returnIndex = returnFocus?.dataset.idx;
   $("lb").classList.remove("open");
   setBackgroundInert(false);
   document.body.classList.remove("lightbox-open");
   document.body.style.top = "";
   window.scrollTo(0, pageScrollY);
   cur = -1;
-  if (returnFocus?.isConnected) returnFocus.focus();
+  if (renderDeferred) {
+    renderDeferred = false;
+    render();
+  }
+  const replacement = returnIndex === undefined
+    ? null
+    : $("main").querySelector(`.card[data-idx="${returnIndex}"]`);
+  if (replacement || returnFocus?.isConnected) {
+    (replacement || returnFocus).focus();
+  }
   returnFocus = null;
 }
 function step(d) {
@@ -300,7 +448,11 @@ $("sourceSel").addEventListener("change", () => {
   try { localStorage.setItem(SOURCE_KEY, $("sourceSel").value); } catch (e) {}
   closeLb(); load();
 });
-$("catFilter").addEventListener("change", render);
+$("catFilter").addEventListener("change", () => {
+  preferredCategory = $("catFilter").value;
+  displayLimit = DISPLAY_BATCH;
+  render();
+});
 $("compareAll").addEventListener("change", render);
 $("videoMode").addEventListener("change", () => { render(); if (cur >= 0) openLb(cur); });
 $("lbClose").addEventListener("click", closeLb);

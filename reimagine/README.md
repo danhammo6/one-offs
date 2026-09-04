@@ -251,7 +251,10 @@ default. Rerun that directory with `-v` or `-vv` to inspect rejected responses.
 .venv/bin/python serve.py --port 9000
 ```
 
-Output sets live under `outputs/`. The gallery discovers sets containing images,
+Output sets live under `outputs/`. The gallery discovers each set directory,
 uses each set's `pipeline.yaml` to find its references, shows those references
 beside generated stills, and switches to sibling videos when available. In the
 lightbox, use the arrow buttons or swipe left and right on an image to navigate.
+Gallery records are streamed as they are discovered. The page renders an
+initial batch and automatically reveals additional batches near the bottom,
+keeping large output collections responsive.

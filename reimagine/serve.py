@@ -17,6 +17,7 @@ Routes:
     /                          the static gallery page (index.html)
     /api/sources               JSON: the available output sources + the default
     /api/list?source=NAME      JSON: every output image in NAME + its reference
+    /api/stream?source=NAME    NDJSON: the same images streamed progressively
     /img/output/NAME/<path>    raw bytes of an output image in source NAME
     /img/input/NAME/<path>     raw bytes of a reference image
 
@@ -26,6 +27,8 @@ import argparse
 import json
 import logging
 import mimetypes
+import os
+import threading
 import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -53,16 +56,13 @@ VIDEO_EXTS = (".mp4", ".webm", ".mkv")
 
 def discover_sources(outputs_dir):
     """Return the available output sources as {name: dir} — one per immediate
-    subdirectory of outputs_dir that contains at least one image (recursively).
-    Sorted by name for a stable UI order. Empty if outputs_dir doesn't exist."""
+    subdirectory of outputs_dir. Images are discovered only after selection so
+    a large collection does not delay server startup. Empty if absent."""
     sources = {}
     if not outputs_dir.is_dir():
         return sources
     for child in sorted(outputs_dir.iterdir()):
-        if not child.is_dir():
-            continue
-        if any(p.is_file() and p.suffix.lower() in IMAGE_EXTS
-               for p in child.rglob("*")):
+        if child.is_dir() and not child.name.startswith("."):
             sources[child.name] = child
     return sources
 
@@ -120,25 +120,32 @@ def find_sibling_video(still_path):
     return None
 
 
-def list_pairs(source_name, output_dir):
-    """Walk one source's output dir recursively; return one entry per rendered
-    image, grouped by its top-level category (first path segment), each with its
-    reference (if any) and prompts read from pipeline.yaml."""
-    items = []
+def iter_images(output_dir):
+    """Yield image paths in stable order without materializing the whole tree."""
+    for dir_path, dir_names, file_names in os.walk(output_dir):
+        dir_names.sort()
+        for name in sorted(file_names):
+            path = Path(dir_path) / name
+            if path.suffix.lower() in IMAGE_EXTS:
+                yield path
+
+
+def iter_pairs(source_name, output_dir, on_reference=None):
+    """Yield gallery records as output images are discovered."""
     input_dir, metadata = load_pipeline_metadata(output_dir)
     if output_dir.is_dir():
-        for p in sorted(output_dir.rglob("*")):
-            if not (p.is_file() and p.suffix.lower() in IMAGE_EXTS):
-                continue
+        for p in iter_images(output_dir):
             rel = p.relative_to(output_dir)
             ref = find_reference(rel, input_dir) if input_dir else None
+            if ref and on_reference:
+                on_reference(input_dir, ref)
             parts = rel.parts
             category = parts[0] if len(parts) > 1 else "(root)"
             src_q = urllib.parse.quote(source_name)
             vid = find_sibling_video(p)
             vid_rel = vid.relative_to(output_dir).as_posix() if vid else None
             prompts = metadata.get(rel.as_posix(), {})
-            items.append({
+            yield {
                 "name": rel.name,
                 "path": rel.as_posix(),
                 "category": category,
@@ -149,16 +156,19 @@ def list_pairs(source_name, output_dir):
                              if vid_rel else None,
                 "prompt": prompts.get("prompt"),
                 "video_prompt": prompts.get("video_prompt") if vid else None,
-            })
-    return items
+            }
+
+
+def list_pairs(source_name, output_dir):
+    """Return all records for compatibility with non-streaming clients."""
+    return list(iter_pairs(source_name, output_dir))
 
 
 def reference_paths(output_dir, input_dir):
     """Return references that correspond to discoverable output images."""
     return {
         reference
-        for path in output_dir.rglob("*")
-        if path.is_file() and path.suffix.lower() in IMAGE_EXTS
+        for path in iter_images(output_dir)
         for reference in [find_reference(path.relative_to(output_dir), input_dir)]
         if reference
     }
@@ -185,6 +195,9 @@ def safe_media_path(base, rel, extensions, allowed_paths=None,
 class Handler(BaseHTTPRequestHandler):
     # Injected by main(): the output sources ({name: dir}).
     sources = {}
+    input_dirs = {}
+    allowed_references = {}
+    gallery_lock = threading.Lock()
 
     def log_message(self, *_):  # keep the console quiet
         pass
@@ -204,6 +217,46 @@ class Handler(BaseHTTPRequestHandler):
     def _send_json(self, obj):
         self._send(200, json.dumps(obj), "application/json",
                    extra={"Cache-Control": "no-cache"})
+
+    def _send_ndjson(self, items):
+        self.send_response(200)
+        self.send_header("Content-Type", "application/x-ndjson; charset=utf-8")
+        self.send_header("Cache-Control", "no-cache")
+        self.send_header("Connection", "close")
+        self.end_headers()
+        if self.command == "HEAD":
+            return
+        try:
+            for item in items:
+                self.wfile.write(json.dumps(item).encode("utf-8") + b"\n")
+                self.wfile.flush()
+        except (BrokenPipeError, ConnectionResetError):
+            pass
+        finally:
+            self.close_connection = True
+
+    @classmethod
+    def _begin_gallery_load(cls, source):
+        allowed = set()
+        with cls.gallery_lock:
+            cls.input_dirs.pop(source, None)
+            cls.allowed_references[source] = allowed
+        return allowed
+
+    @classmethod
+    def _register_reference(cls, source, allowed, input_dir, relative):
+        with cls.gallery_lock:
+            if cls.allowed_references.get(source) is not allowed:
+                return
+            previous = cls.input_dirs.setdefault(source, input_dir)
+            if previous == input_dir:
+                allowed.add(relative)
+
+    @classmethod
+    def _reference_access(cls, source):
+        with cls.gallery_lock:
+            return (cls.input_dirs.get(source),
+                    frozenset(cls.allowed_references.get(source, ())))
 
     def _send_file(self, base, rel_quoted, extensions, allowed_paths=None,
                    allow_linked_dirs=False):
@@ -229,14 +282,23 @@ class Handler(BaseHTTPRequestHandler):
             names = list(self.sources.keys())
             return self._send_json({"sources": names,
                                     "default": names[0] if names else None})
-        if path == "/api/list":
+        if path in {"/api/list", "/api/stream"}:
             qs = urllib.parse.parse_qs(parsed.query)
             want = (qs.get("source") or [None])[0]
             name = want if want in self.sources else next(iter(self.sources), None)
+            if self.command == "HEAD":
+                return (self._send_ndjson(())
+                        if path == "/api/stream" else self._send_json([]))
             if name is None:
-                return self._send_json([])
-            return self._send_json(
-                list_pairs(name, self.sources[name]))
+                return (self._send_ndjson(())
+                        if path == "/api/stream" else self._send_json([]))
+            allowed = self._begin_gallery_load(name)
+            items = iter_pairs(
+                name, self.sources[name],
+                lambda input_dir, relative: self._register_reference(
+                    name, allowed, input_dir, relative))
+            return (self._send_ndjson(items)
+                    if path == "/api/stream" else self._send_json(list(items)))
         if path.startswith("/img/output/"):
             # /img/output/<source>/<path>
             rest = path[len("/img/output/"):]
@@ -252,13 +314,9 @@ class Handler(BaseHTTPRequestHandler):
             src = urllib.parse.unquote(src_q)
             if src not in self.sources:
                 return self._send(404, "unknown source")
-            try:
-                input_dir, _ = load_pipeline_metadata(self.sources[src])
-            except ValueError:
-                return self._send(500, "invalid pipeline input directory")
+            input_dir, allowed = self._reference_access(src)
             if input_dir is None:
-                return self._send(500, "invalid pipeline input directory")
-            allowed = reference_paths(self.sources[src], input_dir)
+                return self._send(404, "reference not listed")
             return self._send_file(
                 input_dir, rel_q, IMAGE_EXTS, allowed_paths=allowed,
                 allow_linked_dirs=True)
@@ -292,9 +350,7 @@ def main():
     if Handler.sources:
         logger.info("reimagine gallery: %d source(s):", len(Handler.sources))
         for name, d in Handler.sources.items():
-            n = sum(1 for p in d.rglob("*")
-                    if p.is_file() and p.suffix.lower() in IMAGE_EXTS)
-            logger.info("    %-20s %d render(s)  (%s)", name, n, d)
+            logger.info("    %-20s %s", name, d)
     else:
         logger.warning("reimagine gallery: no output sources found "
                        "(looked under %s)", args.outputs_dir)

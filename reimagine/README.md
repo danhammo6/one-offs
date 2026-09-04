@@ -255,6 +255,11 @@ Output sets live under `outputs/`. The gallery discovers each set directory,
 uses each set's `pipeline.yaml` to find its references, shows those references
 beside generated stills, and switches to sibling videos when available. In the
 lightbox, use the arrow buttons or swipe left and right on an image to navigate.
-Gallery records are streamed as they are discovered. The page renders an
-initial batch and automatically reveals additional batches near the bottom,
-keeping large output collections responsive.
+Pipeline metadata is parsed once before the server starts listening and cached
+for the lifetime of the process; restart the gallery after changing a manifest.
+A source with malformed or inconsistent manifests is logged and remains
+browseable without reference or prompt metadata. Media files are still
+discovered live on each request. Gallery records are streamed as they are
+discovered. The page renders an initial batch and automatically reveals
+additional batches near the bottom, keeping large output collections
+responsive.

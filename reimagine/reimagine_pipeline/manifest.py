@@ -36,12 +36,16 @@ def _input_dir_from_data(data):
     return _safe_directory_path(data.get("input_dir", "input"))
 
 
-def load_pipeline_input_dir(path):
-    """Read input_dir from either a full or input-only pipeline.yaml."""
+def _read_pipeline_data(path):
     try:
-        data = yaml.safe_load(path.read_text(encoding="utf-8"))
+        return yaml.safe_load(path.read_text(encoding="utf-8"))
     except (OSError, yaml.YAMLError) as error:
         raise ValueError(f"could not read pipeline {path}: {error}") from error
+
+
+def load_pipeline_input_dir(path):
+    """Read input_dir from either a full or input-only pipeline.yaml."""
+    data = _read_pipeline_data(path)
     if not isinstance(data, dict):
         raise ValueError(f"pipeline configuration is not a mapping: {path}")
     return _input_dir_from_data(data)
@@ -156,11 +160,28 @@ def _load_video(data):
         duration)
 
 
+def load_pipeline_document(path, require_stage=None):
+    """Parse one pipeline file and return its input directory and manifest.
+
+    Input-only seed configurations return ``(input_dir, None)``. This lets
+    callers inspect a mixed pipeline tree without parsing any file twice.
+    """
+    data = _read_pipeline_data(path)
+    if (isinstance(data, dict) and set(data) == {"input_dir"}
+            and isinstance(data["input_dir"], str)):
+        return _input_dir_from_data(data), None
+    manifest = _load_pipeline_data(data, path, require_stage)
+    return manifest.input_dir, manifest
+
+
 def load_pipeline(path, require_stage=None):
-    try:
-        data = yaml.safe_load(path.read_text(encoding="utf-8"))
-    except (OSError, yaml.YAMLError) as error:
-        raise ValueError(f"could not read pipeline {path}: {error}") from error
+    _, manifest = load_pipeline_document(path, require_stage)
+    if manifest is None:
+        raise ValueError(f"unsupported pipeline manifest: {path}")
+    return manifest
+
+
+def _load_pipeline_data(data, path, require_stage=None):
     if not isinstance(data, dict) or data.get("schema_version") != SCHEMA_VERSION:
         raise ValueError(f"unsupported pipeline manifest: {path}")
     mode = data.get("still_mode")

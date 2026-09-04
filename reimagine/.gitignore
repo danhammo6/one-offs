@@ -14,6 +14,7 @@ __pycache__/
 # Generated render sets (regenerable, bulky) + the "current" convenience symlink
 outputs/
 /output
+input-large-gallery-test/
 
 # Local config and scratch files
 # (mount point is on Desktop, outside repo, but listed here for clarity)

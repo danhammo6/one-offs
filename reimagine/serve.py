@@ -2,8 +2,8 @@
 """reimagine gallery server.
 
 A tiny stdlib HTTP server for browsing the rendered outputs against their
-reference images. Walks the output tree(s) live on every request, so new
-renders show up on a page refresh — handy while a batch is still running.
+reference images. Media files are walked live on every request, while pipeline
+metadata is parsed once at startup and remains fixed for the server lifetime.
 
     .venv/bin/python serve.py            # serve on http://127.0.0.1:8000
     .venv/bin/python serve.py --port 9000
@@ -29,13 +29,14 @@ import logging
 import mimetypes
 import os
 import threading
+import time
 import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 from reimagine_pipeline import PIPELINE_FILENAME
 from reimagine_pipeline.manifest import (
-    load_pipeline_tree, load_pipeline_tree_input_dir,
+    load_pipeline_document, pipeline_paths,
 )
 from reimagine_pipeline.prompting import regions_to_text
 
@@ -83,31 +84,91 @@ def find_reference(rel, input_dir):
 
 
 def load_pipeline_metadata(output_dir):
-    """Return the configured input directory and prompt metadata for a source."""
+    """Parse each pipeline once and return its input directory and prompts."""
+    paths = pipeline_paths(output_dir, PIPELINE_FILENAME)
+    if not paths:
+        logger.warning("could not load gallery metadata for %s: no %s files",
+                       output_dir, PIPELINE_FILENAME)
+        return (ROOT / "input").resolve(), {}
     try:
-        configured_input = load_pipeline_tree_input_dir(
-            output_dir, PIPELINE_FILENAME)
+        documents = []
+        for path in paths:
+            input_dir, manifest = load_pipeline_document(path)
+            documents.append((path, input_dir, manifest))
+        input_dirs = {input_dir for _, input_dir, _ in documents}
+        if len(input_dirs) != 1:
+            raise ValueError("pipeline files use different input directories")
     except ValueError as error:
-        logger.warning("could not load gallery configuration for %s: %s",
+        logger.warning("could not cache gallery metadata for %s: %s",
                        output_dir, error)
         return None, {}
-    input_dir = (ROOT / configured_input).resolve()
-    try:
-        manifest = load_pipeline_tree(output_dir, filename=PIPELINE_FILENAME)
-    except ValueError as error:
-        logger.warning("could not load gallery metadata for %s: %s",
-                       output_dir, error)
+
+    input_dir = (ROOT / input_dirs.pop()).resolve()
+    manifest_documents = [
+        (path, manifest)
+        for path, _, manifest in documents
+        if manifest is not None
+    ]
+    if not manifest_documents:
         return input_dir, {}
+    legacy = output_dir / PIPELINE_FILENAME
+    if (legacy in {path for path, _ in manifest_documents}
+            and len(manifest_documents) > 1):
+        root_manifest = next(
+            manifest for path, manifest in manifest_documents
+            if path == legacy)
+        if any(item.source_path.parent.parts for item in root_manifest.items):
+            manifest_documents = [(legacy, root_manifest)]
+    modes = {
+        manifest.still_mode for _, manifest in manifest_documents
+    }
+    common_dims = {
+        manifest.common_dims for _, manifest in manifest_documents
+    }
+    if len(modes) != 1 or len(common_dims) != 1:
+        logger.warning("could not cache gallery metadata for %s: "
+                       "pipeline files use inconsistent modes", output_dir)
+        return None, {}
+
     metadata = {}
-    for item in manifest.items:
-        if not item.still:
-            continue
-        prompt = (item.still.prompt or regions_to_text(item.still.regions))
-        metadata[item.still.output.as_posix()] = {
-            "prompt": prompt,
-            "video_prompt": item.video.prompt if item.video else None,
-        }
+    item_ids = set()
+    source_paths = set()
+    for path, manifest in manifest_documents:
+        parent = path.parent.relative_to(output_dir)
+        for item in manifest.items:
+            item_id = (parent / item.item_id).as_posix()
+            source_path = (parent / item.source_path).as_posix()
+            if item_id in item_ids or source_path in source_paths:
+                logger.warning("could not cache gallery metadata for %s: "
+                               "duplicate IDs or source paths", output_dir)
+                return None, {}
+            item_ids.add(item_id)
+            source_paths.add(source_path)
+            if not item.still:
+                continue
+            output = (parent / item.still.output).as_posix()
+            if output in metadata:
+                logger.warning("could not cache gallery metadata for %s: "
+                               "duplicate still output %s", output_dir, output)
+                return None, {}
+            prompt = (item.still.prompt or regions_to_text(item.still.regions))
+            metadata[output] = {
+                "prompt": prompt,
+                "video_prompt": item.video.prompt if item.video else None,
+            }
     return input_dir, metadata
+
+
+def build_pipeline_metadata_cache(sources):
+    """Build metadata for every source before the server begins listening."""
+    started = time.perf_counter()
+    cache = {
+        name: load_pipeline_metadata(output_dir)
+        for name, output_dir in sources.items()
+    }
+    logger.info("gallery metadata cache: %d source(s) initialized in %.2fs",
+                len(cache), time.perf_counter() - started)
+    return cache
 
 
 def find_sibling_video(still_path):
@@ -130,9 +191,14 @@ def iter_images(output_dir):
                 yield path
 
 
-def iter_pairs(source_name, output_dir, on_reference=None):
+def iter_pairs(source_name, output_dir, on_reference=None,
+               pipeline_metadata=None):
     """Yield gallery records as output images are discovered."""
-    input_dir, metadata = load_pipeline_metadata(output_dir)
+    input_dir, metadata = (
+        pipeline_metadata
+        if pipeline_metadata is not None
+        else load_pipeline_metadata(output_dir)
+    )
     if output_dir.is_dir():
         for p in iter_images(output_dir):
             rel = p.relative_to(output_dir)
@@ -195,6 +261,7 @@ def safe_media_path(base, rel, extensions, allowed_paths=None,
 class Handler(BaseHTTPRequestHandler):
     # Injected by main(): the output sources ({name: dir}).
     sources = {}
+    pipeline_metadata_cache = {}
     input_dirs = {}
     allowed_references = {}
     gallery_lock = threading.Lock()
@@ -296,7 +363,8 @@ class Handler(BaseHTTPRequestHandler):
             items = iter_pairs(
                 name, self.sources[name],
                 lambda input_dir, relative: self._register_reference(
-                    name, allowed, input_dir, relative))
+                    name, allowed, input_dir, relative),
+                self.pipeline_metadata_cache.get(name, (None, {})))
             return (self._send_ndjson(items)
                     if path == "/api/stream" else self._send_json(list(items)))
         if path.startswith("/img/output/"):
@@ -346,6 +414,8 @@ def main():
         Handler.sources = {d.name: d}
     else:
         Handler.sources = discover_sources(args.outputs_dir.resolve())
+    Handler.pipeline_metadata_cache = build_pipeline_metadata_cache(
+        Handler.sources)
     srv = ThreadingHTTPServer((args.host, args.port), Handler)
     if Handler.sources:
         logger.info("reimagine gallery: %d source(s):", len(Handler.sources))

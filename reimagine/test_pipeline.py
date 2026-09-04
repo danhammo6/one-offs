@@ -1081,19 +1081,23 @@ class ProcessIsolationTests(unittest.TestCase):
             class TestHandler(serve.Handler):
                 sources = {source: output_dir}
 
+            with mock.patch.object(serve, "ROOT", root):
+                TestHandler.pipeline_metadata_cache = (
+                    serve.build_pipeline_metadata_cache(
+                        TestHandler.sources))
+
             server = serve.ThreadingHTTPServer(("127.0.0.1", 0), TestHandler)
             thread = threading.Thread(target=server.serve_forever, daemon=True)
             thread.start()
             base = f"http://127.0.0.1:{server.server_port}"
             try:
-                with mock.patch.object(serve, "ROOT", root):
-                    urllib.request.urlopen(
-                        f"{base}/api/list?source={source}").read()
-                    before = TestHandler._reference_access(source)
-                    request = urllib.request.Request(
-                        f"{base}/api/stream?source={source}", method="HEAD")
-                    urllib.request.urlopen(request).read()
-                    after = TestHandler._reference_access(source)
+                urllib.request.urlopen(
+                    f"{base}/api/list?source={source}").read()
+                before = TestHandler._reference_access(source)
+                request = urllib.request.Request(
+                    f"{base}/api/stream?source={source}", method="HEAD")
+                urllib.request.urlopen(request).read()
+                after = TestHandler._reference_access(source)
             finally:
                 server.shutdown()
                 server.server_close()
@@ -1103,6 +1107,104 @@ class ProcessIsolationTests(unittest.TestCase):
 
         self.assertEqual(after, before)
         self.assertEqual(after[1], {"sample.png"})
+
+    def test_gallery_eager_cache_prevents_request_reparsing(self):
+        import serve
+
+        source = "cached-model"
+        manifest = PipelineManifest(
+            "manual", 1,
+            [PipelineItem(
+                0, "sample", Path("sample.png"), "a" * 64,
+                still=StillSpec(
+                    Path("sample.jpg"), 64, 64,
+                    prompt="A detailed action photograph of a moving athlete."),
+            )],
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            input_dir = root / "input"
+            input_dir.mkdir()
+            Image.new("RGB", (64, 64)).save(input_dir / "sample.png")
+            output_dir = root / "output"
+            output_dir.mkdir()
+            Image.new("RGB", (64, 64)).save(output_dir / "sample.jpg")
+            save_pipeline(output_dir / "pipeline.yaml", manifest)
+
+            class TestHandler(serve.Handler):
+                sources = {source: output_dir}
+
+            with mock.patch.object(serve, "ROOT", root), \
+                    mock.patch.object(
+                        yaml, "safe_load", wraps=yaml.safe_load) as safe_load:
+                TestHandler.pipeline_metadata_cache = (
+                    serve.build_pipeline_metadata_cache(
+                        TestHandler.sources))
+                self.assertEqual(safe_load.call_count, 1)
+
+                server = serve.ThreadingHTTPServer(
+                    ("127.0.0.1", 0), TestHandler)
+                thread = threading.Thread(
+                    target=server.serve_forever, daemon=True)
+                thread.start()
+                base = f"http://127.0.0.1:{server.server_port}"
+                try:
+                    for _ in range(2):
+                        listed = json.loads(urllib.request.urlopen(
+                            f"{base}/api/list?source={source}").read())
+                        streamed = urllib.request.urlopen(
+                            f"{base}/api/stream?source={source}").read()
+                        urllib.request.urlopen(
+                            f"{base}/img/output/{source}/sample.jpg").read()
+                        urllib.request.urlopen(
+                            f"{base}/img/input/{source}/sample.png").read()
+                finally:
+                    server.shutdown()
+                    server.server_close()
+                    thread.join()
+                    TestHandler.input_dirs.pop(source, None)
+                    TestHandler.allowed_references.pop(source, None)
+
+                self.assertEqual(safe_load.call_count, 1)
+
+        self.assertEqual(len(listed), 1)
+        self.assertEqual(len(streamed.splitlines()), 1)
+
+    def test_gallery_main_builds_cache_before_listening(self):
+        import serve
+
+        events = []
+        cached = {"model": (Path("/input"), {})}
+
+        def build_cache(sources):
+            events.append(("cache", dict(sources)))
+            return cached
+
+        class FakeServer:
+            def __init__(self, address, handler):
+                events.append(
+                    ("server", address, handler.pipeline_metadata_cache))
+
+            def serve_forever(self):
+                events.append(("serve",))
+                raise KeyboardInterrupt
+
+        with tempfile.TemporaryDirectory() as tmp, \
+                mock.patch("sys.argv", [
+                    "serve.py", "--output-dir", tmp,
+                ]), \
+                mock.patch.object(
+                    serve, "build_pipeline_metadata_cache",
+                    side_effect=build_cache), \
+                mock.patch.object(serve, "ThreadingHTTPServer", FakeServer), \
+                mock.patch.object(serve.Handler, "sources", {}), \
+                mock.patch.object(
+                    serve.Handler, "pipeline_metadata_cache", {}):
+            serve.main()
+
+        self.assertEqual([event[0] for event in events],
+                         ["cache", "server", "serve"])
+        self.assertIs(events[1][2], cached)
 
     def test_gallery_rejects_malformed_input_configuration(self):
         import serve

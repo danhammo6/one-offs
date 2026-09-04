@@ -6,10 +6,24 @@ import test from "node:test";
 import { chromium, webkit } from "playwright-core";
 
 const INDEX = readFileSync(new URL("./index.html", import.meta.url));
-const PIXEL = Buffer.from(
-  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
-  "base64",
-);
+function imageFixture(width, height, color) {
+  return Buffer.from(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" `
+    + `viewBox="0 0 ${width} ${height}"><rect width="100%" height="100%" `
+    + `fill="${color}"/></svg>`,
+  );
+}
+
+const LANDSCAPE_IMAGE = imageFixture(1200, 600, "#3578b8");
+const PORTRAIT_IMAGE = imageFixture(600, 1200, "#8d4db8");
+
+function fixtureImage(url) {
+  const index = Number(url.pathname.match(/item-(\d+)/)?.[1]);
+  const reference = url.pathname.includes("/input/");
+  const portrait = index === 2001 || index === 2005
+    || (index === 2003 && !reference);
+  return portrait ? PORTRAIT_IMAGE : LANDSCAPE_IMAGE;
+}
 const ITEMS = Array.from({ length: 4000 }, (_, index) => {
   const category = index < 2000 ? "alpha" : "beta";
   const path = `${category}/item-${String(index).padStart(4, "0")}.jpg`;
@@ -49,6 +63,31 @@ async function waitForLoadedImages(page, selector) {
   await page.waitForFunction(imageSelector =>
     [...document.querySelectorAll(imageSelector)]
       .every(image => image.complete && image.naturalWidth), selector);
+}
+
+async function comparisonGeometry(page, expectedLayout) {
+  await page.waitForFunction(layout =>
+    document.querySelector("#lbStage")?.dataset.comparisonLayout === layout,
+  expectedLayout);
+  return page.evaluate(() => {
+    const stage = document.querySelector("#lbStage");
+    const figures = [...stage.querySelectorAll("figure")]
+      .map(figure => {
+        const bounds = figure.getBoundingClientRect();
+        return {
+          left: bounds.left,
+          right: bounds.right,
+          top: bounds.top,
+          bottom: bounds.bottom,
+          width: bounds.width,
+        };
+      });
+    return {
+      figures,
+      overflow: stage.scrollWidth > stage.clientWidth
+        || stage.scrollHeight > stage.clientHeight,
+    };
+  });
 }
 
 const BROWSERS = [
@@ -132,8 +171,13 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
       }));
     }
     if (url.pathname.startsWith("/img/")) {
-      response.writeHead(200, { "Content-Type": "image/png" });
-      return response.end(PIXEL);
+      response.writeHead(200, { "Content-Type": "image/svg+xml" });
+      const image = fixtureImage(url);
+      if (url.pathname.startsWith("/img/output/")
+          && url.pathname.includes("item-2004.jpg")) {
+        return setTimeout(() => response.end(image), 120);
+      }
+      return response.end(image);
     }
     if (url.pathname.startsWith("/video/")) {
       response.writeHead(200, { "Content-Type": "video/mp4" });
@@ -368,6 +412,67 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
       () => document.activeElement?.matches('.card[data-idx="0"]'),
     );
 
+    await page.setViewportSize({ width: 1200, height: 800 });
+    await page.evaluate(() => focusLogicalCard(6));
+    await page.waitForFunction(
+      () => document.activeElement?.matches('.card[data-idx="6"]'),
+    );
+    await page.locator('.card[data-idx="6"]').press("Enter");
+    await waitForLoadedImages(page, "#lbStage img");
+    const landscapeComparison = await comparisonGeometry(page, "stacked");
+    assert.ok(landscapeComparison.figures[1].top
+      >= landscapeComparison.figures[0].bottom,
+    "landscape media compares top-to-bottom");
+    assert.equal(landscapeComparison.overflow, false);
+
+    await page.keyboard.press("ArrowLeft");
+    await page.waitForFunction(
+      () => document.querySelector("#lbName")?.textContent
+        === "beta/item-2005.jpg",
+    );
+    const portraitComparison = await comparisonGeometry(page, "side-by-side");
+    assert.ok(portraitComparison.figures[1].left
+      >= portraitComparison.figures[0].right,
+    "portrait media compares side-by-side");
+    assert.equal(portraitComparison.overflow, false);
+
+    await page.keyboard.press("ArrowRight");
+    assert.deepEqual(await page.evaluate(() => ({
+      name: document.querySelector("#lbName").textContent,
+      layout: document.querySelector("#lbStage").dataset.comparisonLayout,
+    })), {
+      name: "beta/item-2006.jpg",
+      layout: "stacked",
+    }, "cached dimensions apply during navigation without a transient layout");
+
+    await page.evaluate(() => openLb(3));
+    await waitForLoadedImages(page, "#lbStage img");
+    assert.equal((await comparisonGeometry(page, "side-by-side")).overflow, false,
+      "output orientation controls mismatched source/result layout");
+
+    await page.locator("#lbSide").uncheck();
+    assert.deepEqual(await page.evaluate(() => ({
+      layout: document.querySelector("#lbStage").dataset.comparisonLayout,
+      figures: document.querySelectorAll("#lbStage figure").length,
+    })), { layout: "single", figures: 1 });
+    await page.locator("#lbSide").check();
+    await comparisonGeometry(page, "side-by-side");
+
+    await page.evaluate(() => {
+      MEDIA_DIMENSIONS.clear();
+      openLb(4);
+      setTimeout(() => openLb(5), 10);
+    });
+    await page.waitForFunction(
+      () => document.querySelector("#lbName")?.textContent
+        === "beta/item-2005.jpg",
+    );
+    await page.waitForTimeout(200);
+    assert.equal(await page.locator("#lbStage").getAttribute(
+      "data-comparison-layout"), "side-by-side",
+    "a late load from the previous item cannot change the current layout");
+    await page.keyboard.press("Escape");
+
     const failedMetadata = page.waitForResponse(response =>
       response.url().includes("/api/metadata")
       && response.url().includes("item-2000.jpg"));
@@ -552,8 +657,9 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
       };
     });
     assert.ok(phoneGeometry.padding <= 8, "touch lightbox padding is compact");
-    assert.ok(phoneGeometry.stageWidth / phoneGeometry.viewportWidth > 0.97,
-      "lightbox media stage uses the phone viewport");
+    assert.ok(phoneGeometry.stageWidth
+      >= phoneGeometry.viewportWidth - phoneGeometry.padding * 2 - 1,
+    "lightbox media stage uses the phone viewport within its safe padding");
     assert.ok(phoneGeometry.imageWidth / phoneGeometry.stageWidth > 0.95,
       "portrait comparison media uses the full stage width");
     assert.ok(Math.abs(phoneGeometry.height - phoneGeometry.viewportHeight) < 1,
@@ -568,16 +674,47 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
       "beta/item-3999.jpg", "touch side-edge navigation wraps backward");
 
     await touchPage.setViewportSize({ width: 844, height: 390 });
+    const phoneLandscape = await comparisonGeometry(
+      touchPage, "side-by-side");
+    assert.ok(phoneLandscape.figures[1].left
+      >= phoneLandscape.figures[0].right,
+    "short-wide iPhone landscape overrides landscape media to columns");
+    assert.equal(await touchPage.locator("#lbStage").getAttribute(
+      "data-comparison-reason"), "short-wide");
+    await touchPage.setViewportSize({ width: 844, height: 420 });
+    assert.equal(await touchPage.locator("#lbStage").getAttribute(
+      "data-comparison-layout"), "side-by-side",
+    "address-bar-sized viewport changes preserve the short-wide layout");
     const landscapeFits = await touchPage.locator("#lb").evaluate(lightbox =>
       lightbox.scrollWidth <= innerWidth && lightbox.scrollHeight <= innerHeight);
     assert.equal(landscapeFits, true, "lightbox controls fit an iPhone landscape viewport");
     await touchPage.locator("#lbClose").click();
+
+    await touchPage.setViewportSize({ width: 390, height: 844 });
+    await touchPage.locator("#catFilter").selectOption("beta");
+    await touchPage.waitForFunction(
+      () => document.querySelector("#stat")?.textContent.includes("2000 in beta"),
+    );
+    await touchPage.locator('.card[data-idx="1"]').click();
+    await waitForLoadedImages(touchPage, "#lbStage img");
+    const narrowPortrait = await comparisonGeometry(touchPage, "side-by-side");
+    assert.equal(narrowPortrait.overflow, false,
+      "portrait comparison fits the narrow iPhone viewport");
+    assert.ok(narrowPortrait.figures.every(figure => figure.width >= 180),
+      "narrow iPhone retains usable side-by-side portrait columns");
+    await touchPage.locator("#lbClose").click();
+
     await touchPage.setViewportSize({ width: 820, height: 1180 });
     await touchPage.locator('.card[data-idx="0"]').click();
     await touchPage.locator("#lb.open").waitFor();
     assert.ok(await touchPage.locator("#lbStage").evaluate(stage =>
       stage.getBoundingClientRect().width / innerWidth > 0.98),
     "lightbox media stage uses the iPad viewport");
+    assert.equal((await comparisonGeometry(touchPage, "stacked")).overflow, false,
+      "landscape comparison stacks on iPad");
+    await touchPage.keyboard.press("ArrowRight");
+    assert.equal((await comparisonGeometry(touchPage, "side-by-side")).overflow, false,
+      "portrait comparison uses columns on iPad");
     await touchPage.locator("#lbClose").click();
     await touchContext.close();
 

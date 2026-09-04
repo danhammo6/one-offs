@@ -254,7 +254,10 @@ default. Rerun that directory with `-v` or `-vv` to inspect rejected responses.
 Output sets live under `outputs/`. The gallery discovers each set directory,
 uses each set's `pipeline.yaml` to find its references, shows those references
 beside generated stills, and switches to sibling videos when available. In the
-lightbox, use the arrow buttons or swipe left and right on an image to navigate.
+lightbox, tap the outer quarter of either side, swipe, or use Left/Right Arrow
+to navigate. Tap the middle half or press `H` to hide/show all lightbox chrome
+and give the media more room; a center tap closes an open prompt before hiding
+the HUD. Closing and reopening the lightbox restores visible controls.
 Pipeline metadata is loaded before the server starts listening and remains
 fixed for the lifetime of the process; restart the gallery after changing a
 manifest. A disposable

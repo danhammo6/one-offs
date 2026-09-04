@@ -56,7 +56,7 @@
   }
   .card:hover { border-color: var(--accent); }
   .card:focus-visible, button:focus-visible, select:focus-visible,
-  input:focus-visible {
+  input:focus-visible, #lbStage:focus-visible {
     outline: 3px solid var(--accent); outline-offset: 2px;
   }
   .card:active { transform: scale(.996); }
@@ -86,6 +86,8 @@
     flex-direction: column; gap: 8px; overscroll-behavior: contain;
   }
   #lb.open { display: flex; }
+  #lb [hidden] { display: none !important; }
+  #lb.hud-hidden { gap: 0; }
   #lb .bar {
     display: flex; align-items: center; gap: 10px; color: var(--muted);
     min-width: 0;
@@ -192,18 +194,20 @@
 
 <main id="main"><div class="empty" role="status">loading…</div></main>
 
-<div id="lb" role="dialog" aria-modal="true" aria-labelledby="lbName">
-  <div class="bar">
+<div id="lb" role="dialog" aria-modal="true" aria-label="Media viewer">
+  <div class="bar" id="lbBar">
     <span class="name" id="lbName"></span>
     <span id="lbMeta"></span>
     <span class="grow"></span>
     <label class="toggle"><input type="checkbox" id="lbSide" checked> compare both</label>
     <button id="lbClose">close ✕</button>
   </div>
-  <div class="stage" id="lbStage"></div>
+  <div class="stage" id="lbStage" role="group" tabindex="0"
+       aria-keyshortcuts="H Enter Space"
+       aria-label="Media area. Controls visible. Press H, Enter, or Space to hide controls. Use Left and Right Arrow to navigate."></div>
   <div class="utility" id="lbUtility">
     <div class="hint" id="lbHint">
-      Swipe or tap edges to move · pinch to zoom · S toggles comparison · Esc closes
+      Tap center or press H to hide controls · swipe or tap edges to move · pinch to zoom · Esc closes
     </div>
     <button type="button" class="prompt-toggle" id="lbPromptToggle"
             aria-controls="lbPromptBody" aria-expanded="false">prompt</button>
@@ -212,6 +216,7 @@
        aria-labelledby="lbPromptToggle" tabindex="-1">
     <div class="prompt-body" id="lbPromptBody" aria-live="polite"></div>
   </div>
+  <div class="sr-only" id="lbHudStatus" aria-live="polite"></div>
 </div>
 
 <script>
@@ -616,9 +621,58 @@ function updatePromptNodes(label, text) {
 }
 
 function setPromptExpanded(expanded) {
+  expanded = expanded && !$("lb").classList.contains("hud-hidden");
   $("lbPrompt").classList.toggle("expanded", expanded);
   $("lbPrompt").tabIndex = expanded ? 0 : -1;
   $("lbPromptToggle").setAttribute("aria-expanded", String(expanded));
+}
+
+function setHudElementHidden(element, hidden) {
+  element.hidden = hidden;
+  element.inert = hidden;
+}
+
+function setLightboxHudVisible(visible, { announce = true, moveFocus = true } = {}) {
+  const lb = $("lb");
+  const stage = $("lbStage");
+  const chrome = [$("lbBar"), $("lbUtility"), $("lbPrompt")];
+  const focusWasInChrome = chrome.some(element =>
+    element.contains(document.activeElement));
+  if (!visible) setPromptExpanded(false);
+  for (const element of chrome) {
+    setHudElementHidden(element, !visible);
+  }
+  for (const caption of stage.querySelectorAll("figcaption")) {
+    caption.hidden = !visible;
+  }
+  lb.classList.toggle("hud-hidden", !visible);
+  stage.setAttribute(
+    "aria-label",
+    visible
+      ? "Media area. Controls visible. Press H, Enter, or Space to hide controls. Use Left and Right Arrow to navigate."
+      : "Media area. Controls hidden. Press H, Enter, or Space to show controls. Use Left and Right Arrow to navigate.",
+  );
+  if (announce) {
+    $("lbHudStatus").textContent = visible
+      ? "Lightbox controls shown."
+      : "Lightbox controls hidden.";
+  }
+  if (!visible && moveFocus && focusWasInChrome) {
+    stage.focus({ preventScroll: true });
+  }
+  scheduleComparisonLayout();
+}
+
+function toggleLightboxHud() {
+  if ($("lbPrompt").classList.contains("expanded")) {
+    const promptHadFocus = $("lbPrompt").contains(document.activeElement);
+    setPromptExpanded(false);
+    if (promptHadFocus) {
+      $("lbPromptToggle").focus({ preventScroll: true });
+    }
+    return;
+  }
+  setLightboxHudVisible($("lb").classList.contains("hud-hidden"));
 }
 
 function renderPrompt(useVideo, metadata) {
@@ -766,8 +820,12 @@ function openLb(idx) {
   cur = idx;
   const it = VIEW[cur];
   const opening = !$("lb").classList.contains("open");
+  const stage = $("lbStage");
+  const mediaHadFocus = !opening && stage.contains(document.activeElement);
+  const hudVisible = opening || !$("lb").classList.contains("hud-hidden");
   $("lbName").textContent = it.path;
   $("lbName").title = it.path;
+  $("lb").setAttribute("aria-label", `Viewing ${it.path}`);
   const useVideo = $("videoMode").checked && it.video_url;
   // The reimagined cell is a looping video in video mode (when one exists),
   // else the static render.
@@ -781,7 +839,6 @@ function openLb(idx) {
             alt="Reimagined ${escapeHtml(it.path)}">`;
   const outLabel = useVideo ? "reimagined (video)" : "reimagined";
   const compare = $("lbSide").checked && !!it.input_url;
-  const stage = $("lbStage");
   stage.innerHTML = compare
     ? `<figure><figcaption>reference</figcaption>
          <img src="${it.input_url}" data-comparison-role="reference"
@@ -804,6 +861,13 @@ function openLb(idx) {
   prompt.classList.remove("empty");
   prompt.setAttribute("aria-busy", "true");
   updatePromptNodes("prompt", "Loading prompt…");
+  setLightboxHudVisible(hudVisible, {
+    announce: false,
+    moveFocus: false,
+  });
+  if (mediaHadFocus && !stage.contains(document.activeElement)) {
+    stage.focus({ preventScroll: true });
+  }
   loadPrompt(it, useVideo);
   if (opening) {
     pageScrollY = window.scrollY;
@@ -894,7 +958,7 @@ $("lbPromptToggle").addEventListener("click", () => {
   setPromptExpanded(!$("lbPrompt").classList.contains("expanded"));
 });
 
-const EDGE_RATIO = 0.2;
+const EDGE_RATIO = 0.25;
 const TAP_SLOP = 14;
 const isNavChrome = (el) => el.closest(
   ".bar, .utility, .prompt, button, input, label, video, a, select"
@@ -924,8 +988,9 @@ $("lb").addEventListener("pointerup", (e) => {
   if (Math.hypot(e.clientX - start.x, e.clientY - start.y) > TAP_SLOP) return;
   const { x, w } = visualPoint(e.clientX, e.clientY);
   const band = w * EDGE_RATIO;
-  if (x <= band) step(-1);
+  if (x < band) step(-1);
   else if (x >= w - band) step(1);
+  else toggleLightboxHud();
 });
 $("lb").addEventListener("pointercancel", () => { edgeTap = null; });
 
@@ -957,10 +1022,21 @@ $("lbStage").addEventListener("touchend", (e) => {
 $("lbStage").addEventListener("touchcancel", () => { swipeStart = null; });
 document.addEventListener("keydown", (e) => {
   if (!$("lb").classList.contains("open")) return;
-  if (e.key === "Tab") {
+  if (e.key === "Escape") {
+    e.preventDefault();
+    closeLb();
+  } else if (!e.repeat && (e.key === "h" || e.key === "H")) {
+    e.preventDefault();
+    toggleLightboxHud();
+  } else if (!e.repeat && document.activeElement === $("lbStage")
+             && (e.key === "Enter" || e.key === " ")) {
+    e.preventDefault();
+    toggleLightboxHud();
+  } else if (e.key === "Tab") {
     const focusable = [...$("lb").querySelectorAll(
       'button:not([disabled]), input:not([disabled]), video[controls], [tabindex]:not([tabindex="-1"])'
-    )];
+    )].filter(element =>
+      !element.closest("[hidden], [inert]") && element.getClientRects().length);
     const first = focusable[0], last = focusable[focusable.length - 1];
     if (e.shiftKey && (document.activeElement === first
                        || !$("lb").contains(document.activeElement))) {
@@ -970,8 +1046,7 @@ document.addEventListener("keydown", (e) => {
       e.preventDefault();
       first.focus();
     }
-  } else if (e.key === "Escape") closeLb();
-  else if (e.key === "ArrowRight") step(1);
+  } else if (e.key === "ArrowRight") step(1);
   else if (e.key === "ArrowLeft") step(-1);
   else if (e.key === "s" || e.key === "S") { $("lbSide").checked = !$("lbSide").checked; openLb(cur); }
 });

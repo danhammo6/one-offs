@@ -183,6 +183,43 @@ function assertImagePairMeetsAtCenter(geometry, label) {
   return geometry.stage.gap;
 }
 
+async function lightboxHudGeometry(page) {
+  await page.evaluate(() => new Promise(resolve =>
+    requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  return page.evaluate(() => {
+    const bounds = selector =>
+      document.querySelector(selector).getBoundingClientRect();
+    const state = selector => {
+      const element = document.querySelector(selector);
+      return {
+        hidden: element.hidden,
+        inert: element.inert,
+        height: element.getBoundingClientRect().height,
+      };
+    };
+    const stage = bounds("#lbStage");
+    return {
+      visible: !document.querySelector("#lb").classList.contains("hud-hidden"),
+      dialogName: document.querySelector("#lb").getAttribute("aria-label"),
+      stageLabel: document.querySelector("#lbStage").getAttribute("aria-label"),
+      stageShortcuts: document.querySelector("#lbStage")
+        .getAttribute("aria-keyshortcuts"),
+      activeId: document.activeElement?.id,
+      stage: {
+        height: stage.height,
+      },
+      bar: state("#lbBar"),
+      utility: state("#lbUtility"),
+      prompt: state("#lbPrompt"),
+      captionsHidden: [...document.querySelectorAll("#lbStage figcaption")]
+        .every(caption => caption.hidden),
+    };
+  });
+}
+
+const comparisonMediaArea = geometry => geometry.media.reduce(
+  (area, media) => area + media.width * media.height, 0);
+
 const BROWSERS = [
   {
     name: "Chromium",
@@ -464,12 +501,91 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
       / lightboxGeometry.viewportHeight >= 0.84,
     "collapsed overlay prompt preserves desktop stage height");
     assert.equal(lightboxGeometry.promptExpanded, false);
-    await page.mouse.click(2, 400);
+    const desktopHudVisible = await lightboxHudGeometry(page);
+    const desktopVisibleMedia = await comparisonGeometry(page, "stacked");
+    assert.equal(desktopHudVisible.visible, true);
+    assert.equal(desktopHudVisible.dialogName,
+      "Viewing alpha/a-deliberately-long-gallery-filename-for-truncation-item-0000.jpg");
+    assert.equal(desktopHudVisible.stageShortcuts, "H Enter Space");
+    const desktopQuarter = lightboxGeometry.viewportWidth * 0.25;
+    const desktopCenterY = lightboxGeometry.viewportHeight * 0.5;
+
+    await page.mouse.click(desktopQuarter - 1, desktopCenterY);
     assert.equal(await page.locator("#lb").evaluate(
       lightbox => lightbox.classList.contains("open")), true,
     "side-edge navigation does not dismiss the lightbox");
     assert.equal(await page.locator("#lbName").textContent(),
       "beta/item-3999.jpg", "desktop side-edge navigation wraps backward");
+    await page.mouse.click(desktopQuarter, desktopCenterY);
+    const desktopHudHidden = await lightboxHudGeometry(page);
+    const desktopHiddenMedia = await comparisonGeometry(page, "stacked");
+    assert.equal(desktopHudHidden.visible, false,
+      "the exact 25% boundary belongs to the center HUD zone");
+    assert.equal(desktopHudHidden.bar.hidden && desktopHudHidden.bar.inert, true);
+    assert.equal(
+      desktopHudHidden.utility.hidden && desktopHudHidden.utility.inert, true);
+    assert.equal(
+      desktopHudHidden.prompt.hidden && desktopHudHidden.prompt.inert, true);
+    assert.equal(desktopHudHidden.captionsHidden, true);
+    assert.equal(desktopHudHidden.bar.height, 0);
+    assert.equal(desktopHudHidden.utility.height, 0);
+    assert.ok(desktopHudHidden.stage.height > desktopHudVisible.stage.height + 90,
+      "hidden desktop HUD reclaims chrome and label space");
+    assert.ok(comparisonMediaArea(desktopHiddenMedia)
+      > comparisonMediaArea(desktopVisibleMedia),
+    "hidden desktop HUD materially enlarges media");
+    assert.ok(desktopHudHidden.stageLabel.includes("Controls hidden"));
+    assert.equal(desktopHudHidden.dialogName, "Viewing beta/item-3999.jpg",
+      "the dialog keeps an accessible name while filename chrome is hidden");
+
+    await page.keyboard.press("ArrowRight");
+    assert.equal(await page.locator("#lbName").textContent(),
+      "alpha/a-deliberately-long-gallery-filename-for-truncation-item-0000.jpg");
+    assert.equal((await lightboxHudGeometry(page)).visible, false,
+      "keyboard navigation preserves hidden HUD state");
+    await page.mouse.click(desktopQuarter * 3 - 1, desktopCenterY);
+    assert.equal((await lightboxHudGeometry(page)).visible, true,
+      "the center zone extends through the pixel before 75%");
+    await page.mouse.click(desktopQuarter * 3, desktopCenterY);
+    assert.equal(await page.locator("#lbName").textContent(),
+      "alpha/item-0001.jpg",
+    "the exact 75% boundary belongs to next navigation");
+    assert.equal((await lightboxHudGeometry(page)).visible, true,
+      "edge navigation does not toggle the HUD");
+
+    await page.mouse.move(600, 400);
+    await page.mouse.down();
+    await page.mouse.move(640, 440, { steps: 4 });
+    await page.mouse.up();
+    assert.equal(await page.locator("#lbName").textContent(), "alpha/item-0001.jpg");
+    assert.equal((await lightboxHudGeometry(page)).visible, true,
+      "mouse drag is not treated as a center tap");
+
+    await page.locator("#lbClose").focus();
+    await page.keyboard.press("h");
+    assert.equal((await lightboxHudGeometry(page)).activeId, "lbStage",
+      "hiding focused chrome moves focus to the stable media stage");
+    await page.keyboard.press("Tab");
+    assert.equal((await lightboxHudGeometry(page)).activeId, "lbStage",
+      "hidden chrome is absent from keyboard focus order");
+    await page.keyboard.press("Enter");
+    assert.equal((await lightboxHudGeometry(page)).visible, true,
+      "Enter toggles the HUD from the focused media stage");
+    await page.keyboard.press("Space");
+    assert.equal((await lightboxHudGeometry(page)).visible, false,
+      "Space also toggles the HUD from the focused media stage");
+    await page.keyboard.press("H");
+    assert.equal((await lightboxHudGeometry(page)).visible, true);
+
+    await page.mouse.click(desktopQuarter * 2, desktopCenterY);
+    assert.equal((await lightboxHudGeometry(page)).visible, false);
+    await page.keyboard.press("Escape");
+    assert.equal(await page.locator("#lb").evaluate(
+      lightbox => lightbox.classList.contains("open")), false,
+    "Escape closes while the HUD is hidden");
+    await edgeCard.click();
+    assert.equal((await lightboxHudGeometry(page)).visible, true,
+      "a new lightbox session resets the HUD visible");
     await page.locator("#lbClose").click();
     assert.equal(await page.locator("#lb").evaluate(
       lightbox => lightbox.classList.contains("open")), false,
@@ -669,14 +785,28 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
       await lightboxVideo.getAttribute("aria-label"),
       "Reimagined video beta/item-2001.jpg",
     );
+    await lightboxVideo.click({ position: { x: 20, y: 20 } });
+    assert.equal((await lightboxHudGeometry(page)).visible, true,
+      "video interactions do not trigger HUD hit zones");
+    await page.keyboard.press("h");
+    assert.equal((await lightboxHudGeometry(page)).visible, false);
+    assert.equal(await lightboxVideo.getAttribute("controls"), "",
+      "video controls remain available when HUD chrome is hidden");
     await page.keyboard.press("ArrowLeft");
     await page.waitForFunction(
       () => document.querySelector("#lbName")?.textContent
         === "beta/item-2000.jpg"
         && document.querySelector("#lbStage video") === null,
     );
+    assert.deepEqual(await page.locator("#lbStage").evaluate(stage => ({
+      hidden: document.querySelector("#lb").classList.contains("hud-hidden"),
+      focused: document.activeElement === stage,
+    })), { hidden: true, focused: true },
+    "hidden HUD and stable media focus survive video navigation");
     await page.keyboard.press("ArrowRight");
     await lightboxVideo.waitFor();
+    assert.equal((await lightboxHudGeometry(page)).visible, false);
+    await page.keyboard.press("h");
     await page.keyboard.press("Escape");
     assert.equal(await secondCard.evaluate(
       element => element === document.activeElement), true);
@@ -753,6 +883,10 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
     assert.equal(compactChrome.titleWhiteSpace, "nowrap");
     assert.equal(compactChrome.titleOverflow, "hidden");
     await page.locator("#lbClose").press("Tab");
+    assert.equal(await page.locator("#lbStage").evaluate(
+      element => element === document.activeElement), true,
+    "the keyboard-discoverable media stage follows header controls");
+    await page.locator("#lbStage").press("Tab");
     assert.equal(await promptButton.evaluate(
       element => element === document.activeElement), true);
     await promptButton.press("Enter");
@@ -782,6 +916,37 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
     "expanded prompt overlays rather than shrinking the media stage");
     assert.ok(expandedPrompt.promptBottom <= expandedPrompt.utilityTop,
       "expanded prompt does not overlap its utility-row control");
+    const promptItemName = await page.locator("#lbName").textContent();
+    const compactViewport = page.viewportSize();
+    const compactCenter = {
+      x: compactViewport.width * 0.5,
+      y: compactViewport.height * 0.25,
+    };
+    await page.locator("#lbPromptBody").click();
+    assert.equal(await promptButton.getAttribute("aria-expanded"), "true",
+      "pointer interaction inside prompt content does not toggle HUD or prompt");
+    assert.equal((await lightboxHudGeometry(page)).visible, true);
+    assert.equal(await page.locator("#lbName").textContent(), promptItemName);
+    await page.mouse.click(compactCenter.x, compactCenter.y);
+    assert.equal(await promptButton.getAttribute("aria-expanded"), "false",
+      "first center tap closes the prompt");
+    assert.equal((await lightboxHudGeometry(page)).visible, true,
+      "closing the prompt leaves the HUD visible");
+    await page.mouse.click(compactCenter.x, compactCenter.y);
+    const portraitHudHidden = await lightboxHudGeometry(page);
+    assert.equal(portraitHudHidden.visible, false,
+      "second center tap hides the HUD");
+    assert.ok(portraitHudHidden.stage.height > compactChrome.stageHeight + 90,
+      "hidden portrait HUD reclaims chrome space");
+    await page.mouse.click(compactCenter.x, compactCenter.y);
+    assert.equal((await lightboxHudGeometry(page)).visible, true);
+    await page.locator("#lbHint").click();
+    assert.equal((await lightboxHudGeometry(page)).visible, true,
+      "navigation hint chrome does not trigger the center zone");
+    assert.equal(await page.locator("#lbName").textContent(), promptItemName);
+    await promptButton.focus();
+    await promptButton.press("Enter");
+    assert.equal(await promptButton.getAttribute("aria-expanded"), "true");
     await page.setViewportSize({ width: 1000, height: 600 });
     assert.equal(await promptButton.evaluate(
       element => element === document.activeElement), true);
@@ -807,6 +972,7 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
       "delayed metadata request did not start",
     );
     await page.locator("#lbClose").press("Tab");
+    await page.locator("#lbStage").press("Tab");
     assert.equal(await promptButton.evaluate(
       element => element === document.activeElement), true);
     await page.evaluate(() => {
@@ -887,12 +1053,66 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
     assert.equal(phoneGeometry.titleAttribute, phoneGeometry.title);
     assert.ok(phoneGeometry.titleScrollWidth > phoneGeometry.titleClientWidth,
       "long phone filename is visually truncated with full title available");
-    await touchPage.touchscreen.tap(2, 422);
+    const phoneCenter = {
+      x: phoneGeometry.viewportWidth * 0.5,
+      y: phoneGeometry.viewportHeight * 0.5,
+    };
+    const phoneQuarter = phoneGeometry.viewportWidth * 0.25;
+    const phonePortraitHudVisible = await lightboxHudGeometry(touchPage);
+    const phonePortraitMediaVisible = await comparisonGeometry(
+      touchPage, "stacked");
+    await touchPage.touchscreen.tap(phoneCenter.x, phoneCenter.y);
+    const phonePortraitHudHidden = await lightboxHudGeometry(touchPage);
+    const phonePortraitMediaHidden = await comparisonGeometry(
+      touchPage, "stacked");
+    assert.equal(phonePortraitHudHidden.visible, false);
+    assert.ok(phonePortraitHudHidden.stage.height
+      > phonePortraitHudVisible.stage.height + 90,
+    "hidden iPhone portrait HUD reclaims chrome space");
+    assert.ok(comparisonMediaArea(phonePortraitMediaHidden)
+      >= comparisonMediaArea(phonePortraitMediaVisible) - 1,
+    "hidden iPhone portrait HUD never reduces media");
+
+    await touchPage.evaluate(({ x, y }) => {
+      const stage = document.querySelector("#lbStage");
+      const dispatch = (type, clientX, clientY, buttons) => stage.dispatchEvent(
+        new PointerEvent(type, {
+          bubbles: true,
+          button: 0,
+          buttons,
+          clientX,
+          clientY,
+          isPrimary: true,
+          pointerId: 77,
+          pointerType: "touch",
+        }),
+      );
+      dispatch("pointerdown", x, y, 1);
+      dispatch("pointermove", x + 30, y + 40, 1);
+      dispatch("pointerup", x + 30, y + 40, 0);
+    }, phoneCenter);
+    assert.equal((await lightboxHudGeometry(touchPage)).visible, false,
+      "touch drag beyond tap slop does not toggle the HUD");
+    assert.equal(await touchPage.locator("#lbName").textContent(),
+      "alpha/a-deliberately-long-gallery-filename-for-truncation-item-0000.jpg");
+
+    await touchPage.touchscreen.tap(Math.floor(phoneQuarter), phoneCenter.y);
     assert.equal(await touchPage.locator("#lb").evaluate(
       lightbox => lightbox.classList.contains("open")), true,
     "touching a phone side-edge does not dismiss the lightbox");
     assert.equal(await touchPage.locator("#lbName").textContent(),
       "beta/item-3999.jpg", "touch side-edge navigation wraps backward");
+    assert.equal((await lightboxHudGeometry(touchPage)).visible, false,
+      "touch edge navigation preserves hidden HUD state");
+    await touchPage.touchscreen.tap(Math.ceil(phoneQuarter), phoneCenter.y);
+    assert.equal((await lightboxHudGeometry(touchPage)).visible, true,
+      "the first integer pixel inside the phone center band toggles HUD");
+    await touchPage.touchscreen.tap(
+      Math.ceil(phoneQuarter * 3), phoneCenter.y);
+    assert.equal(await touchPage.locator("#lbName").textContent(),
+      "alpha/a-deliberately-long-gallery-filename-for-truncation-item-0000.jpg",
+    "the first integer pixel in the right 25% navigates");
+    assert.equal((await lightboxHudGeometry(touchPage)).visible, true);
 
     await touchPage.setViewportSize({ width: 844, height: 390 });
     const phoneLandscape = await comparisonGeometry(
@@ -926,6 +1146,24 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
     assert.ok(compactLandscape.stageBottom <= compactLandscape.utilityTop);
     assert.ok(compactLandscape.toggleWidth >= 44
       && compactLandscape.toggleHeight >= 44);
+    const landscapeViewport = touchPage.viewportSize();
+    const landscapeCenter = {
+      x: landscapeViewport.width * 0.5,
+      y: landscapeViewport.height * 0.5,
+    };
+    await touchPage.touchscreen.tap(landscapeCenter.x, landscapeCenter.y);
+    const phoneLandscapeHudHidden = await lightboxHudGeometry(touchPage);
+    const phoneLandscapeMediaHidden = await comparisonGeometry(
+      touchPage, "side-by-side");
+    assert.equal(phoneLandscapeHudHidden.visible, false);
+    assert.ok(phoneLandscapeHudHidden.stage.height
+      > compactLandscape.stageHeight + 90,
+    "hidden iPhone landscape HUD immediately gives space to media");
+    assert.ok(comparisonMediaArea(phoneLandscapeMediaHidden)
+      >= comparisonMediaArea(phoneLandscape) - 1,
+    "hidden HUD never reduces short-wide media");
+    await touchPage.touchscreen.tap(landscapeCenter.x, landscapeCenter.y);
+    assert.equal((await lightboxHudGeometry(touchPage)).visible, true);
     await touchPage.setViewportSize({ width: 844, height: 420 });
     assert.equal(await touchPage.locator("#lbStage").getAttribute(
       "data-comparison-layout"), "side-by-side",
@@ -956,6 +1194,19 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
     const phoneLandscapePortraitGap = assertImagePairMeetsAtCenter(
       phonePortraitLandscape, "portrait media in iPhone landscape",
     );
+    const phonePortraitLandscapeHudVisible =
+      await lightboxHudGeometry(touchPage);
+    await touchPage.touchscreen.tap(landscapeCenter.x, landscapeCenter.y);
+    const phonePortraitLandscapeHudHidden =
+      await lightboxHudGeometry(touchPage);
+    const phonePortraitLandscapeMediaHidden = await comparisonGeometry(
+      touchPage, "side-by-side");
+    assert.ok(phonePortraitLandscapeHudHidden.stage.height
+      > phonePortraitLandscapeHudVisible.stage.height + 90);
+    assert.ok(comparisonMediaArea(phonePortraitLandscapeMediaHidden)
+      > comparisonMediaArea(phonePortraitLandscape),
+    "hidden iPhone landscape HUD enlarges portrait media");
+    await touchPage.touchscreen.tap(landscapeCenter.x, landscapeCenter.y);
     await touchPage.setViewportSize({ width: 390, height: 844 });
     await touchPage.locator("#lbClose").click();
 
@@ -980,6 +1231,12 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
     assert.ok(phonePortraitGap < iPadPortraitGap
       && iPadPortraitGap < desktopPortraitGap,
     "comparison gutter responds to viewport width");
+    const iPadHudVisible = await lightboxHudGeometry(touchPage);
+    await touchPage.keyboard.press("h");
+    const iPadHudHidden = await lightboxHudGeometry(touchPage);
+    assert.ok(iPadHudHidden.stage.height > iPadHudVisible.stage.height + 90,
+      "iPad HUD hiding reclaims chrome space");
+    await touchPage.keyboard.press("h");
     await touchPage.locator("#lbClose").click();
     await touchContext.close();
 
@@ -995,7 +1252,22 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
       + `phonePortrait:${phonePortraitGap.toFixed(1)},`
       + `phoneLandscape:${phoneLandscapePortraitGap.toFixed(1)},`
       + `shortWide:${shortWideGap.toFixed(1)},`
-      + `iPad:${iPadPortraitGap.toFixed(1)}}, logical=4000`,
+      + `iPad:${iPadPortraitGap.toFixed(1)}}, `
+      + `hudStage={desktop:${desktopHudVisible.stage.height.toFixed(0)}->`
+      + `${desktopHudHidden.stage.height.toFixed(0)},`
+      + `phonePortrait:${phonePortraitHudVisible.stage.height.toFixed(0)}->`
+      + `${phonePortraitHudHidden.stage.height.toFixed(0)},`
+      + `phoneLandscape:${phonePortraitLandscapeHudVisible.stage.height.toFixed(0)}->`
+      + `${phonePortraitLandscapeHudHidden.stage.height.toFixed(0)},`
+      + `iPad:${iPadHudVisible.stage.height.toFixed(0)}->`
+      + `${iPadHudHidden.stage.height.toFixed(0)}}, `
+      + `mediaArea={desktop:${comparisonMediaArea(desktopVisibleMedia).toFixed(0)}->`
+      + `${comparisonMediaArea(desktopHiddenMedia).toFixed(0)},`
+      + `phonePortrait:${comparisonMediaArea(phonePortraitMediaVisible).toFixed(0)}->`
+      + `${comparisonMediaArea(phonePortraitMediaHidden).toFixed(0)},`
+      + `phoneLandscapePortrait:${comparisonMediaArea(phonePortraitLandscape).toFixed(0)}->`
+      + `${comparisonMediaArea(phonePortraitLandscapeMediaHidden).toFixed(0)}}, `
+      + "logical=4000",
     );
   } finally {
     releaseInitialStream?.();

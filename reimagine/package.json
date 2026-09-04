@@ -1,0 +1,10 @@
+{
+  "name": "reimagine-gallery-tests",
+  "private": true,
+  "scripts": {
+    "test:frontend": "node --test test_gallery_frontend.mjs"
+  },
+  "devDependencies": {
+    "playwright-core": "1.62.1"
+  }
+}

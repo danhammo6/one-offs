@@ -1,9 +1,17 @@
 import hashlib
+import io
 import os
+import stat
 import tempfile
+from functools import lru_cache
 from pathlib import Path
 
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".gif", ".tiff"}
+THUMBNAIL_CACHE_DIR = ".thumbnails"
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_THUMBNAIL_CACHE_ROOT = PROJECT_ROOT / THUMBNAIL_CACHE_DIR
+THUMBNAIL_MAX_EDGE = 512
+THUMBNAIL_QUALITY = 80
 TARGET_PIXELS = 1920 * 1080
 MAX_EDGE = 2048
 COMMON_DIMS = {
@@ -45,6 +53,144 @@ def atomic_write_bytes(path, data):
             temporary.unlink(missing_ok=True)
             raise
     temporary.replace(path)
+
+
+def _thumbnail_media_root_key(media_root):
+    media_root = Path(media_root).resolve()
+    label = "".join(
+        char if char.isascii() and (char.isalnum() or char in "-_") else "-"
+        for char in media_root.name
+    ).strip("-_")[:48] or "media"
+    canonical = os.path.normcase(str(media_root)).encode(
+        errors="surrogateescape")
+    return f"{label}-{hashlib.sha256(canonical).hexdigest()[:16]}"
+
+
+def thumbnail_cache_path(
+        cache_root, media_root, relative, namespace="output",
+        fingerprint=None):
+    relative = Path(relative)
+    if (relative.is_absolute() or ".." in relative.parts
+            or relative.suffix.lower() not in IMAGE_EXTS):
+        raise ValueError(f"unsafe thumbnail path: {relative}")
+    if namespace not in {"input", "output"}:
+        raise ValueError(f"unsafe thumbnail namespace: {namespace}")
+    if (not isinstance(fingerprint, str) or len(fingerprint) != 24
+            or any(char not in "0123456789abcdef" for char in fingerprint)):
+        raise ValueError(f"unsafe thumbnail fingerprint: {fingerprint}")
+    cache_root = Path(cache_root)
+    if cache_root.is_symlink():
+        raise ValueError(f"unsafe thumbnail cache root: {cache_root}")
+    cache_root = cache_root.resolve()
+    destination = (cache_root / namespace
+                   / _thumbnail_media_root_key(media_root)
+                   / relative.parent
+                   / f"{relative.name}.{fingerprint}.webp")
+    parent = destination.parent
+    while parent != cache_root:
+        if parent.is_symlink():
+            raise ValueError(f"unsafe thumbnail cache directory: {parent}")
+        parent = parent.parent
+    return destination
+
+
+def _source_snapshot(source, relative):
+    source = Path(source)
+    relative = Path(relative)
+    if relative.is_absolute() or ".." in relative.parts:
+        return None
+    try:
+        source_stat = source.lstat()
+    except OSError:
+        return None
+    if not stat.S_ISREG(source_stat.st_mode):
+        return None
+    fields = (
+        relative.as_posix(),
+        source_stat.st_size,
+        getattr(
+            source_stat, "st_mtime_ns",
+            int(source_stat.st_mtime * 1_000_000_000)),
+        getattr(
+            source_stat, "st_ctime_ns",
+            int(source_stat.st_ctime * 1_000_000_000)),
+        getattr(source_stat, "st_dev", 0),
+        getattr(source_stat, "st_ino", 0),
+    )
+    encoded = "\0".join(str(field) for field in fields).encode()
+    return hashlib.sha256(encoded).hexdigest()[:24]
+
+
+def thumbnail_source_fingerprint(source, relative):
+    """Return a cheap source identity suitable for cache validation and URLs."""
+    return _source_snapshot(source, relative)
+
+
+@lru_cache(maxsize=16384)
+def _cached_thumbnail_is_readable(path_string, mtime_ns, size, inode):
+    from PIL import Image
+
+    try:
+        with Image.open(path_string) as image:
+            image.verify()
+        return True
+    except (OSError, ValueError):
+        return False
+
+
+def _thumbnail_bytes(source, max_edge):
+    from PIL import Image, ImageOps
+
+    with Image.open(source) as raw:
+        image = ImageOps.exif_transpose(raw)
+        image.thumbnail((max_edge, max_edge), Image.Resampling.LANCZOS)
+        if image.mode in {"RGBA", "LA", "P"}:
+            image = image.convert("RGBA")
+            background = Image.new("RGB", image.size, (255, 255, 255))
+            background.paste(image, mask=image.getchannel("A"))
+            image = background
+        elif image.mode != "RGB":
+            image = image.convert("RGB")
+        output = io.BytesIO()
+        image.save(
+            output, format="WEBP", quality=THUMBNAIL_QUALITY, method=6)
+    return output.getvalue()
+
+
+def ensure_thumbnail(source, destination, relative=None,
+                     max_edge=THUMBNAIL_MAX_EDGE, fingerprint=None):
+    """Return an immutable versioned thumbnail, generating it atomically."""
+    source = Path(source)
+    destination = Path(destination)
+    relative = Path(relative) if relative is not None else Path(source.name)
+    current_fingerprint = _source_snapshot(source, relative)
+    fingerprint = fingerprint or current_fingerprint
+    if current_fingerprint is None or fingerprint != current_fingerprint:
+        return None
+    try:
+        cached_stat = destination.lstat()
+        if (stat.S_ISREG(cached_stat.st_mode)
+                and cached_stat.st_size
+                and _cached_thumbnail_is_readable(
+                    str(destination), cached_stat.st_mtime_ns,
+                    cached_stat.st_size, cached_stat.st_ino)):
+            return destination
+    except OSError:
+        pass
+
+    try:
+        thumbnail = _thumbnail_bytes(source, max_edge)
+    except (OSError, ValueError):
+        return None
+    if _source_snapshot(source, relative) != fingerprint:
+        return None
+    try:
+        atomic_write_bytes(destination, thumbnail)
+    except OSError:
+        return None
+    if _source_snapshot(source, relative) != fingerprint:
+        return None
+    return destination
 
 
 def sha256_file(path):

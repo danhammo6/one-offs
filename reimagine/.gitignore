@@ -5,6 +5,12 @@ __pycache__/
 *.pyo
 *.pyd
 
+# Frontend tests
+node_modules/
+
+# Server-specific derived media
+.thumbnails/
+
 # macOS
 .DS_Store
 

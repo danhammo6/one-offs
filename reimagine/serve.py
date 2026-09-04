@@ -35,6 +35,10 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 from reimagine_pipeline import PIPELINE_FILENAME
+from reimagine_pipeline.files import (
+    DEFAULT_THUMBNAIL_CACHE_ROOT, IMAGE_EXTS, ensure_thumbnail,
+    thumbnail_cache_path, thumbnail_source_fingerprint,
+)
 from reimagine_pipeline.manifest import (
     load_pipeline_document, pipeline_paths,
 )
@@ -49,7 +53,6 @@ class HelpFormatter(
     pass
 
 ROOT = Path(__file__).parent.resolve()
-IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".gif", ".tiff"}
 # Video extensions render_media.py may write next to a still (same stem). Ordered by
 # preference when several exist for one still.
 VIDEO_EXTS = (".mp4", ".webm", ".mkv")
@@ -184,17 +187,30 @@ def find_sibling_video(still_path):
 def iter_images(output_dir):
     """Yield image paths in stable order without materializing the whole tree."""
     for dir_path, dir_names, file_names in os.walk(output_dir):
-        dir_names.sort()
+        dir_names[:] = sorted(
+            name for name in dir_names if not name.startswith("."))
         for name in sorted(file_names):
             path = Path(dir_path) / name
             if path.suffix.lower() in IMAGE_EXTS:
                 yield path
 
 
+def versioned_media_url(url, path, relative):
+    fingerprint = thumbnail_source_fingerprint(path, relative)
+    return f"{url}?v={fingerprint}" if fingerprint else url
+
+
+def media_url(route, source_name, relative):
+    return (
+        f"/img/{route}/{urllib.parse.quote(source_name)}/"
+        f"{urllib.parse.quote(Path(relative).as_posix())}"
+    )
+
+
 def iter_pairs(source_name, output_dir, on_reference=None,
                pipeline_metadata=None):
     """Yield gallery records as output images are discovered."""
-    input_dir, metadata = (
+    input_dir, _ = (
         pipeline_metadata
         if pipeline_metadata is not None
         else load_pipeline_metadata(output_dir)
@@ -207,21 +223,25 @@ def iter_pairs(source_name, output_dir, on_reference=None,
                 on_reference(input_dir, ref)
             parts = rel.parts
             category = parts[0] if len(parts) > 1 else "(root)"
-            src_q = urllib.parse.quote(source_name)
             vid = find_sibling_video(p)
             vid_rel = vid.relative_to(output_dir).as_posix() if vid else None
-            prompts = metadata.get(rel.as_posix(), {})
+            output_url = media_url("output", source_name, rel)
+            input_url = media_url("input", source_name, ref) if ref else None
             yield {
                 "name": rel.name,
                 "path": rel.as_posix(),
                 "category": category,
-                "output_url": f"/img/output/{src_q}/" + urllib.parse.quote(rel.as_posix()),
-                "input_url": (f"/img/input/{src_q}/" + urllib.parse.quote(ref))
-                             if ref else None,
-                "video_url": (f"/img/output/{src_q}/" + urllib.parse.quote(vid_rel))
-                             if vid_rel else None,
-                "prompt": prompts.get("prompt"),
-                "video_prompt": prompts.get("video_prompt") if vid else None,
+                "output_url": output_url,
+                "output_thumbnail_url": versioned_media_url(
+                    media_url("thumbnail/output", source_name, rel), p, rel),
+                "input_url": input_url,
+                "input_thumbnail_url": versioned_media_url(
+                    media_url("thumbnail/input", source_name, ref),
+                    input_dir / ref, ref)
+                    if input_dir and ref else None,
+                "video_url": (
+                    media_url("output", source_name, vid_rel)
+                    if vid_rel else None),
             }
 
 
@@ -265,6 +285,8 @@ class Handler(BaseHTTPRequestHandler):
     input_dirs = {}
     allowed_references = {}
     gallery_lock = threading.Lock()
+    thumbnail_locks = tuple(threading.Lock() for _ in range(32))
+    thumbnail_cache_root = DEFAULT_THUMBNAIL_CACHE_ROOT
 
     def log_message(self, *_):  # keep the console quiet
         pass
@@ -337,6 +359,57 @@ class Handler(BaseHTTPRequestHandler):
         self._send(200, target.read_bytes(), ctype,
                    extra={"Cache-Control": "no-cache"})
 
+    def _send_thumbnail(self, source_base, rel_quoted, namespace,
+                        expected_fingerprint=None, allowed_paths=None,
+                        allow_linked_dirs=False):
+        rel = urllib.parse.unquote(rel_quoted)
+        source = safe_media_path(
+            source_base, rel, IMAGE_EXTS, allowed_paths, allow_linked_dirs)
+        if source is None:
+            return self._send(404, "not found")
+        fingerprint = thumbnail_source_fingerprint(source, rel)
+        if expected_fingerprint and expected_fingerprint != fingerprint:
+            return self._send(
+                409, "source changed; refresh gallery",
+                extra={"Cache-Control": "no-store"})
+        try:
+            destination = thumbnail_cache_path(
+                self.thumbnail_cache_root, source_base, rel,
+                namespace=namespace,
+                fingerprint=fingerprint)
+        except ValueError:
+            return self._send(404, "not found")
+        lock = self.thumbnail_locks[hash(destination) % len(
+            self.thumbnail_locks)]
+        with lock:
+            thumbnail = ensure_thumbnail(
+                source, destination, relative=rel,
+                fingerprint=fingerprint)
+        if thumbnail is None:
+            return self._send(404, "thumbnail unavailable")
+        if thumbnail_source_fingerprint(source, rel) != fingerprint:
+            return self._send(
+                409, "source changed; refresh gallery",
+                extra={"Cache-Control": "no-store"})
+        cache_control = (
+            "public, max-age=31536000, immutable"
+            if expected_fingerprint else "no-cache")
+        try:
+            thumbnail_bytes = thumbnail.read_bytes()
+        except OSError:
+            latest_fingerprint = thumbnail_source_fingerprint(source, rel)
+            if (expected_fingerprint
+                    and expected_fingerprint != latest_fingerprint):
+                return self._send(
+                    409, "source changed; refresh gallery",
+                    extra={"Cache-Control": "no-store"})
+            return self._send(
+                404, "thumbnail unavailable",
+                extra={"Cache-Control": "no-store"})
+        self._send(
+            200, thumbnail_bytes, "image/webp",
+            extra={"Cache-Control": cache_control})
+
     def do_GET(self):
         parsed = urllib.parse.urlparse(self.path)
         path = parsed.path
@@ -349,6 +422,20 @@ class Handler(BaseHTTPRequestHandler):
             names = list(self.sources.keys())
             return self._send_json({"sources": names,
                                     "default": names[0] if names else None})
+        if path == "/api/metadata":
+            qs = urllib.parse.parse_qs(parsed.query)
+            source = (qs.get("source") or [None])[0]
+            relative = (qs.get("path") or [None])[0]
+            if source not in self.sources or not relative:
+                return self._send(404, "metadata not found")
+            rel_path = Path(relative)
+            if rel_path.is_absolute() or ".." in rel_path.parts:
+                return self._send(404, "metadata not found")
+            metadata = self.pipeline_metadata_cache.get(
+                source, (None, {}))[1].get(rel_path.as_posix())
+            if metadata is None:
+                return self._send(404, "metadata not found")
+            return self._send_json(metadata)
         if path in {"/api/list", "/api/stream"}:
             qs = urllib.parse.parse_qs(parsed.query)
             want = (qs.get("source") or [None])[0]
@@ -388,6 +475,29 @@ class Handler(BaseHTTPRequestHandler):
             return self._send_file(
                 input_dir, rel_q, IMAGE_EXTS, allowed_paths=allowed,
                 allow_linked_dirs=True)
+        for namespace in ("output", "input"):
+            prefix = f"/img/thumbnail/{namespace}/"
+            if not path.startswith(prefix):
+                continue
+            rest = path[len(prefix):]
+            src_q, _, rel_q = rest.partition("/")
+            src = urllib.parse.unquote(src_q)
+            if src not in self.sources:
+                return self._send(404, "unknown source")
+            output_dir = self.sources[src]
+            expected_fingerprint = (
+                urllib.parse.parse_qs(parsed.query).get("v") or [None])[0]
+            if namespace == "output":
+                return self._send_thumbnail(
+                    output_dir, rel_q, "output",
+                    expected_fingerprint=expected_fingerprint)
+            input_dir, allowed = self._reference_access(src)
+            if input_dir is None:
+                return self._send(404, "reference not listed")
+            return self._send_thumbnail(
+                input_dir, rel_q, "input",
+                expected_fingerprint=expected_fingerprint,
+                allowed_paths=allowed, allow_linked_dirs=True)
         return self._send(404, "not found")
 
     do_HEAD = do_GET
@@ -407,6 +517,10 @@ def main():
     parser.add_argument("--output-dir", type=Path, default=None,
                         help="Serve a single flat output dir instead of the "
                              "outputs/ tree (labeled by its own name).")
+    parser.add_argument(
+        "--thumbnail-cache-root", type=Path,
+        default=DEFAULT_THUMBNAIL_CACHE_ROOT,
+        help="Server-specific thumbnail cache directory.")
     args = parser.parse_args()
 
     if args.output_dir is not None:
@@ -414,6 +528,7 @@ def main():
         Handler.sources = {d.name: d}
     else:
         Handler.sources = discover_sources(args.outputs_dir.resolve())
+    Handler.thumbnail_cache_root = args.thumbnail_cache_root.expanduser()
     Handler.pipeline_metadata_cache = build_pipeline_metadata_cache(
         Handler.sources)
     srv = ThreadingHTTPServer((args.host, args.port), Handler)

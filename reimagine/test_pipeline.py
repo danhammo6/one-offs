@@ -16,6 +16,7 @@ from unittest import mock
 from PIL import Image
 import yaml
 
+from reimagine_pipeline import files as pipeline_files
 from reimagine_pipeline.manifest import (
     load_pipeline, load_pipeline_tree, load_render_state_tree, save_pipeline,
     save_pipeline_folder, save_pipeline_tree, save_render_state,
@@ -23,8 +24,9 @@ from reimagine_pipeline.manifest import (
 )
 from reimagine_pipeline.models import PipelineItem, PipelineManifest, StillSpec, VideoSpec
 from reimagine_pipeline.files import (
-    COMMON_DIMS, iter_images, prepare_common_image, select_common_dims,
-    sha256_file,
+    COMMON_DIMS, DEFAULT_THUMBNAIL_CACHE_ROOT, ensure_thumbnail, iter_images,
+    prepare_common_image, select_common_dims, sha256_file,
+    thumbnail_cache_path, thumbnail_source_fingerprint,
 )
 from reimagine_pipeline.llm import (
     ClaudeCodeLLM, OpenAILLM, _cli_popen_kwargs, _kill_process_group,
@@ -37,7 +39,7 @@ from reimagine_pipeline.prompting import (
     generate_still_prompt, generate_tagged, generate_video_prompt,
     load_system_prompt, video_prompt_word_range,
 )
-from reimagine_pipeline.rendering import _read_still_output
+from reimagine_pipeline.rendering import _read_still_output, render_stills
 
 import generate_prompts
 import render_media
@@ -85,6 +87,394 @@ class PipelineManifestTests(unittest.TestCase):
         self.assertEqual(dimensions, (1664, 928))
         self.assertEqual(size, dimensions)
         self.assertGreater(center[1], center[0])
+
+    def test_thumbnail_applies_orientation_without_upscaling_and_caches(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "source.jpg"
+            relative = Path("category/source.jpg")
+            exif = Image.Exif()
+            exif[274] = 6
+            Image.new("RGB", (800, 400), "red").save(source, exif=exif)
+            fingerprint = thumbnail_source_fingerprint(source, relative)
+            destination = thumbnail_cache_path(
+                root / "cache", root / "media", relative,
+                fingerprint=fingerprint)
+
+            self.assertEqual(
+                ensure_thumbnail(
+                    source, destination, relative=relative,
+                    fingerprint=fingerprint), destination)
+            with Image.open(destination) as thumbnail:
+                self.assertEqual(thumbnail.format, "WEBP")
+                self.assertEqual(thumbnail.size, (256, 512))
+            modified = destination.stat().st_mtime_ns
+            with mock.patch(
+                    "reimagine_pipeline.files.atomic_write_bytes") as write:
+                self.assertEqual(
+                    ensure_thumbnail(
+                        source, destination, relative=relative,
+                        fingerprint=fingerprint), destination)
+            write.assert_not_called()
+            self.assertEqual(destination.stat().st_mtime_ns, modified)
+
+            small = root / "small.png"
+            small_relative = Path("category/small.png")
+            Image.new("RGB", (100, 50), "blue").save(small)
+            small_fingerprint = thumbnail_source_fingerprint(
+                small, small_relative)
+            small_thumbnail = thumbnail_cache_path(
+                root / "cache", root / "media", small_relative,
+                fingerprint=small_fingerprint)
+            ensure_thumbnail(
+                small, small_thumbnail, relative=small_relative,
+                fingerprint=small_fingerprint)
+            with Image.open(small_thumbnail) as thumbnail:
+                self.assertEqual(thumbnail.size, (100, 50))
+
+    def test_thumbnail_replaces_corrupt_cache_and_rejects_unsafe_paths(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "source.jpg"
+            relative = Path("source.jpg")
+            Image.new("RGB", (640, 480), "green").save(source)
+            fingerprint = thumbnail_source_fingerprint(source, relative)
+            destination = thumbnail_cache_path(
+                root / "cache", root / "media", relative,
+                fingerprint=fingerprint)
+            destination.parent.mkdir(parents=True)
+            destination.write_bytes(b"not an image")
+            os.utime(destination, ns=(
+                source.stat().st_mtime_ns + 1,
+                source.stat().st_mtime_ns + 1))
+
+            self.assertEqual(
+                ensure_thumbnail(
+                    source, destination, relative=relative,
+                    fingerprint=fingerprint), destination)
+            with Image.open(destination) as thumbnail:
+                thumbnail.verify()
+            with self.assertRaisesRegex(ValueError, "unsafe thumbnail path"):
+                thumbnail_cache_path(
+                    root / "cache", root / "media",
+                    Path("../private.jpg"), fingerprint="0" * 24)
+            with self.assertRaisesRegex(
+                    ValueError, "unsafe thumbnail fingerprint"):
+                thumbnail_cache_path(
+                    root / "cache", root / "media",
+                    Path("private.jpg"), fingerprint="../unsafe")
+            outside = root / "outside"
+            outside.mkdir()
+            cache_root = root / "unsafe-cache"
+            cache_root.mkdir()
+            (cache_root / "output").symlink_to(
+                outside, target_is_directory=True)
+            with self.assertRaisesRegex(
+                    ValueError, "unsafe thumbnail cache directory"):
+                thumbnail_cache_path(
+                    cache_root, root / "media", Path("sample.jpg"),
+                    fingerprint="0" * 24)
+
+            linked_thumbnail = root / "linked.webp"
+            Image.new("RGB", (32, 32), "blue").save(
+                linked_thumbnail, format="WEBP")
+            os.utime(linked_thumbnail, ns=(
+                source.stat().st_mtime_ns + 1,
+                source.stat().st_mtime_ns + 1))
+            destination.unlink()
+            destination.symlink_to(linked_thumbnail)
+
+            self.assertEqual(
+                ensure_thumbnail(
+                    source, destination, relative=relative,
+                    fingerprint=fingerprint), destination)
+            self.assertFalse(destination.is_symlink())
+            with Image.open(destination) as thumbnail:
+                self.assertEqual(thumbnail.size, (512, 384))
+
+    def test_thumbnail_cache_path_preserves_source_extension(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source_dir = root / "sources"
+            source_dir.mkdir()
+            jpeg_source = source_dir / "example.jpg"
+            png_source = source_dir / "example.png"
+            Image.new("RGB", (32, 32), "red").save(jpeg_source)
+            Image.new("RGB", (32, 32), "blue").save(png_source)
+            jpeg_relative = Path("category/example.jpg")
+            png_relative = Path("category/example.png")
+            jpeg_fingerprint = thumbnail_source_fingerprint(
+                jpeg_source, jpeg_relative)
+            png_fingerprint = thumbnail_source_fingerprint(
+                png_source, png_relative)
+            jpeg = thumbnail_cache_path(
+                root / "cache", root / "media", jpeg_relative,
+                fingerprint=jpeg_fingerprint)
+            png = thumbnail_cache_path(
+                root / "cache", root / "media", png_relative,
+                fingerprint=png_fingerprint)
+            ensure_thumbnail(
+                jpeg_source, jpeg, relative=jpeg_relative,
+                fingerprint=jpeg_fingerprint)
+            ensure_thumbnail(
+                png_source, png, relative=png_relative,
+                fingerprint=png_fingerprint)
+            with Image.open(jpeg) as thumbnail:
+                jpeg_center = thumbnail.convert("RGB").getpixel((16, 16))
+            with Image.open(png) as thumbnail:
+                png_center = thumbnail.convert("RGB").getpixel((16, 16))
+
+        self.assertNotEqual(jpeg, png)
+        self.assertEqual(
+            jpeg.name, f"example.jpg.{jpeg_fingerprint}.webp")
+        self.assertEqual(
+            png.name, f"example.png.{png_fingerprint}.webp")
+        self.assertGreater(jpeg_center[0], jpeg_center[2])
+        self.assertGreater(png_center[2], png_center[0])
+
+    def test_thumbnail_cache_is_centralized_and_root_namespaced(self):
+        expected_default = (
+            Path(pipeline_files.__file__).resolve().parents[1]
+            / ".thumbnails")
+        self.assertEqual(DEFAULT_THUMBNAIL_CACHE_ROOT, expected_default)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            cache_root = root / "project-cache"
+            media_a = root / "pipeline-a" / "renders"
+            media_b = root / "pipeline-b" / "renders"
+            relative = Path("shared/example.png")
+            source = media_a / relative
+            source.parent.mkdir(parents=True)
+            media_b.mkdir(parents=True)
+            Image.new("RGB", (32, 32), "purple").save(source)
+            fingerprint = thumbnail_source_fingerprint(source, relative)
+
+            output_a = thumbnail_cache_path(
+                cache_root, media_a, relative, namespace="output",
+                fingerprint=fingerprint)
+            input_a = thumbnail_cache_path(
+                cache_root, media_a, relative, namespace="input",
+                fingerprint=fingerprint)
+            output_b = thumbnail_cache_path(
+                cache_root, media_b, relative, namespace="output",
+                fingerprint=fingerprint)
+            result = ensure_thumbnail(
+                source, output_a, relative=relative,
+                fingerprint=fingerprint)
+
+            self.assertEqual(result, output_a)
+            self.assertTrue(
+                output_a.is_relative_to(cache_root.resolve()))
+            self.assertNotEqual(output_a, input_a)
+            self.assertNotEqual(output_a, output_b)
+            self.assertNotIn(str(media_a), str(output_a))
+            self.assertFalse((media_a / ".thumbnails").exists())
+            self.assertFalse((media_b / ".thumbnails").exists())
+            self.assertEqual(output_a.parts[-4], "output")
+
+    def test_thumbnail_refreshes_same_size_replacement_with_reused_mtime(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            relative = Path("category/source.bmp")
+            source = root / "source.bmp"
+            Image.new("RGB", (64, 64), "red").save(source)
+            original_mtime = source.stat().st_mtime_ns
+            first_fingerprint = thumbnail_source_fingerprint(
+                source, relative)
+            first_destination = thumbnail_cache_path(
+                root / "cache", root / "media", relative,
+                fingerprint=first_fingerprint)
+            ensure_thumbnail(
+                source, first_destination, relative=relative,
+                fingerprint=first_fingerprint)
+            legacy = first_destination.parent / f"{relative.name}.webp"
+            legacy.write_bytes(b"legacy")
+            legacy_sidecar = first_destination.parent / (
+                f"{relative.name}.webp.source")
+            legacy_sidecar.write_text(first_fingerprint)
+            outside = root / "outside.webp"
+            outside.write_bytes(b"outside")
+            ambiguous_legacy = (
+                first_destination.parent / relative.with_suffix(".webp").name)
+            ambiguous_legacy.symlink_to(outside)
+
+            replacement = root / "replacement.bmp"
+            Image.new("RGB", (64, 64), "blue").save(replacement)
+            os.utime(replacement, ns=(original_mtime, original_mtime))
+            replacement.replace(source)
+            second_fingerprint = thumbnail_source_fingerprint(
+                source, relative)
+            second_destination = thumbnail_cache_path(
+                root / "cache", root / "media", relative,
+                fingerprint=second_fingerprint)
+            ensure_thumbnail(
+                source, second_destination, relative=relative,
+                fingerprint=second_fingerprint)
+            with Image.open(second_destination) as thumbnail:
+                center = thumbnail.convert("RGB").getpixel((32, 32))
+            first_exists = first_destination.exists()
+            legacy_exists = legacy.exists()
+            sidecar_exists = legacy_sidecar.exists()
+            ambiguous_is_symlink = ambiguous_legacy.is_symlink()
+            outside_bytes = outside.read_bytes()
+
+        self.assertNotEqual(first_fingerprint, second_fingerprint)
+        self.assertNotEqual(first_destination, second_destination)
+        self.assertTrue(first_exists)
+        self.assertTrue(legacy_exists)
+        self.assertTrue(sidecar_exists)
+        self.assertTrue(ambiguous_is_symlink)
+        self.assertEqual(outside_bytes, b"outside")
+        self.assertGreater(center[2], center[0])
+
+    def test_thumbnail_rejects_source_change_during_generation(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            relative = Path("category/source.bmp")
+            source = root / "source.bmp"
+            Image.new("RGB", (64, 64), "red").save(source)
+            original_mtime = source.stat().st_mtime_ns
+            fingerprint = thumbnail_source_fingerprint(source, relative)
+            destination = thumbnail_cache_path(
+                root / "cache", root / "media", relative,
+                fingerprint=fingerprint)
+            original_thumbnail_bytes = pipeline_files._thumbnail_bytes
+            calls = 0
+
+            def replace_during_first_read(path, max_edge):
+                nonlocal calls
+                calls += 1
+                result = original_thumbnail_bytes(path, max_edge)
+                if calls == 1:
+                    replacement = root / "replacement.bmp"
+                    Image.new("RGB", (64, 64), "blue").save(replacement)
+                    os.utime(
+                        replacement, ns=(original_mtime, original_mtime))
+                    replacement.replace(source)
+                return result
+
+            with mock.patch.object(
+                    pipeline_files, "_thumbnail_bytes",
+                    side_effect=replace_during_first_read):
+                result = ensure_thumbnail(
+                    source, destination, relative=relative,
+                    fingerprint=fingerprint)
+
+        self.assertIsNone(result)
+        self.assertEqual(calls, 1)
+        self.assertFalse(destination.exists())
+
+    def test_concurrent_generators_retain_both_immutable_versions(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            relative = Path("category/source.bmp")
+            source = root / "source.bmp"
+            Image.new("RGB", (64, 64), "red").save(source)
+            original_mtime = source.stat().st_mtime_ns
+            original_snapshot = pipeline_files._source_snapshot
+            fingerprint_a = original_snapshot(source, relative)
+            destination_a = thumbnail_cache_path(
+                root / "cache", root / "media", relative,
+                fingerprint=fingerprint_a)
+            generator_a_ready = threading.Event()
+            release_generator_a = threading.Event()
+            result_a = []
+            snapshot_calls_a = 0
+
+            def pause_generator_a_before_return(path, source_relative):
+                nonlocal snapshot_calls_a
+                result = original_snapshot(path, source_relative)
+                if threading.current_thread().name == "generator-a":
+                    snapshot_calls_a += 1
+                    if snapshot_calls_a == 3:
+                        generator_a_ready.set()
+                        self.assertTrue(release_generator_a.wait(5))
+                return result
+
+            def generate_a():
+                result_a.append(ensure_thumbnail(
+                    source, destination_a, relative=relative,
+                    fingerprint=fingerprint_a))
+
+            with mock.patch.object(
+                    pipeline_files, "_source_snapshot",
+                    side_effect=pause_generator_a_before_return):
+                thread_a = threading.Thread(
+                    target=generate_a, name="generator-a", daemon=True)
+                thread_a.start()
+                self.assertTrue(generator_a_ready.wait(5))
+
+                replacement = root / "replacement.bmp"
+                Image.new("RGB", (64, 64), "blue").save(replacement)
+                os.utime(
+                    replacement, ns=(original_mtime, original_mtime))
+                replacement.replace(source)
+                fingerprint_b = original_snapshot(source, relative)
+                destination_b = thumbnail_cache_path(
+                    root / "cache", root / "media", relative,
+                    fingerprint=fingerprint_b)
+                result_b = ensure_thumbnail(
+                    source, destination_b, relative=relative,
+                    fingerprint=fingerprint_b)
+
+                release_generator_a.set()
+                thread_a.join(5)
+
+            with Image.open(destination_a) as thumbnail_a:
+                center_a = thumbnail_a.convert("RGB").getpixel((32, 32))
+            with Image.open(destination_b) as thumbnail_b:
+                center_b = thumbnail_b.convert("RGB").getpixel((32, 32))
+
+        self.assertFalse(thread_a.is_alive())
+        self.assertEqual(result_a, [destination_a])
+        self.assertEqual(result_b, destination_b)
+        self.assertNotEqual(destination_a, destination_b)
+        self.assertGreater(center_a[0], center_a[2])
+        self.assertGreater(center_b[2], center_b[0])
+
+    def test_still_pipeline_backfills_thumbnail_for_existing_render(self):
+        manifest = PipelineManifest(
+            "manual", 1,
+            [PipelineItem(
+                0, "sample", Path("sample.jpg"), "a" * 64,
+                still=StillSpec(
+                    Path("sample.jpg"), 640, 480,
+                    prompt="A detailed action photograph of a moving athlete."),
+            )],
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            output_dir = Path(tmp)
+            still = output_dir / "sample.jpg"
+            Image.new("RGB", (640, 480), "purple").save(still)
+            args = mock.Mock(
+                still_workflow=Path("workflow.json"), seed=42,
+                clip_name=None, unet_name=None, still_save_subdir="stills",
+                force=False, thumbnail_cache_root=output_dir.parent / "cache",
+            )
+            state = {"items": {"sample": {"still": {
+                "plan_fingerprint": "fingerprint",
+                "output_sha256": sha256_file(still),
+            }}}}
+            with mock.patch(
+                    "reimagine_pipeline.rendering.load_workflow",
+                    return_value={}), \
+                    mock.patch(
+                        "reimagine_pipeline.rendering._render_fingerprint",
+                        return_value="fingerprint"):
+                counts = render_stills(args, manifest, output_dir, state)
+
+            relative = Path("sample.jpg")
+            thumbnail = thumbnail_cache_path(
+                args.thumbnail_cache_root, output_dir, relative,
+                fingerprint=thumbnail_source_fingerprint(still, relative))
+            thumbnail_exists = thumbnail.is_file()
+            nested_cache_exists = (
+                output_dir / ".thumbnails").exists()
+
+        self.assertEqual(counts, (0, 1, 0))
+        self.assertTrue(thumbnail_exists)
+        self.assertFalse(nested_cache_exists)
 
     def test_round_trip_preserves_still_and_video_specs(self):
         manifest = PipelineManifest(
@@ -300,6 +690,18 @@ class PipelineManifestTests(unittest.TestCase):
             generate_prompts.build_parser().parse_args(["--seed", "100"])
         args = render_media.build_parser().parse_args(["--seed", "100"])
         self.assertEqual(args.seed, 100)
+
+    def test_renderer_thumbnail_cache_root_default_and_override(self):
+        default_args = render_media.build_parser().parse_args([])
+        custom_args = render_media.build_parser().parse_args([
+            "--thumbnail-cache-root", "custom-cache",
+        ])
+
+        self.assertEqual(
+            default_args.thumbnail_cache_root,
+            DEFAULT_THUMBNAIL_CACHE_ROOT)
+        self.assertEqual(
+            custom_args.thumbnail_cache_root, Path("custom-cache"))
 
     def test_ltx_patch_uses_video_plan_and_uploaded_first_frame(self):
         workflow = {
@@ -961,7 +1363,7 @@ class ProcessIsolationTests(unittest.TestCase):
                 "--input-dir", "input/sports",
             ])
 
-    def test_gallery_reads_prompts_and_input_dir_from_pipeline(self):
+    def test_gallery_reads_input_dir_and_defers_pipeline_prompts(self):
         import serve
 
         manifest = PipelineManifest(
@@ -985,11 +1387,15 @@ class ProcessIsolationTests(unittest.TestCase):
             save_pipeline(output_dir / "pipeline.yaml", manifest)
 
             with mock.patch.object(serve, "ROOT", root):
-                items = serve.list_pairs("model", output_dir)
+                pipeline_metadata = serve.load_pipeline_metadata(output_dir)
+                items = list(serve.iter_pairs(
+                    "model", output_dir,
+                    pipeline_metadata=pipeline_metadata))
 
         self.assertEqual(items[0]["input_url"], "/img/input/model/sample.png")
+        self.assertNotIn("prompt", items[0])
         self.assertEqual(
-            items[0]["prompt"],
+            pipeline_metadata[1]["sample.jpg"]["prompt"],
             "A detailed action photograph of a moving athlete.")
 
     def test_gallery_pair_iterator_registers_references_progressively(self):
@@ -1080,6 +1486,7 @@ class ProcessIsolationTests(unittest.TestCase):
 
             class TestHandler(serve.Handler):
                 sources = {source: output_dir}
+                thumbnail_cache_root = root / "cache"
 
             with mock.patch.object(serve, "ROOT", root):
                 TestHandler.pipeline_metadata_cache = (
@@ -1133,6 +1540,7 @@ class ProcessIsolationTests(unittest.TestCase):
 
             class TestHandler(serve.Handler):
                 sources = {source: output_dir}
+                thumbnail_cache_root = root / "cache"
 
             with mock.patch.object(serve, "ROOT", root), \
                     mock.patch.object(
@@ -1149,15 +1557,78 @@ class ProcessIsolationTests(unittest.TestCase):
                 thread.start()
                 base = f"http://127.0.0.1:{server.server_port}"
                 try:
-                    for _ in range(2):
+                    thumbnail_mtime = None
+                    for iteration in range(2):
                         listed = json.loads(urllib.request.urlopen(
                             f"{base}/api/list?source={source}").read())
                         streamed = urllib.request.urlopen(
                             f"{base}/api/stream?source={source}").read()
+                        metadata = json.loads(urllib.request.urlopen(
+                            f"{base}/api/metadata?source={source}"
+                            "&path=sample.jpg").read())
                         urllib.request.urlopen(
                             f"{base}/img/output/{source}/sample.jpg").read()
                         urllib.request.urlopen(
                             f"{base}/img/input/{source}/sample.png").read()
+                        output_thumbnail = urllib.request.urlopen(
+                            f"{base}{listed[0]['output_thumbnail_url']}")
+                        input_thumbnail = urllib.request.urlopen(
+                            f"{base}{listed[0]['input_thumbnail_url']}")
+                        self.assertEqual(
+                            output_thumbnail.headers.get_content_type(),
+                            "image/webp")
+                        self.assertIn(
+                            "immutable",
+                            output_thumbnail.headers["Cache-Control"])
+                        output_thumbnail.read()
+                        input_thumbnail.read()
+                        output_relative = Path("sample.jpg")
+                        cached_thumbnail = thumbnail_cache_path(
+                            TestHandler.thumbnail_cache_root, output_dir,
+                            output_relative,
+                            fingerprint=thumbnail_source_fingerprint(
+                                output_dir / output_relative,
+                                output_relative))
+                        if iteration == 0:
+                            thumbnail_mtime = (
+                                cached_thumbnail.stat().st_mtime_ns)
+                        else:
+                            self.assertEqual(
+                                cached_thumbnail.stat().st_mtime_ns,
+                                thumbnail_mtime)
+                    stale_url = listed[0]["output_thumbnail_url"]
+                    original_stat = (
+                        output_dir / "sample.jpg").stat()
+                    replacement = output_dir / "replacement.jpg"
+                    Image.new("RGB", (64, 64), "blue").save(replacement)
+                    os.utime(replacement, ns=(
+                        original_stat.st_atime_ns,
+                        original_stat.st_mtime_ns))
+                    replacement.replace(output_dir / "sample.jpg")
+                    with self.assertRaises(
+                            urllib.error.HTTPError) as stale_error:
+                        urllib.request.urlopen(f"{base}{stale_url}")
+                    self.assertEqual(stale_error.exception.code, 409)
+                    self.assertEqual(
+                        stale_error.exception.headers["Cache-Control"],
+                        "no-store")
+                    stale_error.exception.close()
+                    refreshed = json.loads(urllib.request.urlopen(
+                        f"{base}/api/list?source={source}").read())
+                    self.assertNotEqual(
+                        refreshed[0]["output_thumbnail_url"], stale_url)
+                    with self.assertRaises(urllib.error.HTTPError) as error:
+                        urllib.request.urlopen(
+                            f"{base}/img/thumbnail/output/{source}/"
+                            "%2e%2e%2Fprivate.jpg")
+                    self.assertEqual(error.exception.code, 404)
+                    error.exception.close()
+                    self.assertFalse(
+                        (output_dir / ".thumbnails").exists())
+                    self.assertFalse(
+                        (input_dir / ".thumbnails").exists())
+                    self.assertTrue(
+                        TestHandler.thumbnail_cache_root.is_dir())
                 finally:
                     server.shutdown()
                     server.server_close()
@@ -1168,7 +1639,119 @@ class ProcessIsolationTests(unittest.TestCase):
                 self.assertEqual(safe_load.call_count, 1)
 
         self.assertEqual(len(listed), 1)
+        self.assertNotIn("prompt", listed[0])
+        self.assertNotIn("video_prompt", listed[0])
+        self.assertIn("output_thumbnail_url", listed[0])
         self.assertEqual(len(streamed.splitlines()), 1)
+        self.assertNotIn(b'"prompt"', streamed)
+        self.assertEqual(
+            metadata["prompt"],
+            "A detailed action photograph of a moving athlete.")
+
+    def test_versioned_thumbnail_survives_stale_renderer_write_race(self):
+        import serve
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            output_dir = root / "output"
+            relative = Path("category/source.bmp")
+            source_path = output_dir / relative
+            source_path.parent.mkdir(parents=True)
+            Image.new("RGB", (64, 64), "red").save(source_path)
+            original_mtime = source_path.stat().st_mtime_ns
+            stale_fingerprint = thumbnail_source_fingerprint(
+                source_path, relative)
+            stale_destination = thumbnail_cache_path(
+                root / "cache", output_dir, relative,
+                fingerprint=stale_fingerprint)
+
+            renderer_waiting = threading.Event()
+            release_renderer = threading.Event()
+            renderer_done = threading.Event()
+            renderer_result = []
+            original_atomic_write = pipeline_files.atomic_write_bytes
+            original_read_bytes = Path.read_bytes
+
+            def controlled_atomic_write(path, data):
+                if threading.current_thread().name == "stale-renderer":
+                    renderer_waiting.set()
+                    self.assertTrue(release_renderer.wait(5))
+                original_atomic_write(path, data)
+
+            def run_stale_renderer():
+                try:
+                    renderer_result.append(ensure_thumbnail(
+                        source_path, stale_destination, relative=relative,
+                        fingerprint=stale_fingerprint))
+                finally:
+                    renderer_done.set()
+
+            with mock.patch.object(
+                    pipeline_files, "atomic_write_bytes",
+                    side_effect=controlled_atomic_write):
+                renderer = threading.Thread(
+                    target=run_stale_renderer, name="stale-renderer")
+                renderer.start()
+                self.assertTrue(renderer_waiting.wait(5))
+
+                replacement = root / "replacement.bmp"
+                Image.new("RGB", (64, 64), "blue").save(replacement)
+                os.utime(
+                    replacement, ns=(original_mtime, original_mtime))
+                replacement.replace(source_path)
+                current_fingerprint = thumbnail_source_fingerprint(
+                    source_path, relative)
+                current_destination = thumbnail_cache_path(
+                    root / "cache", output_dir, relative,
+                    fingerprint=current_fingerprint)
+
+                class TestHandler(serve.Handler):
+                    sources = {"race": output_dir}
+                    pipeline_metadata_cache = {"race": (None, {})}
+                    thumbnail_cache_root = root / "cache"
+
+                def read_after_stale_renderer(path):
+                    if path == current_destination:
+                        release_renderer.set()
+                        self.assertTrue(renderer_done.wait(5))
+                    return original_read_bytes(path)
+
+                server = serve.ThreadingHTTPServer(
+                    ("127.0.0.1", 0), TestHandler)
+                server_thread = threading.Thread(
+                    target=server.serve_forever, daemon=True)
+                server_thread.start()
+                url = (
+                    f"http://127.0.0.1:{server.server_port}"
+                    f"/img/thumbnail/output/race/{relative.as_posix()}"
+                    f"?v={current_fingerprint}")
+                try:
+                    with mock.patch.object(
+                            Path, "read_bytes",
+                            new=read_after_stale_renderer):
+                        response = urllib.request.urlopen(url)
+                        thumbnail_bytes = response.read()
+                        response.close()
+                finally:
+                    release_renderer.set()
+                    server.shutdown()
+                    server.server_close()
+                    server_thread.join()
+                    renderer.join()
+
+            with Image.open(io.BytesIO(thumbnail_bytes)) as thumbnail:
+                center = thumbnail.convert("RGB").getpixel((32, 32))
+            stale_exists = stale_destination.exists()
+            current_exists = current_destination.is_file()
+            with Image.open(stale_destination) as stale_thumbnail:
+                stale_center = stale_thumbnail.convert("RGB").getpixel((32, 32))
+
+        self.assertNotEqual(stale_destination, current_destination)
+        self.assertEqual(renderer_result, [None])
+        self.assertTrue(stale_exists)
+        self.assertTrue(current_exists)
+        self.assertGreater(stale_center[0], stale_center[2])
+        self.assertGreater(center[2], center[0])
 
     def test_gallery_main_builds_cache_before_listening(self):
         import serve
@@ -1183,28 +1766,37 @@ class ProcessIsolationTests(unittest.TestCase):
         class FakeServer:
             def __init__(self, address, handler):
                 events.append(
-                    ("server", address, handler.pipeline_metadata_cache))
+                    ("server", address, handler.pipeline_metadata_cache,
+                     handler.thumbnail_cache_root))
 
             def serve_forever(self):
                 events.append(("serve",))
                 raise KeyboardInterrupt
 
-        with tempfile.TemporaryDirectory() as tmp, \
+        with tempfile.TemporaryDirectory() as tmp:
+            cache_root = Path(tmp) / "custom-thumbnail-cache"
+            with (
                 mock.patch("sys.argv", [
                     "serve.py", "--output-dir", tmp,
-                ]), \
+                    "--thumbnail-cache-root", str(cache_root),
+                ]),
                 mock.patch.object(
                     serve, "build_pipeline_metadata_cache",
-                    side_effect=build_cache), \
-                mock.patch.object(serve, "ThreadingHTTPServer", FakeServer), \
-                mock.patch.object(serve.Handler, "sources", {}), \
+                    side_effect=build_cache),
+                mock.patch.object(serve, "ThreadingHTTPServer", FakeServer),
+                mock.patch.object(serve.Handler, "sources", {}),
                 mock.patch.object(
-                    serve.Handler, "pipeline_metadata_cache", {}):
-            serve.main()
+                    serve.Handler, "pipeline_metadata_cache", {}),
+                mock.patch.object(
+                    serve.Handler, "thumbnail_cache_root",
+                    DEFAULT_THUMBNAIL_CACHE_ROOT),
+            ):
+                serve.main()
 
         self.assertEqual([event[0] for event in events],
                          ["cache", "server", "serve"])
         self.assertIs(events[1][2], cached)
+        self.assertEqual(events[1][3], cache_root)
 
     def test_gallery_rejects_malformed_input_configuration(self):
         import serve
@@ -1523,7 +2115,10 @@ class ProcessIsolationTests(unittest.TestCase):
             )],
         )
         with tempfile.TemporaryDirectory() as tmp:
-            output_dir = Path(tmp)
+            root = Path(tmp)
+            output_dir = root / "output"
+            output_dir.mkdir()
+            cache_root = root / "cache"
             save_pipeline(output_dir / "pipeline.yaml", manifest)
             artifact = ComfyArtifact("885", "sample.jpeg", "", "output")
             fake = mock.Mock()
@@ -1537,10 +2132,14 @@ class ProcessIsolationTests(unittest.TestCase):
                 code = render_media.main([
                     "--output-dir", str(output_dir), "--stage", "stills",
                     "--seed", "100",
+                    "--thumbnail-cache-root", str(cache_root),
                 ])
             workflow = fake.run_workflow.call_args.args[0]
+            nested_cache_exists = (
+                output_dir / ".thumbnails").exists()
 
         self.assertEqual(code, 0)
+        self.assertFalse(nested_cache_exists)
         self.assertEqual(workflow["273"]["inputs"]["seed"], 100)
         self.assertEqual(workflow["265"]["inputs"]["seed"], 100)
 

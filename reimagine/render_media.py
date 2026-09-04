@@ -6,6 +6,7 @@ import time
 from pathlib import Path
 
 from reimagine_pipeline import PIPELINE_FILENAME, RENDER_STATE_FILENAME
+from reimagine_pipeline.files import DEFAULT_THUMBNAIL_CACHE_ROOT
 from reimagine_pipeline.manifest import (
     incomplete_plan_messages, load_pipeline, load_pipeline_tree,
     load_render_state, load_render_state_tree, save_pipeline_tree,
@@ -21,6 +22,10 @@ def build_parser():
         description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("--output-dir", type=Path, default=Path("output"),
                         help="Media output and manifest directory.")
+    parser.add_argument(
+        "--thumbnail-cache-root", type=Path,
+        default=DEFAULT_THUMBNAIL_CACHE_ROOT,
+        help="Server-specific thumbnail cache directory.")
     parser.add_argument(
         "--manifest", type=Path, default=None,
         help="Use one explicit manifest instead of per-folder pipeline.yaml files.")
@@ -60,6 +65,7 @@ def main(argv=None):
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     args = build_parser().parse_args(argv)
     output_dir = args.output_dir.resolve()
+    args.thumbnail_cache_root = args.thumbnail_cache_root.expanduser()
     manifest_path = args.manifest.resolve() if args.manifest else None
     args.state_file = args.state_file.resolve() if args.state_file else None
     args.state_root = output_dir

@@ -10,6 +10,10 @@
     --fg: #e6e8ec; --muted: #8b93a1; --accent: #6ea8fe;
   }
   * { box-sizing: border-box; }
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+  }
   body {
     margin: 0; background: var(--bg); color: var(--fg);
     font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -30,14 +34,19 @@
   }
   label.toggle { color: var(--muted); font-size: 13px; display: flex; align-items: center; gap: 6px; cursor: pointer; }
   main { padding: 20px; }
-  .cat { margin-bottom: 28px; }
-  .cat > h2 {
+  #gallery {
+    position: relative; width: 100%; margin: 0; padding: 0;
+    list-style: none;
+  }
+  .virtual-heading {
+    position: absolute; left: 0; right: 0; list-style: none;
+  }
+  .virtual-heading h2 {
     font-size: 13px; text-transform: uppercase; letter-spacing: .08em;
     color: var(--muted); margin: 0 0 12px; font-weight: 600;
   }
-  .grid {
-    display: grid; gap: 14px;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  .virtual-item {
+    position: absolute; list-style: none;
   }
   .card {
     background: var(--panel); border: 1px solid var(--edge); border-radius: 12px;
@@ -46,6 +55,10 @@
     transition: border-color .15s, transform .05s;
   }
   .card:hover { border-color: var(--accent); }
+  .card:focus-visible, button:focus-visible, select:focus-visible,
+  input:focus-visible {
+    outline: 3px solid var(--accent); outline-offset: 2px;
+  }
   .card:active { transform: scale(.996); }
   .card .imgwrap { position: relative; background: #000; aspect-ratio: 1 / 1; }
   .card .imgwrap.compare { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; }
@@ -57,11 +70,6 @@
     letter-spacing: .04em; }
   .badge.vid { left: auto; right: 6px; background: rgba(110,168,254,.85); }
   .empty { color: var(--muted); padding: 40px; text-align: center; }
-  .progress {
-    display: flex; justify-content: center; padding: 8px 0 28px;
-    color: var(--muted);
-  }
-  .progress button { min-width: 180px; min-height: 44px; }
 
   /* lightbox */
   #lb {
@@ -87,33 +95,31 @@
   #lb img, #lb video { max-width: 100%; max-height: 100%; object-fit: contain;
     margin: auto; border-radius: 8px; }
   #lb .prompt {
-    flex: 0 0 auto; max-height: 22vh; overflow-y: auto;
+    flex: 0 0 auto; max-height: none; overflow: hidden;
     background: var(--panel); border: 1px solid var(--edge); border-radius: 10px;
     padding: 10px 14px; color: var(--fg); font-size: 13px; line-height: 1.55;
   }
   #lb .prompt .lbl {
-    display: block; width: 100%; margin-bottom: 4px; padding: 0;
+    display: flex; align-items: center; justify-content: space-between;
+    width: 100%; min-height: 28px; margin: 0; padding: 0;
     background: none; border: 0; color: var(--accent); font: inherit;
     font-size: 11px; text-transform: uppercase; letter-spacing: .08em;
-    font-weight: 600; text-align: left; cursor: default;
+    font-weight: 600; text-align: left; cursor: pointer;
   }
+  #lb .prompt .lbl::after {
+    content: "▸"; color: var(--muted); font-size: 12px;
+    letter-spacing: 0; text-transform: none;
+  }
+  #lb .prompt .prompt-body { display: none; }
+  #lb .prompt.expanded { max-height: 22vh; overflow-y: auto; }
+  #lb .prompt.expanded .lbl { margin-bottom: 6px; }
+  #lb .prompt.expanded .lbl::after { content: "▾"; }
+  #lb .prompt.expanded .prompt-body { display: block; }
   #lb .prompt.empty .prompt-body { color: var(--muted); font-style: italic; }
   #lb .hint { color: var(--muted); font-size: 12px; text-align: center; }
   @media (orientation: portrait) {
     #lb .prompt { max-height: none; overflow: hidden; padding: 8px 14px; }
-    #lb .prompt .lbl {
-      display: flex; align-items: center; justify-content: space-between;
-      min-height: 28px; margin-bottom: 0; cursor: pointer;
-    }
-    #lb .prompt .lbl::after {
-      content: "▸"; color: var(--muted); font-size: 12px;
-      letter-spacing: 0; text-transform: none;
-    }
-    #lb .prompt .prompt-body { display: none; }
     #lb .prompt.expanded { max-height: 28vh; overflow-y: auto; }
-    #lb .prompt.expanded .lbl { margin-bottom: 6px; }
-    #lb .prompt.expanded .lbl::after { content: "▾"; }
-    #lb .prompt.expanded .prompt-body { display: block; }
   }
   @media (pointer: coarse) {
     #lb { padding: 16px; }
@@ -131,11 +137,12 @@
   <span class="grow"></span>
   <label class="toggle"><input type="checkbox" id="videoMode"> video</label>
   <label class="toggle"><input type="checkbox" id="compareAll"> compare in grid</label>
+  <label class="sr-only" for="catFilter">Filter by category</label>
   <select id="catFilter"><option value="">all categories</option></select>
   <button id="refresh">refresh</button>
 </header>
 
-<main id="main"><div class="empty">loading…</div></main>
+<main id="main"><div class="empty" role="status">loading…</div></main>
 
 <div id="lb" role="dialog" aria-modal="true" aria-labelledby="lbName">
   <div class="bar">
@@ -146,29 +153,36 @@
     <button id="lbClose">close ✕</button>
   </div>
   <div class="stage side" id="lbStage"></div>
-  <div class="prompt" id="lbPrompt"></div>
+  <div class="prompt" id="lbPrompt" aria-live="polite"></div>
   <div class="hint">← / → or click edges to move · S to toggle side-by-side · Esc to close</div>
 </div>
 
 <script>
-const DISPLAY_BATCH = 60;
-const STREAM_RENDER_BATCH = 20;
+const STREAM_RENDER_BATCH = 100;
+const MIN_CARD_WIDTH = 220;
+const GRID_GAP = 14;
+const CARD_CAP_HEIGHT = 35;
+const CATEGORY_HEADER_HEIGHT = 38;
+const OVERSCAN_ROWS = 3;
 
 let ITEMS = [];
 let VIEW = [];        // filtered list currently shown (for lightbox nav)
+let LAYOUT = [];
 let cur = -1;
-let SOURCES = [];     // available output sets (dir names)
 let pageScrollY = 0;
 let returnFocus = null;
 let loadController = null;
 let loadVersion = 0;
 let loading = false;
 let loadError = "";
-let displayLimit = DISPLAY_BATCH;
-let moreObserver = null;
 let renderDeferred = false;
 let preferredCategory = "";
-let renderedKey = "";
+let renderedWindowKey = "";
+let layoutWidth = 0;
+let layoutColumns = 1;
+let layoutRowHeight = 0;
+let virtualFrame = 0;
+const METADATA_CACHE = new Map();
 
 const $ = (id) => document.getElementById(id);
 const escapeHtml = (s) => s.replace(/[&<>"']/g, c =>
@@ -183,30 +197,31 @@ const SOURCE_KEY = "reimagine.source";  // persists the pick across full reloads
 async function loadSources(signal) {
   const r = await fetch("/api/sources", { cache: "no-store", signal });
   const data = await r.json();
-  SOURCES = data.sources || [];
+  const sources = data.sources || [];
   const sel = $("sourceSel");
   // Prefer the live pick, else the one saved from a prior page load, else the
   // server default — so a full browser reload (F5) keeps the same source.
   let saved = null;
   try { saved = localStorage.getItem(SOURCE_KEY); } catch (e) {}
   const want = sel.value || saved || data.default;
-  sel.innerHTML = SOURCES.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join("");
-  if (SOURCES.includes(want)) sel.value = want;
+  sel.innerHTML = sources.map(s =>
+    `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join("");
+  if (sources.includes(want)) sel.value = want;
   else if (data.default) sel.value = data.default;
-  sel.disabled = SOURCES.length <= 1;
+  sel.disabled = sources.length <= 1;
 }
 
 async function load() {
   const version = ++loadVersion;
   loadController?.abort();
   loadController = new AbortController();
+  METADATA_CACHE.clear();
   loading = true;
   loadError = "";
   ITEMS = [];
-  displayLimit = DISPLAY_BATCH;
   preferredCategory = $("catFilter").value;
   $("catFilter").innerHTML = '<option value="">all categories</option>';
-  renderedKey = "";
+  renderedWindowKey = "";
   render();
   try {
     await loadSources(loadController.signal);
@@ -270,42 +285,145 @@ function updateCategoryFilter() {
   }
 }
 
-function progressHtml(remaining) {
-  if (remaining) {
-    return `<div class="progress"><button id="loadMore" type="button">
-      Show ${Math.min(DISPLAY_BATCH, remaining)} more
-    </button></div>`;
-  }
-  return loading
-    ? '<div class="progress" role="status">Loading more images…</div>'
-    : "";
+function galleryTop() {
+  const gallery = $("gallery");
+  return gallery ? gallery.getBoundingClientRect().top + window.scrollY : 0;
 }
 
-function setupProgress() {
-  const more = $("loadMore");
-  if (!more) return;
-  const showMore = (restoreFocus) => {
-    const firstNewIndex = displayLimit;
-    displayLimit += DISPLAY_BATCH;
-    render();
-    if (restoreFocus) {
-      $("main").querySelector(
-        `.card[data-idx="${firstNewIndex}"]`
-      )?.focus();
+function buildLayout() {
+  const gallery = $("gallery");
+  if (!gallery) return;
+  const width = gallery.clientWidth;
+  layoutWidth = width;
+  layoutColumns = Math.max(
+    1, Math.floor((width + GRID_GAP) / (MIN_CARD_WIDTH + GRID_GAP)));
+  const cardWidth =
+    (width - GRID_GAP * (layoutColumns - 1)) / layoutColumns;
+  layoutRowHeight = cardWidth + CARD_CAP_HEIGHT + GRID_GAP;
+  const groups = new Map();
+  VIEW.forEach((item, idx) => {
+    if (!groups.has(item.category)) groups.set(item.category, []);
+    groups.get(item.category).push({ item, idx });
+  });
+  LAYOUT = [];
+  let top = 0;
+  for (const category of [...groups.keys()].sort()) {
+    LAYOUT.push({
+      type: "heading", category, top, height: CATEGORY_HEADER_HEIGHT,
+    });
+    top += CATEGORY_HEADER_HEIGHT;
+    const entries = groups.get(category);
+    for (let start = 0; start < entries.length; start += layoutColumns) {
+      LAYOUT.push({
+        type: "row", category, top, height: layoutRowHeight,
+        entries: entries.slice(start, start + layoutColumns),
+        cardWidth,
+      });
+      top += layoutRowHeight;
     }
-  };
-  more.addEventListener("click", () => showMore(true));
-  if ("IntersectionObserver" in window) {
-    moreObserver = new IntersectionObserver(entries => {
-      if (entries.some(entry => entry.isIntersecting)) showMore(false);
-    }, { rootMargin: "400px" });
-    moreObserver.observe(more);
   }
+  gallery.style.height = `${Math.max(0, top - GRID_GAP)}px`;
+}
+
+function visibleLayout() {
+  const top = window.scrollY - galleryTop();
+  const overscan = layoutRowHeight * OVERSCAN_ROWS;
+  const start = top - overscan;
+  const end = top + window.innerHeight + overscan;
+  return LAYOUT.filter(unit =>
+    unit.top + unit.height >= start && unit.top <= end);
+}
+
+function findLayoutRow(index) {
+  return LAYOUT.find(unit =>
+    unit.type === "row"
+    && unit.entries.some(entry => entry.idx === index));
+}
+
+function renderWindow(force = false) {
+  const gallery = $("gallery");
+  if (!gallery || !LAYOUT.length) return;
+  const units = visibleLayout();
+  const compareAll = $("compareAll").checked;
+  const videoMode = $("videoMode").checked;
+  const key = [
+    compareAll, videoMode, layoutColumns,
+    ...units.map(unit => [
+      unit.type, unit.category, unit.top,
+      ...(unit.entries || []).map(entry => entry.item.path),
+    ].join(":")),
+  ].join("|");
+  if (!force && key === renderedWindowKey) return;
+  const activeIndex = document.activeElement?.closest?.(".card")?.dataset.idx;
+  gallery.innerHTML = units.map(unit => {
+    if (unit.type === "heading") {
+      return `<li class="virtual-heading" role="presentation"
+                  style="top:${unit.top}px;height:${unit.height}px">
+        <h2>${escapeHtml(unit.category)}</h2>
+      </li>`;
+    }
+    return unit.entries.map(({ item, idx }, column) => `
+      <li class="virtual-item"
+          aria-setsize="${VIEW.length}" aria-posinset="${idx + 1}"
+          style="top:${unit.top}px;left:${column * (unit.cardWidth + GRID_GAP)}px;width:${unit.cardWidth}px">
+        ${card(item, idx, compareAll, videoMode)}
+      </li>`).join("");
+  }).join("");
+  renderedWindowKey = key;
+  if (activeIndex !== undefined) {
+    const replacement = gallery.querySelector(
+      `.card[data-idx="${activeIndex}"]`);
+    const fallback = replacement || gallery.querySelector(".card");
+    fallback?.focus({ preventScroll: true });
+  }
+}
+
+function scheduleWindowRender() {
+  if (virtualFrame) return;
+  virtualFrame = requestAnimationFrame(() => {
+    virtualFrame = 0;
+    const gallery = $("gallery");
+    if (gallery && gallery.clientWidth !== layoutWidth) {
+      const localTop = window.scrollY - galleryTop();
+      const anchor = LAYOUT.find(unit =>
+        unit.type === "row"
+        && unit.top + unit.height >= localTop);
+      const anchorIndex = anchor?.entries[0]?.idx;
+      const offset = anchor ? Math.max(0, localTop - anchor.top) : 0;
+      buildLayout();
+      const replacement = findLayoutRow(anchorIndex);
+      if (replacement) {
+        window.scrollTo(
+          0, galleryTop() + replacement.top
+          + Math.min(offset, replacement.height - 1));
+      }
+      renderedWindowKey = "";
+    }
+    renderWindow();
+  });
+}
+
+function focusLogicalCard(index) {
+  index = Math.max(0, Math.min(VIEW.length - 1, index));
+  const unit = findLayoutRow(index);
+  if (!unit) return;
+  const top = galleryTop() + unit.top;
+  const bottom = top + unit.height - GRID_GAP;
+  const headerBottom = document.querySelector("header").offsetHeight;
+  if (top < window.scrollY + headerBottom) {
+    window.scrollTo(0, top - headerBottom);
+  } else if (bottom > window.scrollY + window.innerHeight) {
+    window.scrollTo(0, bottom - window.innerHeight);
+  }
+  renderWindow(true);
+  requestAnimationFrame(() => {
+    $("gallery")?.querySelector(
+      `.card[data-idx="${index}"]`)?.focus({ preventScroll: true });
+  });
 }
 
 function render() {
   const cat = $("catFilter").value || preferredCategory;
-  const compareAll = $("compareAll").checked;
   VIEW = ITEMS.filter(i => !cat || i.category === cat);
   const src = $("sourceSel").value;
   $("stat").textContent =
@@ -318,61 +436,46 @@ function render() {
     renderDeferred = true;
     return;
   }
-  moreObserver?.disconnect();
-  moreObserver = null;
   const main = $("main");
   if (!VIEW.length) {
-    renderedKey = "";
+    renderedWindowKey = "";
     const message = loadError
       ? `Could not load gallery: ${escapeHtml(loadError)}`
       : loading
         ? "Loading images…"
         : "No renders yet. They appear here as the batch completes — hit refresh.";
-    main.innerHTML = `<div class="empty">${message}</div>`;
+    main.innerHTML = `<div class="empty" role="status">${message}</div>`;
     return;
   }
-  const visible = VIEW.slice(0, displayLimit);
-  const groups = {};
-  visible.forEach((it, idx) => (groups[it.category] ??= []).push({ it, idx }));
-  const remaining = VIEW.length - visible.length;
-  const progress = progressHtml(remaining);
-  const nextKey = [
-    cat, compareAll, $("videoMode").checked,
-    ...visible.map(item => item.path),
-  ].join("\n");
-  if (renderedKey === nextKey && main.querySelector(".card")) {
-    main.querySelector(".progress")?.remove();
-    if (progress) main.insertAdjacentHTML("beforeend", progress);
-    setupProgress();
-    return;
+  const created = !$("gallery");
+  if (created) {
+    main.innerHTML = `
+      <p id="galleryHelp" class="sr-only">
+        Use arrow keys to move through all gallery items.
+      </p>
+      <ul id="gallery" aria-label="Gallery renders"
+          aria-describedby="galleryHelp" tabindex="-1"></ul>`;
   }
-
-  main.innerHTML = Object.keys(groups).sort().map(c => `
-    <section class="cat">
-      <h2>${escapeHtml(c)} <span class="stat">(${groups[c].length})</span></h2>
-      <div class="grid">
-        ${groups[c].map(({ it, idx }) => card(it, idx, compareAll)).join("")}
-      </div>
-    </section>`).join("") + progress;
-  renderedKey = nextKey;
-
-  [...main.querySelectorAll(".card")].forEach(el =>
-    el.addEventListener("click", () => openLb(+el.dataset.idx)));
-  setupProgress();
+  buildLayout();
+  renderWindow(created);
 }
 
-function card(it, idx, compareAll) {
-  const videoMode = $("videoMode").checked;
+function card(it, idx, compareAll, videoMode) {
   const useVideo = videoMode && it.video_url;
   // The "output" cell shows the video when in video mode and one exists,
   // otherwise the static render.
   const outCell = useVideo
     ? `<video src="${it.video_url}" muted loop playsinline preload="metadata"
+              aria-label="Video preview for ${escapeHtml(it.path)}"
               onmouseenter="this.play()" onmouseleave="this.pause()"></video>`
-    : `<img loading="lazy" src="${it.output_url}" alt="Reimagined ${escapeHtml(it.path)}">`;
+    : `<img loading="lazy" src="${it.output_thumbnail_url || it.output_url}"
+            onerror="this.onerror=null;this.src='${escapeHtml(it.output_url)}'"
+            alt="Reimagined ${escapeHtml(it.path)}">`;
   const showBoth = compareAll && it.input_url;
   const imgs = showBoth
-    ? `<img loading="lazy" src="${it.input_url}" alt="Reference ${escapeHtml(it.path)}">${outCell}`
+    ? `<img loading="lazy" src="${it.input_thumbnail_url || it.input_url}"
+            onerror="this.onerror=null;this.src='${escapeHtml(it.input_url)}'"
+            alt="Reference ${escapeHtml(it.path)}">${outCell}`
     : outCell;
   const badges =
     (it.input_url ? "" : '<span class="badge">no ref</span>') +
@@ -384,15 +487,76 @@ function card(it, idx, compareAll) {
     </button>`;
 }
 
+function updatePromptNodes(label, text) {
+  const prompt = $("lbPrompt");
+  let button = prompt.querySelector(".lbl");
+  let body = prompt.querySelector("#lbPromptBody");
+  if (!button || !body) {
+    prompt.innerHTML =
+      `<button type="button" class="lbl" aria-controls="lbPromptBody"></button>
+       <div class="prompt-body" id="lbPromptBody"></div>`;
+    button = prompt.querySelector(".lbl");
+    body = prompt.querySelector("#lbPromptBody");
+  }
+  button.textContent = label;
+  button.setAttribute(
+    "aria-expanded",
+    prompt.classList.contains("expanded") ? "true" : "false");
+  body.textContent = text;
+}
+
+function renderPrompt(useVideo, metadata) {
+  const prompt = $("lbPrompt");
+  const text = useVideo
+    ? (metadata.video_prompt || metadata.prompt)
+    : metadata.prompt;
+  const label = useVideo && metadata.video_prompt ? "video prompt" : "prompt";
+  prompt.classList.toggle("empty", !text);
+  prompt.removeAttribute("aria-busy");
+  updatePromptNodes(
+    label, text || "no saved prompt for this render");
+}
+
+async function loadPrompt(item, useVideo) {
+  const source = $("sourceSel").value;
+  const key = `${source}\n${item.path}`;
+  if (!METADATA_CACHE.has(key)) {
+    const url = `/api/metadata?source=${encodeURIComponent(source)}&path=${encodeURIComponent(item.path)}`;
+    const request = fetch(url, { cache: "no-store" })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`metadata request failed (${response.status})`);
+        }
+        return response.json();
+      })
+      .catch(error => {
+        if (METADATA_CACHE.get(key) === request) {
+          METADATA_CACHE.delete(key);
+        }
+        throw error;
+      });
+    METADATA_CACHE.set(key, request);
+  }
+  let metadata = {};
+  try {
+    metadata = await METADATA_CACHE.get(key);
+  } catch (error) {}
+  if (cur >= 0 && VIEW[cur] === item && $("sourceSel").value === source) {
+    renderPrompt(useVideo, metadata);
+  }
+}
+
 function openLb(idx) {
   cur = idx;
   const it = VIEW[cur];
+  const opening = !$("lb").classList.contains("open");
   $("lbName").textContent = it.path;
   const useVideo = $("videoMode").checked && it.video_url;
   // The reimagined cell is a looping video in video mode (when one exists),
   // else the static render.
   const outMedia = useVideo
-    ? `<video src="${it.video_url}" autoplay muted loop playsinline controls></video>`
+    ? `<video src="${it.video_url}" autoplay muted loop playsinline controls
+              aria-label="Reimagined video ${escapeHtml(it.path)}"></video>`
     : `<img src="${it.output_url}" alt="Reimagined ${escapeHtml(it.path)}">`;
   const outLabel = useVideo ? "reimagined (video)" : "reimagined";
   const side = $("lbSide").checked && !!it.input_url;
@@ -403,19 +567,17 @@ function openLb(idx) {
        <figure><figcaption>${outLabel}</figcaption>${outMedia}</figure>`
     : `<figure><figcaption>${outLabel}${it.input_url ? "" : " (no reference)"}</figcaption>${outMedia}</figure>`;
   $("lbMeta").textContent = it.input_url ? "" : "no matching reference";
-  // Show the video prompt in video mode (falling back to the still prompt),
-  // else the still prompt.
-  const pr = $("lbPrompt");
-  const txt = useVideo ? (it.video_prompt || it.prompt) : it.prompt;
-  const lbl = useVideo && it.video_prompt ? "video prompt" : "prompt";
-  const expanded = pr.classList.contains("expanded");
-  pr.classList.toggle("empty", !txt);
-  pr.innerHTML =
-    `<button type="button" class="lbl" aria-expanded="${expanded ? "true" : "false"}"
-             aria-controls="lbPromptBody">${escapeHtml(lbl)}</button>` +
-    `<div class="prompt-body" id="lbPromptBody">${txt ? escapeHtml(txt) : "no saved prompt for this render"}</div>`;
-  pr.classList.toggle("expanded", expanded);
-  if (!$("lb").classList.contains("open")) {
+  const prompt = $("lbPrompt");
+  if (opening) {
+    prompt.classList.toggle(
+      "expanded",
+      !window.matchMedia("(orientation: portrait)").matches);
+  }
+  prompt.classList.remove("empty");
+  prompt.setAttribute("aria-busy", "true");
+  updatePromptNodes("prompt", "Loading prompt…");
+  loadPrompt(it, useVideo);
+  if (opening) {
     pageScrollY = window.scrollY;
     returnFocus = document.activeElement;
     document.body.style.top = `-${pageScrollY}px`;
@@ -440,11 +602,15 @@ function closeLb() {
     renderDeferred = false;
     render();
   }
-  const replacement = returnIndex === undefined
-    ? null
-    : $("main").querySelector(`.card[data-idx="${returnIndex}"]`);
-  if (replacement || returnFocus?.isConnected) {
-    (replacement || returnFocus).focus();
+  renderWindow(true);
+  const replacement = returnIndex === undefined ? null :
+    $("main").querySelector(`.card[data-idx="${returnIndex}"]`);
+  if (replacement) {
+    replacement.focus();
+  } else if (returnFocus?.isConnected) {
+    returnFocus.focus();
+  } else {
+    $("gallery")?.focus({ preventScroll: true });
   }
   returnFocus = null;
 }
@@ -460,17 +626,38 @@ $("sourceSel").addEventListener("change", () => {
 });
 $("catFilter").addEventListener("change", () => {
   preferredCategory = $("catFilter").value;
-  displayLimit = DISPLAY_BATCH;
+  window.scrollTo(0, $("main").getBoundingClientRect().top + window.scrollY);
   render();
 });
 $("compareAll").addEventListener("change", render);
 $("videoMode").addEventListener("change", () => { render(); if (cur >= 0) openLb(cur); });
+$("main").addEventListener("click", (event) => {
+  const card = event.target.closest(".card");
+  if (card) openLb(+card.dataset.idx);
+});
+$("main").addEventListener("keydown", (event) => {
+  const card = event.target.closest(".card");
+  if (!card) return;
+  const index = +card.dataset.idx;
+  const movements = {
+    ArrowLeft: -1,
+    ArrowRight: 1,
+    ArrowUp: -layoutColumns,
+    ArrowDown: layoutColumns,
+    Home: -index,
+    End: VIEW.length - 1 - index,
+  };
+  if (!(event.key in movements)) return;
+  event.preventDefault();
+  focusLogicalCard(index + movements[event.key]);
+});
+window.addEventListener("scroll", scheduleWindowRender, { passive: true });
+window.addEventListener("resize", scheduleWindowRender);
 $("lbClose").addEventListener("click", closeLb);
 $("lbSide").addEventListener("change", () => cur >= 0 && openLb(cur));
 $("lb").addEventListener("click", (e) => { if (e.target.id === "lb") closeLb(); });
 $("lbPrompt").addEventListener("click", (e) => {
   if (!e.target.closest(".lbl")) return;
-  if (!window.matchMedia("(orientation: portrait)").matches) return;
   const pr = $("lbPrompt");
   const open = !pr.classList.contains("expanded");
   pr.classList.toggle("expanded", open);

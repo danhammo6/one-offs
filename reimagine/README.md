@@ -259,7 +259,30 @@ Pipeline metadata is parsed once before the server starts listening and cached
 for the lifetime of the process; restart the gallery after changing a manifest.
 A source with malformed or inconsistent manifests is logged and remains
 browseable without reference or prompt metadata. Media files are still
-discovered live on each request. Gallery records are streamed as they are
-discovered. The page renders an initial batch and automatically reveals
-additional batches near the bottom, keeping large output collections
-responsive.
+discovered live on each request.
+
+Still rendering writes 512 px maximum-edge WebP thumbnails to the project-level
+`.thumbnails/` directory, preserving aspect ratio and EXIF orientation without
+upscaling. The gallery uses the same cache for lazy fallback; input and output
+media trees remain read-only. `render_media.py` and `serve.py` both accept
+`--thumbnail-cache-root` when a different server-local cache is needed.
+
+The cache layout is
+`.thumbnails/{input|output}/<media-root-name>-<root-hash>/<relative-path>.<source-fingerprint>.webp`.
+The root hash namespaces different pipeline and reference roots without placing
+absolute paths in URLs or cache paths. Complete source filenames and immutable
+source fingerprints prevent extension, root, and version collisions. Thumbnail
+writes are atomic; corrupt entries are regenerated. A lightweight fingerprint
+of the relative path and high-resolution file identity fields drives both disk
+paths and versioned URLs without hashing every full image during gallery
+listing. Versioned and legacy files are retained because another process or
+active request may still need them; perform cleanup offline while renderers and
+gallery servers are stopped. Versioned responses use long-lived immutable
+browser caching, while the lightbox loads full-resolution media.
+
+Gallery records are streamed as they are discovered, without embedding prompt
+text. Prompt metadata is requested from `/api/metadata` only when a lightbox
+item opens and is served from the startup manifest cache. The page uses a
+windowed grid with a small overscan buffer, keeping card and media-node counts
+bounded as the collection grows while retaining navigation across the full
+logical result set.

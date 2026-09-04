@@ -4,7 +4,11 @@ import time
 from pathlib import Path
 
 from .comfy import ComfyClient
-from .files import atomic_write_bytes, host_name, sha256_file
+from .files import (
+    DEFAULT_THUMBNAIL_CACHE_ROOT, atomic_write_bytes, ensure_thumbnail,
+    host_name, sha256_file, thumbnail_cache_path,
+    thumbnail_source_fingerprint,
+)
 from .manifest import (
     plan_fingerprint, save_render_state, save_render_state_folder,
 )
@@ -78,7 +82,24 @@ def _read_still_output(client, artifacts, output_dir, save_subdir, name, before)
         return max(candidates, key=lambda path: path.stat().st_mtime_ns).read_bytes()
 
 
+def _ensure_still_thumbnail(output_dir, relative, cache_root):
+    source = output_dir / relative
+    fingerprint = thumbnail_source_fingerprint(source, relative)
+    if fingerprint is None:
+        logger.warning("could not fingerprint thumbnail source %s", relative)
+        return
+    destination = thumbnail_cache_path(
+        cache_root, output_dir, relative, fingerprint=fingerprint)
+    if ensure_thumbnail(
+            source, destination, relative=relative,
+            fingerprint=fingerprint) is None:
+        logger.warning("could not create thumbnail for %s", relative)
+
+
 def render_stills(args, manifest, output_dir, state):
+    thumbnail_cache_root = (
+        vars(args).get("thumbnail_cache_root")
+        or DEFAULT_THUMBNAIL_CACHE_ROOT)
     workflow_path = args.still_workflow or (
         REGIONS_WORKFLOW if manifest.still_mode == "regions" else MANUAL_WORKFLOW)
     workflow = load_workflow(workflow_path)
@@ -104,6 +125,8 @@ def render_stills(args, manifest, output_dir, state):
                     msg += ' and output file mismatch'
                 raise Exception(msg)
 
+            _ensure_still_thumbnail(
+                output_dir, item.still.output, thumbnail_cache_root)
             continue
         pending.append((item, destination, fingerprint, seed))
     if not pending:
@@ -124,6 +147,8 @@ def render_stills(args, manifest, output_dir, state):
                 client, artifacts, args.comfyui_output_dir,
                 args.still_save_subdir, name, before)
             atomic_write_bytes(destination, _jpeg_bytes(raw))
+            _ensure_still_thumbnail(
+                output_dir, item.still.output, thumbnail_cache_root)
             item_state = state["items"].setdefault(item.item_id, {})
             item_state["still"] = {
                 "plan_fingerprint": fingerprint,

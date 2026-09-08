@@ -38,7 +38,8 @@ npm install
 npm run test:frontend
 ```
 
-The suite checks windowing (DOM ≤ 80 cards), metadata-on-open, HUD zones,
+The suite checks windowing (DOM ≤ 80 cards), viewport-first media after a
+long jump, metadata-on-open, HUD zones,
 pinch-zoom edge taps (visible-viewport bands after pan), prompt-first-close,
 HUD preserved across navigation and reset on reopen, first left/right
 hiding the HUD, navigation holding

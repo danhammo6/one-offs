@@ -12,6 +12,45 @@ pipeline tree    -> render_media.py     -> JPEGs + MP4s
 `serve.py` provides a gallery for comparing the generated media with its
 references.
 
+## Architecture / Design / UI Goals
+
+The planner (`generate_prompts.py`) never talks to ComfyUI. The renderer
+(`render_media.py`) never talks to an LLM. Each image folder’s `pipeline.yaml`
+is the versioned handoff: prompts, paths, dimensions, duration. The gallery
+server reads those manifests once at startup into a disposable JSON index,
+walks media live per request, and serves `index.html` as a virtualized
+Safari-first comparison UI.
+
+Lightbox chrome stays compact. Landscape pairs stack; portrait (and
+short-wide phone landscape) go side-by-side with portrait images meeting at
+center. A reading-style HUD hides every control so the media can use the
+viewport; hidden HUD state survives navigation and resets when the lightbox
+is reopened. Video playback is kept; HTTP range/chunked video serving is not
+implemented.
+
+```mermaid
+flowchart LR
+  input[Reference tree] --> planner[generate_prompts.py]
+  planner --> yaml["pipeline.yaml per folder"]
+  yaml --> renderer[render_media.py]
+  renderer --> media[JPEGs + sibling MP4s]
+  yaml --> server[serve.py]
+  media --> server
+  server --> gallery[index.html]
+```
+
+Operational flags, prompt stages, and gallery cache layout stay in the sections
+below. Topic docs are for later sessions that should open only what they need:
+
+| Doc | When to read |
+| --- | --- |
+| [docs/README.md](docs/README.md) | Topic-file index with the same when-to-read rules |
+| [docs/architecture.md](docs/architecture.md) | Pipeline vs gallery data flow, HTTP routes, key modules |
+| [docs/ui.md](docs/ui.md) | Lightbox/gallery interaction, orientation, HUD, Safari/touch |
+| [docs/performance.md](docs/performance.md) | Manifest index, thumbnail cache, virtualization, measurements |
+| [docs/testing.md](docs/testing.md) | unittest vs Playwright, 4k fixture, how to run tests |
+| [REGION_PROMPT_EXPERIMENTS.md](REGION_PROMPT_EXPERIMENTS.md) | Historical region-prompt LLM benchmarks, not runtime architecture |
+
 ## Setup
 
 ```bash
@@ -246,6 +285,10 @@ default. Rerun that directory with `-v` or `-vv` to inspect rejected responses.
 
 ## Gallery
 
+Interaction model and HUD goals: [docs/ui.md](docs/ui.md). Cache layout and
+startup measurements: [docs/performance.md](docs/performance.md). Tests:
+[docs/testing.md](docs/testing.md).
+
 ```bash
 .venv/bin/python serve.py              # http://127.0.0.1:8000
 .venv/bin/python serve.py --port 9000
@@ -314,4 +357,5 @@ text. Prompt metadata is requested from `/api/metadata` only when a lightbox
 item opens and is served from the startup manifest cache. The page uses a
 windowed grid with a small overscan buffer, keeping card and media-node counts
 bounded as the collection grows while retaining navigation across the full
-logical result set.
+logical result set. In-view thumbnails are requested before overscan so a jump
+down the page is not queued behind off-screen rows.

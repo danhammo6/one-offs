@@ -112,11 +112,13 @@ class PipelineManifestTests(unittest.TestCase):
             modified = destination.stat().st_mtime_ns
             with mock.patch(
                     "reimagine_pipeline.files.atomic_write_bytes") as write:
-                self.assertEqual(
-                    ensure_thumbnail(
-                        source, destination, relative=relative,
-                        fingerprint=fingerprint), destination)
+                with mock.patch("PIL.Image.open") as opened:
+                    self.assertEqual(
+                        ensure_thumbnail(
+                            source, destination, relative=relative,
+                            fingerprint=fingerprint), destination)
             write.assert_not_called()
+            opened.assert_not_called()
             self.assertEqual(destination.stat().st_mtime_ns, modified)
 
             small = root / "small.png"

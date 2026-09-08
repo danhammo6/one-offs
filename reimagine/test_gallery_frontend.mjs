@@ -307,6 +307,7 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
 }, async () => {
   let streamRequests = 0;
   const metadataRequests = new Map();
+  const imageRequests = [];
   let releaseInitialStream = null;
   let releaseDelayedMetadata = null;
   const server = createServer((request, response) => {
@@ -365,6 +366,7 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
       }));
     }
     if (url.pathname.startsWith("/img/")) {
+      imageRequests.push(url.pathname);
       const image = fixtureImage(url);
       if (url.pathname.startsWith("/img/output/")
           && url.pathname.includes("item-2004.jpg")) {
@@ -544,6 +546,39 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
       "continuous scrolling keeps the DOM bounded");
     assert.equal(scrollMetrics.maxVisibleIncomplete, 0,
       "eager overscan keeps visible images loaded during continuous scrolling");
+
+    await page.evaluate(() => new Promise(requestAnimationFrame));
+    const requestsBeforeJump = imageRequests.length;
+    await page.evaluate(async () => {
+      const el = document.querySelector("#page");
+      el.scrollTop = el.scrollHeight;
+      await new Promise(requestAnimationFrame);
+    });
+    const jumpMedia = await page.evaluate(() => {
+      const srcOf = media =>
+        media.dataset.pendingSrc || media.currentSrc || media.src;
+      const cards = [...document.querySelectorAll("#gallery .card")];
+      const visible = cards
+        .filter(card => {
+          const bounds = card.getBoundingClientRect();
+          return bounds.bottom > 0 && bounds.top < innerHeight;
+        })
+        .flatMap(card => [...card.querySelectorAll("img, video")].map(srcOf))
+        .filter(Boolean);
+      const windowed = cards
+        .flatMap(card => [...card.querySelectorAll("img, video")].map(srcOf))
+        .filter(Boolean);
+      return { visible, windowed };
+    });
+    const jumpedRequests = imageRequests.slice(requestsBeforeJump)
+      .filter(path => jumpMedia.windowed.some(src => src.includes(path)));
+    assert.ok(jumpMedia.visible.length, "end of gallery has visible cards");
+    assert.ok(jumpedRequests.length, "jumping to the end starts media requests");
+    const earlyJumpRequests = jumpedRequests.slice(0, jumpMedia.visible.length);
+    assert.ok(
+      earlyJumpRequests.every(path =>
+        jumpMedia.visible.some(src => src.includes(path))),
+      "viewport thumbnails are requested before overscan after a long jump");
 
     await scrollGallery(page, 0);
     const edgeCard = page.locator('.card[data-idx="0"]');

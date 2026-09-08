@@ -138,14 +138,20 @@ def thumbnail_source_fingerprint(source, relative):
 
 @lru_cache(maxsize=16384)
 def _cached_thumbnail_is_readable(path_string, mtime_ns, size, inode):
-    from PIL import Image
+    """Return whether a cached WebP looks servable without decoding it.
 
-    try:
-        with Image.open(path_string) as image:
-            image.verify()
-        return True
-    except (OSError, ValueError):
+    PIL verify() holds the GIL and serializes ThreadingHTTPServer thumbnail
+    hits, so a jump down the gallery appears to load images one by one.
+    Non-WebP corrupt files still miss and regenerate.
+    """
+    if size < 12:
         return False
+    try:
+        with open(path_string, "rb") as handle:
+            header = handle.read(12)
+    except OSError:
+        return False
+    return header.startswith(b"RIFF") and header[8:12] == b"WEBP"
 
 
 def _thumbnail_bytes(source, max_edge):

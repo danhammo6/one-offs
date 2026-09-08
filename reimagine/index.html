@@ -271,6 +271,7 @@ let layoutWidth = 0;
 let layoutColumns = 1;
 let layoutRowHeight = 0;
 let virtualFrame = 0;
+let mediaStartVersion = 0;
 let lightboxMediaVersion = 0;
 let lightboxLayoutFrame = 0;
 let lightboxLayoutState = null;
@@ -423,13 +424,52 @@ function buildLayout() {
   gallery.style.height = `${Math.max(0, top - GRID_GAP)}px`;
 }
 
+function layoutIntersects(unit, start, end) {
+  return unit.top + unit.height >= start && unit.top <= end;
+}
+
 function visibleLayout() {
   const top = readScrollY() - galleryTop();
   const overscan = layoutRowHeight * OVERSCAN_ROWS;
-  const start = top - overscan;
-  const end = top + window.innerHeight + overscan;
   return LAYOUT.filter(unit =>
-    unit.top + unit.height >= start && unit.top <= end);
+    layoutIntersects(
+      unit, top - overscan, top + window.innerHeight + overscan));
+}
+
+function viewportBounds() {
+  const top = readScrollY() - galleryTop();
+  return { start: top, end: top + window.innerHeight };
+}
+
+function applyMediaPriority(node, high) {
+  const priority = high ? "high" : "low";
+  for (const media of node.querySelectorAll("img, video")) {
+    media.fetchPriority = priority;
+  }
+}
+
+function startCardMedia(node) {
+  let started = false;
+  for (const media of node.querySelectorAll("img, video")) {
+    const pending = media.dataset.pendingSrc;
+    if (pending && media.getAttribute("src") !== pending) {
+      media.src = pending;
+      started = true;
+    }
+  }
+  if (started) prepareCardMedia(node);
+}
+
+function startWindowMedia(wanted, version) {
+  for (const node of wanted) {
+    if (node.dataset.inView === "1") startCardMedia(node);
+  }
+  requestAnimationFrame(() => {
+    if (version !== mediaStartVersion) return;
+    for (const node of wanted) {
+      if (node.dataset.inView !== "1") startCardMedia(node);
+    }
+  });
 }
 
 function findLayoutRow(index) {
@@ -453,6 +493,7 @@ function renderWindow(force = false) {
     ].join(":")),
   ].join("|");
   if (!force && key === renderedWindowKey) return;
+  const view = viewportBounds();
   const activeIndex = document.activeElement?.closest?.(".card")?.dataset.idx;
   const existing = new Map(
     [...gallery.children].map(node => [node.dataset.virtualKey, node]));
@@ -476,6 +517,8 @@ function renderWindow(force = false) {
       wanted.push(node);
       continue;
     }
+    const inView = layoutIntersects(unit, view.start, view.end);
+    const priority = inView ? "high" : "low";
     unit.entries.forEach(({ item, idx }, column) => {
       const virtualKey = `item:${source}:${item.path}`;
       let node = existing.get(virtualKey);
@@ -484,9 +527,11 @@ function renderWindow(force = false) {
         node.className = "virtual-item";
         node.dataset.virtualKey = virtualKey;
         node.dataset.variant = variant;
-        node.innerHTML = card(item, idx, compareAll, videoMode);
-        prepareCardMedia(node);
+        node.innerHTML = card(item, idx, compareAll, videoMode, priority);
+      } else {
+        applyMediaPriority(node, inView);
       }
+      node.dataset.inView = inView ? "1" : "0";
       node.querySelector(".card").dataset.idx = idx;
       node.setAttribute("aria-setsize", VIEW.length);
       node.setAttribute("aria-posinset", idx + 1);
@@ -505,6 +550,7 @@ function renderWindow(force = false) {
     if (current !== node) gallery.insertBefore(node, current || null);
   });
   renderedWindowKey = key;
+  startWindowMedia(wanted, ++mediaStartVersion);
   if (activeIndex !== undefined) {
     const replacement = gallery.querySelector(
       `.card[data-idx="${activeIndex}"]`);
@@ -595,25 +641,28 @@ function render() {
   renderWindow(created);
 }
 
-function card(it, idx, compareAll, videoMode) {
+function card(it, idx, compareAll, videoMode, priority = "low") {
   const useVideo = videoMode && it.video_url;
+  const fetchpriority = priority === "high" ? "high" : "low";
   // The "output" cell shows the video when in video mode and one exists,
-  // otherwise the static render.
+  // otherwise the static render. src is assigned after layout so in-view
+  // cards can claim connections before overscan.
   const outCell = useVideo
-    ? `<video src="${it.video_url}" muted loop playsinline preload="metadata"
+    ? `<video data-pending-src="${it.video_url}" muted loop playsinline
+              preload="metadata" fetchpriority="${fetchpriority}"
               data-orientation-key="${escapeHtml(it.video_url)}"
               aria-label="Video preview for ${escapeHtml(it.path)}"
               onmouseenter="this.play()" onmouseleave="this.pause()"></video>`
-    : `<img loading="eager" decoding="async"
+    : `<img loading="eager" decoding="async" fetchpriority="${fetchpriority}"
             data-orientation-key="${escapeHtml(it.output_url)}"
-            src="${it.output_thumbnail_url || it.output_url}"
+            data-pending-src="${it.output_thumbnail_url || it.output_url}"
             onerror="this.onerror=null;this.src='${escapeHtml(it.output_url)}'"
             alt="Reimagined ${escapeHtml(it.path)}">`;
   const showBoth = compareAll && it.input_url;
   const imgs = showBoth
-    ? `<img loading="eager" decoding="async"
+    ? `<img loading="eager" decoding="async" fetchpriority="${fetchpriority}"
             data-orientation-key="${escapeHtml(it.input_url)}"
-            src="${it.input_thumbnail_url || it.input_url}"
+            data-pending-src="${it.input_thumbnail_url || it.input_url}"
             onerror="this.onerror=null;this.src='${escapeHtml(it.input_url)}'"
             alt="Reference ${escapeHtml(it.path)}">${outCell}`
     : outCell;

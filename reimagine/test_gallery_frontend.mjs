@@ -581,15 +581,14 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
     await page.mouse.click(desktopQuarter - 1, desktopCenterY);
     assert.equal(await page.locator("#lb").evaluate(
       lightbox => lightbox.classList.contains("open")), true,
-    "side-edge navigation does not dismiss the lightbox");
+    "side-edge taps do not dismiss the lightbox");
     assert.equal(await page.locator("#lbName").textContent(),
-      "beta/item-3999.jpg", "desktop side-edge navigation wraps backward");
-    await waitForLightboxSrc(page, "item-3999");
-    await page.mouse.click(desktopQuarter, desktopCenterY);
+      "alpha/a-deliberately-long-gallery-filename-for-truncation-item-0000.jpg",
+    "the first left-edge tap hides the HUD instead of navigating");
     const desktopHudHidden = await lightboxHudGeometry(page);
     const desktopHiddenMedia = await comparisonGeometry(page, "stacked");
     assert.equal(desktopHudHidden.visible, false,
-      "the exact 25% boundary belongs to the center HUD zone");
+      "the first left/right gesture dismisses the HUD");
     assert.equal(desktopHudHidden.bar.hidden && desktopHudHidden.bar.inert, true);
     assert.equal(
       desktopHudHidden.utility.hidden && desktopHudHidden.utility.inert, true);
@@ -604,9 +603,25 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
       > comparisonMediaArea(desktopVisibleMedia),
     "hidden desktop HUD materially enlarges media");
     assert.ok(desktopHudHidden.stageLabel.includes("Controls hidden"));
-    assert.equal(desktopHudHidden.dialogName, "Viewing beta/item-3999.jpg",
+    assert.equal(desktopHudHidden.dialogName,
+      "Viewing alpha/a-deliberately-long-gallery-filename-for-truncation-item-0000.jpg",
       "the dialog keeps an accessible name while filename chrome is hidden");
 
+    await page.mouse.click(desktopQuarter - 1, desktopCenterY);
+    assert.equal(await page.locator("#lbName").textContent(),
+      "beta/item-3999.jpg", "desktop side-edge navigation wraps backward");
+    assert.equal((await lightboxHudGeometry(page)).visible, false,
+      "edge navigation preserves hidden HUD state");
+    await waitForLightboxSrc(page, "item-3999");
+    await page.mouse.click(desktopQuarter, desktopCenterY);
+    assert.equal((await lightboxHudGeometry(page)).visible, true,
+      "the exact 25% boundary belongs to the center HUD zone");
+
+    await page.keyboard.press("ArrowRight");
+    assert.equal(await page.locator("#lbName").textContent(),
+      "beta/item-3999.jpg",
+    "the first Left/Right Arrow hides the HUD instead of navigating");
+    assert.equal((await lightboxHudGeometry(page)).visible, false);
     await page.keyboard.press("ArrowRight");
     assert.equal(await page.locator("#lbName").textContent(),
       "alpha/a-deliberately-long-gallery-filename-for-truncation-item-0000.jpg");
@@ -618,17 +633,22 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
       "the center zone extends through the pixel before 75%");
     await page.mouse.click(desktopQuarter * 3, desktopCenterY);
     assert.equal(await page.locator("#lbName").textContent(),
+      "alpha/a-deliberately-long-gallery-filename-for-truncation-item-0000.jpg",
+    "the first right-edge tap hides the HUD instead of navigating");
+    assert.equal((await lightboxHudGeometry(page)).visible, false);
+    await page.mouse.click(desktopQuarter * 3, desktopCenterY);
+    assert.equal(await page.locator("#lbName").textContent(),
       "alpha/item-0001.jpg",
     "the exact 75% boundary belongs to next navigation");
-    assert.equal((await lightboxHudGeometry(page)).visible, true,
-      "edge navigation does not toggle the HUD");
+    assert.equal((await lightboxHudGeometry(page)).visible, false,
+      "edge navigation does not show the HUD");
 
     await page.mouse.move(600, 400);
     await page.mouse.down();
     await page.mouse.move(640, 440, { steps: 4 });
     await page.mouse.up();
     assert.equal(await page.locator("#lbName").textContent(), "alpha/item-0001.jpg");
-    assert.equal((await lightboxHudGeometry(page)).visible, true,
+    assert.equal((await lightboxHudGeometry(page)).visible, false,
       "mouse drag is not treated as a center tap");
 
     const layoutZoom = {
@@ -646,7 +666,7 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
     );
     assert.equal(await page.locator("#lbName").textContent(), "alpha/item-0002.jpg",
       "layout-viewport clientX still treats a zoomed right-edge tap as next");
-    assert.equal((await lightboxHudGeometry(page)).visible, true,
+    assert.equal((await lightboxHudGeometry(page)).visible, false,
       "zoomed right-edge navigation does not toggle the HUD");
     await dispatchLightboxTap(
       page,
@@ -660,11 +680,9 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
       layoutZoom.offsetLeft + layoutZoom.width * 0.5,
       layoutZoom.height * 0.5,
     );
-    assert.equal((await lightboxHudGeometry(page)).visible, false,
+    assert.equal((await lightboxHudGeometry(page)).visible, true,
       "layout-viewport clientX still treats a zoomed center tap as HUD");
     await restoreVisualViewport(page);
-    await page.mouse.click(desktopQuarter * 2, desktopCenterY);
-    assert.equal((await lightboxHudGeometry(page)).visible, true);
 
     await page.locator("#lbClose").focus();
     await page.keyboard.press("h");
@@ -681,8 +699,9 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
       "Space also toggles the HUD from the focused media stage");
     await page.keyboard.press("H");
     assert.equal((await lightboxHudGeometry(page)).visible, true);
-
-    await page.mouse.click(desktopQuarter * 2, desktopCenterY);
+    await page.keyboard.press("ArrowRight");
+    assert.equal(await page.locator("#lbName").textContent(), "alpha/item-0001.jpg",
+      "showing the HUD again makes the next Left/Right hide it");
     assert.equal((await lightboxHudGeometry(page)).visible, false);
     await page.keyboard.press("Escape");
     assert.equal(await page.locator("#lb").evaluate(
@@ -753,6 +772,7 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
       "stacked landscape media remains centered",
     );
 
+    await page.keyboard.press("h");
     await page.keyboard.press("ArrowLeft");
     await page.waitForFunction(
       () => document.querySelector("#lbName")?.textContent
@@ -805,6 +825,7 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
     await page.evaluate(() => openLb(3));
     await comparisonGeometry(page, "side-by-side");
 
+    await page.keyboard.press("h");
     await page.locator("#lbSide").uncheck();
     assert.deepEqual(await page.evaluate(() => ({
       layout: document.querySelector("#lbStage").dataset.comparisonLayout,
@@ -864,6 +885,7 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
     );
     assert.equal(metadataRequests.get("beta/item-2000.jpg"), 2);
 
+    await page.keyboard.press("h");
     await page.keyboard.press("ArrowRight");
     await page.waitForFunction(
       () => document.querySelector("#lbName")?.textContent
@@ -1241,10 +1263,19 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
     await touchPage.touchscreen.tap(
       Math.ceil(phoneQuarter * 3), phoneCenter.y);
     assert.equal(await touchPage.locator("#lbName").textContent(),
+      "beta/item-3999.jpg",
+    "the first right-edge tap hides the HUD instead of navigating");
+    assert.equal((await lightboxHudGeometry(touchPage)).visible, false);
+    await touchPage.touchscreen.tap(
+      Math.ceil(phoneQuarter * 3), phoneCenter.y);
+    assert.equal(await touchPage.locator("#lbName").textContent(),
       "alpha/a-deliberately-long-gallery-filename-for-truncation-item-0000.jpg",
     "the first integer pixel in the right 25% navigates");
-    assert.equal((await lightboxHudGeometry(touchPage)).visible, true);
+    assert.equal((await lightboxHudGeometry(touchPage)).visible, false,
+      "touch edge navigation preserves hidden HUD state");
     await waitForLightboxSrc(touchPage, "item-0000");
+    await touchPage.touchscreen.tap(phoneCenter.x, phoneCenter.y);
+    assert.equal((await lightboxHudGeometry(touchPage)).visible, true);
 
     await touchPage.setViewportSize({ width: 844, height: 390 });
     const phoneLandscape = await comparisonGeometry(
@@ -1356,6 +1387,7 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
     "combined utility row preserves iPad stage height");
     assert.equal((await comparisonGeometry(touchPage, "stacked")).overflow, false,
       "landscape comparison stacks on iPad");
+    await touchPage.keyboard.press("h");
     await touchPage.keyboard.press("ArrowRight");
     const iPadPortrait = await comparisonGeometry(touchPage, "side-by-side");
     assert.equal(iPadPortrait.overflow, false,
@@ -1366,6 +1398,7 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
     assert.ok(phonePortraitGap < iPadPortraitGap
       && iPadPortraitGap < desktopPortraitGap,
     "comparison gutter responds to viewport width");
+    await touchPage.keyboard.press("h");
     const iPadHudVisible = await lightboxHudGeometry(touchPage);
     await touchPage.keyboard.press("h");
     const iPadHudHidden = await lightboxHudGeometry(touchPage);
@@ -1411,6 +1444,8 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
     await iPadZoomPage.locator('.card[data-idx="0"]').click();
     await iPadZoomPage.locator("#lb.open").waitFor();
     await waitForLoadedImages(iPadZoomPage, "#lbStage img");
+    await iPadZoomPage.keyboard.press("h");
+    assert.equal((await lightboxHudGeometry(iPadZoomPage)).visible, false);
     const visualZoom = {
       offsetLeft: 280,
       offsetTop: 40,
@@ -1435,7 +1470,7 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
     assert.equal(await iPadZoomPage.locator("#lbName").textContent(),
       "alpha/item-0002.jpg",
       "iOS visual-viewport clientX treats a panned right-edge tap as next");
-    assert.equal((await lightboxHudGeometry(iPadZoomPage)).visible, true,
+    assert.equal((await lightboxHudGeometry(iPadZoomPage)).visible, false,
       "a zoomed iPad right-edge tap does not toggle the HUD");
     await dispatchLightboxTap(
       iPadZoomPage, visualZoom.width * 0.1, visualZoom.height * 0.5,
@@ -1447,7 +1482,7 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
     await dispatchLightboxTap(
       iPadZoomPage, visualZoom.width * 0.5, visualZoom.height * 0.5,
     );
-    assert.equal((await lightboxHudGeometry(iPadZoomPage)).visible, false,
+    assert.equal((await lightboxHudGeometry(iPadZoomPage)).visible, true,
       "iOS visual-viewport clientX treats a panned center tap as HUD");
     await restoreVisualViewport(iPadZoomPage);
     await iPadZoomContext.close();

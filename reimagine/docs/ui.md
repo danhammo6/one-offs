@@ -45,10 +45,9 @@ stateDiagram-v2
   [*] --> Closed
   Closed --> Open: open card
   Open --> Closed: Escape / Close
-  Open --> HudHidden: H / Enter / Space / center tap
+  Open --> HudHidden: H / Enter / Space / center tap / Left/Right / edge / swipe
   HudHidden --> Open: H / Enter / Space / center tap
-  Open --> Open: Left/Right / edge tap / swipe
-  HudHidden --> HudHidden: navigate
+  HudHidden --> HudHidden: Left/Right / edge tap / swipe
   note right of Open: reopen resets HUD visible
   note right of HudHidden: prompt closed first if expanded
 ```
@@ -62,7 +61,8 @@ Background header/main are inert while the lightbox is open.
 | Input | Behavior |
 | --- | --- |
 | Middle 50% tap | Toggle HUD (after prompt-first-close) |
-| Outer 25% tap | Previous / next item; exact 25% pixel is center |
+| Outer 25% tap | Hide HUD if visible; otherwise previous / next. Exact 25% pixel is center |
+| Left/Right Arrow, swipe | Same as outer 25% tap |
 | H, Enter, Space | Toggle HUD (Enter/Space only when the stage is focused) |
 | Escape | Close lightbox |
 | Pointer move > 14 px | Not a tap; no HUD toggle or edge nav |
@@ -72,6 +72,11 @@ Tap bands are relative to the **visible** viewport, including while pinch-zoomed
 
 A center tap (or HUD toggle) **closes an open prompt first** and leaves the HUD
 visible. A second center tap hides the HUD.
+
+When the HUD is visible, the first Left/Right Arrow, edge tap, or swipe
+hides it and stays on the current item. Those same inputs navigate only
+after the HUD is hidden. Showing the HUD again means the next left/right
+hides it once more.
 
 Hidden HUD state is preserved across item navigation. Closing and reopening
 the lightbox resets the HUD to visible. Navigation keeps the current stills

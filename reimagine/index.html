@@ -230,11 +230,11 @@
   </div>
   <div class="stage" id="lbStage" role="group" tabindex="0"
        aria-keyshortcuts="H Enter Space"
-       aria-label="Media area. Controls visible. Press H, Enter, or Space to hide controls. Use Left and Right Arrow to navigate."></div>
+       aria-label="Media area. Controls visible. Press H, Enter, or Space to hide controls. Left or Right Arrow also hides controls."></div>
   <div id="lbPreload" aria-hidden="true" inert></div>
   <div class="utility" id="lbUtility">
     <div class="hint" id="lbHint">
-      Tap center or press H to hide controls · swipe or tap edges to move · pinch to zoom · Esc closes
+      Tap center, an edge, or H to hide controls · then swipe or tap edges to move · pinch to zoom · Esc closes
     </div>
     <button type="button" class="prompt-toggle" id="lbPromptToggle"
             aria-controls="lbPromptBody" aria-expanded="false">prompt</button>
@@ -681,7 +681,7 @@ function setLightboxHudVisible(visible, { announce = true, moveFocus = true } = 
   stage.setAttribute(
     "aria-label",
     visible
-      ? "Media area. Controls visible. Press H, Enter, or Space to hide controls. Use Left and Right Arrow to navigate."
+      ? "Media area. Controls visible. Press H, Enter, or Space to hide controls. Left or Right Arrow also hides controls."
       : "Media area. Controls hidden. Press H, Enter, or Space to show controls. Use Left and Right Arrow to navigate.",
   );
   if (announce) {
@@ -996,6 +996,14 @@ function step(d) {
   openLb((cur + d + VIEW.length) % VIEW.length);
 }
 
+function stepOrDismissHud(d) {
+  if (!$("lb").classList.contains("hud-hidden")) {
+    setLightboxHudVisible(false);
+    return;
+  }
+  step(d);
+}
+
 $("refresh").addEventListener("click", load);
 $("sourceSel").addEventListener("change", () => {
   try { localStorage.setItem(SOURCE_KEY, $("sourceSel").value); } catch (e) {}
@@ -1082,8 +1090,8 @@ $("lb").addEventListener("pointerup", (e) => {
   if (Math.hypot(e.clientX - start.x, e.clientY - start.y) > TAP_SLOP) return;
   const { x, w } = visualPoint(e.clientX, e.clientY);
   const band = w * EDGE_RATIO;
-  if (x < band) step(-1);
-  else if (x >= w - band) step(1);
+  if (x < band) stepOrDismissHud(-1);
+  else if (x >= w - band) stepOrDismissHud(1);
   else toggleLightboxHud();
 });
 $("lb").addEventListener("pointercancel", () => { edgeTap = null; });
@@ -1109,7 +1117,7 @@ $("lbStage").addEventListener("touchend", (e) => {
   const scale = window.visualViewport?.scale || 1;
   if (swipeStart.scale <= 1.05 && scale <= 1.05
       && Math.abs(dx) >= 60 && Math.abs(dx) > Math.abs(dy) * 1.25) {
-    step(dx < 0 ? 1 : -1);
+    stepOrDismissHud(dx < 0 ? 1 : -1);
   }
   swipeStart = null;
 }, { passive: true });
@@ -1140,8 +1148,8 @@ document.addEventListener("keydown", (e) => {
       e.preventDefault();
       first.focus();
     }
-  } else if (e.key === "ArrowRight") step(1);
-  else if (e.key === "ArrowLeft") step(-1);
+  } else if (e.key === "ArrowRight") stepOrDismissHud(1);
+  else if (e.key === "ArrowLeft") stepOrDismissHud(-1);
   else if (e.key === "s" || e.key === "S") { $("lbSide").checked = !$("lbSide").checked; openLb(cur); }
 });
 

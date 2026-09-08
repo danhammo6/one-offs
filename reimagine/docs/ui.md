@@ -29,9 +29,12 @@ disagree.
 
 | Case | Layout |
 | --- | --- |
-| Landscape pair | Stacked (two rows) |
+| Landscape pair | Stacked when that paints clearly more pixels; otherwise side-by-side |
 | Portrait pair | Side-by-side columns |
-| Phone landscape, short-wide | Columns even for landscape media when the stage is short, wide, and columns fit more pixels |
+
+Landscape columns are typical on phone landscape and tablet landscape for
+3:2 stills. Very wide 2:1 pairs often stay stacked because that uses more of
+the stage.
 
 Portrait image pairs set `object-position` so the two stills meet at
 center (reference right-aligned, primary left-aligned). Hiding the HUD

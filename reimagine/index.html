@@ -785,12 +785,8 @@ function useShortWideColumns(stage, dimensions) {
   const columnArea = fittedMediaArea(
     dimensions, (width - gap) / 2, height);
   const staying = stage.dataset.comparisonReason === "short-wide";
-  const maxHeight = staying ? 470 : 430;
-  const minAspect = staying ? 1.6 : 1.8;
-  const minAreaGain = staying ? 1.08 : 1.2;
-  return height <= maxHeight
-    && width / height >= minAspect
-    && columnArea >= stackedArea * minAreaGain;
+  const stackedAdvantage = staying ? 1.08 : 1.2;
+  return stackedArea <= columnArea * stackedAdvantage;
 }
 
 function refreshComparisonLayout() {

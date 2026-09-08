@@ -42,7 +42,8 @@ The suite checks windowing (DOM ≤ 80 cards), metadata-on-open, HUD zones,
 pinch-zoom edge taps (visible-viewport bands after pan), prompt-first-close,
 HUD preserved across navigation and reset on reopen, navigation holding
 painted media until the next stills can decode, portrait center alignment,
-short-wide phone-landscape columns, and video controls remaining usable
+short-wide phone-landscape columns, tablet-landscape landscape columns
+when that uses more pixels, and video controls remaining usable
 with hidden chrome.
 
 ## Local 4k fixture

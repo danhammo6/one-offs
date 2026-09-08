@@ -15,6 +15,7 @@ function imageFixture(width, height, color) {
 }
 
 const LANDSCAPE_IMAGE = imageFixture(1200, 600, "#3578b8");
+const LANDSCAPE_32_IMAGE = imageFixture(1536, 1024, "#3578b8");
 const PORTRAIT_IMAGE = imageFixture(600, 1200, "#8d4db8");
 
 function fixtureImage(url) {
@@ -22,6 +23,7 @@ function fixtureImage(url) {
   const reference = url.pathname.includes("/input/");
   const portrait = index === 2001 || index === 2005
     || (index === 2003 && !reference);
+  if (index === 8 || index === 2008) return LANDSCAPE_32_IMAGE;
   return portrait ? PORTRAIT_IMAGE : LANDSCAPE_IMAGE;
 }
 const ITEMS = Array.from({ length: 4000 }, (_, index) => {
@@ -1370,6 +1372,28 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
     assert.ok(iPadHudHidden.stage.height > iPadHudVisible.stage.height + 90,
       "iPad HUD hiding reclaims chrome space");
     await touchPage.keyboard.press("h");
+    await touchPage.locator("#lbClose").click();
+
+    await touchPage.locator('.card[data-idx="0"]').click();
+    await waitForLoadedImages(touchPage, "#lbStage img");
+    await touchPage.setViewportSize({ width: 1180, height: 820 });
+    assert.equal((await comparisonGeometry(touchPage, "stacked")).overflow, false,
+      "2:1 landscape pairs still stack on iPad landscape when stacked is larger");
+    await touchPage.locator("#lbClose").click();
+
+    await touchPage.setViewportSize({ width: 820, height: 1180 });
+    await touchPage.locator('.card[data-idx="8"]').click();
+    await waitForLoadedImages(touchPage, "#lbStage img");
+    await touchPage.setViewportSize({ width: 1180, height: 820 });
+    const iPadLandscape = await comparisonGeometry(touchPage, "side-by-side");
+    assert.ok(iPadLandscape.figures[1].left
+      >= iPadLandscape.figures[0].right,
+    "3:2 landscape pairs use columns on iPad landscape");
+    assert.equal(await touchPage.locator("#lbStage").getAttribute(
+      "data-comparison-reason"), "short-wide");
+    assertImagePairMeetsAtCenter(
+      iPadLandscape, "iPad landscape 3:2 comparison",
+    );
     await touchPage.locator("#lbClose").click();
 
     const iPadZoomContext = await browser.newContext({

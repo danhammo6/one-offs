@@ -17,8 +17,27 @@
   body {
     margin: 0; background: var(--bg); color: var(--fg);
     font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    overflow: hidden; height: 100%;
+  }
+  html { height: 100%; }
+  #page {
+    height: 100dvh;
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+  @media (pointer: coarse), (any-pointer: coarse) {
+    #page::-webkit-scrollbar { width: 44px; }
+    #page::-webkit-scrollbar-track { background: transparent; }
+    #page::-webkit-scrollbar-thumb {
+      background-color: rgba(139, 147, 161, .7);
+      background-clip: padding-box;
+      border: 14px solid transparent;
+      border-radius: 22px;
+      min-height: 48px;
+    }
   }
   body.lightbox-open { position: fixed; width: 100%; overflow: hidden; }
+  body.lightbox-open #page { overflow: hidden; }
   header {
     position: sticky; top: 0; z-index: 5;
     display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
@@ -184,6 +203,7 @@
 </style>
 </head>
 <body>
+<div id="page">
 <header>
   <h1>reimagine</h1>
   <label class="toggle" for="sourceSel">source</label>
@@ -198,6 +218,7 @@
 </header>
 
 <main id="main"><div class="empty" role="status">loading…</div></main>
+</div>
 
 <div id="lb" role="dialog" aria-modal="true" aria-label="Media viewer">
   <div class="bar" id="lbBar">
@@ -258,6 +279,10 @@ const METADATA_CACHE = new Map();
 const MEDIA_DIMENSIONS = new Map();
 
 const $ = (id) => document.getElementById(id);
+const readScrollY = () => $("page")?.scrollTop || 0;
+const writeScrollY = (y) => {
+  if ($("page")) $("page").scrollTop = y;
+};
 const escapeHtml = (s) => s.replace(/[&<>"']/g, c =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const setBackgroundInert = (inert) => {
@@ -360,7 +385,7 @@ function updateCategoryFilter() {
 
 function galleryTop() {
   const gallery = $("gallery");
-  return gallery ? gallery.getBoundingClientRect().top + window.scrollY : 0;
+  return gallery ? gallery.getBoundingClientRect().top + readScrollY() : 0;
 }
 
 function buildLayout() {
@@ -399,7 +424,7 @@ function buildLayout() {
 }
 
 function visibleLayout() {
-  const top = window.scrollY - galleryTop();
+  const top = readScrollY() - galleryTop();
   const overscan = layoutRowHeight * OVERSCAN_ROWS;
   const start = top - overscan;
   const end = top + window.innerHeight + overscan;
@@ -494,7 +519,7 @@ function scheduleWindowRender() {
     virtualFrame = 0;
     const gallery = $("gallery");
     if (gallery && gallery.clientWidth !== layoutWidth) {
-      const localTop = window.scrollY - galleryTop();
+      const localTop = readScrollY() - galleryTop();
       const anchor = LAYOUT.find(unit =>
         unit.type === "row"
         && unit.top + unit.height >= localTop);
@@ -503,8 +528,8 @@ function scheduleWindowRender() {
       buildLayout();
       const replacement = findLayoutRow(anchorIndex);
       if (replacement) {
-        window.scrollTo(
-          0, galleryTop() + replacement.top
+        writeScrollY(
+          galleryTop() + replacement.top
           + Math.min(offset, replacement.height - 1));
       }
       renderedWindowKey = "";
@@ -520,10 +545,10 @@ function focusLogicalCard(index) {
   const top = galleryTop() + unit.top;
   const bottom = top + unit.height - GRID_GAP;
   const headerBottom = document.querySelector("header").offsetHeight;
-  if (top < window.scrollY + headerBottom) {
-    window.scrollTo(0, top - headerBottom);
-  } else if (bottom > window.scrollY + window.innerHeight) {
-    window.scrollTo(0, bottom - window.innerHeight);
+  if (top < readScrollY() + headerBottom) {
+    writeScrollY(top - headerBottom);
+  } else if (bottom > readScrollY() + window.innerHeight) {
+    writeScrollY(bottom - window.innerHeight);
   }
   renderWindow(true);
   requestAnimationFrame(() => {
@@ -807,7 +832,7 @@ function mediaPaintReady(media) {
   });
 }
 
-function installLightboxStage(html, compare, version, hudVisible, mediaHadFocus) {
+function installLightboxStage(html, compare, version, mediaHadFocus) {
   const stage = $("lbStage");
   const host = $("lbPreload");
   host.replaceChildren();
@@ -823,7 +848,7 @@ function installLightboxStage(html, compare, version, hudVisible, mediaHadFocus)
     }
     stage.replaceChildren(...host.childNodes);
     configureComparisonLayout(stage, compare, primary, reference, version);
-    setLightboxHudVisible(hudVisible, {
+    setLightboxHudVisible(!$("lb").classList.contains("hud-hidden"), {
       announce: false,
       moveFocus: false,
     });
@@ -925,9 +950,8 @@ function openLb(idx) {
   }
   loadPrompt(it, useVideo);
   if (opening) {
-    pageScrollY = window.scrollY;
+    pageScrollY = readScrollY();
     returnFocus = document.activeElement;
-    document.body.style.top = `-${pageScrollY}px`;
     document.body.classList.add("lightbox-open");
     setBackgroundInert(true);
     $("lb").classList.add("open");
@@ -937,7 +961,7 @@ function openLb(idx) {
   }
   // Keep the current stills painted until the next media can decode, so a
   // cache miss does not flash the empty stage background.
-  installLightboxStage(html, compare, mediaVersion, hudVisible, mediaHadFocus);
+  installLightboxStage(html, compare, mediaVersion, mediaHadFocus);
 }
 
 function closeLb() {
@@ -953,7 +977,7 @@ function closeLb() {
   setBackgroundInert(false);
   document.body.classList.remove("lightbox-open");
   document.body.style.top = "";
-  window.scrollTo(0, pageScrollY);
+  writeScrollY(pageScrollY);
   cur = -1;
   if (renderDeferred) {
     renderDeferred = false;
@@ -983,7 +1007,7 @@ $("sourceSel").addEventListener("change", () => {
 });
 $("catFilter").addEventListener("change", () => {
   preferredCategory = $("catFilter").value;
-  window.scrollTo(0, $("main").getBoundingClientRect().top + window.scrollY);
+  writeScrollY($("main").getBoundingClientRect().top + readScrollY());
   render();
 });
 $("compareAll").addEventListener("change", render);
@@ -1008,7 +1032,7 @@ $("main").addEventListener("keydown", (event) => {
   event.preventDefault();
   focusLogicalCard(index + movements[event.key]);
 });
-window.addEventListener("scroll", scheduleWindowRender, { passive: true });
+$("page").addEventListener("scroll", scheduleWindowRender, { passive: true });
 window.addEventListener("resize", scheduleWindowRender);
 window.addEventListener("resize", scheduleComparisonLayout);
 window.visualViewport?.addEventListener("resize", scheduleComparisonLayout);

@@ -19,7 +19,8 @@ overscan) exist in the DOM; the rest of the logical set stays in memory for
 filter and lightbox navigation. Nodes are keyed
 (`item:<source>:<path>`, `heading:<category>`) and reused across scrolls.
 Thumbnails in the window load `eager`. Source selection persists in
-`localStorage`.
+`localStorage`. On coarse pointers the gallery scrollbar stays visually
+compact but uses a 44px hit strip.
 
 ## Comparison layout
 

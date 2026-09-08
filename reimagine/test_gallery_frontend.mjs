@@ -69,6 +69,12 @@ async function waitForLightboxSrc(page, pathPart) {
   pathPart);
 }
 
+async function scrollGallery(page, top) {
+  await page.evaluate(scrollTop => {
+    document.querySelector("#page").scrollTop = scrollTop;
+  }, top);
+}
+
 async function waitForLoadedImages(page, selector) {
   await page.waitForFunction(imageSelector =>
     [...document.querySelectorAll(imageSelector)]
@@ -481,7 +487,7 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
     await page.waitForFunction(
       () => document.querySelector("#stat")?.textContent.includes("4000 renders"),
     );
-    await page.evaluate(() => window.scrollTo(0, 0));
+    await scrollGallery(page, 0);
 
     const cards = page.locator("#gallery .card");
     const initialCardCount = await cards.count();
@@ -503,7 +509,7 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
       });
       observer.observe(gallery, { childList: true });
       for (let frame = 0; frame < 120; frame += 1) {
-        window.scrollBy(0, 80);
+        document.querySelector("#page").scrollBy(0, 80);
         await new Promise(requestAnimationFrame);
         const currentCards = [...gallery.querySelectorAll(".card")];
         const currentImages = new Map(currentCards
@@ -537,7 +543,7 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
     assert.equal(scrollMetrics.maxVisibleIncomplete, 0,
       "eager overscan keeps visible images loaded during continuous scrolling");
 
-    await page.evaluate(() => window.scrollTo(0, 0));
+    await scrollGallery(page, 0);
     const edgeCard = page.locator('.card[data-idx="0"]');
     await edgeCard.click();
     await page.locator("#lb.open").waitFor();
@@ -688,9 +694,10 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
       lightbox => lightbox.classList.contains("open")), false,
     "the explicit close button dismisses the lightbox");
 
-    await page.evaluate(() => window.scrollTo(
-      0, document.documentElement.scrollHeight * 0.7,
-    ));
+    await page.evaluate(() => {
+      const root = document.querySelector("#page");
+      root.scrollTop = root.scrollHeight * 0.7;
+    });
     await page.waitForFunction(() => {
       const indexes = [...document.querySelectorAll("#gallery .card")]
         .map(card => Number(card.dataset.idx));
@@ -1334,6 +1341,9 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
     await touchPage.locator("#lbClose").click();
 
     await touchPage.setViewportSize({ width: 820, height: 1180 });
+    assert.equal(await touchPage.evaluate(() =>
+      getComputedStyle(document.querySelector("#page"), "::-webkit-scrollbar").width),
+      "44px", "touch gallery scrollbar uses a 44px hit target");
     await touchPage.locator('.card[data-idx="0"]').click();
     await touchPage.locator("#lb.open").waitFor();
     assert.ok(await touchPage.locator("#lbStage").evaluate(stage =>
@@ -1409,6 +1419,7 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
     assert.equal(await iPadZoomPage.locator("#lbName").textContent(),
       "alpha/item-0001.jpg",
       "iOS visual-viewport clientX treats a panned left-edge tap as previous");
+    await waitForLightboxSrc(iPadZoomPage, "item-0001");
     await dispatchLightboxTap(
       iPadZoomPage, visualZoom.width * 0.5, visualZoom.height * 0.5,
     );

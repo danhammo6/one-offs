@@ -963,11 +963,26 @@ const TAP_SLOP = 14;
 const isNavChrome = (el) => el.closest(
   ".bar, .utility, .prompt, button, input, label, video, a, select"
 );
+const usesVisualClientCoordinates = () =>
+  /iP(hone|od|ad)/.test(navigator.userAgent)
+  || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 const visualPoint = (clientX, clientY) => {
   const vv = window.visualViewport;
-  return vv
-    ? { x: clientX - vv.offsetLeft, y: clientY - vv.offsetTop, w: vv.width, h: vv.height }
-    : { x: clientX, y: clientY, w: window.innerWidth, h: window.innerHeight };
+  if (!vv) {
+    return { x: clientX, y: clientY, w: window.innerWidth, h: window.innerHeight };
+  }
+  const layoutX = clientX - vv.offsetLeft;
+  const layoutY = clientY - vv.offsetTop;
+  const inside = (x, y) =>
+    x >= -1 && x <= vv.width + 1 && y >= -1 && y <= vv.height + 1;
+  // iOS Safari reports clientX/Y in visual-viewport space. Subtracting
+  // offsetLeft after a pinch-pan slides a right-edge tap into the HUD
+  // or previous-item band depending on the pan.
+  const useRaw = usesVisualClientCoordinates()
+    || (inside(clientX, clientY) && !inside(layoutX, layoutY));
+  return useRaw
+    ? { x: clientX, y: clientY, w: vv.width, h: vv.height }
+    : { x: layoutX, y: layoutY, w: vv.width, h: vv.height };
 };
 let edgeTap = null;
 $("lb").addEventListener("pointerdown", (e) => {

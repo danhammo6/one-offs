@@ -68,6 +68,55 @@ async function waitForLoadedImages(page, selector) {
       .every(image => image.complete && image.naturalWidth), selector);
 }
 
+async function stubVisualViewport(page, viewport) {
+  await page.evaluate(next => {
+    const current = window.visualViewport;
+    window.__restoreVisualViewport = () => {
+      Object.defineProperty(window, "visualViewport", {
+        configurable: true,
+        value: current,
+      });
+    };
+    Object.defineProperty(window, "visualViewport", {
+      configurable: true,
+      value: {
+        offsetLeft: next.offsetLeft,
+        offsetTop: next.offsetTop,
+        width: next.width,
+        height: next.height,
+        scale: next.scale,
+        pageLeft: next.pageLeft ?? next.offsetLeft,
+        pageTop: next.pageTop ?? next.offsetTop,
+        addEventListener() {},
+        removeEventListener() {},
+      },
+    });
+  }, viewport);
+}
+
+async function restoreVisualViewport(page) {
+  await page.evaluate(() => window.__restoreVisualViewport?.());
+}
+
+async function dispatchLightboxTap(page, clientX, clientY) {
+  await page.evaluate(({ clientX, clientY }) => {
+    const target = document.querySelector("#lbStage img")
+      || document.querySelector("#lbStage");
+    const init = {
+      bubbles: true,
+      cancelable: true,
+      pointerId: 1,
+      pointerType: "touch",
+      isPrimary: true,
+      clientX,
+      clientY,
+      button: 0,
+    };
+    target.dispatchEvent(new PointerEvent("pointerdown", { ...init, buttons: 1 }));
+    target.dispatchEvent(new PointerEvent("pointerup", { ...init, buttons: 0 }));
+  }, { clientX, clientY });
+}
+
 async function comparisonGeometry(page, expectedLayout) {
   await page.waitForFunction(layout =>
     document.querySelector("#lbStage")?.dataset.comparisonLayout === layout,
@@ -560,6 +609,41 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
     assert.equal(await page.locator("#lbName").textContent(), "alpha/item-0001.jpg");
     assert.equal((await lightboxHudGeometry(page)).visible, true,
       "mouse drag is not treated as a center tap");
+
+    const layoutZoom = {
+      offsetLeft: 280,
+      offsetTop: 40,
+      width: 417,
+      height: 597,
+      scale: 2,
+    };
+    await stubVisualViewport(page, layoutZoom);
+    await dispatchLightboxTap(
+      page,
+      layoutZoom.offsetLeft + layoutZoom.width * 0.9,
+      layoutZoom.height * 0.5,
+    );
+    assert.equal(await page.locator("#lbName").textContent(), "alpha/item-0002.jpg",
+      "layout-viewport clientX still treats a zoomed right-edge tap as next");
+    assert.equal((await lightboxHudGeometry(page)).visible, true,
+      "zoomed right-edge navigation does not toggle the HUD");
+    await dispatchLightboxTap(
+      page,
+      layoutZoom.offsetLeft + layoutZoom.width * 0.1,
+      layoutZoom.height * 0.5,
+    );
+    assert.equal(await page.locator("#lbName").textContent(), "alpha/item-0001.jpg",
+      "layout-viewport clientX still treats a zoomed left-edge tap as previous");
+    await dispatchLightboxTap(
+      page,
+      layoutZoom.offsetLeft + layoutZoom.width * 0.5,
+      layoutZoom.height * 0.5,
+    );
+    assert.equal((await lightboxHudGeometry(page)).visible, false,
+      "layout-viewport clientX still treats a zoomed center tap as HUD");
+    await restoreVisualViewport(page);
+    await page.mouse.click(desktopQuarter * 2, desktopCenterY);
+    assert.equal((await lightboxHudGeometry(page)).visible, true);
 
     await page.locator("#lbClose").focus();
     await page.keyboard.press("h");
@@ -1238,6 +1322,61 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
       "iPad HUD hiding reclaims chrome space");
     await touchPage.keyboard.press("h");
     await touchPage.locator("#lbClose").click();
+
+    const iPadZoomContext = await browser.newContext({
+      viewport: { width: 834, height: 1194 },
+      hasTouch: true,
+      isMobile: true,
+      userAgent: "Mozilla/5.0 (iPad; CPU OS 17_0 like Mac OS X) "
+        + "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
+    });
+    const iPadZoomPage = await iPadZoomContext.newPage();
+    await iPadZoomPage.goto(`http://127.0.0.1:${port}/`);
+    await iPadZoomPage.waitForFunction(
+      () => document.querySelector("#stat")?.textContent.includes("4000 renders"),
+    );
+    await iPadZoomPage.locator('.card[data-idx="0"]').click();
+    await iPadZoomPage.locator("#lb.open").waitFor();
+    await waitForLoadedImages(iPadZoomPage, "#lbStage img");
+    const visualZoom = {
+      offsetLeft: 280,
+      offsetTop: 40,
+      width: 417,
+      height: 597,
+      scale: 2,
+    };
+    await stubVisualViewport(iPadZoomPage, {
+      ...visualZoom,
+      offsetLeft: Math.round((834 - visualZoom.width) / 2),
+    });
+    await dispatchLightboxTap(
+      iPadZoomPage, visualZoom.width * 0.9, visualZoom.height * 0.5,
+    );
+    assert.equal(await iPadZoomPage.locator("#lbName").textContent(),
+      "alpha/item-0001.jpg",
+      "a centered pinch-pan still treats the visible right edge as next");
+    await stubVisualViewport(iPadZoomPage, visualZoom);
+    await dispatchLightboxTap(
+      iPadZoomPage, visualZoom.width * 0.9, visualZoom.height * 0.5,
+    );
+    assert.equal(await iPadZoomPage.locator("#lbName").textContent(),
+      "alpha/item-0002.jpg",
+      "iOS visual-viewport clientX treats a panned right-edge tap as next");
+    assert.equal((await lightboxHudGeometry(iPadZoomPage)).visible, true,
+      "a zoomed iPad right-edge tap does not toggle the HUD");
+    await dispatchLightboxTap(
+      iPadZoomPage, visualZoom.width * 0.1, visualZoom.height * 0.5,
+    );
+    assert.equal(await iPadZoomPage.locator("#lbName").textContent(),
+      "alpha/item-0001.jpg",
+      "iOS visual-viewport clientX treats a panned left-edge tap as previous");
+    await dispatchLightboxTap(
+      iPadZoomPage, visualZoom.width * 0.5, visualZoom.height * 0.5,
+    );
+    assert.equal((await lightboxHudGeometry(iPadZoomPage)).visible, false,
+      "iOS visual-viewport clientX treats a panned center tap as HUD");
+    await restoreVisualViewport(iPadZoomPage);
+    await iPadZoomContext.close();
     await touchContext.close();
 
     console.log(

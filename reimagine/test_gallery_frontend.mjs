@@ -62,6 +62,13 @@ async function eventually(check, message, timeout = 5000) {
   assert.fail(message);
 }
 
+async function waitForLightboxSrc(page, pathPart) {
+  await page.waitForFunction(part =>
+    [...document.querySelectorAll("#lbStage img, #lbStage video")]
+      .some(media => (media.getAttribute("src") || "").includes(part)),
+  pathPart);
+}
+
 async function waitForLoadedImages(page, selector) {
   await page.waitForFunction(imageSelector =>
     [...document.querySelectorAll(imageSelector)]
@@ -350,12 +357,16 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
       }));
     }
     if (url.pathname.startsWith("/img/")) {
-      response.writeHead(200, { "Content-Type": "image/svg+xml" });
       const image = fixtureImage(url);
       if (url.pathname.startsWith("/img/output/")
           && url.pathname.includes("item-2004.jpg")) {
+        response.writeHead(200, {
+          "Content-Type": "image/svg+xml",
+          "Cache-Control": "no-store",
+        });
         return setTimeout(() => response.end(image), 120);
       }
+      response.writeHead(200, { "Content-Type": "image/svg+xml" });
       return response.end(image);
     }
     if (url.pathname.startsWith("/video/")) {
@@ -565,6 +576,7 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
     "side-edge navigation does not dismiss the lightbox");
     assert.equal(await page.locator("#lbName").textContent(),
       "beta/item-3999.jpg", "desktop side-edge navigation wraps backward");
+    await waitForLightboxSrc(page, "item-3999");
     await page.mouse.click(desktopQuarter, desktopCenterY);
     const desktopHudHidden = await lightboxHudGeometry(page);
     const desktopHiddenMedia = await comparisonGeometry(page, "stacked");
@@ -592,6 +604,7 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
       "alpha/a-deliberately-long-gallery-filename-for-truncation-item-0000.jpg");
     assert.equal((await lightboxHudGeometry(page)).visible, false,
       "keyboard navigation preserves hidden HUD state");
+    await waitForLightboxSrc(page, "item-0000");
     await page.mouse.click(desktopQuarter * 3 - 1, desktopCenterY);
     assert.equal((await lightboxHudGeometry(page)).visible, true,
       "the center zone extends through the pixel before 75%");
@@ -746,18 +759,42 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
     );
 
     await page.keyboard.press("ArrowRight");
-    assert.deepEqual(await page.evaluate(() => ({
-      name: document.querySelector("#lbName").textContent,
-      layout: document.querySelector("#lbStage").dataset.comparisonLayout,
-    })), {
-      name: "beta/item-2006.jpg",
-      layout: "stacked",
-    }, "cached dimensions apply during navigation without a transient layout");
+    assert.equal(await page.locator("#lbName").textContent(), "beta/item-2006.jpg",
+      "the filename updates before the next stills replace the stage");
+    await page.waitForFunction(() =>
+      [...document.querySelectorAll("#lbStage img")]
+        .some(image => (image.getAttribute("src") || "").includes("item-2006")));
+    assert.equal(await page.locator("#lbStage").getAttribute(
+      "data-comparison-layout"), "stacked",
+    "new stills paint with the cached landscape layout");
 
     await page.evaluate(() => openLb(3));
     await waitForLoadedImages(page, "#lbStage img");
     assert.equal((await comparisonGeometry(page, "side-by-side")).overflow, false,
       "output orientation controls mismatched source/result layout");
+
+    await page.evaluate(() => openLb(4));
+    const heldNavigation = await page.evaluate(() => {
+      const images = [...document.querySelectorAll("#lbStage img")];
+      return {
+        name: document.querySelector("#lbName").textContent,
+        painted: images.length > 0 && images.every(image => image.naturalWidth > 0),
+        pendingOutput: images.some(image =>
+          (image.getAttribute("src") || "").includes("item-2004")
+          && (image.getAttribute("src") || "").includes("/output/")),
+      };
+    });
+    assert.equal(heldNavigation.name, "beta/item-2004.jpg");
+    assert.ok(heldNavigation.painted,
+      "navigation keeps painted media while the next still loads");
+    assert.equal(heldNavigation.pendingOutput, false,
+      "the empty next output is not shown before it can paint");
+    await page.waitForFunction(() =>
+      [...document.querySelectorAll("#lbStage img")].some(image =>
+        (image.getAttribute("src") || "").includes("item-2004")
+        && (image.getAttribute("src") || "").includes("/output/")));
+    await page.evaluate(() => openLb(3));
+    await comparisonGeometry(page, "side-by-side");
 
     await page.locator("#lbSide").uncheck();
     assert.deepEqual(await page.evaluate(() => ({
@@ -1188,6 +1225,7 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
       "beta/item-3999.jpg", "touch side-edge navigation wraps backward");
     assert.equal((await lightboxHudGeometry(touchPage)).visible, false,
       "touch edge navigation preserves hidden HUD state");
+    await waitForLightboxSrc(touchPage, "item-3999");
     await touchPage.touchscreen.tap(Math.ceil(phoneQuarter), phoneCenter.y);
     assert.equal((await lightboxHudGeometry(touchPage)).visible, true,
       "the first integer pixel inside the phone center band toggles HUD");
@@ -1197,6 +1235,7 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
       "alpha/a-deliberately-long-gallery-filename-for-truncation-item-0000.jpg",
     "the first integer pixel in the right 25% navigates");
     assert.equal((await lightboxHudGeometry(touchPage)).visible, true);
+    await waitForLightboxSrc(touchPage, "item-0000");
 
     await touchPage.setViewportSize({ width: 844, height: 390 });
     const phoneLandscape = await comparisonGeometry(

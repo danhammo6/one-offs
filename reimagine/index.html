@@ -84,8 +84,13 @@
       var(--lb-pad-top) var(--lb-pad-right)
       var(--lb-pad-bottom) var(--lb-pad-left);
     flex-direction: column; gap: 8px; overscroll-behavior: contain;
+    overflow: hidden;
   }
   #lb.open { display: flex; }
+  #lbPreload {
+    position: absolute; width: 1px; height: 1px; overflow: hidden;
+    opacity: 0; pointer-events: none;
+  }
   #lb [hidden] { display: none !important; }
   #lb.hud-hidden { gap: 0; }
   #lb .bar {
@@ -205,6 +210,7 @@
   <div class="stage" id="lbStage" role="group" tabindex="0"
        aria-keyshortcuts="H Enter Space"
        aria-label="Media area. Controls visible. Press H, Enter, or Space to hide controls. Use Left and Right Arrow to navigate."></div>
+  <div id="lbPreload" aria-hidden="true" inert></div>
   <div class="utility" id="lbUtility">
     <div class="hint" id="lbHint">
       Tap center or press H to hide controls · swipe or tap edges to move · pinch to zoom · Esc closes
@@ -247,6 +253,7 @@ let virtualFrame = 0;
 let lightboxMediaVersion = 0;
 let lightboxLayoutFrame = 0;
 let lightboxLayoutState = null;
+let edgeTap = null;
 const METADATA_CACHE = new Map();
 const MEDIA_DIMENSIONS = new Map();
 
@@ -785,6 +792,51 @@ function scheduleComparisonLayout() {
   });
 }
 
+function mediaPaintReady(media) {
+  const decode = () => media.decode?.().catch(() => {}) || Promise.resolve();
+  if (media.complete) return decode();
+  return new Promise(resolve => {
+    const done = () => {
+      media.removeEventListener("load", onLoad);
+      media.removeEventListener("error", done);
+      resolve();
+    };
+    const onLoad = () => decode().then(done, done);
+    media.addEventListener("load", onLoad);
+    media.addEventListener("error", done);
+  });
+}
+
+function installLightboxStage(html, compare, version, hudVisible, mediaHadFocus) {
+  const stage = $("lbStage");
+  const host = $("lbPreload");
+  host.replaceChildren();
+  host.innerHTML = html;
+  const primary = host.querySelector('[data-comparison-role="primary"]');
+  const reference = host.querySelector('[data-comparison-role="reference"]');
+  const commit = () => {
+    if (version !== lightboxMediaVersion) return;
+    if (edgeTap) {
+      $("lb").addEventListener("pointerup", commit, { once: true });
+      $("lb").addEventListener("pointercancel", commit, { once: true });
+      return;
+    }
+    stage.replaceChildren(...host.childNodes);
+    configureComparisonLayout(stage, compare, primary, reference, version);
+    setLightboxHudVisible(hudVisible, {
+      announce: false,
+      moveFocus: false,
+    });
+    if (mediaHadFocus && !stage.contains(document.activeElement)) {
+      stage.focus({ preventScroll: true });
+    }
+    scheduleComparisonLayout();
+  };
+  Promise.all(
+    [...host.querySelectorAll("img")].map(mediaPaintReady),
+  ).then(commit);
+}
+
 function configureComparisonLayout(stage, compare, primary, reference, version) {
   stage.classList.toggle("compare", compare);
   stage.classList.toggle(
@@ -839,20 +891,23 @@ function openLb(idx) {
             alt="Reimagined ${escapeHtml(it.path)}">`;
   const outLabel = useVideo ? "reimagined (video)" : "reimagined";
   const compare = $("lbSide").checked && !!it.input_url;
-  stage.innerHTML = compare
+  const html = compare
     ? `<figure><figcaption>reference</figcaption>
          <img src="${it.input_url}" data-comparison-role="reference"
               data-orientation-key="${escapeHtml(it.input_url)}"
               alt="Reference ${escapeHtml(it.path)}"></figure>
        <figure><figcaption>${outLabel}</figcaption>${outMedia}</figure>`
     : `<figure><figcaption>${outLabel}${it.input_url ? "" : " (no reference)"}</figcaption>${outMedia}</figure>`;
-  configureComparisonLayout(
-    stage,
-    compare,
-    stage.querySelector('[data-comparison-role="primary"]'),
-    stage.querySelector('[data-comparison-role="reference"]'),
-    mediaVersion,
-  );
+  if (opening) {
+    stage.innerHTML = html;
+    configureComparisonLayout(
+      stage,
+      compare,
+      stage.querySelector('[data-comparison-role="primary"]'),
+      stage.querySelector('[data-comparison-role="reference"]'),
+      mediaVersion,
+    );
+  }
   $("lbMeta").textContent = it.input_url ? "" : "no matching reference";
   const prompt = $("lbPrompt");
   if (opening) {
@@ -877,8 +932,12 @@ function openLb(idx) {
     setBackgroundInert(true);
     $("lb").classList.add("open");
     $("lbClose").focus();
+    scheduleComparisonLayout();
+    return;
   }
-  scheduleComparisonLayout();
+  // Keep the current stills painted until the next media can decode, so a
+  // cache miss does not flash the empty stage background.
+  installLightboxStage(html, compare, mediaVersion, hudVisible, mediaHadFocus);
 }
 
 function closeLb() {
@@ -887,6 +946,7 @@ function closeLb() {
   lightboxLayoutState = null;
   cancelAnimationFrame(lightboxLayoutFrame);
   lightboxLayoutFrame = 0;
+  $("lbPreload").replaceChildren();
   const returnIndex = returnFocus?.dataset.idx;
   $("lb").classList.remove("open");
   setPromptExpanded(false);
@@ -984,7 +1044,6 @@ const visualPoint = (clientX, clientY) => {
     ? { x: clientX, y: clientY, w: vv.width, h: vv.height }
     : { x: layoutX, y: layoutY, w: vv.width, h: vv.height };
 };
-let edgeTap = null;
 $("lb").addEventListener("pointerdown", (e) => {
   if (!e.isPrimary || e.button) { edgeTap = null; return; }
   if (isNavChrome(e.target)) { edgeTap = null; return; }

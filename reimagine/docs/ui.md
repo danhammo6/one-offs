@@ -70,7 +70,9 @@ A center tap (or HUD toggle) **closes an open prompt first** and leaves the HUD
 visible. A second center tap hides the HUD.
 
 Hidden HUD state is preserved across item navigation. Closing and reopening
-the lightbox resets the HUD to visible.
+the lightbox resets the HUD to visible. Navigation keeps the current stills
+painted until the next media can decode, so a cache miss does not flash the
+empty stage.
 
 Video mode still compares against the reference still. Range/chunked video
 delivery is a server gap, not a UI feature.

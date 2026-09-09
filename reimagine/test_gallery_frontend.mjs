@@ -73,7 +73,7 @@ async function waitForLightboxSrc(page, pathPart) {
 
 async function scrollGallery(page, top) {
   await page.evaluate(scrollTop => {
-    document.querySelector("#page").scrollTop = scrollTop;
+    document.querySelector("#main").scrollTop = scrollTop;
   }, top);
 }
 
@@ -513,7 +513,7 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
       });
       observer.observe(gallery, { childList: true });
       for (let frame = 0; frame < 120; frame += 1) {
-        document.querySelector("#page").scrollBy(0, 80);
+        document.querySelector("#main").scrollBy(0, 80);
         await new Promise(requestAnimationFrame);
         const currentCards = [...gallery.querySelectorAll(".card")];
         const currentImages = new Map(currentCards
@@ -550,7 +550,7 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
     await page.evaluate(() => new Promise(requestAnimationFrame));
     const requestsBeforeJump = imageRequests.length;
     await page.evaluate(async () => {
-      const el = document.querySelector("#page");
+      const el = document.querySelector("#main");
       el.scrollTop = el.scrollHeight;
       await new Promise(requestAnimationFrame);
     });
@@ -751,7 +751,7 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
     "the explicit close button dismisses the lightbox");
 
     await page.evaluate(() => {
-      const root = document.querySelector("#page");
+      const root = document.querySelector("#main");
       root.scrollTop = root.scrollHeight * 0.7;
     });
     await page.waitForFunction(() => {
@@ -1409,9 +1409,20 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
     await touchPage.locator("#lbClose").click();
 
     await touchPage.setViewportSize({ width: 820, height: 1180 });
-    assert.equal(await touchPage.evaluate(() =>
-      getComputedStyle(document.querySelector("#page"), "::-webkit-scrollbar").width),
-      "88px", "touch gallery scrollbar uses an 88px hit target");
+    const galleryChrome = await touchPage.evaluate(() => {
+      const header = document.querySelector("header").getBoundingClientRect();
+      const main = document.querySelector("#main").getBoundingClientRect();
+      return {
+        headerBottom: header.bottom,
+        mainTop: main.top,
+        scrollbarWidth: getComputedStyle(
+          document.querySelector("#main"), "::-webkit-scrollbar").width,
+      };
+    });
+    assert.ok(Math.abs(galleryChrome.mainTop - galleryChrome.headerBottom) <= 1,
+      "gallery scrollbar starts just below the header controls");
+    assert.equal(galleryChrome.scrollbarWidth, "88px",
+      "touch gallery scrollbar uses an 88px hit target");
     await touchPage.locator('.card[data-idx="0"]').click();
     await touchPage.locator("#lb.open").waitFor();
     assert.ok(await touchPage.locator("#lbStage").evaluate(stage =>

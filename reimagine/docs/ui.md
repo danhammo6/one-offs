@@ -21,8 +21,9 @@ filter and lightbox navigation. Nodes are keyed
 In-view thumbnails start first with `fetchpriority="high"`. Overscan waits
 until those images have loaded (or 1.5s) at `low`, so a scrollbar jump does
 not share an HDD queue with off-screen rows. Source selection persists in
-`localStorage`. On coarse pointers the gallery scrollbar stays visually
-compact but uses an 88px hit strip.
+`localStorage`. The header stays outside the gallery scroller, so the
+scrollbar starts just below the controls. On coarse pointers the gallery
+scrollbar stays visually compact but uses an 88px hit strip.
 
 ## Comparison layout
 

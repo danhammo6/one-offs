@@ -22,25 +22,14 @@
   html { height: 100%; }
   #page {
     height: 100dvh;
-    overflow: auto;
-    overscroll-behavior: contain;
-  }
-  @media (pointer: coarse), (any-pointer: coarse) {
-    #page::-webkit-scrollbar { width: 88px; }
-    #page::-webkit-scrollbar-track { background: transparent; }
-    #page::-webkit-scrollbar-thumb {
-      background-color: rgba(139, 147, 161, .7);
-      background-clip: padding-box;
-      border: solid transparent;
-      border-width: 14px 36px;
-      border-radius: 44px;
-      min-height: 48px;
-    }
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
   body.lightbox-open { position: fixed; width: 100%; overflow: hidden; }
-  body.lightbox-open #page { overflow: hidden; }
+  body.lightbox-open #main { overflow: hidden; }
   header {
-    position: sticky; top: 0; z-index: 5;
+    flex: 0 0 auto;
     display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
     padding: 12px 20px; background: rgba(15,17,21,.9);
     backdrop-filter: blur(8px); border-bottom: 1px solid var(--edge);
@@ -53,7 +42,25 @@
     border-radius: 8px; padding: 6px 10px; font-size: 13px; cursor: pointer;
   }
   label.toggle { color: var(--muted); font-size: 13px; display: flex; align-items: center; gap: 6px; cursor: pointer; }
-  main { padding: 20px; }
+  main {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+    padding: 20px;
+  }
+  @media (pointer: coarse), (any-pointer: coarse) {
+    #main::-webkit-scrollbar { width: 88px; }
+    #main::-webkit-scrollbar-track { background: transparent; }
+    #main::-webkit-scrollbar-thumb {
+      background-color: rgba(139, 147, 161, .7);
+      background-clip: padding-box;
+      border: solid transparent;
+      border-width: 14px 36px;
+      border-radius: 44px;
+      min-height: 48px;
+    }
+  }
   #gallery {
     position: relative; width: 100%; margin: 0; padding: 0;
     list-style: none;
@@ -281,10 +288,13 @@ const METADATA_CACHE = new Map();
 const MEDIA_DIMENSIONS = new Map();
 
 const $ = (id) => document.getElementById(id);
-const readScrollY = () => $("page")?.scrollTop || 0;
+const scrollRoot = () => $("main");
+const readScrollY = () => scrollRoot()?.scrollTop || 0;
 const writeScrollY = (y) => {
-  if ($("page")) $("page").scrollTop = y;
+  const root = scrollRoot();
+  if (root) root.scrollTop = y;
 };
+const scrollViewportHeight = () => scrollRoot()?.clientHeight || window.innerHeight;
 const escapeHtml = (s) => s.replace(/[&<>"']/g, c =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const setBackgroundInert = (inert) => {
@@ -387,7 +397,10 @@ function updateCategoryFilter() {
 
 function galleryTop() {
   const gallery = $("gallery");
-  return gallery ? gallery.getBoundingClientRect().top + readScrollY() : 0;
+  const root = scrollRoot();
+  if (!gallery || !root) return 0;
+  return gallery.getBoundingClientRect().top
+    - root.getBoundingClientRect().top + root.scrollTop;
 }
 
 function buildLayout() {
@@ -434,12 +447,12 @@ function visibleLayout() {
   const overscan = layoutRowHeight * OVERSCAN_ROWS;
   return LAYOUT.filter(unit =>
     layoutIntersects(
-      unit, top - overscan, top + window.innerHeight + overscan));
+      unit, top - overscan, top + scrollViewportHeight() + overscan));
 }
 
 function viewportBounds() {
   const top = readScrollY() - galleryTop();
-  return { start: top, end: top + window.innerHeight };
+  return { start: top, end: top + scrollViewportHeight() };
 }
 
 function applyMediaPriority(node, high) {
@@ -624,11 +637,10 @@ function focusLogicalCard(index) {
   if (!unit) return;
   const top = galleryTop() + unit.top;
   const bottom = top + unit.height - GRID_GAP;
-  const headerBottom = document.querySelector("header").offsetHeight;
-  if (top < readScrollY() + headerBottom) {
-    writeScrollY(top - headerBottom);
-  } else if (bottom > readScrollY() + window.innerHeight) {
-    writeScrollY(bottom - window.innerHeight);
+  if (top < readScrollY()) {
+    writeScrollY(top);
+  } else if (bottom > readScrollY() + scrollViewportHeight()) {
+    writeScrollY(bottom - scrollViewportHeight());
   }
   renderWindow(true);
   requestAnimationFrame(() => {
@@ -1094,7 +1106,7 @@ $("sourceSel").addEventListener("change", () => {
 });
 $("catFilter").addEventListener("change", () => {
   preferredCategory = $("catFilter").value;
-  writeScrollY($("main").getBoundingClientRect().top + readScrollY());
+  writeScrollY(0);
   render();
 });
 $("compareAll").addEventListener("change", render);
@@ -1119,7 +1131,7 @@ $("main").addEventListener("keydown", (event) => {
   event.preventDefault();
   focusLogicalCard(index + movements[event.key]);
 });
-$("page").addEventListener("scroll", scheduleWindowRender, { passive: true });
+$("main").addEventListener("scroll", scheduleWindowRender, { passive: true });
 window.addEventListener("resize", scheduleWindowRender);
 window.addEventListener("resize", scheduleComparisonLayout);
 window.visualViewport?.addEventListener("resize", scheduleComparisonLayout);

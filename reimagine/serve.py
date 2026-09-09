@@ -41,7 +41,8 @@ from reimagine_pipeline import PIPELINE_FILENAME
 from reimagine_pipeline.files import (
     DEFAULT_CACHE_ROOT, IMAGE_EXTS, THUMBNAIL_CACHE_SUBDIR,
     atomic_write_text, ensure_thumbnail, read_cached_thumbnail_bytes,
-    thumbnail_cache_path, thumbnail_source_fingerprint,
+    thumbnail_cache_path, thumbnail_fingerprint_map,
+    thumbnail_source_fingerprint,
 )
 from reimagine_pipeline.manifest import (
     load_pipeline_document, pipeline_paths, validate_pipeline_input_dir,
@@ -78,19 +79,43 @@ def discover_sources(outputs_dir):
     return sources
 
 
-def find_reference(rel, input_dir):
+def find_reference(rel, input_dir, dir_cache=None):
     """Given an output path relative to a source dir (e.g. sports/sprint.jpg),
     find the matching reference under input/. Outputs are always .jpg but the
     reference may have a different extension, so match on the stem in the subdir."""
-    cand = input_dir / rel
-    if cand.exists():
-        return rel.as_posix()
-    parent = input_dir / rel.parent
-    if parent.is_dir():
-        for p in sorted(parent.iterdir()):
-            if p.is_file() and p.suffix.lower() in IMAGE_EXTS and p.stem == rel.stem:
-                return p.relative_to(input_dir).as_posix()
-    return None
+    if input_dir is None:
+        return None
+    rel_path = Path(rel)
+    cache = {} if dir_cache is None else dir_cache
+    key = rel_path.parent.as_posix()
+    if key not in cache:
+        cache[key] = _reference_stems(input_dir, rel_path.parent)
+    return cache[key].get(rel_path.stem)
+
+
+def _reference_stems(input_dir, parent):
+    """Return {stem: relative posix} for images in one input subdirectory."""
+    folder = input_dir / parent
+    found = {}
+    try:
+        with os.scandir(folder) as entries:
+            names = sorted(entries, key=lambda entry: entry.name)
+    except OSError:
+        return found
+    for entry in names:
+        suffix = Path(entry.name).suffix.lower()
+        if suffix not in IMAGE_EXTS:
+            continue
+        try:
+            if not entry.is_file(follow_symlinks=False):
+                continue
+        except OSError:
+            continue
+        stem = Path(entry.name).stem
+        if stem in found:
+            continue
+        found[stem] = (parent / entry.name).as_posix()
+    return found
 
 
 def _manifest_index_key(path):
@@ -402,9 +427,11 @@ def build_pipeline_metadata_cache(sources, cache_root=None):
     return cache
 
 
-def find_sibling_video(still_path):
+def find_sibling_video(still_path, videos_by_stem=None):
     """Return the Path of a video sitting next to a still (same stem), or None.
     render_media.py writes e.g. cat-pounce.mp4 beside cat-pounce.jpg."""
+    if videos_by_stem is not None:
+        return videos_by_stem.get(still_path.stem)
     for ext in VIDEO_EXTS:
         cand = still_path.with_suffix(ext)
         if cand.is_file():
@@ -412,19 +439,39 @@ def find_sibling_video(still_path):
     return None
 
 
-def iter_images(output_dir):
-    """Yield image paths in stable order without materializing the whole tree."""
+def iter_output_media(output_dir):
+    """Yield (image path, sibling video or None) from one listing per folder."""
     for dir_path, dir_names, file_names in os.walk(output_dir):
         dir_names[:] = sorted(
             name for name in dir_names if not name.startswith("."))
-        for name in sorted(file_names):
+        videos_by_stem = {}
+        images = []
+        for name in file_names:
+            suffix = Path(name).suffix.lower()
             path = Path(dir_path) / name
-            if path.suffix.lower() in IMAGE_EXTS:
-                yield path
+            if suffix in VIDEO_EXTS:
+                previous = videos_by_stem.get(path.stem)
+                if (previous is None
+                        or VIDEO_EXTS.index(suffix)
+                        < VIDEO_EXTS.index(previous.suffix.lower())):
+                    videos_by_stem[path.stem] = path
+            elif suffix in IMAGE_EXTS:
+                images.append(path)
+        for path in sorted(images, key=lambda item: item.name):
+            yield path, videos_by_stem.get(path.stem)
 
 
-def versioned_media_url(url, path, relative):
-    fingerprint = thumbnail_source_fingerprint(path, relative)
+def iter_images(output_dir):
+    """Yield image paths in stable order without materializing the whole tree."""
+    for path, _video in iter_output_media(output_dir):
+        yield path
+
+
+def versioned_media_url(url, path, relative, fingerprints=None):
+    relative_key = Path(relative).as_posix()
+    fingerprint = None if fingerprints is None else fingerprints.get(relative_key)
+    if fingerprint is None:
+        fingerprint = thumbnail_source_fingerprint(path, relative)
     return f"{url}?v={fingerprint}" if fingerprint else url
 
 
@@ -436,22 +483,30 @@ def media_url(route, source_name, relative):
 
 
 def iter_pairs(source_name, output_dir, on_reference=None,
-               pipeline_metadata=None):
+               pipeline_metadata=None, thumbnail_cache_root=None):
     """Yield gallery records as output images are discovered."""
     input_dir, _ = (
         pipeline_metadata
         if pipeline_metadata is not None
         else load_pipeline_metadata(output_dir)
     )
+    thumb_root = (
+        Path(thumbnail_cache_root) if thumbnail_cache_root is not None
+        else Handler.thumbnail_cache_root)
+    output_fingerprints = thumbnail_fingerprint_map(
+        thumb_root, output_dir, "output")
+    input_fingerprints = (
+        thumbnail_fingerprint_map(thumb_root, input_dir, "input")
+        if input_dir else {})
+    reference_dirs = {}
     if output_dir.is_dir():
-        for p in iter_images(output_dir):
+        for p, vid in iter_output_media(output_dir):
             rel = p.relative_to(output_dir)
-            ref = find_reference(rel, input_dir) if input_dir else None
+            ref = find_reference(rel, input_dir, reference_dirs) if input_dir else None
             if ref and on_reference:
                 on_reference(input_dir, ref)
             parts = rel.parts
             category = parts[0] if len(parts) > 1 else "(root)"
-            vid = find_sibling_video(p)
             vid_rel = vid.relative_to(output_dir).as_posix() if vid else None
             output_url = media_url("output", source_name, rel)
             input_url = media_url("input", source_name, ref) if ref else None
@@ -461,11 +516,12 @@ def iter_pairs(source_name, output_dir, on_reference=None,
                 "category": category,
                 "output_url": output_url,
                 "output_thumbnail_url": versioned_media_url(
-                    media_url("thumbnail/output", source_name, rel), p, rel),
+                    media_url("thumbnail/output", source_name, rel),
+                    p, rel, output_fingerprints),
                 "input_url": input_url,
                 "input_thumbnail_url": versioned_media_url(
                     media_url("thumbnail/input", source_name, ref),
-                    input_dir / ref, ref)
+                    input_dir / ref, ref, input_fingerprints)
                     if input_dir and ref else None,
                 "video_url": (
                     media_url("output", source_name, vid_rel)
@@ -480,10 +536,12 @@ def list_pairs(source_name, output_dir):
 
 def reference_paths(output_dir, input_dir):
     """Return references that correspond to discoverable output images."""
+    cache = {}
     return {
         reference
         for path in iter_images(output_dir)
-        for reference in [find_reference(path.relative_to(output_dir), input_dir)]
+        for reference in [find_reference(
+            path.relative_to(output_dir), input_dir, cache)]
         if reference
     }
 
@@ -517,7 +575,7 @@ class Handler(BaseHTTPRequestHandler):
     thumbnail_generate = threading.Semaphore(2)
     thumbnail_memory_cache = OrderedDict()
     thumbnail_memory_lock = threading.Lock()
-    THUMBNAIL_MEMORY_MAX = 256
+    THUMBNAIL_MEMORY_MAX = 4096
     cache_root = DEFAULT_CACHE_ROOT
     thumbnail_cache_root = DEFAULT_CACHE_ROOT / THUMBNAIL_CACHE_SUBDIR
 
@@ -738,7 +796,8 @@ class Handler(BaseHTTPRequestHandler):
                 name, self.sources[name],
                 lambda input_dir, relative: self._register_reference(
                     name, allowed, input_dir, relative),
-                self.pipeline_metadata_cache.get(name, (None, {})))
+                self.pipeline_metadata_cache.get(name, (None, {})),
+                thumbnail_cache_root=self.thumbnail_cache_root)
             return (self._send_ndjson(items)
                     if path == "/api/stream" else self._send_json(list(items)))
         if path.startswith("/img/output/"):

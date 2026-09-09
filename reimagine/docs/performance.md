@@ -65,9 +65,13 @@ renderer or gallery is running.
 A versioned GET that already has a cache file is one `lstat` + one read of
 the WebP. The server does not stat or open the source JPEG, does not take a
 generation lock, and does not run a separate header-open. Hits also stay in a
-256-entry in-process byte cache. That matters on HDD: the previous path
-`stat`ed the source several times, opened the thumbnail twice, and let
-overscan rows share the disk queue with on-screen cards.
+4096-entry in-process byte cache (enough for a 4k gallery after the first
+pass).
+
+`/api/stream` versions thumbnail URLs from a walk of the WebP cache, not from
+`lstat` of every source JPEG. Reference matching scans each input folder once.
+Sibling videos are taken from the same output directory listing. Missing cache
+entries still fall back to a source fingerprint.
 
 Missing thumbs still generate on demand, but only two at a time, using
 JPEG `draft()`, bilinear resize, and WebP `method=4`. Renderer-written
@@ -75,9 +79,15 @@ thumbs keep Lanczos + `method=6`. If a region has never been thumbnailed,
 the first visit still pays for reading the full JPEGs; a later jump is a
 cache hit.
 
+On an HDD, thousands of scattered JPEGs/WebPs will not become instant. The
+current design is still one file per still. If listing plus a viewport jump
+stays multi-second after a warm cache, the next step is a packed thumbnail
+store (one sequential file or sqlite blob per source), not more per-request
+trimming.
+
 ## Frontend bounds
 
-`index.html` keeps a keyed virtual window with **6-row overscan**. Cards in
+`index.html` keeps a keyed virtual window with **2-row overscan**. Cards in
 the viewport get `fetchpriority="high"` and start loading immediately;
 overscan waits until those in-view images have loaded (or 1.5s). Prompt text
 is not in the stream; `/api/metadata` runs on lightbox open. `METADATA_CACHE`

@@ -14,7 +14,7 @@ safe-area padding in the lightbox.
 
 ## Gallery
 
-The grid is windowed. Cards that are in the scroll window (plus six rows of
+The grid is windowed. Cards that are in the scroll window (plus two rows of
 overscan) exist in the DOM; the rest of the logical set stays in memory for
 filter and lightbox navigation. Nodes are keyed
 (`item:<source>:<path>`, `heading:<category>`) and reused across scrolls.

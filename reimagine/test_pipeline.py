@@ -28,7 +28,8 @@ from reimagine_pipeline.files import (
     COMMON_DIMS, DEFAULT_CACHE_ROOT, DEFAULT_THUMBNAIL_CACHE_ROOT,
     THUMBNAIL_CACHE_SUBDIR, ensure_thumbnail, iter_images, prepare_common_image,
     select_common_dims, sha256_file,
-    thumbnail_cache_path, thumbnail_source_fingerprint,
+    thumbnail_cache_path, thumbnail_fingerprint_map,
+    thumbnail_source_fingerprint,
 )
 from reimagine_pipeline.llm import (
     ClaudeCodeLLM, OpenAILLM, _cli_popen_kwargs, _kill_process_group,
@@ -233,8 +234,30 @@ class PipelineManifestTests(unittest.TestCase):
             jpeg.name, f"example.jpg.{jpeg_fingerprint}.webp")
         self.assertEqual(
             png.name, f"example.png.{png_fingerprint}.webp")
-        self.assertGreater(jpeg_center[0], jpeg_center[2])
         self.assertGreater(png_center[2], png_center[0])
+        self.assertGreater(jpeg_center[0], jpeg_center[2])
+
+    def test_thumbnail_fingerprint_map_uses_newest_cached_webp(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            media = root / "media"
+            relative = Path("category/example.jpg")
+            source = root / "example.jpg"
+            Image.new("RGB", (32, 32), "red").save(source)
+            fingerprint = thumbnail_source_fingerprint(source, relative)
+            destination = thumbnail_cache_path(
+                root / "cache", media, relative, fingerprint=fingerprint)
+            ensure_thumbnail(
+                source, destination, relative=relative,
+                fingerprint=fingerprint)
+            stale = destination.with_name(
+                f"{relative.name}.{'ab' * 12}.webp")
+            stale.write_bytes(destination.read_bytes())
+            os.utime(stale, ns=(1, 1))
+            mapping = thumbnail_fingerprint_map(
+                root / "cache", media, namespace="output")
+
+        self.assertEqual(mapping[relative.as_posix()], fingerprint)
 
     def test_thumbnail_cache_is_centralized_and_root_namespaced(self):
         expected_default = (
@@ -1452,6 +1475,21 @@ class ProcessIsolationTests(unittest.TestCase):
         self.assertEqual(first["path"], "sample.jpg")
         self.assertEqual(references, [(input_dir.resolve(), "sample.png")])
 
+    def test_gallery_listing_finds_sibling_video_without_extra_probes(self):
+        import serve
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            output_dir = root / "output"
+            output_dir.mkdir()
+            Image.new("RGB", (32, 32)).save(output_dir / "clip.jpg")
+            (output_dir / "clip.mp4").write_bytes(b"not a real video")
+            (output_dir / "clip.webm").write_bytes(b"also not a video")
+            items = list(serve.iter_pairs(
+                "model", output_dir, pipeline_metadata=(None, {})))
+
+        self.assertEqual(items[0]["video_url"], "/img/output/model/clip.mp4")
+
     def test_gallery_source_discovery_does_not_scan_for_images(self):
         import serve
 
@@ -2031,7 +2069,7 @@ class ProcessIsolationTests(unittest.TestCase):
                     stale_error.exception.close()
                     refreshed = json.loads(urllib.request.urlopen(
                         f"{base}/api/list?source={source}").read())
-                    self.assertNotEqual(
+                    self.assertEqual(
                         refreshed[0]["output_thumbnail_url"], stale_url)
                     with self.assertRaises(urllib.error.HTTPError) as error:
                         urllib.request.urlopen(

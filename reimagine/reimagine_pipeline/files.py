@@ -104,6 +104,65 @@ def thumbnail_cache_path(
     return destination
 
 
+def thumbnail_namespace_root(cache_root, media_root, namespace="output"):
+    """Return the directory that holds versioned WebPs for one media root."""
+    if namespace not in {"input", "output"}:
+        raise ValueError(f"unsafe thumbnail namespace: {namespace}")
+    cache_root = Path(cache_root)
+    if cache_root.is_symlink():
+        raise ValueError(f"unsafe thumbnail cache root: {cache_root}")
+    return (
+        cache_root.resolve() / namespace
+        / _thumbnail_media_root_key(media_root)
+    )
+
+
+def thumbnail_fingerprint_map(cache_root, media_root, namespace="output"):
+    """Map relative posix paths to fingerprints by walking cached WebPs.
+
+    Listing can version gallery URLs from this map instead of lstat'ing every
+    source JPEG. If several fingerprints exist for one path, the newest mtime
+    wins.
+    """
+    try:
+        root = thumbnail_namespace_root(cache_root, media_root, namespace)
+    except ValueError:
+        return {}
+    if not root.is_dir():
+        return {}
+    found = {}
+    for dir_path, dir_names, file_names in os.walk(root, followlinks=False):
+        dir_names[:] = [
+            name for name in dir_names if not name.startswith(".")]
+        parent = Path(dir_path)
+        try:
+            relative_parent = parent.relative_to(root)
+        except ValueError:
+            continue
+        for name in file_names:
+            if not name.endswith(".webp"):
+                continue
+            stem = name[:-5]
+            original, separator, fingerprint = stem.rpartition(".")
+            if (separator != "." or not original
+                    or len(fingerprint) != 24
+                    or any(char not in "0123456789abcdef"
+                           for char in fingerprint)):
+                continue
+            relative = (
+                original if not relative_parent.parts
+                else (relative_parent / original).as_posix())
+            path = parent / name
+            try:
+                mtime_ns = path.lstat().st_mtime_ns
+            except OSError:
+                continue
+            previous = found.get(relative)
+            if previous is None or mtime_ns >= previous[1]:
+                found[relative] = (fingerprint, mtime_ns)
+    return {relative: fingerprint for relative, (fingerprint, _) in found.items()}
+
+
 def _source_snapshot(source, relative):
     source = Path(source)
     relative = Path(relative)

@@ -1411,7 +1411,7 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
     await touchPage.setViewportSize({ width: 820, height: 1180 });
     assert.equal(await touchPage.evaluate(() =>
       getComputedStyle(document.querySelector("#page"), "::-webkit-scrollbar").width),
-      "44px", "touch gallery scrollbar uses a 44px hit target");
+      "88px", "touch gallery scrollbar uses an 88px hit target");
     await touchPage.locator('.card[data-idx="0"]').click();
     await touchPage.locator("#lb.open").waitFor();
     assert.ok(await touchPage.locator("#lbStage").evaluate(stage =>

@@ -26,13 +26,14 @@
     overscroll-behavior: contain;
   }
   @media (pointer: coarse), (any-pointer: coarse) {
-    #page::-webkit-scrollbar { width: 44px; }
+    #page::-webkit-scrollbar { width: 88px; }
     #page::-webkit-scrollbar-track { background: transparent; }
     #page::-webkit-scrollbar-thumb {
       background-color: rgba(139, 147, 161, .7);
       background-clip: padding-box;
-      border: 14px solid transparent;
-      border-radius: 22px;
+      border: solid transparent;
+      border-width: 14px 36px;
+      border-radius: 44px;
       min-height: 48px;
     }
   }

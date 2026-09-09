@@ -62,17 +62,26 @@ inode) — not a full-image hash. Versioned URLs use `?v=<fingerprint>` and
 versions and legacy files are retained; do not sync-delete them while a
 renderer or gallery is running.
 
+A versioned GET that already has a cache file is one `lstat` + one read of
+the WebP. The server does not stat or open the source JPEG, does not take a
+generation lock, and does not run a separate header-open. Hits also stay in a
+256-entry in-process byte cache. That matters on HDD: the previous path
+`stat`ed the source several times, opened the thumbnail twice, and let
+overscan rows share the disk queue with on-screen cards.
+
+Missing thumbs still generate on demand, but only two at a time, using
+JPEG `draft()`, bilinear resize, and WebP `method=4`. Renderer-written
+thumbs keep Lanczos + `method=6`. If a region has never been thumbnailed,
+the first visit still pays for reading the full JPEGs; a later jump is a
+cache hit.
+
 ## Frontend bounds
 
 `index.html` keeps a keyed virtual window with **6-row overscan**. Cards in
-the viewport get `fetchpriority="high"` and start loading immediately; overscan
-cards wait a frame and use `low`, so a jump to the end does not wait on the
-rows above. Prompt text is not in the stream; `/api/metadata` runs on lightbox
-open. `METADATA_CACHE` clears on gallery reload and evicts failed fetches so a
-later open retries.
-
-Thumbnail cache hits are served after a WebP header check, not a full PIL
-decode, so concurrent gallery requests stay I/O-bound.
+the viewport get `fetchpriority="high"` and start loading immediately;
+overscan waits until those in-view images have loaded (or 1.5s). Prompt text
+is not in the stream; `/api/metadata` runs on lightbox open. `METADATA_CACHE`
+clears on gallery reload and evicts failed fetches so a later open retries.
 
 Playwright asserts a 4k logical gallery stays at **≤ 80** card nodes in the
 DOM at initial view and after deep scroll/resize.

@@ -460,16 +460,49 @@ function startCardMedia(node) {
   if (started) prepareCardMedia(node);
 }
 
+function mediaAlreadyReady(media) {
+  if (media.tagName === "VIDEO") return media.readyState >= 1;
+  return media.complete && media.naturalWidth;
+}
+
 function startWindowMedia(wanted, version) {
+  const viewportNodes = [];
+  const overscanNodes = [];
   for (const node of wanted) {
-    if (node.dataset.inView === "1") startCardMedia(node);
+    (node.dataset.inView === "1" ? viewportNodes : overscanNodes).push(node);
   }
-  requestAnimationFrame(() => {
-    if (version !== mediaStartVersion) return;
-    for (const node of wanted) {
-      if (node.dataset.inView !== "1") startCardMedia(node);
+  for (const node of viewportNodes) startCardMedia(node);
+  let startedOverscan = false;
+  const startOverscan = () => {
+    if (startedOverscan || version !== mediaStartVersion) return;
+    startedOverscan = true;
+    for (const node of overscanNodes) startCardMedia(node);
+  };
+  const pending = new Set();
+  for (const node of viewportNodes) {
+    for (const media of node.querySelectorAll("img, video")) {
+      if (media.getAttribute("src") && !mediaAlreadyReady(media)) {
+        pending.add(media);
+      }
     }
-  });
+  }
+  if (!pending.size) {
+    startOverscan();
+    return;
+  }
+  const timer = window.setTimeout(startOverscan, 1500);
+  const done = media => {
+    if (!pending.delete(media)) return;
+    if (pending.size) return;
+    window.clearTimeout(timer);
+    startOverscan();
+  };
+  for (const media of pending) {
+    const event = media.tagName === "VIDEO" ? "loadedmetadata" : "load";
+    media.addEventListener(event, () => done(media), { once: true });
+    media.addEventListener("error", () => done(media), { once: true });
+    if (mediaAlreadyReady(media)) done(media);
+  }
 }
 
 function findLayoutRow(index) {

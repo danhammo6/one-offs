@@ -33,14 +33,15 @@ import stat
 import threading
 import time
 import urllib.parse
+from collections import OrderedDict
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 from reimagine_pipeline import PIPELINE_FILENAME
 from reimagine_pipeline.files import (
     DEFAULT_CACHE_ROOT, IMAGE_EXTS, THUMBNAIL_CACHE_SUBDIR,
-    atomic_write_text, ensure_thumbnail, thumbnail_cache_path,
-    thumbnail_source_fingerprint,
+    atomic_write_text, ensure_thumbnail, read_cached_thumbnail_bytes,
+    thumbnail_cache_path, thumbnail_source_fingerprint,
 )
 from reimagine_pipeline.manifest import (
     load_pipeline_document, pipeline_paths, validate_pipeline_input_dir,
@@ -513,6 +514,10 @@ class Handler(BaseHTTPRequestHandler):
     allowed_references = {}
     gallery_lock = threading.Lock()
     thumbnail_locks = tuple(threading.Lock() for _ in range(32))
+    thumbnail_generate = threading.Semaphore(2)
+    thumbnail_memory_cache = OrderedDict()
+    thumbnail_memory_lock = threading.Lock()
+    THUMBNAIL_MEMORY_MAX = 256
     cache_root = DEFAULT_CACHE_ROOT
     thumbnail_cache_root = DEFAULT_CACHE_ROOT / THUMBNAIL_CACHE_SUBDIR
 
@@ -587,10 +592,53 @@ class Handler(BaseHTTPRequestHandler):
         self._send(200, target.read_bytes(), ctype,
                    extra={"Cache-Control": "no-cache"})
 
+    def _thumbnail_rel_allowed(self, rel, allowed_paths):
+        rel_path = Path(rel)
+        return not (
+            rel_path.is_absolute() or ".." in rel_path.parts
+            or rel_path.suffix.lower() not in IMAGE_EXTS
+            or (allowed_paths is not None
+                and rel_path.as_posix() not in allowed_paths))
+
+    def _cached_thumbnail_bytes(self, destination):
+        key = str(destination)
+        with self.thumbnail_memory_lock:
+            cached = self.thumbnail_memory_cache.get(key)
+            if cached is not None:
+                self.thumbnail_memory_cache.move_to_end(key)
+                return cached
+        data = read_cached_thumbnail_bytes(destination)
+        if data is None:
+            return None
+        with self.thumbnail_memory_lock:
+            self.thumbnail_memory_cache[key] = data
+            self.thumbnail_memory_cache.move_to_end(key)
+            while len(self.thumbnail_memory_cache) > self.THUMBNAIL_MEMORY_MAX:
+                self.thumbnail_memory_cache.popitem(last=False)
+        return data
+
     def _send_thumbnail(self, source_base, rel_quoted, namespace,
                         expected_fingerprint=None, allowed_paths=None,
                         allow_linked_dirs=False):
         rel = urllib.parse.unquote(rel_quoted)
+        if not self._thumbnail_rel_allowed(rel, allowed_paths):
+            return self._send(404, "not found")
+        cache_control = (
+            "public, max-age=31536000, immutable"
+            if expected_fingerprint else "no-cache")
+        if expected_fingerprint:
+            try:
+                destination = thumbnail_cache_path(
+                    self.thumbnail_cache_root, source_base, rel,
+                    namespace=namespace,
+                    fingerprint=expected_fingerprint)
+            except ValueError:
+                return self._send(404, "not found")
+            cached = self._cached_thumbnail_bytes(destination)
+            if cached is not None:
+                return self._send(
+                    200, cached, "image/webp",
+                    extra={"Cache-Control": cache_control})
         source = safe_media_path(
             source_base, rel, IMAGE_EXTS, allowed_paths, allow_linked_dirs)
         if source is None:
@@ -609,19 +657,22 @@ class Handler(BaseHTTPRequestHandler):
             return self._send(404, "not found")
         lock = self.thumbnail_locks[hash(destination) % len(
             self.thumbnail_locks)]
-        with lock:
-            thumbnail = ensure_thumbnail(
-                source, destination, relative=rel,
-                fingerprint=fingerprint)
+        with self.thumbnail_generate:
+            with lock:
+                cached = self._cached_thumbnail_bytes(destination)
+                if cached is not None:
+                    return self._send(
+                        200, cached, "image/webp",
+                        extra={"Cache-Control": cache_control})
+                thumbnail = ensure_thumbnail(
+                    source, destination, relative=rel,
+                    fingerprint=fingerprint, fast=True)
         if thumbnail is None:
             return self._send(404, "thumbnail unavailable")
         if thumbnail_source_fingerprint(source, rel) != fingerprint:
             return self._send(
                 409, "source changed; refresh gallery",
                 extra={"Cache-Control": "no-store"})
-        cache_control = (
-            "public, max-age=31536000, immutable"
-            if expected_fingerprint else "no-cache")
         try:
             thumbnail_bytes = thumbnail.read_bytes()
         except OSError:
@@ -634,6 +685,14 @@ class Handler(BaseHTTPRequestHandler):
             return self._send(
                 404, "thumbnail unavailable",
                 extra={"Cache-Control": "no-store"})
+        if (len(thumbnail_bytes) >= 12
+                and thumbnail_bytes.startswith(b"RIFF")
+                and thumbnail_bytes[8:12] == b"WEBP"):
+            with self.thumbnail_memory_lock:
+                self.thumbnail_memory_cache[str(destination)] = thumbnail_bytes
+                self.thumbnail_memory_cache.move_to_end(str(destination))
+                while len(self.thumbnail_memory_cache) > self.THUMBNAIL_MEMORY_MAX:
+                    self.thumbnail_memory_cache.popitem(last=False)
         self._send(
             200, thumbnail_bytes, "image/webp",
             extra={"Cache-Control": cache_control})

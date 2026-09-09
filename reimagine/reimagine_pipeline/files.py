@@ -154,12 +154,38 @@ def _cached_thumbnail_is_readable(path_string, mtime_ns, size, inode):
     return header.startswith(b"RIFF") and header[8:12] == b"WEBP"
 
 
-def _thumbnail_bytes(source, max_edge):
+def read_cached_thumbnail_bytes(destination):
+    """Return WebP bytes for an immutable cache file, or None if unusable.
+
+    One lstat + one read. Used by the gallery hot path so a hit does not
+    also stat the source JPEG or reopen the thumbnail for a header check.
+    """
+    destination = Path(destination)
+    try:
+        info = destination.lstat()
+        if not stat.S_ISREG(info.st_mode) or info.st_size < 12:
+            return None
+        data = destination.read_bytes()
+    except OSError:
+        return None
+    if len(data) >= 12 and data.startswith(b"RIFF") and data[8:12] == b"WEBP":
+        return data
+    return None
+
+
+def _thumbnail_bytes(source, max_edge, *, fast=False):
     from PIL import Image, ImageOps
 
     with Image.open(source) as raw:
+        if fast:
+            try:
+                raw.draft("RGB", (max_edge, max_edge))
+            except (OSError, ValueError):
+                pass
         image = ImageOps.exif_transpose(raw)
-        image.thumbnail((max_edge, max_edge), Image.Resampling.LANCZOS)
+        image.thumbnail(
+            (max_edge, max_edge),
+            Image.Resampling.BILINEAR if fast else Image.Resampling.LANCZOS)
         if image.mode in {"RGBA", "LA", "P"}:
             image = image.convert("RGBA")
             background = Image.new("RGB", image.size, (255, 255, 255))
@@ -169,12 +195,14 @@ def _thumbnail_bytes(source, max_edge):
             image = image.convert("RGB")
         output = io.BytesIO()
         image.save(
-            output, format="WEBP", quality=THUMBNAIL_QUALITY, method=6)
+            output, format="WEBP", quality=THUMBNAIL_QUALITY,
+            method=4 if fast else 6)
     return output.getvalue()
 
 
 def ensure_thumbnail(source, destination, relative=None,
-                     max_edge=THUMBNAIL_MAX_EDGE, fingerprint=None):
+                     max_edge=THUMBNAIL_MAX_EDGE, fingerprint=None,
+                     fast=False):
     """Return an immutable versioned thumbnail, generating it atomically."""
     source = Path(source)
     destination = Path(destination)
@@ -195,7 +223,7 @@ def ensure_thumbnail(source, destination, relative=None,
         pass
 
     try:
-        thumbnail = _thumbnail_bytes(source, max_edge)
+        thumbnail = _thumbnail_bytes(source, max_edge, fast=fast)
     except (OSError, ValueError):
         return None
     if _source_snapshot(source, relative) != fingerprint:

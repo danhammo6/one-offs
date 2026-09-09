@@ -10,6 +10,7 @@ import threading
 import unittest
 import urllib.error
 import urllib.request
+from collections import OrderedDict
 from pathlib import Path
 from unittest import mock
 
@@ -349,10 +350,10 @@ class PipelineManifestTests(unittest.TestCase):
             original_thumbnail_bytes = pipeline_files._thumbnail_bytes
             calls = 0
 
-            def replace_during_first_read(path, max_edge):
+            def replace_during_first_read(path, max_edge, **kwargs):
                 nonlocal calls
                 calls += 1
-                result = original_thumbnail_bytes(path, max_edge)
+                result = original_thumbnail_bytes(path, max_edge, **kwargs)
                 if calls == 1:
                     replacement = root / "replacement.bmp"
                     Image.new("RGB", (64, 64), "blue").save(replacement)
@@ -2013,9 +2014,16 @@ class ProcessIsolationTests(unittest.TestCase):
                         original_stat.st_atime_ns,
                         original_stat.st_mtime_ns))
                     replacement.replace(output_dir / "sample.jpg")
+                    stale_body = urllib.request.urlopen(f"{base}{stale_url}").read()
+                    with Image.open(io.BytesIO(stale_body)) as thumbnail:
+                        stale_center = thumbnail.convert("RGB").getpixel(
+                            (thumbnail.size[0] // 2, thumbnail.size[1] // 2))
+                    self.assertLess(stale_center[2], 40)
                     with self.assertRaises(
                             urllib.error.HTTPError) as stale_error:
-                        urllib.request.urlopen(f"{base}{stale_url}")
+                        urllib.request.urlopen(
+                            f"{base}/img/thumbnail/output/{source}/"
+                            f"sample.jpg?v={'0' * 24}")
                     self.assertEqual(stale_error.exception.code, 409)
                     self.assertEqual(
                         stale_error.exception.headers["Cache-Control"],
@@ -2055,6 +2063,50 @@ class ProcessIsolationTests(unittest.TestCase):
         self.assertEqual(
             metadata["prompt"],
             "A detailed action photograph of a moving athlete.")
+
+    def test_versioned_thumbnail_hit_does_not_need_source(self):
+        import serve
+
+        source = "cached-hit"
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            output_dir = root / "output"
+            output_dir.mkdir()
+            still = output_dir / "sample.jpg"
+            Image.new("RGB", (64, 64), "green").save(still)
+            relative = Path("sample.jpg")
+            fingerprint = thumbnail_source_fingerprint(still, relative)
+
+            class TestHandler(serve.Handler):
+                sources = {source: output_dir}
+                pipeline_metadata_cache = {source: (None, {})}
+                thumbnail_cache_root = root / "cache"
+                thumbnail_memory_cache = OrderedDict()
+
+            server = serve.ThreadingHTTPServer(("127.0.0.1", 0), TestHandler)
+            thread = threading.Thread(target=server.serve_forever, daemon=True)
+            thread.start()
+            url = (
+                f"http://127.0.0.1:{server.server_port}"
+                f"/img/thumbnail/output/{source}/sample.jpg?v={fingerprint}")
+            try:
+                first = urllib.request.urlopen(url)
+                first_body = first.read()
+                first.close()
+                still.unlink()
+                TestHandler.thumbnail_memory_cache.clear()
+                second = urllib.request.urlopen(url)
+                second_body = second.read()
+                self.assertEqual(second.headers.get_content_type(), "image/webp")
+                self.assertIn("immutable", second.headers["Cache-Control"])
+                second.close()
+            finally:
+                server.shutdown()
+                server.server_close()
+                thread.join()
+
+        self.assertEqual(first_body[:4], b"RIFF")
+        self.assertEqual(first_body, second_body)
 
     def test_versioned_thumbnail_survives_stale_renderer_write_race(self):
         import serve

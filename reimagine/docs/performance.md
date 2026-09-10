@@ -88,9 +88,12 @@ trimming.
 ## Frontend bounds
 
 `index.html` keeps a keyed virtual window with **2-row overscan**. Cards in
-the viewport get `fetchpriority="high"` and start loading immediately;
-overscan waits until those in-view images have loaded (or 1.5s). Prompt text
-is not in the stream; `/api/metadata` runs on lightbox open. `METADATA_CACHE`
+the viewport start **result** thumbs immediately at `fetchpriority="high"`;
+compare-in-grid patches reference stills onto existing cards instead of
+recreating them. Visible references wait until those results have loaded (or
+1.5s) and stay `low`. Overscan starts result thumbs only — reference cells
+load when the row enters the viewport. Prompt text is not in the stream;
+`/api/metadata` runs on lightbox open. `METADATA_CACHE`
 clears on gallery reload and evicts failed fetches so a later open retries.
 
 Playwright asserts a 4k logical gallery stays at **≤ 80** card nodes in the

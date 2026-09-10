@@ -455,16 +455,24 @@ function viewportBounds() {
   return { start: top, end: top + scrollViewportHeight() };
 }
 
+function isReferenceMedia(media) {
+  return media.dataset.mediaRole === "reference";
+}
+
+function isPrimaryMedia(media) {
+  return !isReferenceMedia(media);
+}
+
 function applyMediaPriority(node, high) {
-  const priority = high ? "high" : "low";
   for (const media of node.querySelectorAll("img, video")) {
-    media.fetchPriority = priority;
+    media.fetchPriority = high && isPrimaryMedia(media) ? "high" : "low";
   }
 }
 
-function startCardMedia(node) {
+function startCardMedia(node, include) {
   let started = false;
   for (const media of node.querySelectorAll("img, video")) {
+    if (include && !include(media)) continue;
     const pending = media.dataset.pendingSrc;
     if (pending && media.getAttribute("src") !== pending) {
       media.src = pending;
@@ -479,37 +487,26 @@ function mediaAlreadyReady(media) {
   return media.complete && media.naturalWidth;
 }
 
-function startWindowMedia(wanted, version) {
-  const viewportNodes = [];
-  const overscanNodes = [];
-  for (const node of wanted) {
-    (node.dataset.inView === "1" ? viewportNodes : overscanNodes).push(node);
-  }
-  for (const node of viewportNodes) startCardMedia(node);
-  let startedOverscan = false;
-  const startOverscan = () => {
-    if (startedOverscan || version !== mediaStartVersion) return;
-    startedOverscan = true;
-    for (const node of overscanNodes) startCardMedia(node);
-  };
+function waitForMedia(nodes, include, onReady) {
   const pending = new Set();
-  for (const node of viewportNodes) {
+  for (const node of nodes) {
     for (const media of node.querySelectorAll("img, video")) {
+      if (include && !include(media)) continue;
       if (media.getAttribute("src") && !mediaAlreadyReady(media)) {
         pending.add(media);
       }
     }
   }
   if (!pending.size) {
-    startOverscan();
+    onReady();
     return;
   }
-  const timer = window.setTimeout(startOverscan, 1500);
+  const timer = window.setTimeout(onReady, 1500);
   const done = media => {
     if (!pending.delete(media)) return;
     if (pending.size) return;
     window.clearTimeout(timer);
-    startOverscan();
+    onReady();
   };
   for (const media of pending) {
     const event = media.tagName === "VIDEO" ? "loadedmetadata" : "load";
@@ -517,6 +514,51 @@ function startWindowMedia(wanted, version) {
     media.addEventListener("error", () => done(media), { once: true });
     if (mediaAlreadyReady(media)) done(media);
   }
+}
+
+function startWindowMedia(wanted, version) {
+  const viewportNodes = [];
+  const overscanNodes = [];
+  for (const node of wanted) {
+    (node.dataset.inView === "1" ? viewportNodes : overscanNodes).push(node);
+  }
+  let startedRest = false;
+  const startRest = () => {
+    if (startedRest || version !== mediaStartVersion) return;
+    startedRest = true;
+    for (const node of viewportNodes) startCardMedia(node, isReferenceMedia);
+    for (const node of overscanNodes) startCardMedia(node, isPrimaryMedia);
+  };
+  for (const node of viewportNodes) startCardMedia(node, isPrimaryMedia);
+  waitForMedia(viewportNodes, isPrimaryMedia, startRest);
+}
+
+function syncCardCompare(node, item, compareAll, inView) {
+  const wrap = node.querySelector(".imgwrap");
+  if (!wrap) return;
+  const showBoth = compareAll && item.input_url;
+  wrap.classList.toggle("compare", showBoth);
+  let ref = wrap.querySelector('[data-media-role="reference"]');
+  if (showBoth) {
+    if (!ref) {
+      ref = document.createElement("img");
+      ref.loading = "eager";
+      ref.decoding = "async";
+      ref.dataset.mediaRole = "reference";
+      ref.dataset.orientationKey = item.input_url;
+      ref.dataset.pendingSrc = item.input_thumbnail_url || item.input_url;
+      ref.alt = `Reference ${item.path}`;
+      const fallback = item.input_url;
+      ref.addEventListener("error", function onErr() {
+        ref.removeEventListener("error", onErr);
+        if (ref.getAttribute("src") !== fallback) ref.src = fallback;
+      });
+      wrap.prepend(ref);
+    }
+  } else if (ref) {
+    ref.remove();
+  }
+  applyMediaPriority(node, inView);
 }
 
 function findLayoutRow(index) {
@@ -544,7 +586,7 @@ function renderWindow(force = false) {
   const activeIndex = document.activeElement?.closest?.(".card")?.dataset.idx;
   const existing = new Map(
     [...gallery.children].map(node => [node.dataset.virtualKey, node]));
-  const variant = `${compareAll}:${videoMode}`;
+  const videoVariant = videoMode ? "1" : "0";
   const wanted = [];
   for (const unit of units) {
     if (unit.type === "heading") {
@@ -569,15 +611,14 @@ function renderWindow(force = false) {
     unit.entries.forEach(({ item, idx }, column) => {
       const virtualKey = `item:${source}:${item.path}`;
       let node = existing.get(virtualKey);
-      if (!node || node.dataset.variant !== variant) {
+      if (!node || node.dataset.videoVariant !== videoVariant) {
         node = document.createElement("li");
         node.className = "virtual-item";
         node.dataset.virtualKey = virtualKey;
-        node.dataset.variant = variant;
-        node.innerHTML = card(item, idx, compareAll, videoMode, priority);
-      } else {
-        applyMediaPriority(node, inView);
+        node.dataset.videoVariant = videoVariant;
+        node.innerHTML = card(item, idx, videoMode, priority);
       }
+      syncCardCompare(node, item, compareAll, inView);
       node.dataset.inView = inView ? "1" : "0";
       node.querySelector(".card").dataset.idx = idx;
       node.setAttribute("aria-setsize", VIEW.length);
@@ -687,37 +728,32 @@ function render() {
   renderWindow(created);
 }
 
-function card(it, idx, compareAll, videoMode, priority = "low") {
+function card(it, idx, videoMode, priority = "low") {
   const useVideo = videoMode && it.video_url;
   const fetchpriority = priority === "high" ? "high" : "low";
   // The "output" cell shows the video when in video mode and one exists,
   // otherwise the static render. src is assigned after layout so in-view
-  // cards can claim connections before overscan.
+  // cards can claim connections before overscan. Compare-in-grid prepends
+  // the reference still in place so toggling does not rebuild this cell.
   const outCell = useVideo
     ? `<video data-pending-src="${it.video_url}" muted loop playsinline
               preload="metadata" fetchpriority="${fetchpriority}"
+              data-media-role="primary"
               data-orientation-key="${escapeHtml(it.video_url)}"
               aria-label="Video preview for ${escapeHtml(it.path)}"
               onmouseenter="this.play()" onmouseleave="this.pause()"></video>`
     : `<img loading="eager" decoding="async" fetchpriority="${fetchpriority}"
+            data-media-role="primary"
             data-orientation-key="${escapeHtml(it.output_url)}"
             data-pending-src="${it.output_thumbnail_url || it.output_url}"
             onerror="this.onerror=null;this.src='${escapeHtml(it.output_url)}'"
             alt="Reimagined ${escapeHtml(it.path)}">`;
-  const showBoth = compareAll && it.input_url;
-  const imgs = showBoth
-    ? `<img loading="eager" decoding="async" fetchpriority="${fetchpriority}"
-            data-orientation-key="${escapeHtml(it.input_url)}"
-            data-pending-src="${it.input_thumbnail_url || it.input_url}"
-            onerror="this.onerror=null;this.src='${escapeHtml(it.input_url)}'"
-            alt="Reference ${escapeHtml(it.path)}">${outCell}`
-    : outCell;
   const badges =
     (it.input_url ? "" : '<span class="badge">no ref</span>') +
     (it.video_url ? '<span class="badge vid">▶ video</span>' : "");
   return `<button class="card" type="button" data-idx="${idx}"
                   aria-label="View ${escapeHtml(it.path)}">
-      <div class="imgwrap${showBoth ? " compare" : ""}">${imgs}${badges}</div>
+      <div class="imgwrap">${outCell}${badges}</div>
       <div class="cap">${escapeHtml(it.path)}</div>
     </button>`;
 }

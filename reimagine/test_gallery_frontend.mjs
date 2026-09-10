@@ -497,6 +497,52 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
     const initialCardCount = await cards.count();
     assert.ok(initialCardCount <= 80, "initial virtual window is bounded");
     await waitForLoadedImages(page, "#gallery img");
+    await page.evaluate(() => {
+      window.__outputBeforeCompare = document.querySelector(
+        '#gallery .card [data-media-role="primary"]')
+        || document.querySelector("#gallery .card img");
+    });
+    await page.locator("#compareAll").check();
+    await page.waitForFunction(() => {
+      const viewport = [...document.querySelectorAll("#gallery .virtual-item")]
+        .filter(node => node.dataset.inView === "1" && node.querySelector(".card"));
+      return viewport.length > 0 && viewport.every(node =>
+        node.querySelector('[data-media-role="reference"]')?.getAttribute("src"));
+    });
+    assert.deepEqual(await page.evaluate(() => {
+      const card = document.querySelector("#gallery .card");
+      const primary = card.querySelector('[data-media-role="primary"]');
+      const reference = card.querySelector('[data-media-role="reference"]');
+      const viewport = [...document.querySelectorAll("#gallery .virtual-item")]
+        .filter(node => node.dataset.inView === "1" && node.querySelector(".card"));
+      const overscan = [...document.querySelectorAll("#gallery .virtual-item")]
+        .filter(node => node.dataset.inView !== "1" && node.querySelector(".card"));
+      return {
+        count: card.querySelectorAll("img").length,
+        sameOutput: primary === window.__outputBeforeCompare,
+        viewportRefsHaveSrc: viewport.every(node =>
+          node.querySelector('[data-media-role="reference"]')?.getAttribute("src")),
+        overscanRefsHaveSrc: overscan.some(node =>
+          node.querySelector('[data-media-role="reference"]')?.getAttribute("src")),
+        primaryPriority: primary.fetchPriority,
+        refPriority: reference.fetchPriority,
+      };
+    }), {
+      count: 2,
+      sameOutput: true,
+      viewportRefsHaveSrc: true,
+      overscanRefsHaveSrc: false,
+      primaryPriority: "high",
+      refPriority: "low",
+    }, "compare in grid keeps result thumbs and loads viewport references after");
+    await page.locator("#compareAll").uncheck();
+    await page.waitForFunction(() =>
+      !document.querySelector("#gallery .imgwrap.compare"));
+    assert.equal(await page.evaluate(() => {
+      const card = document.querySelector("#gallery .card");
+      return card.querySelector("img") === window.__outputBeforeCompare
+        && card.querySelectorAll("img").length === 1;
+    }), true, "turning off compare in grid keeps the result thumbnail");
     const scrollMetrics = await page.evaluate(async () => {
       const gallery = document.querySelector("#gallery");
       let previousImages = new Map([...gallery.querySelectorAll(".card")]

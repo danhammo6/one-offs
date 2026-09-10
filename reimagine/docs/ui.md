@@ -18,9 +18,12 @@ The grid is windowed. Cards that are in the scroll window (plus two rows of
 overscan) exist in the DOM; the rest of the logical set stays in memory for
 filter and lightbox navigation. Nodes are keyed
 (`item:<source>:<path>`, `heading:<category>`) and reused across scrolls.
-In-view thumbnails start first with `fetchpriority="high"`. Overscan waits
-until those images have loaded (or 1.5s) at `low`, so a scrollbar jump does
-not share an HDD queue with off-screen rows. Source selection persists in
+In-view result thumbnails start first with `fetchpriority="high"`. Compare-in-grid
+adds reference stills in place (it does not rebuild cards), then loads those
+references at `low` after the visible results are ready. Overscan waits until
+visible results have loaded (or 1.5s) and does not prefetch reference thumbs,
+so a scrollbar jump does not share an HDD queue with off-screen rows or
+side-by-side sources. Source selection persists in
 `localStorage`. The header stays outside the gallery scroller, so the
 scrollbar starts just below the controls. On coarse pointers the gallery
 scrollbar stays visually compact but uses an 88px hit strip.

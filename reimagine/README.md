@@ -5,8 +5,8 @@ pipeline is deliberately split into two processes so an LLM server and ComfyUI
 never need to fit in VRAM at the same time:
 
 ```text
-reference images -> generate_prompts.py -> per-folder pipeline.yaml files
-pipeline tree    -> render_media.py     -> JPEGs + MP4s
+reference images -> generate_prompts.py -> input/**/pipeline[_suffix].yaml
+reusable plan    -> render_media.py     -> output JPEGs + MP4s
 ```
 
 `serve.py` provides a gallery for comparing the generated media with its
@@ -15,9 +15,11 @@ references.
 ## Architecture / Design / UI Goals
 
 The planner (`generate_prompts.py`) never talks to ComfyUI. The renderer
-(`render_media.py`) never talks to an LLM. Each image folder’s `pipeline.yaml`
-is the versioned handoff: prompts, paths, dimensions, duration. The gallery
-server reads those manifests once at startup into a disposable JSON index,
+(`render_media.py`) never talks to an LLM. Each reference folder’s
+`pipeline[_suffix].yaml` is the reusable, versioned handoff: prompts, paths,
+dimensions, and duration. Each output set has a small `render_run.yaml` pointer
+to the selected plan. The gallery follows those pointers and reads the plan
+files once at startup into a disposable JSON index,
 walks media live per request, and serves `index.html` as a virtualized
 Safari-first comparison UI.
 
@@ -31,10 +33,12 @@ implemented.
 ```mermaid
 flowchart LR
   input[Reference tree] --> planner[generate_prompts.py]
-  planner --> yaml["pipeline.yaml per folder"]
+  planner --> yaml["input/**/pipeline[_suffix].yaml"]
   yaml --> renderer[render_media.py]
   renderer --> media[JPEGs + sibling MP4s]
+  renderer --> run["output/render_run.yaml"]
   yaml --> server[serve.py]
+  run --> server
   media --> server
   server --> gallery[index.html]
 ```
@@ -58,7 +62,10 @@ uv venv --python 3.14 .venv
 uv pip install --python .venv -r requirements.txt
 ```
 
-ComfyUI defaults to `127.0.0.1:8188`. `--comfyui-output-dir` is optional; when
+OMLX defaults to `127.0.0.1:9503`. If that server requires authentication, set
+`OMLX_API_KEY` (or `OPENAI_API_KEY`) in the environment; the value is sent as a
+Bearer token and is never logged. ComfyUI defaults to `192.168.33.101:8188`.
+`--comfyui-output-dir` is optional; when
 provided, artifacts are read directly from a local or mounted ComfyUI `output/`
 directory. HTTP `/view` is the fallback.
 
@@ -71,8 +78,7 @@ Generate both still and video prompts while only the LLM is loaded:
   --stage all \
   --still-mode regions \
   --video-basis reference \
-  --llm-server 127.0.0.1:9503 \
-  --output-dir outputs/local-regions
+  --pipeline-suffix gemma4_regions
 ```
 
 Stop the LLM server, start ComfyUI, then render all stills followed by all
@@ -81,7 +87,8 @@ videos:
 ```bash
 .venv/bin/python render_media.py \
   --stage all \
-  --output-dir outputs/local-regions \
+  --pipeline-suffix gemma4_regions \
+  --output-dir outputs/gemma4-regions-krea \
   --comfyui-output-dir ~/Desktop/MyShare
 ```
 
@@ -91,12 +98,13 @@ frame; video rendering does not depend on stale ComfyUI output staging.
 
 ## Prompt stages
 
-`generate_prompts.py` runs serially and checkpoints a `pipeline.yaml` in each
-image folder. It never imports or contacts ComfyUI. Startup and resume scan the
-whole output tree, so no top-level manifest grows with the total collection.
-Each manifest stores its input directory as a path relative to this `reimagine/`
-folder. The default is `input`; directories linked from within the input tree may
-be symbolic links.
+`generate_prompts.py` runs serially and checkpoints a
+`pipeline[_suffix].yaml` beside the references in each image folder. It never
+imports or contacts ComfyUI. Startup and resume scan the selected input tree,
+so no top-level plan grows with the total collection. Different suffixes can
+coexist and be generated with different models or settings. Each plan stores
+its input directory relative to this `reimagine/` folder. The default is
+`input`; directories linked from within the input tree may be symbolic links.
 
 | flag | default | meaning |
 | --- | --- | --- |
@@ -104,18 +112,22 @@ be symbolic links.
 | `--still-mode` | `manual` | plain `manual` prompt or structured `regions` spec |
 | `--video-basis` | `reference` | generate motion from the `reference` or actual `rendered` still |
 | `--common-dims` | off | center-crop temporary reference copies to the closest common 1.5 MP size |
-| `--output-dir` | `output` | output set and default manifest location |
-| `--manifest` | per-folder tree | use one explicit legacy/single-file manifest instead |
+| `--input-dir` | `input` | project-relative reference tree and pipeline location |
+| `--pipeline-suffix` | *(empty)* | select `pipeline_<suffix>.yaml`; empty selects `pipeline.yaml` |
+| `--output-dir` | `output` | rendered still location used only with `--video-basis rendered` |
 | `--duration` | `10` | video duration in seconds, 1-30 |
-| `--prompt-path-prefix` | `prompts/` | directory containing the system prompt files |
-| `--llm-server` | *(none)* | OpenAI-compatible multimodal server; otherwise Claude Code |
+| `--prompt-path-prefix` | `prompts/` | directory containing user prompt templates and schemas |
+| `--system-prompt` | *(none)* | optional inline system message for every request |
+| `--system-prompt-file` | *(none)* | optional UTF-8 system-message file; mutually exclusive with the inline option |
+| `--llm-server` | `127.0.0.1:9503` | OpenAI-compatible multimodal server |
+| `--claude-code` | off | use Claude Code instead of the OpenAI-compatible server |
 | `--llm-max-tokens` | `16384` | maximum completion-token budget for the OpenAI-compatible server |
 | `--llm-reasoning` | `on` | llama.cpp reasoning mode; use `off` to disable |
 | `-v`, `--verbose` | off | log rejected LLM responses; repeat (`-vv`) to include available reasoning |
 | `--force` | off | regenerate requested plan stages |
 
 The default `reference` video mode uses the original reference plus the
-validated still plan. Its dedicated system prompt deliberately requests
+validated still plan. Its dedicated user prompt deliberately requests
 conservative motion that does not depend on exact generated limb geometry.
 Video prompt detail scales with `--duration`: the planner targets roughly
 8-16 words per second (80-160 words for 10 seconds and 160-320 words for 20
@@ -123,25 +135,34 @@ seconds), up to a 500-word maximum. Longer prompts use related temporal beats,
 evolving synchronized audio, and an explicit final state rather than adding
 unrelated action or re-describing the first frame.
 
-`--prompt-path-prefix` must contain `system_manual.txt`, `system_regions.txt`,
-`regions.schema.json`, `system_video.txt`, and `system_video_reference.txt`.
+`--prompt-path-prefix` must contain `user_manual.txt`, `user_regions.txt`,
+`regions.schema.json`, `user_video.txt`, and `user_video_reference.txt`.
 Relative paths are resolved from the directory where `generate_prompts.py` is
-run.
 
-To use a different input tree for an output set, seed that set with an
-input-only `pipeline.yaml` before its first prompt run:
+The built-in task instructions are always part of the user message. No system
+role is sent by default. Use either `--system-prompt` or
+`--system-prompt-file` to add your own system message without replacing the
+built-in user instructions.
+
+To create two reusable plans for one input tree, run the planner with two
+suffixes:
 
 ```bash
-mkdir -p outputs/sports-omlx-16k
-printf 'input_dir: input/sports\n' > outputs/sports-omlx-16k/pipeline.yaml
 .venv/bin/python generate_prompts.py \
-  --output-dir outputs/sports-omlx-16k \
-  --llm-server 127.0.0.1:9503
+  --input-dir input/sports \
+  --pipeline-suffix gemma4_nothink_8ktokens \
+  --llm-reasoning off \
+  --llm-max-tokens 8192
+
+.venv/bin/python generate_prompts.py \
+  --input-dir input/sports \
+  --pipeline-suffix qwen38_think_16ktokens
 ```
 
-The generated manifests retain `input_dir: input/sports`. Subsequent prompt runs
-and the gallery read it from those manifests; no input-directory command-line
-option is needed.
+This creates `pipeline_gemma4_nothink_8ktokens.yaml` and
+`pipeline_qwen38_think_16ktokens.yaml` in every populated reference folder.
+Suffixes must start with a letter or number and may contain only letters,
+numbers, underscores, and hyphens (100 characters maximum).
 
 `--common-dims` EXIF-normalizes each reference, scales it with Lanczos
 resampling, and center-crops it to the closest supported aspect ratio. The
@@ -186,7 +207,7 @@ repeating the expensive vision-token evaluation. Cache usage and server timing
 metadata are logged at `DEBUG` when returned by the server. A transient HTTP 500
 from the completion endpoint is retried once after one second.
 `--llm-reasoning` sets llama.cpp's per-request `reasoning` option; changing it
-does not require restarting the server or modifying the system prompt. The 16k
+does not require restarting the server or modifying the prompt templates. The 16k
 budget with reasoning enabled is the default because it was the fastest and most
 reliable configuration in the 20-image schema benchmark.
 
@@ -197,17 +218,20 @@ For higher fidelity, use an additional LLM phase that inspects the actual still:
 ```bash
 # 1. LLM: still plans
 .venv/bin/python generate_prompts.py --stage stills --still-mode regions \
-  --output-dir outputs/exact
+  --pipeline-suffix gemma4_exact
 
 # 2. ComfyUI: still renders
-.venv/bin/python render_media.py --stage stills --output-dir outputs/exact
+.venv/bin/python render_media.py --stage stills \
+  --pipeline-suffix gemma4_exact --output-dir outputs/exact
 
 # 3. LLM: video prompts grounded in those exact JPEGs
 .venv/bin/python generate_prompts.py --stage videos --still-mode regions \
+  --pipeline-suffix gemma4_exact \
   --video-basis rendered --output-dir outputs/exact
 
 # 4. ComfyUI: videos
-.venv/bin/python render_media.py --stage videos --output-dir outputs/exact
+.venv/bin/python render_media.py --stage videos \
+  --pipeline-suffix gemma4_exact --output-dir outputs/exact
 ```
 
 Rendered-basis video plans record the JPEG SHA-256. Rerendering a still requires
@@ -215,18 +239,19 @@ regenerating its rendered-basis video prompt before the video phase.
 
 ## Render stages
 
-`render_media.py` never imports or constructs an LLM. It can run without the
-reference tree because the per-folder `pipeline.yaml` files contain every
-required prompt, path, dimension, and duration. Seeds are a renderer concern
-and are not stored in prompt manifests.
+`render_media.py` never imports or constructs an LLM. It reads the selected
+pipeline tree beside the references, but does not load reference image bytes;
+the plan contains every required prompt, path, dimension, and duration. Seeds
+are a renderer concern and are not stored in prompt plans.
 
 | flag | default | meaning |
 | --- | --- | --- |
 | `--stage` | `all` | render `stills`, `videos`, or all stills then all videos |
 | `--output-dir` | `output` | media output set |
-| `--manifest` | per-folder tree | use one explicit legacy/single-file manifest instead |
+| `--input-dir` | `input` | project-relative reference tree containing the plans |
+| `--pipeline-suffix` | *(empty)* | select `pipeline_<suffix>.yaml`; empty selects `pipeline.yaml` |
 | `--state-file` | per-folder tree | use one explicit legacy/single-file render state instead |
-| `--comfy-server` | `127.0.0.1:8188` | ComfyUI server |
+| `--comfy-server` | `192.168.33.101:8188` | ComfyUI server |
 | `--comfyui-output-dir` | *(none)* | optional local/mounted ComfyUI output directory |
 | `--still-workflow` | mode default | custom Krea API workflow |
 | `--video-workflow` | checked-in LTX workflow | custom LTX API workflow |
@@ -246,22 +271,28 @@ prompt or render durations and a total elapsed-time summary at `INFO`; retries,
 blocked work, and unavailable services use `WARNING`; failures use `ERROR`.
 All command help includes argument defaults.
 
-## Manifests and gallery metadata
+## Plans, render provenance, and gallery metadata
 
-The per-folder `pipeline.yaml` files are the authoritative, versioned handoff
-between the two processes. Each item stores:
+The per-reference-folder `pipeline[_suffix].yaml` files are the authoritative,
+versioned handoff between the two processes. Each item stores:
 
 - Stable source-relative ID, source path, and source SHA-256
 - Exact manual prompt or complete validated region spec
 - Still output path and dimensions
 - Video output path, prompt, duration, prompt basis, and basis hash
 
-Each folder therefore contains `pipeline.yaml` and `render_state.yaml` beside
-its media. The gallery reads prompts and the configured reference directory
-directly from `pipeline.yaml`. Existing top-level manifests and render-state
-files are migrated into the folder layout on the next default planner or
-renderer run; explicit `--manifest` and `--state-file` paths retain single-file
-behavior.
+Reference folders contain any number of suffixed plans beside their source
+images. Rendered media folders contain per-folder `render_state.yaml` files and
+one top-level `render_run.yaml`, which records the project-relative input tree
+and exact pipeline filename used by that output set. The renderer refuses to
+switch an existing output directory to a different plan; use another output
+directory instead. This makes the same prompts reusable across model, workflow,
+seed, and override experiments without copying them into each output run.
+
+The gallery follows `render_run.yaml` to the selected input-side plan. For
+read-only compatibility it can still inspect an old output-side
+`pipeline.yaml`, but the planner and renderer no longer expose a `--manifest`
+option and new runs never write prompt plans under outputs.
 
 ## Batch scripts
 
@@ -295,8 +326,9 @@ startup measurements: [docs/performance.md](docs/performance.md). Tests:
 ```
 
 Output sets live under `outputs/`. The gallery discovers each set directory,
-uses each set's `pipeline.yaml` to find its references, shows those references
-beside generated stills, and switches to sibling videos when available. In the
+uses each set's `render_run.yaml` to find its reusable input-side plan, shows
+those references beside generated stills, and switches to sibling videos when
+available. In the
 lightbox, tap the outer quarter of either side, swipe, or use Left/Right Arrow
 to navigate. Tap the middle half or press `H` to hide/show all lightbox chrome
 and give the media more room; a center tap closes an open prompt before hiding
@@ -304,8 +336,8 @@ the HUD. Closing and reopening the lightbox restores visible controls.
 Pipeline metadata is loaded before the server starts listening and remains
 fixed for the lifetime of the process; restart the gallery after changing a
 manifest. A disposable
-`.reimagine-cache/manifest-index-v1-<scope-hash>.json` index keeps the validated
-result of each YAML manifest. The scope hash is a stable SHA-256 prefix derived
+`.reimagine-cache/manifest-index-v2-<scope-hash>.json` index keeps the validated
+result of each YAML plan. The scope hash is a stable SHA-256 prefix derived
 from the sorted canonical discovery roots and relevant discovery options; it
 contains no root names or paths. A normal invocation creates one obvious index,
 while servers using the same cache root for different discovery scopes keep

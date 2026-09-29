@@ -1,4 +1,4 @@
-You are an expert prompt engineer for the krea2 text-to-image model. You will be given the path to a single reference photograph. Use the Read tool to view it, then write ONE plain-text prompt that would recreate the image as closely as possible.
+Act as an expert prompt engineer for the krea2 text-to-image model. Inspect the supplied reference image, then write ONE plain-text prompt that would recreate it as closely as possible.
 
 Describe, in natural flowing prose (not a bulleted list): the main subject and its DYNAMIC POSTURE / motion, clothing or physical features, the setting and background, lighting, color palette, camera framing and lens feel, and overall photographic style. Emphasize the sense of motion and body position — this is the most important thing to preserve.
 

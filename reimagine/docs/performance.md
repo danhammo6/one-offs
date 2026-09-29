@@ -7,7 +7,7 @@ related: serve.py, reimagine_pipeline/files.py, render_media.py, index.html, .gi
 
 # Performance
 
-YAML manifests remain source of truth. `.reimagine-cache/` is disposable
+Input-side YAML plans remain source of truth. `.reimagine-cache/` is disposable
 server/renderer output. Input and output media trees are read-only; the cache
 never writes into them.
 
@@ -18,8 +18,9 @@ names the same unified root; thumbnails still live under that root’s
 
 ## Manifest index
 
-Startup discovers `pipeline.yaml` files and validates them against a
-persisted JSON index using stat identity: canonical path, size, `mtime_ns`,
+Startup reads each output set's `render_run.yaml`, discovers its selected
+`pipeline[_suffix].yaml` files, and validates them against a persisted JSON
+index using stat identity: canonical path, size, `mtime_ns`,
 `ctime_ns`, device, inode, mode. Unchanged files are not parsed. New and
 changed files are parsed; deleted keys are dropped from that scope’s index.
 Missing, incompatible, or corrupt indexes are rebuilt from YAML. Cached
@@ -29,7 +30,7 @@ reuse.
 Index path:
 
 ```text
-.reimagine-cache/manifest-index-v1-<24-hex-scope-hash>.json
+.reimagine-cache/manifest-index-v2-<24-hex-scope-hash>.json
 ```
 
 The scope hash is a SHA-256 prefix of the sorted canonical discovery roots and
@@ -39,7 +40,7 @@ each other’s warm entries. Project-relative keys use `project:…`; an output
 root outside the project may appear as `absolute:…` in this server-local
 file only.
 
-Malformed manifests are stored as error records, logged, and served without
+Malformed plans are stored as error records, logged, and served without
 reference or prompt metadata. Media listing still walks the tree live.
 
 ## Thumbnails

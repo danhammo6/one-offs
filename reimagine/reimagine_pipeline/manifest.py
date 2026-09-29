@@ -1,14 +1,17 @@
 import dataclasses
 import hashlib
 import json
+import os
 from pathlib import Path
 
 import yaml
 
+from . import validate_pipeline_filename
 from .files import atomic_write_text
 from .models import PipelineItem, PipelineManifest, StillSpec, VideoSpec
 
 SCHEMA_VERSION = 2
+RENDER_RUN_SCHEMA_VERSION = 1
 
 
 def _safe_path(value, suffixes):
@@ -42,35 +45,6 @@ def _read_pipeline_data(path):
         return yaml.safe_load(path.read_text(encoding="utf-8"))
     except (OSError, yaml.YAMLError) as error:
         raise ValueError(f"could not read pipeline {path}: {error}") from error
-
-
-def load_pipeline_input_dir(path):
-    """Read input_dir from either a full or input-only pipeline.yaml."""
-    data = _read_pipeline_data(path)
-    if not isinstance(data, dict):
-        raise ValueError(f"pipeline configuration is not a mapping: {path}")
-    return _input_dir_from_data(data)
-
-
-def load_pipeline_tree_input_dir(root, filename="pipeline.yaml"):
-    """Read the single input directory configured across a pipeline tree."""
-    paths = pipeline_paths(root, filename)
-    if not paths:
-        return Path("input")
-    input_dirs = {load_pipeline_input_dir(path) for path in paths}
-    if len(input_dirs) != 1:
-        raise ValueError("pipeline files use different input directories")
-    return input_dirs.pop()
-
-
-def is_input_only_pipeline(path):
-    """Return whether path is a valid seed config containing only input_dir."""
-    try:
-        data = yaml.safe_load(path.read_text(encoding="utf-8"))
-    except (OSError, yaml.YAMLError):
-        return False
-    return (isinstance(data, dict) and set(data) == {"input_dir"}
-            and isinstance(data["input_dir"], str))
 
 
 def _validate_hash(value, label):
@@ -128,6 +102,32 @@ def save_pipeline(path, manifest):
         (path.parent / obsolete).unlink(missing_ok=True)
 
 
+def save_render_run(path, input_dir, pipeline_name):
+    """Persist the reusable plan selected by one rendered output set."""
+    data = {
+        "schema_version": RENDER_RUN_SCHEMA_VERSION,
+        "input_dir": validate_pipeline_input_dir(input_dir).as_posix(),
+        "pipeline_filename": validate_pipeline_filename(pipeline_name),
+    }
+    atomic_write_text(path, yaml.safe_dump(data, sort_keys=False))
+
+
+def load_render_run(path):
+    """Return ``(input_dir, pipeline_filename)`` from a render descriptor."""
+    try:
+        data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    except (OSError, yaml.YAMLError) as error:
+        raise ValueError(f"could not read render run {path}: {error}") from error
+    if not isinstance(data, dict) or data.get("schema_version") != RENDER_RUN_SCHEMA_VERSION:
+        raise ValueError(f"unsupported render run: {path}")
+    if set(data) != {"schema_version", "input_dir", "pipeline_filename"}:
+        raise ValueError(f"invalid render run fields: {path}")
+    return (
+        validate_pipeline_input_dir(data.get("input_dir")),
+        validate_pipeline_filename(data.get("pipeline_filename")),
+    )
+
+
 def _load_still(data, mode):
     if not isinstance(data, dict):
         raise ValueError("still spec is not a mapping")
@@ -163,15 +163,8 @@ def _load_video(data):
 
 
 def load_pipeline_document(path, require_stage=None):
-    """Parse one pipeline file and return its input directory and manifest.
-
-    Input-only seed configurations return ``(input_dir, None)``. This lets
-    callers inspect a mixed pipeline tree without parsing any file twice.
-    """
+    """Parse one pipeline file and return its input directory and manifest."""
     data = _read_pipeline_data(path)
-    if (isinstance(data, dict) and set(data) == {"input_dir"}
-            and isinstance(data["input_dir"], str)):
-        return _input_dir_from_data(data), None
     manifest = _load_pipeline_data(data, path, require_stage)
     return manifest.input_dir, manifest
 
@@ -237,14 +230,29 @@ def _load_pipeline_data(data, path, require_stage=None):
 
 
 def pipeline_paths(root, filename="pipeline.yaml"):
-    return sorted(path for path in root.rglob(filename) if path.is_file())
+    paths = []
+    seen_directories = set()
+    for directory, child_dirs, filenames in os.walk(root, followlinks=True):
+        try:
+            info = Path(directory).stat()
+        except OSError:
+            child_dirs.clear()
+            continue
+        identity = (info.st_dev, info.st_ino)
+        if identity in seen_directories:
+            child_dirs.clear()
+            continue
+        seen_directories.add(identity)
+        child_dirs.sort()
+        if filename in filenames:
+            path = Path(directory) / filename
+            if path.is_file():
+                paths.append(path)
+    return sorted(paths, key=lambda path: path.relative_to(root).as_posix())
 
 
 def load_pipeline_tree(root, require_stage=None, filename="pipeline.yaml"):
-    paths = [
-        path for path in pipeline_paths(root, filename)
-        if not is_input_only_pipeline(path)
-    ]
+    paths = pipeline_paths(root, filename)
     if not paths:
         raise ValueError(f"no {filename} files under {root}")
     legacy = root / filename
@@ -354,13 +362,7 @@ def save_pipeline_folder(root, parent, manifest, filename="pipeline.yaml",
     path = root / parent / filename
     count = len(items) if item_count is None else item_count
     if not count and prune_empty:
-        if parent.parts:
-            path.unlink(missing_ok=True)
-        else:
-            input_dir = validate_pipeline_input_dir(
-                manifest.input_dir).as_posix()
-            atomic_write_text(path, yaml.safe_dump(
-                {"input_dir": input_dir}, sort_keys=False))
+        path.unlink(missing_ok=True)
         return
     save_pipeline(path, PipelineManifest(
         manifest.still_mode, count, items, common_dims=manifest.common_dims,

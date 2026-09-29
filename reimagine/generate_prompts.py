@@ -3,20 +3,20 @@
 import argparse
 import contextlib
 import logging
+import os
 import tempfile
 import time
 from dataclasses import dataclass
 from pathlib import Path
 
-from reimagine_pipeline import PIPELINE_FILENAME
+from reimagine_pipeline import pipeline_filename
 from reimagine_pipeline.files import (
     derive_dims, iter_images, prepare_common_image, sha256_file,
 )
 from reimagine_pipeline.llm import ClaudeCodeLLM, OpenAILLM
 from reimagine_pipeline.manifest import (
-    is_input_only_pipeline, load_pipeline, load_pipeline_input_dir,
-    load_pipeline_tree, load_pipeline_tree_input_dir, pipeline_paths,
-    save_pipeline, save_pipeline_folder, save_pipeline_tree,
+    load_pipeline_tree, pipeline_paths, save_pipeline_folder,
+    save_pipeline_tree, validate_pipeline_input_dir,
 )
 from reimagine_pipeline.models import PipelineItem, PipelineManifest, StillSpec, VideoSpec
 from reimagine_pipeline.prompting import generate_still_prompt, generate_video_prompt
@@ -38,9 +38,11 @@ class PromptJob:
 
 
 def build_llm(args, input_dir):
-    if args.llm_server:
+    if not getattr(args, "claude_code", False):
         llm = OpenAILLM(
             args.llm_server, model=args.llm_model,
+            api_key=(os.environ.get("OMLX_API_KEY")
+                     or os.environ.get("OPENAI_API_KEY")),
             max_tokens=args.llm_max_tokens, reasoning=args.llm_reasoning)
     else:
         llm = ClaudeCodeLLM(model=args.claude_model, add_dir=input_dir)
@@ -55,11 +57,15 @@ def build_parser():
         "--common-dims", action="store_true",
         help="Center-crop temporary reference copies to the closest common "
              "1.5 MP dimensions before prompting.")
-    parser.add_argument("--output-dir", type=Path, default=Path("output"),
-                        help="Prompt manifests and generated media directory.")
     parser.add_argument(
-        "--manifest", type=Path, default=None,
-        help="Use one explicit manifest instead of per-folder pipeline.yaml files.")
+        "--input-dir", type=Path, default=Path("input"),
+        help="Project-relative reference tree where reusable pipeline files live.")
+    parser.add_argument(
+        "--pipeline-suffix", default="",
+        help="Optional safe suffix for pipeline_<suffix>.yaml files.")
+    parser.add_argument(
+        "--output-dir", type=Path, default=Path("output"),
+        help="Rendered-media directory, used when --video-basis=rendered.")
     parser.add_argument("--stage", choices=("all", "stills", "videos"),
                         default="all", help="Prompt stage to generate.")
     parser.add_argument("--still-mode", choices=("manual", "regions"),
@@ -70,11 +76,22 @@ def build_parser():
                         help="Generated video duration in seconds (1-30).")
     parser.add_argument("--prompt-path-prefix", type=Path,
                         default=Path("prompts"),
-                        help="Directory containing system prompt files.")
+                        help="Directory containing user prompt templates and schemas.")
+    system_group = parser.add_mutually_exclusive_group()
+    system_group.add_argument(
+        "--system-prompt", default=None,
+        help="Optional system message applied to every LLM request.")
+    system_group.add_argument(
+        "--system-prompt-file", type=Path, default=None,
+        help="Read the optional system message from this UTF-8 file.")
     parser.add_argument("--claude-model", default="opus",
-                        help="Claude Code model used without --llm-server.")
-    parser.add_argument("--llm-server", default=None,
-                        help="OpenAI-compatible multimodal server address.")
+                        help="Claude Code model used with --claude-code.")
+    parser.add_argument(
+        "--claude-code", action="store_true",
+        help="Use the Claude Code CLI instead of the OMLX server.")
+    parser.add_argument("--llm-server", default="127.0.0.1:9503",
+                        help="OpenAI-compatible multimodal server address; auth "
+                             "uses OMLX_API_KEY or OPENAI_API_KEY.")
     parser.add_argument("--llm-model", default=None,
                         help="Model ID for the OpenAI-compatible server.")
     parser.add_argument(
@@ -91,11 +108,14 @@ def build_parser():
     return parser
 
 
-def configured_input_dir(output_dir, manifest_path=None):
-    """Return the project-relative input directory configured by pipeline.yaml."""
-    if manifest_path and manifest_path.is_file():
-        return load_pipeline_input_dir(manifest_path)
-    return load_pipeline_tree_input_dir(output_dir, PIPELINE_FILENAME)
+def load_optional_system_prompt(args):
+    if args.system_prompt_file is None:
+        return args.system_prompt
+    try:
+        return args.system_prompt_file.read_text(encoding="utf-8").strip()
+    except OSError as error:
+        raise ValueError(
+            f"could not read system prompt {args.system_prompt_file}: {error}") from error
 
 
 def discover(input_dir, common_dir=None):
@@ -126,19 +146,14 @@ def discover(input_dir, common_dir=None):
 
 
 def _load_planning_state(
-        args, jobs, output_dir, manifest_path, configured_input):
+        args, jobs, pipeline_root, pipeline_name, configured_input):
     existing = None
     folder_counts = {}
     for job in jobs:
         folder_counts[job.relative.parent] = (
             folder_counts.get(job.relative.parent, 0) + 1)
-    if (manifest_path and manifest_path.is_file()
-            and not is_input_only_pipeline(manifest_path)):
-        existing = load_pipeline(manifest_path)
-    elif (not manifest_path
-          and any(not is_input_only_pipeline(path)
-                  for path in pipeline_paths(output_dir, PIPELINE_FILENAME))):
-        existing = load_pipeline_tree(output_dir, filename=PIPELINE_FILENAME)
+    if pipeline_paths(pipeline_root, pipeline_name):
+        existing = load_pipeline_tree(pipeline_root, filename=pipeline_name)
         checkpointed_parents = {
             item.source_path.parent for item in existing.items}
         checkpointed_count = sum(
@@ -173,25 +188,27 @@ def _load_planning_state(
                 raise ValueError("existing pipeline inventory differs; use --force")
     if args.force and args.stage == "all":
         by_id = {}
-        if not manifest_path:
-            for parent in folder_counts:
-                save_pipeline_folder(
-                    output_dir, parent,
-                    PipelineManifest(
-                        args.still_mode, 0, [], common_dims=args.common_dims,
-                        input_dir=configured_input),
-                    PIPELINE_FILENAME, prune_empty=True)
+        for parent in folder_counts:
+            save_pipeline_folder(
+                pipeline_root, parent,
+                PipelineManifest(
+                    args.still_mode, 0, [], common_dims=args.common_dims,
+                    input_dir=configured_input),
+                pipeline_name, prune_empty=True)
     return still_mode, by_id, folder_counts
 
 
-def _plan_item(args, llm, job, item, still_mode, output_dir, prompt_dir):
+def _plan_item(
+        args, llm, job, item, still_mode, output_dir, prompt_dir,
+        system_prompt):
     still = item.still if item else None
     video = item.video if item else None
     if args.stage in {"all", "stills"} and (args.force or still is None):
         started = time.perf_counter()
         try:
             result = generate_still_prompt(
-                llm, job.prompt_source, still_mode, prompt_dir=prompt_dir)
+                llm, job.prompt_source, still_mode, prompt_dir=prompt_dir,
+                system_prompt=system_prompt)
         except Exception:
             logger.error("still prompt %s: failed after %.2fs",
                          job.item_id, time.perf_counter() - started)
@@ -224,7 +241,7 @@ def _plan_item(args, llm, job, item, still_mode, output_dir, prompt_dir):
             try:
                 prompt = generate_video_prompt(
                     llm, basis_image, args.video_basis, still, args.duration,
-                    prompt_dir=prompt_dir)
+                    prompt_dir=prompt_dir, system_prompt=system_prompt)
             except Exception:
                 logger.error("video prompt %s: failed after %.2fs",
                              job.item_id, time.perf_counter() - started)
@@ -238,21 +255,20 @@ def _plan_item(args, llm, job, item, still_mode, output_dir, prompt_dir):
         job.index, job.item_id, job.relative, job.source_hash, still, video)
 
 
-def _save_checkpoint(output_dir, manifest_path, folder_counts, job, manifest):
-    if manifest_path:
-        save_pipeline(manifest_path, manifest)
-    else:
-        save_pipeline_folder(
-            output_dir, job.relative.parent, manifest, PIPELINE_FILENAME,
-            folder_counts[job.relative.parent])
+def _save_checkpoint(
+        pipeline_root, pipeline_name, folder_counts, job, manifest):
+    save_pipeline_folder(
+        pipeline_root, job.relative.parent, manifest, pipeline_name,
+        folder_counts[job.relative.parent])
 
 
 def _run(args):
     output_dir = args.output_dir.resolve()
-    manifest_path = args.manifest.resolve() if args.manifest else None
-    configured_input = configured_input_dir(output_dir, manifest_path)
+    configured_input = validate_pipeline_input_dir(args.input_dir)
     input_dir = (ROOT / configured_input).resolve()
+    pipeline_name = pipeline_filename(args.pipeline_suffix)
     prompt_dir = args.prompt_path_prefix.resolve()
+    system_prompt = load_optional_system_prompt(args)
     preprocess = args.common_dims
     directory = (tempfile.TemporaryDirectory(prefix="reimagine-common-")
                  if preprocess else contextlib.nullcontext(None))
@@ -260,14 +276,16 @@ def _run(args):
         common_dir = Path(common_dir) if common_dir else None
         jobs = discover(input_dir, common_dir)
         still_mode, by_id, folder_counts = _load_planning_state(
-            args, jobs, output_dir, manifest_path, configured_input)
+            args, jobs, input_dir, pipeline_name, configured_input)
         llm = build_llm(
             args, (common_dir or input_dir)
             if args.video_basis == "reference" else output_dir)
         logger.info("generate prompts: %d item(s), stage=%s", len(jobs), args.stage)
         logger.info("  llm:      %s", llm.describe())
         logger.info("  prompts:  %s", prompt_dir)
-        logger.info("  manifest: %s", manifest_path or f"{output_dir}/**/{PIPELINE_FILENAME}")
+        logger.info("  pipeline: %s/**/%s", input_dir, pipeline_name)
+        logger.info("  system:   %s", args.system_prompt_file or (
+            "inline" if args.system_prompt is not None else "none"))
         if common_dir:
             logger.info("  source:   temporary common-dimension crops")
         failed = generated = skipped = 0
@@ -286,7 +304,8 @@ def _run(args):
                 item = None
             try:
                 planned = _plan_item(
-                    args, llm, job, item, still_mode, output_dir, prompt_dir)
+                    args, llm, job, item, still_mode, output_dir, prompt_dir,
+                    system_prompt)
             except Exception as error:
                 logger.error("%s  failed: %s", tag, error)
                 failed += 1
@@ -298,7 +317,7 @@ def _run(args):
                 sorted(by_id.values(), key=lambda value: value.index),
                 common_dims=args.common_dims, input_dir=configured_input)
             _save_checkpoint(
-                output_dir, manifest_path, folder_counts, job, manifest)
+                input_dir, pipeline_name, folder_counts, job, manifest)
             if changed:
                 generated += 1
                 logger.info("%s  planned", tag)
@@ -308,8 +327,8 @@ def _run(args):
         logger.info(
             "done in %.2fs: %d planned, %d unchanged, %d failed",
             time.perf_counter() - started, generated, skipped, failed)
-        if not manifest_path and not failed:
-            save_pipeline_tree(output_dir, manifest, PIPELINE_FILENAME)
+        if not failed:
+            save_pipeline_tree(input_dir, manifest, pipeline_name)
         return 1 if failed else 0
 
 

@@ -12,9 +12,10 @@ Two suites. Python covers pipeline, cache, and gallery HTTP. Playwright covers
 
 ## unittest (`test_pipeline.py`)
 
-Stdlib `unittest`. Planner/renderer isolation, manifest validation, thumbnail
-paths, incremental index warm/cold behavior, malformed-manifest gallery
-fallback, CLI flags including `--cache-root` and deprecated
+Stdlib `unittest`. Planner/renderer isolation, reusable-plan and render-run
+validation, pipeline suffixes, prompt roles, thumbnail paths, incremental index
+warm/cold behavior, malformed-plan gallery fallback, CLI flags including
+`--cache-root` and deprecated
 `--thumbnail-cache-root`.
 
 ```bash
@@ -55,11 +56,12 @@ Ignored, bulky, generated. Do not commit.
 | Path | Contents |
 | --- | --- |
 | `input-large-gallery-test/` | 200 folders × 20 images (4,000 stills) |
-| `outputs/local-llm-regions-pipeline-test-large/` | Matching 200 folders, 200 `pipeline.yaml` files, 4,000 stills, **no videos** |
+| `input-large-gallery-test/**/pipeline_regions.yaml` | Matching 200 reusable per-folder plans |
+| `outputs/local-llm-regions-pipeline-test-large/` | 4,000 stills, **no videos**, plus `render_run.yaml` selecting that plan |
 
-`.gitignore` ignores `input-large-gallery-test/` and all of `outputs/`. Use
-this pair for real `serve.py` startup and transfer measurements. Playwright does
-not require it.
+`.gitignore` ignores `input-large-gallery-test/` and all of `outputs/`. This
+optional fixture is not checked in and may need to be regenerated before real
+startup and transfer measurements. Playwright does not require it.
 
 Serve it as a normal outputs tree:
 

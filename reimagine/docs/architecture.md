@@ -7,9 +7,10 @@ related: generate_prompts.py, render_media.py, serve.py, index.html, reimagine_p
 
 # Architecture
 
-Two processes share one versioned artifact. `generate_prompts.py` writes
-per-folder `pipeline.yaml` and never imports ComfyUI. `render_media.py` reads
-those files, writes JPEGs and sibling videos, and never constructs an LLM.
+Two processes share reusable versioned artifacts. `generate_prompts.py` writes
+per-folder `pipeline[_suffix].yaml` beside reference images and never imports
+ComfyUI. `render_media.py` reads one selected plan tree, writes JPEGs and sibling
+videos plus an output-root `render_run.yaml` pointer, and never constructs an LLM.
 `serve.py` is a stdlib HTTP gallery; `index.html` is the only frontend.
 
 YAML remains source of truth. Seeds live in the renderer, not the manifest.
@@ -17,12 +18,14 @@ YAML remains source of truth. Seeds live in the renderer, not the manifest.
 ```mermaid
 flowchart TD
   refs[input/ or linked refs] --> planner[generate_prompts.py]
-  planner --> yaml["outputs/.../folder/pipeline.yaml"]
+  planner --> yaml["input/.../folder/pipeline[_suffix].yaml"]
   yaml --> renderer[render_media.py]
   renderer --> stills[folder/*.jpg]
   renderer --> videos["sibling .mp4/.webm/.mkv"]
+  renderer --> run["output-set/render_run.yaml"]
   renderer --> thumbs[".reimagine-cache/thumbnails/"]
-  yaml --> index[".reimagine-cache/manifest-index-v1-*.json"]
+  run --> index
+  yaml --> index[".reimagine-cache/manifest-index-v2-*.json"]
   index --> serve[serve.py startup]
   stills --> serve
   videos --> serve
@@ -33,15 +36,20 @@ flowchart TD
 
 ## Data flow
 
-1. Planner scans the output tree, checkpoints `pipeline.yaml` in each image
-   folder, and stores `input_dir` relative to `reimagine/`. Default input is
-   `input`. Linked directories inside the input tree may be symlinks.
-2. Renderer consumes the tree (or a legacy `--manifest` file), writes stills
-   then videos, and tracks fingerprints in per-folder `render_state.yaml`.
+1. Planner scans `--input-dir`, checkpoints the selected
+   `pipeline[_suffix].yaml` in each reference folder, and stores `input_dir`
+   relative to `reimagine/`. Default input is `input`. Linked directories inside
+   the input tree may be symlinks.
+2. Renderer consumes that selected input-side tree, pins the choice in
+   `render_run.yaml`, writes stills then videos, and tracks fingerprints in
+   output-side per-folder `render_state.yaml`. An output root cannot switch to a
+   different input or pipeline filename.
    After each still it writes a 512 px WebP thumbnail into the project cache.
-3. `serve.py` discovers output sets under `outputs/` (or `--output-dir`),
-   builds an in-memory metadata cache from the persisted JSON index before
-   `serve_forever()`, then serves media live on each list/stream request.
+3. `serve.py` discovers output sets under `outputs/` (or `--output-dir`), follows
+   each `render_run.yaml` to its reusable plan, builds an in-memory metadata
+   cache from the persisted JSON index before `serve_forever()`, then serves
+   media live on each list/stream request. Legacy output-side `pipeline.yaml`
+   remains read-only compatible.
 4. The page streams gallery records without prompts. Opening a lightbox item
    fetches `/api/metadata?source=&path=`. Full-resolution stills and videos
    load in the lightbox; the grid uses versioned thumbnail URLs.

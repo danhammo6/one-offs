@@ -37,7 +37,7 @@ from collections import OrderedDict
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-from reimagine_pipeline import PIPELINE_FILENAME
+from reimagine_pipeline import PIPELINE_FILENAME, RENDER_RUN_FILENAME
 from reimagine_pipeline.files import (
     DEFAULT_CACHE_ROOT, IMAGE_EXTS, THUMBNAIL_CACHE_SUBDIR,
     atomic_write_text, ensure_thumbnail, read_cached_thumbnail_bytes,
@@ -45,7 +45,8 @@ from reimagine_pipeline.files import (
     thumbnail_source_fingerprint,
 )
 from reimagine_pipeline.manifest import (
-    load_pipeline_document, pipeline_paths, validate_pipeline_input_dir,
+    load_pipeline_document, load_render_run, pipeline_paths,
+    validate_pipeline_input_dir,
 )
 from reimagine_pipeline.prompting import regions_to_text
 
@@ -62,7 +63,7 @@ ROOT = Path(__file__).parent.resolve()
 # preference when several exist for one still.
 VIDEO_EXTS = (".mp4", ".webm", ".mkv")
 # Bump when the normalized document fields or gallery validation semantics change.
-MANIFEST_INDEX_SCHEMA_VERSION = 1
+MANIFEST_INDEX_SCHEMA_VERSION = 2
 MANIFEST_INDEX_PREFIX = f"manifest-index-v{MANIFEST_INDEX_SCHEMA_VERSION}"
 
 
@@ -135,7 +136,7 @@ def manifest_index_path(cache_root, sources):
         for output_dir in sources.values()
     })
     scope = json.dumps({
-        "pipeline_filename": PIPELINE_FILENAME,
+        "render_run_filename": RENDER_RUN_FILENAME,
         "roots": roots,
     }, sort_keys=True, separators=(",", ":")).encode()
     digest = hashlib.sha256(scope).hexdigest()[:24]
@@ -265,13 +266,26 @@ def _atomic_write_manifest_index(path, payload):
     atomic_write_text(path, serialized, durable=True)
 
 
-def _load_source_metadata(output_dir, records):
+def _pipeline_selection(output_dir):
+    """Return (plan root, filename, expected input dir) for an output set."""
+    run_path = output_dir / RENDER_RUN_FILENAME
+    if run_path.is_file():
+        input_dir, pipeline_name = load_render_run(run_path)
+        return (ROOT / input_dir).resolve(), pipeline_name, input_dir
+    return output_dir, PIPELINE_FILENAME, None
+
+
+def _load_source_metadata(
+        pipeline_root, pipeline_name, records, output_dir=None,
+        expected_input_dir=None):
     """Aggregate normalized manifest records with the legacy validation rules."""
+    label = output_dir or pipeline_root
     paths = [path for path, _ in records]
     if not paths:
         logger.warning("could not load gallery metadata for %s: no %s files",
-                       output_dir, PIPELINE_FILENAME)
-        return (ROOT / "input").resolve(), {}
+                       label, pipeline_name)
+        fallback = expected_input_dir or Path("input")
+        return (ROOT / fallback).resolve(), {}
     try:
         documents = []
         for path, record in records:
@@ -283,9 +297,14 @@ def _load_source_metadata(output_dir, records):
         input_dirs = {input_dir for _, input_dir, _ in documents}
         if len(input_dirs) != 1:
             raise ValueError("pipeline files use different input directories")
+        if (expected_input_dir is not None
+                and input_dirs != {expected_input_dir}):
+            raise ValueError(
+                f"render run selects {expected_input_dir}, but pipeline records "
+                f"{next(iter(input_dirs))}")
     except (KeyError, TypeError, ValueError) as error:
         logger.warning("could not cache gallery metadata for %s: %s",
-                       output_dir, error)
+                       label, error)
         return None, {}
 
     input_dir = (ROOT / input_dirs.pop()).resolve()
@@ -296,7 +315,7 @@ def _load_source_metadata(output_dir, records):
     ]
     if not manifest_documents:
         return input_dir, {}
-    legacy = output_dir / PIPELINE_FILENAME
+    legacy = pipeline_root / pipeline_name
     if (legacy in {path for path, _ in manifest_documents}
             and len(manifest_documents) > 1):
         root_manifest = next(
@@ -321,7 +340,7 @@ def _load_source_metadata(output_dir, records):
     item_ids = set()
     source_paths = set()
     for path, manifest in manifest_documents:
-        parent = path.parent.relative_to(output_dir)
+        parent = path.parent.relative_to(pipeline_root)
         for item in manifest["items"]:
             item_id = (parent / item["item_id"]).as_posix()
             source_path = (parent / item["source_path"]).as_posix()
@@ -347,14 +366,22 @@ def _load_source_metadata(output_dir, records):
 
 def load_pipeline_metadata(output_dir):
     """Parse each pipeline once and return its input directory and prompts."""
+    try:
+        pipeline_root, pipeline_name, expected_input = _pipeline_selection(
+            output_dir)
+    except ValueError as error:
+        logger.warning("could not load gallery metadata for %s: %s",
+                       output_dir, error)
+        return None, {}
     records = []
-    for path in pipeline_paths(output_dir, PIPELINE_FILENAME):
+    for path in pipeline_paths(pipeline_root, pipeline_name):
         try:
             record = _parse_manifest_record(path)
         except ValueError as error:
             record = {"error": str(error)}
         records.append((path, record))
-    return _load_source_metadata(output_dir, records)
+    return _load_source_metadata(
+        pipeline_root, pipeline_name, records, output_dir, expected_input)
 
 
 def build_pipeline_metadata_cache(sources, cache_root=None):
@@ -384,7 +411,16 @@ def build_pipeline_metadata_cache(sources, cache_root=None):
     parsed = unchanged = 0
     for name, output_dir in sources.items():
         records = []
-        for path in pipeline_paths(output_dir, PIPELINE_FILENAME):
+        try:
+            pipeline_root, pipeline_name, expected_input = _pipeline_selection(
+                output_dir)
+        except ValueError as error:
+            source_records[name] = (
+                output_dir, PIPELINE_FILENAME,
+                [(output_dir / RENDER_RUN_FILENAME, {"error": str(error)})],
+                None)
+            continue
+        for path in pipeline_paths(pipeline_root, pipeline_name):
             key = _manifest_index_key(path)
             try:
                 identity = _manifest_identity(path)
@@ -403,11 +439,14 @@ def build_pipeline_metadata_cache(sources, cache_root=None):
                 records.append((path, record))
             except (OSError, ValueError) as error:
                 records.append((path, {"error": str(error)}))
-        source_records[name] = records
+        source_records[name] = (
+            pipeline_root, pipeline_name, records, expected_input)
 
     deleted = len(set(previous) - set(current))
     cache = {
-        name: _load_source_metadata(sources[name], source_records[name])
+        name: _load_source_metadata(
+            source_records[name][0], source_records[name][1],
+            source_records[name][2], sources[name], source_records[name][3])
         for name in sources
     }
     if index_path is not None and (not valid_index or current != previous):

@@ -18,9 +18,11 @@ from PIL import Image
 import yaml
 
 from reimagine_pipeline import files as pipeline_files
+from reimagine_pipeline import pipeline_filename
 from reimagine_pipeline.manifest import (
-    load_pipeline, load_pipeline_tree, load_render_state_tree, save_pipeline,
-    save_pipeline_folder, save_pipeline_tree, save_render_state,
+    load_pipeline, load_pipeline_tree, load_render_run,
+    load_render_state_tree, pipeline_paths, save_pipeline, save_pipeline_folder,
+    save_pipeline_tree, save_render_run, save_render_state,
     save_render_state_tree,
 )
 from reimagine_pipeline.models import PipelineItem, PipelineManifest, StillSpec, VideoSpec
@@ -40,7 +42,7 @@ from reimagine_pipeline.comfy import ComfyArtifact
 from reimagine_pipeline.manifest import load_render_state
 from reimagine_pipeline.prompting import (
     generate_still_prompt, generate_tagged, generate_video_prompt,
-    load_system_prompt, video_prompt_word_range,
+    load_user_prompt, video_prompt_word_range,
 )
 from reimagine_pipeline.rendering import _read_still_output, render_stills
 
@@ -540,6 +542,27 @@ class PipelineManifestTests(unittest.TestCase):
 
         self.assertEqual(loaded, manifest)
 
+    def test_pipeline_suffix_builds_only_safe_filenames(self):
+        self.assertEqual(pipeline_filename(), "pipeline.yaml")
+        self.assertEqual(
+            pipeline_filename("gemma4_nothink_8ktokens"),
+            "pipeline_gemma4_nothink_8ktokens.yaml")
+        for invalid in ("_hidden", "../escape", "has space", "x.yaml", "a" * 101):
+            with self.subTest(invalid=invalid), self.assertRaises(ValueError):
+                pipeline_filename(invalid)
+
+    def test_render_run_round_trip_records_reusable_plan(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "render_run.yaml"
+            save_render_run(
+                path, Path("input/sports"),
+                "pipeline_gemma4_nothink_8ktokens.yaml")
+            loaded = load_render_run(path)
+
+        self.assertEqual(loaded, (
+            Path("input/sports"),
+            "pipeline_gemma4_nothink_8ktokens.yaml"))
+
     def test_pipeline_manifest_does_not_store_render_seeds(self):
         manifest = PipelineManifest(
             still_mode="manual", item_count=1,
@@ -638,6 +661,34 @@ class PipelineManifestTests(unittest.TestCase):
             [item.item_id for item in loaded.items],
             ["nested/child", "root"])
 
+    def test_pipeline_tree_follows_linked_reference_folders_without_cycles(self):
+        manifest = PipelineManifest(
+            "manual", 1,
+            [PipelineItem(
+                0, "sample", Path("sample.jpg"), "a" * 64,
+                still=StillSpec(
+                    Path("sample.jpg"), 640, 480,
+                    prompt="A detailed photograph of a linked subject."),
+            )],
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            input_dir = root / "input"
+            target = root / "target"
+            input_dir.mkdir()
+            target.mkdir()
+            (input_dir / "linked").symlink_to(target, target_is_directory=True)
+            (target / "cycle").symlink_to(input_dir, target_is_directory=True)
+            save_pipeline(target / "pipeline.yaml", manifest)
+
+            paths = pipeline_paths(input_dir)
+            loaded = load_pipeline_tree(input_dir)
+
+        self.assertEqual(
+            [path.relative_to(input_dir) for path in paths],
+            [Path("linked/pipeline.yaml")])
+        self.assertEqual(loaded.items[0].item_id, "linked/sample")
+
     def test_pipeline_save_removes_obsolete_prompt_projections(self):
         manifest = PipelineManifest("manual", 0)
         with tempfile.TemporaryDirectory() as tmp:
@@ -650,7 +701,7 @@ class PipelineManifestTests(unittest.TestCase):
             self.assertFalse((root / "prompts.yaml").exists())
             self.assertFalse((root / "video_prompts.yaml").exists())
 
-    def test_pruning_root_manifest_preserves_input_only_configuration(self):
+    def test_pruning_empty_root_pipeline_removes_file(self):
         manifest = PipelineManifest(
             "manual", 0, input_dir=Path("input/sports"))
         with tempfile.TemporaryDirectory() as tmp:
@@ -659,9 +710,9 @@ class PipelineManifestTests(unittest.TestCase):
             save_pipeline_folder(
                 root, Path(), manifest, prune_empty=True)
 
-            data = yaml.safe_load((root / "pipeline.yaml").read_text())
+            exists = (root / "pipeline.yaml").exists()
 
-        self.assertEqual(data, {"input_dir": "input/sports"})
+        self.assertFalse(exists)
 
     def test_render_state_tree_round_trip_uses_one_state_per_folder(self):
         state = {"schema_version": 1, "items": {
@@ -851,10 +902,10 @@ class PipelineManifestTests(unittest.TestCase):
         self.assertEqual(result["high_level_description"], "A moving subject")
         self.assertIn("invalid region JSON", correction)
         self.assertIn(malformed, correction)
-        self.assertIn("region JSON object", llm.chat.call_args_list[0].args[1])
+        self.assertIn("structured JSON object", llm.chat.call_args_list[0].args[1])
 
-    def test_region_system_prompt_requires_schema_compatible_json(self):
-        prompt = load_system_prompt("system_regions.txt")
+    def test_region_user_prompt_requires_schema_compatible_json(self):
+        prompt = load_user_prompt("user_regions.txt")
 
         self.assertNotIn("<|think|>", prompt)
         self.assertIn("bare JSON object", prompt)
@@ -862,14 +913,14 @@ class PipelineManifestTests(unittest.TestCase):
         self.assertIn("2 to 6 useful regions", prompt)
         self.assertIn("Do not use YAML, XML tags, or Markdown code fences", prompt)
 
-    def test_system_prompts_do_not_embed_thinking_control_tokens(self):
+    def test_user_prompts_do_not_embed_thinking_control_tokens(self):
         for name in (
-                "system_manual.txt", "system_regions.txt", "system_video.txt",
-                "system_video_reference.txt"):
-            self.assertNotIn("<|think|>", load_system_prompt(name), name)
+                "user_manual.txt", "user_regions.txt", "user_video.txt",
+                "user_video_reference.txt"):
+            self.assertNotIn("<|think|>", load_user_prompt(name), name)
 
-    def test_manual_system_prompt_does_not_request_reasoning(self):
-        prompt = load_system_prompt("system_manual.txt")
+    def test_manual_user_prompt_does_not_request_reasoning(self):
+        prompt = load_user_prompt("user_manual.txt")
 
         self.assertNotIn("Think first", prompt)
         self.assertIn("without narrating analysis", prompt)
@@ -963,7 +1014,7 @@ class PipelineManifestTests(unittest.TestCase):
     def test_custom_prompt_directory_is_used(self):
         with tempfile.TemporaryDirectory() as tmp:
             prompt_dir = Path(tmp)
-            (prompt_dir / "system_manual.txt").write_text("custom system")
+            (prompt_dir / "user_manual.txt").write_text("custom user template")
             llm = mock.Mock()
             llm.chat.return_value = (
                 "<prompt>A sufficiently detailed custom image prompt.</prompt>")
@@ -971,12 +1022,26 @@ class PipelineManifestTests(unittest.TestCase):
             generate_still_prompt(
                 llm, Path("/tmp/sample.jpg"), "manual", prompt_dir=prompt_dir)
 
-        self.assertEqual(llm.chat.call_args.args[0], "custom system")
+        self.assertIsNone(llm.chat.call_args.args[0])
+        self.assertIn("custom user template", llm.chat.call_args.args[1])
+
+    def test_optional_system_prompt_is_separate_from_user_template(self):
+        llm = mock.Mock()
+        llm.chat.return_value = (
+            "<prompt>A sufficiently detailed custom image prompt.</prompt>")
+
+        generate_still_prompt(
+            llm, Path("/tmp/sample.jpg"), "manual",
+            system_prompt="Custom global system instruction")
+
+        self.assertEqual(
+            llm.chat.call_args.args[0], "Custom global system instruction")
+        self.assertIn("expert prompt engineer", llm.chat.call_args.args[1])
 
     def test_custom_region_prompt_directory_loads_schema(self):
         with tempfile.TemporaryDirectory() as tmp:
             prompt_dir = Path(tmp)
-            (prompt_dir / "system_regions.txt").write_text("custom system")
+            (prompt_dir / "user_regions.txt").write_text("custom user template")
             schema = json.loads(
                 (Path("prompts") / "regions.schema.json").read_text())
             (prompt_dir / "regions.schema.json").write_text(json.dumps(schema))
@@ -996,14 +1061,15 @@ class PipelineManifestTests(unittest.TestCase):
                 llm, Path("/tmp/sample.jpg"), "regions",
                 prompt_dir=prompt_dir)
 
-        self.assertEqual(llm.chat.call_args.args[0], "custom system")
+        self.assertIsNone(llm.chat.call_args.args[0])
+        self.assertIn("custom user template", llm.chat.call_args.args[1])
         self.assertEqual(llm.chat.call_args.kwargs["json_schema"], schema)
 
     def test_missing_custom_prompt_reports_full_path(self):
-        missing = Path("/tmp/reimagine-missing-prompts/system_manual.txt")
+        missing = Path("/tmp/reimagine-missing-prompts/user_manual.txt")
 
         with self.assertRaisesRegex(ValueError, str(missing)):
-            load_system_prompt("system_manual.txt", missing.parent)
+            load_user_prompt("user_manual.txt", missing.parent)
 
     def test_openai_retry_payload_keeps_correction_after_image(self):
         client = OpenAILLM(
@@ -1027,6 +1093,23 @@ class PipelineManifestTests(unittest.TestCase):
         self.assertEqual(content[0], {"type": "text", "text": "original"})
         self.assertEqual(content[1]["type"], "image_url")
         self.assertEqual(content[2], {"type": "text", "text": "retry"})
+
+    def test_openai_omits_system_role_when_not_configured(self):
+        client = OpenAILLM("127.0.0.1:9503", model="test")
+        response = mock.MagicMock()
+        response.__enter__.return_value.read.return_value = json.dumps({
+            "choices": [{"message": {"content": "ok"}}]
+        }).encode()
+        with tempfile.TemporaryDirectory() as tmp:
+            image = Path(tmp) / "sample.jpg"
+            image.write_bytes(b"image")
+            with mock.patch.object(urllib.request, "urlopen",
+                                   return_value=response) as urlopen:
+                client.chat(None, "request", image)
+
+        payload = json.loads(urlopen.call_args.args[0].data)
+        self.assertEqual([message["role"] for message in payload["messages"]],
+                         ["user"])
 
     def test_openai_payload_adds_standard_json_schema_per_request(self):
         client = OpenAILLM("127.0.0.1:9503", model="test")
@@ -1093,6 +1176,18 @@ class PipelineManifestTests(unittest.TestCase):
         request_prompt = process.communicate.call_args.kwargs["input"]
         self.assertIn("Return JSON matching this schema", request_prompt)
         self.assertIn(json.dumps(schema, separators=(",", ":")), request_prompt)
+
+    def test_claude_omits_system_flag_when_not_configured(self):
+        client = ClaudeCodeLLM(add_dir=Path("/tmp"))
+        process = mock.Mock(returncode=0)
+        process.communicate.return_value = (
+            '{"subtype":"success","result":"ok"}', "")
+        with mock.patch(
+                "reimagine_pipeline.llm.subprocess.Popen",
+                return_value=process) as popen:
+            client.chat(None, "request", Path("/tmp/sample.jpg"))
+
+        self.assertNotIn("--system-prompt", popen.call_args.args[0])
 
     def test_openai_retries_http_500_once(self):
         client = OpenAILLM("127.0.0.1:9503", model="test")
@@ -1266,6 +1361,8 @@ class PipelineManifestTests(unittest.TestCase):
     def test_parsers_show_defaults_and_prompt_prefix(self):
         prompt_args = generate_prompts.build_parser().parse_args([])
         self.assertEqual(prompt_args.prompt_path_prefix, Path("prompts"))
+        self.assertEqual(prompt_args.input_dir, Path("input"))
+        self.assertEqual(prompt_args.llm_server, "127.0.0.1:9503")
         self.assertEqual(prompt_args.llm_max_tokens, 16384)
         self.assertEqual(prompt_args.llm_reasoning, "on")
         self.assertEqual(
@@ -1273,7 +1370,39 @@ class PipelineManifestTests(unittest.TestCase):
         prompt_help = " ".join(generate_prompts.build_parser().format_help().split())
         render_help = " ".join(render_media.build_parser().format_help().split())
         self.assertIn("(default: prompts)", prompt_help)
-        self.assertIn("(default: 127.0.0.1:8188)", render_help)
+        self.assertIn("(default: 192.168.33.101:8188)", render_help)
+
+    def test_system_prompt_string_and_file_are_mutually_exclusive(self):
+        with contextlib.redirect_stderr(io.StringIO()), \
+                self.assertRaises(SystemExit):
+            generate_prompts.build_parser().parse_args([
+                "--system-prompt", "inline",
+                "--system-prompt-file", "system.txt",
+            ])
+
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "system.txt"
+            path.write_text("system from file\n", encoding="utf-8")
+            args = generate_prompts.build_parser().parse_args([
+                "--system-prompt-file", str(path),
+            ])
+            value = generate_prompts.load_optional_system_prompt(args)
+
+        self.assertEqual(value, "system from file")
+
+    def test_omlx_api_key_is_read_from_environment(self):
+        args = generate_prompts.build_parser().parse_args([])
+        with mock.patch.dict(os.environ, {"OMLX_API_KEY": "secret"}, clear=True):
+            llm = generate_prompts.build_llm(args, Path("input"))
+
+        self.assertEqual(llm.api_key, "secret")
+
+    def test_renderer_no_longer_accepts_manifest_option(self):
+        with contextlib.redirect_stderr(io.StringIO()), \
+                self.assertRaises(SystemExit):
+            render_media.build_parser().parse_args([
+                "--manifest", "pipeline.yaml",
+            ])
 
     def test_serve_help_shows_defaults(self):
         import serve
@@ -1366,22 +1495,18 @@ class ProcessIsolationTests(unittest.TestCase):
                     "--video-basis", "reference",
                 ])
 
-            manifest = load_pipeline(root / "output" / "pipeline.yaml")
+            manifest = load_pipeline(input_dir / "pipeline.yaml")
 
         self.assertEqual(code, 0)
         self.assertIsNotNone(manifest.items[0].still)
         self.assertIsNotNone(manifest.items[0].video)
 
-    def test_input_only_pipeline_selects_project_relative_input(self):
+    def test_input_dir_selects_project_relative_reference_tree(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             input_dir = root / "input/sports"
             input_dir.mkdir(parents=True)
             Image.new("RGB", (640, 480)).save(input_dir / "sample.jpg")
-            output_dir = root / "outputs/sports-model"
-            output_dir.mkdir(parents=True)
-            (output_dir / "pipeline.yaml").write_text(
-                "input_dir: input/sports\n")
             llm = mock.Mock()
             llm.describe.return_value = "fake"
             llm.chat.return_value = (
@@ -1392,19 +1517,50 @@ class ProcessIsolationTests(unittest.TestCase):
                     mock.patch.object(
                         generate_prompts, "build_llm", return_value=llm):
                 code = generate_prompts.main([
-                    "--output-dir", str(output_dir), "--stage", "stills",
+                    "--input-dir", "input/sports", "--stage", "stills",
                 ])
-            manifest = load_pipeline(output_dir / "pipeline.yaml")
+            manifest = load_pipeline(input_dir / "pipeline.yaml")
 
         self.assertEqual(code, 0)
         self.assertEqual(manifest.input_dir, Path("input/sports"))
         self.assertEqual(manifest.items[0].source_path, Path("sample.jpg"))
 
-    def test_prompt_generator_no_longer_accepts_input_dir_option(self):
+    def test_multiple_pipeline_suffixes_coexist_beside_references(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            input_dir = root / "input"
+            input_dir.mkdir()
+            Image.new("RGB", (640, 480)).save(input_dir / "sample.jpg")
+            llm = mock.Mock()
+            llm.describe.return_value = "fake"
+            with mock.patch.object(generate_prompts, "ROOT", root), \
+                    mock.patch.object(
+                        generate_prompts, "build_llm", return_value=llm):
+                llm.chat.return_value = (
+                    "<prompt>A detailed Gemma photograph of a moving athlete."
+                    "</prompt>")
+                gemma_code = generate_prompts.main([
+                    "--stage", "stills", "--pipeline-suffix", "gemma4",
+                ])
+                llm.chat.return_value = (
+                    "<prompt>A detailed Qwen photograph of a moving athlete."
+                    "</prompt>")
+                qwen_code = generate_prompts.main([
+                    "--stage", "stills", "--pipeline-suffix", "qwen38",
+                ])
+
+            gemma = load_pipeline(input_dir / "pipeline_gemma4.yaml")
+            qwen = load_pipeline(input_dir / "pipeline_qwen38.yaml")
+
+        self.assertEqual((gemma_code, qwen_code), (0, 0))
+        self.assertIn("Gemma", gemma.items[0].still.prompt)
+        self.assertIn("Qwen", qwen.items[0].still.prompt)
+
+    def test_prompt_generator_no_longer_accepts_manifest_option(self):
         with contextlib.redirect_stderr(io.StringIO()), \
                 self.assertRaises(SystemExit):
             generate_prompts.build_parser().parse_args([
-                "--input-dir", "input/sports",
+                "--manifest", "pipeline.yaml",
             ])
 
     def test_gallery_reads_input_dir_and_defers_pipeline_prompts(self):
@@ -1428,7 +1584,10 @@ class ProcessIsolationTests(unittest.TestCase):
             output_dir = root / "outputs/model"
             output_dir.mkdir(parents=True)
             Image.new("RGB", (640, 480)).save(output_dir / "sample.jpg")
-            save_pipeline(output_dir / "pipeline.yaml", manifest)
+            save_pipeline(input_dir / "pipeline_gemma4.yaml", manifest)
+            save_render_run(
+                output_dir / "render_run.yaml", "input/sports",
+                "pipeline_gemma4.yaml")
 
             with mock.patch.object(serve, "ROOT", root):
                 pipeline_metadata = serve.load_pipeline_metadata(output_dir)
@@ -1441,6 +1600,77 @@ class ProcessIsolationTests(unittest.TestCase):
         self.assertEqual(
             pipeline_metadata[1]["sample.jpg"]["prompt"],
             "A detailed action photograph of a moving athlete.")
+
+    def test_one_suffixed_pipeline_can_drive_multiple_output_runs(self):
+        manifest = PipelineManifest(
+            "manual", 1,
+            [PipelineItem(
+                0, "sample", Path("sample.png"), "a" * 64,
+                still=StillSpec(
+                    Path("sample.jpg"), 640, 480,
+                    prompt="A detailed action photograph of an athlete."),
+            )],
+            input_dir=Path("input"),
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            input_dir = root / "input"
+            save_pipeline(input_dir / "pipeline_gemma4.yaml", manifest)
+            first = root / "outputs/first-model"
+            second = root / "outputs/second-model"
+            with mock.patch.object(render_media, "ROOT", root), \
+                    mock.patch.object(
+                        render_media, "render_stills",
+                        return_value=(1, 0, 0)) as render_stills:
+                first_code = render_media.main([
+                    "--stage", "stills", "--pipeline-suffix", "gemma4",
+                    "--output-dir", str(first),
+                ])
+                second_code = render_media.main([
+                    "--stage", "stills", "--pipeline-suffix", "gemma4",
+                    "--output-dir", str(second),
+                ])
+
+            first_run = load_render_run(first / "render_run.yaml")
+            second_run = load_render_run(second / "render_run.yaml")
+
+        self.assertEqual((first_code, second_code), (0, 0))
+        self.assertEqual(render_stills.call_count, 2)
+        self.assertEqual(first_run, (Path("input"), "pipeline_gemma4.yaml"))
+        self.assertEqual(second_run, first_run)
+
+    def test_output_run_rejects_switching_pipeline_selection(self):
+        manifest = PipelineManifest(
+            "manual", 1,
+            [PipelineItem(
+                0, "sample", Path("sample.png"), "a" * 64,
+                still=StillSpec(
+                    Path("sample.jpg"), 640, 480,
+                    prompt="A detailed action photograph of an athlete."),
+            )],
+            input_dir=Path("input"),
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            input_dir = root / "input"
+            save_pipeline(input_dir / "pipeline_first.yaml", manifest)
+            save_pipeline(input_dir / "pipeline_second.yaml", manifest)
+            output_dir = root / "outputs/run"
+            with mock.patch.object(render_media, "ROOT", root), \
+                    mock.patch.object(
+                        render_media, "render_stills",
+                        return_value=(1, 0, 0)):
+                first_code = render_media.main([
+                    "--stage", "stills", "--pipeline-suffix", "first",
+                    "--output-dir", str(output_dir),
+                ])
+                second_code = render_media.main([
+                    "--stage", "stills", "--pipeline-suffix", "second",
+                    "--output-dir", str(output_dir),
+                ])
+
+        self.assertEqual(first_code, 0)
+        self.assertEqual(second_code, 2)
 
     def test_gallery_pair_iterator_registers_references_progressively(self):
         import serve
@@ -1699,7 +1929,7 @@ class ProcessIsolationTests(unittest.TestCase):
         self.assertEqual(first_path, reordered_path)
         self.assertNotEqual(first_path, distinct_path)
         self.assertRegex(
-            first_path.name, r"^manifest-index-v1-[0-9a-f]{24}\.json$")
+            first_path.name, r"^manifest-index-v2-[0-9a-f]{24}\.json$")
         self.assertNotIn("outputs", first_path.name)
         self.assertNotIn("first", first_path.name)
 
@@ -1729,7 +1959,7 @@ class ProcessIsolationTests(unittest.TestCase):
                 second_warm = serve.build_pipeline_metadata_cache(
                     second_sources, cache_root)
                 self.assertEqual(load.call_count, 0)
-            indexes = list(cache_root.glob("manifest-index-v1-*.json"))
+            indexes = list(cache_root.glob("manifest-index-v2-*.json"))
 
         self.assertIn("first.jpg", first_warm["first"][1])
         self.assertIn("second.jpg", second_warm["second"][1])
@@ -1781,7 +2011,7 @@ class ProcessIsolationTests(unittest.TestCase):
                 load.reset_mock()
                 warm, warm_errors = run_concurrently()
                 self.assertEqual(load.call_count, 0)
-            indexes = list(cache_root.glob("manifest-index-v1-*.json"))
+            indexes = list(cache_root.glob("manifest-index-v2-*.json"))
 
         self.assertEqual(cold_errors + warm_errors, [])
         self.assertEqual(len(cold), 2)
@@ -2370,7 +2600,7 @@ class ProcessIsolationTests(unittest.TestCase):
                     "--output-dir", str(root / "output"),
                     "--stage", "stills", "--common-dims",
                 ])
-            manifest = load_pipeline(root / "output/pipeline.yaml")
+            manifest = load_pipeline(input_dir / "pipeline.yaml")
             still = manifest.items[0].still
             add_dir = build_llm.call_args.args[1]
 
@@ -2402,7 +2632,7 @@ class ProcessIsolationTests(unittest.TestCase):
                     "--output-dir", str(root / "output"),
                     "--stage", "stills",
                 ])
-            manifest = load_pipeline(root / "output/pipeline.yaml")
+            manifest = load_pipeline(input_dir / "pipeline.yaml")
 
         self.assertEqual(code, 0)
         self.assertEqual(llm.chat.call_args.args[2], source.resolve())
@@ -2419,7 +2649,7 @@ class ProcessIsolationTests(unittest.TestCase):
             source = input_dir / "sample.jpg"
             Image.new("RGB", (640, 480), "green").save(source)
             output_dir = root / "output"
-            save_pipeline(output_dir / "pipeline.yaml", PipelineManifest(
+            save_pipeline(input_dir / "pipeline.yaml", PipelineManifest(
                 "manual", 1, [PipelineItem(
                     0, "sample", Path("sample.jpg"), sha256_file(source),
                     still=StillSpec(
@@ -2461,13 +2691,13 @@ class ProcessIsolationTests(unittest.TestCase):
                 ])
 
             manifest = load_pipeline_tree(
-                root / "output", require_stage="stills")
+                input_dir, require_stage="stills")
 
             self.assertTrue(
-                (root / "output/animals/pipeline.yaml").is_file())
+                (input_dir / "animals/pipeline.yaml").is_file())
             self.assertTrue(
-                (root / "output/sports/pipeline.yaml").is_file())
-            self.assertFalse((root / "output/pipeline.yaml").exists())
+                (input_dir / "sports/pipeline.yaml").is_file())
+            self.assertFalse((input_dir / "pipeline.yaml").exists())
 
         self.assertEqual(code, 0)
         self.assertEqual(manifest.item_count, 2)
@@ -2485,14 +2715,17 @@ class ProcessIsolationTests(unittest.TestCase):
             )],
         )
         with tempfile.TemporaryDirectory() as tmp:
-            output_dir = Path(tmp)
-            save_pipeline_tree(output_dir, manifest)
+            root = Path(tmp)
+            input_dir = root / "input"
+            output_dir = root / "output"
+            save_pipeline_tree(input_dir, manifest)
             save_render_state_tree(output_dir, {
                 "schema_version": 1, "items": {
                     "animals/cat": {"still": {"output_sha256": "a" * 64}},
                 },
             })
-            with mock.patch.object(render_media, "render_stills",
+            with mock.patch.object(render_media, "ROOT", root), \
+                    mock.patch.object(render_media, "render_stills",
                                    return_value=(0, 1, 0)) as render_stills:
                 code = render_media.main([
                     "--output-dir", str(output_dir), "--stage", "stills",
@@ -2528,11 +2761,14 @@ class ProcessIsolationTests(unittest.TestCase):
                 prompt="A detailed action photograph of a moving subject."),
         )
         with tempfile.TemporaryDirectory() as tmp:
-            output_dir = Path(tmp)
+            root = Path(tmp)
+            input_dir = root / "input"
+            output_dir = root / "output"
             save_pipeline(
-                output_dir / "pipeline.yaml",
+                input_dir / "pipeline.yaml",
                 PipelineManifest("manual", 2, [ready]))
-            with mock.patch.object(
+            with mock.patch.object(render_media, "ROOT", root), \
+                    mock.patch.object(
                     render_media, "render_stills",
                     return_value=(1, 0, 0)) as render_stills, \
                     self.assertLogs("render_media", "WARNING") as logs:
@@ -2549,7 +2785,7 @@ class ProcessIsolationTests(unittest.TestCase):
             and "rendering available items" in message
             for message in logs.output))
 
-    def test_render_never_constructs_llm_or_reads_input_tree(self):
+    def test_render_never_constructs_llm(self):
         manifest = PipelineManifest(
             still_mode="manual",
             item_count=1,
@@ -2565,9 +2801,12 @@ class ProcessIsolationTests(unittest.TestCase):
             )],
         )
         with tempfile.TemporaryDirectory() as tmp:
-            output_dir = Path(tmp)
-            save_pipeline(output_dir / "pipeline.yaml", manifest)
-            with mock.patch.object(render_media, "build_llm",
+            root = Path(tmp)
+            input_dir = root / "input"
+            output_dir = root / "output"
+            save_pipeline(input_dir / "pipeline.yaml", manifest)
+            with mock.patch.object(render_media, "ROOT", root), \
+                    mock.patch.object(render_media, "build_llm",
                                    side_effect=AssertionError, create=True), \
                     mock.patch.object(render_media, "render_stills",
                                       return_value=(1, 0, 0)) as render_stills:
@@ -2594,9 +2833,12 @@ class ProcessIsolationTests(unittest.TestCase):
             )],
         )
         with tempfile.TemporaryDirectory() as tmp:
-            output_dir = Path(tmp)
-            save_pipeline(output_dir / "pipeline.yaml", manifest)
-            with mock.patch.object(render_media, "render_all",
+            root = Path(tmp)
+            input_dir = root / "input"
+            output_dir = root / "output"
+            save_pipeline(input_dir / "pipeline.yaml", manifest)
+            with mock.patch.object(render_media, "ROOT", root), \
+                    mock.patch.object(render_media, "render_all",
                                    return_value=(2, 0, 0)) as render_all:
                 code = render_media.main([
                     "--output-dir", str(output_dir), "--stage", "all",
@@ -2620,8 +2862,9 @@ class ProcessIsolationTests(unittest.TestCase):
             root = Path(tmp)
             output_dir = root / "output"
             output_dir.mkdir()
+            input_dir = root / "input"
             cache_root = root / "cache"
-            save_pipeline(output_dir / "pipeline.yaml", manifest)
+            save_pipeline(input_dir / "pipeline.yaml", manifest)
             artifact = ComfyArtifact("885", "sample.jpeg", "", "output")
             fake = mock.Mock()
             fake.ping.return_value = True
@@ -2629,7 +2872,8 @@ class ProcessIsolationTests(unittest.TestCase):
             image = io.BytesIO()
             Image.new("RGB", (64, 64)).save(image, format="JPEG")
             fake.read_artifact.return_value = image.getvalue()
-            with mock.patch("reimagine_pipeline.rendering.ComfyClient",
+            with mock.patch.object(render_media, "ROOT", root), \
+                    mock.patch("reimagine_pipeline.rendering.ComfyClient",
                             return_value=fake):
                 code = render_media.main([
                     "--output-dir", str(output_dir), "--stage", "stills",
@@ -2664,15 +2908,19 @@ class ProcessIsolationTests(unittest.TestCase):
             )],
         )
         with tempfile.TemporaryDirectory() as tmp:
-            output_dir = Path(tmp)
+            root = Path(tmp)
+            input_dir = root / "input"
+            output_dir = root / "output"
+            output_dir.mkdir()
             Image.new("RGB", (64, 64)).save(output_dir / "sample.jpg")
-            save_pipeline(output_dir / "pipeline.yaml", manifest)
+            save_pipeline(input_dir / "pipeline.yaml", manifest)
             artifact = ComfyArtifact("1087", "sample.mp4", "video", "output")
             fake = mock.Mock()
             fake.upload_image.return_value = "reimagine/sample.jpg"
             fake.run_workflow.return_value = [artifact]
             fake.read_artifact.return_value = b"video"
-            with mock.patch("reimagine_pipeline.rendering.ComfyClient",
+            with mock.patch.object(render_media, "ROOT", root), \
+                    mock.patch("reimagine_pipeline.rendering.ComfyClient",
                             return_value=fake), \
                     self.assertLogs("reimagine_pipeline.rendering", "INFO") as logs:
                 code = render_media.main([
@@ -2699,10 +2947,14 @@ class ProcessIsolationTests(unittest.TestCase):
             )],
         )
         with tempfile.TemporaryDirectory() as tmp:
-            output_dir = Path(tmp)
+            root = Path(tmp)
+            input_dir = root / "input"
+            output_dir = root / "output"
+            output_dir.mkdir()
             Image.new("RGB", (64, 64)).save(output_dir / "sample.jpg")
-            save_pipeline(output_dir / "pipeline.yaml", manifest)
-            with mock.patch("reimagine_pipeline.rendering.ComfyClient",
+            save_pipeline(input_dir / "pipeline.yaml", manifest)
+            with mock.patch.object(render_media, "ROOT", root), \
+                    mock.patch("reimagine_pipeline.rendering.ComfyClient",
                             side_effect=AssertionError):
                 code = render_media.main([
                     "--output-dir", str(output_dir), "--stage", "videos",
@@ -2737,7 +2989,7 @@ class ProcessIsolationTests(unittest.TestCase):
                     manifest.items[0].video, basis_sha256=source_hash))
             manifest.items = [item]
             output_dir = root / "output"
-            save_pipeline(output_dir / "pipeline.yaml", manifest)
+            save_pipeline(input_dir / "pipeline.yaml", manifest)
             llm = mock.Mock()
             llm.describe.return_value = "fake"
             llm.chat.return_value = (
@@ -2750,7 +3002,7 @@ class ProcessIsolationTests(unittest.TestCase):
                     "--output-dir", str(output_dir),
                     "--stage", "videos", "--force",
                 ])
-            loaded = load_pipeline(output_dir / "pipeline.yaml")
+            loaded = load_pipeline(input_dir / "pipeline.yaml")
 
         self.assertEqual(code, 0)
         self.assertEqual(loaded.items[0].still, item.still)
@@ -2778,7 +3030,7 @@ class ProcessIsolationTests(unittest.TestCase):
                         "reference", source_hash),
                 )],
             )
-            save_pipeline(output_dir / "pipeline.yaml", manifest)
+            save_pipeline(input_dir / "pipeline.yaml", manifest)
             llm = mock.Mock()
             llm.describe.return_value = "fake"
             llm.chat.return_value = (
@@ -2791,7 +3043,7 @@ class ProcessIsolationTests(unittest.TestCase):
                     "--output-dir", str(output_dir),
                     "--stage", "stills", "--force",
                 ])
-            loaded = load_pipeline(output_dir / "pipeline.yaml")
+            loaded = load_pipeline(input_dir / "pipeline.yaml")
 
         self.assertEqual(code, 0)
         self.assertIsNone(loaded.items[0].video)
@@ -2810,7 +3062,7 @@ class ProcessIsolationTests(unittest.TestCase):
                     source_sha256="a" * 64,
                 )],
             )
-            save_pipeline(output_dir / "pipeline.yaml", old)
+            save_pipeline(input_dir / "pipeline.yaml", old)
             llm = mock.Mock()
             llm.describe.return_value = "fake"
             llm.chat.side_effect = [
@@ -2824,7 +3076,7 @@ class ProcessIsolationTests(unittest.TestCase):
                     "--output-dir", str(output_dir),
                     "--stage", "all", "--force",
                 ])
-            loaded = load_pipeline(output_dir / "pipeline.yaml")
+            loaded = load_pipeline(input_dir / "pipeline.yaml")
 
         self.assertEqual(code, 0)
         self.assertEqual(loaded.items[0].item_id, "new")
@@ -2852,7 +3104,7 @@ class ProcessIsolationTests(unittest.TestCase):
                         "reference", first_hash),
                 )],
             )
-            save_pipeline(output_dir / "pipeline.yaml", partial)
+            save_pipeline(input_dir / "pipeline.yaml", partial)
             llm = mock.Mock()
             llm.describe.return_value = "fake"
             llm.chat.side_effect = [
@@ -2865,7 +3117,7 @@ class ProcessIsolationTests(unittest.TestCase):
                 code = generate_prompts.main([
                     "--output-dir", str(output_dir), "--stage", "all",
                 ])
-            loaded = load_pipeline(output_dir / "pipeline.yaml")
+            loaded = load_pipeline(input_dir / "pipeline.yaml")
 
         self.assertEqual(code, 0)
         self.assertEqual([item.item_id for item in loaded.items], ["a", "b"])
@@ -2892,7 +3144,7 @@ class ProcessIsolationTests(unittest.TestCase):
                 )],
             )
             save_pipeline_folder(
-                output_dir, Path("animals"), first, item_count=1)
+                input_dir, Path("animals"), first, item_count=1)
             llm = mock.Mock()
             llm.describe.return_value = "fake"
             llm.chat.return_value = (
@@ -2904,7 +3156,7 @@ class ProcessIsolationTests(unittest.TestCase):
                 code = generate_prompts.main([
                     "--output-dir", str(output_dir), "--stage", "stills",
                 ])
-            loaded = load_pipeline_tree(output_dir, require_stage="stills")
+            loaded = load_pipeline_tree(input_dir, require_stage="stills")
 
         self.assertEqual(code, 0)
         self.assertEqual(

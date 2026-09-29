@@ -5,9 +5,10 @@ cd "$(dirname "$0")/.."
 
 PY=.venv/bin/python
 LLM="${LLM:-127.0.0.1:9503}"
+MODEL_TAG="${MODEL_TAG:-gemma4}"
 
 "$PY" generate_prompts.py --stage all --still-mode manual \
-  --llm-server "$LLM" --output-dir outputs/local-llm
+  --llm-server "$LLM" --pipeline-suffix "${MODEL_TAG}_manual"
 
 "$PY" generate_prompts.py --stage all --still-mode regions \
-  --llm-server "$LLM" --output-dir outputs/local-llm-regions
+  --llm-server "$LLM" --pipeline-suffix "${MODEL_TAG}_regions"

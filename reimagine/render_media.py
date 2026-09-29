@@ -6,25 +6,34 @@ import sys
 import time
 from pathlib import Path
 
-from reimagine_pipeline import PIPELINE_FILENAME, RENDER_STATE_FILENAME
+from reimagine_pipeline import (
+    RENDER_RUN_FILENAME, RENDER_STATE_FILENAME, pipeline_filename,
+)
 from reimagine_pipeline.files import (
     DEFAULT_CACHE_ROOT, THUMBNAIL_CACHE_SUBDIR,
 )
 from reimagine_pipeline.manifest import (
-    incomplete_plan_messages, load_pipeline, load_pipeline_tree,
-    load_render_state, load_render_state_tree, save_pipeline_tree,
-    save_render_state_tree,
+    incomplete_plan_messages, load_pipeline_tree, load_render_run,
+    load_render_state, load_render_state_tree, save_render_run,
+    save_render_state_tree, validate_pipeline_input_dir,
 )
 from reimagine_pipeline.rendering import render_all, render_stills, render_videos
 
 logger = logging.getLogger(__name__)
+ROOT = Path(__file__).parent.resolve()
 
 
 def build_parser():
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("--output-dir", type=Path, default=Path("output"),
-                        help="Media output and manifest directory.")
+                        help="Rendered-media and render-state directory.")
+    parser.add_argument(
+        "--input-dir", type=Path, default=Path("input"),
+        help="Project-relative reference tree containing reusable pipelines.")
+    parser.add_argument(
+        "--pipeline-suffix", default="",
+        help="Optional safe suffix selecting pipeline_<suffix>.yaml files.")
     cache_group = parser.add_mutually_exclusive_group()
     cache_group.add_argument(
         "--cache-root", dest="cache_root", type=Path,
@@ -35,14 +44,11 @@ def build_parser():
         default=argparse.SUPPRESS,
         help="Deprecated alias for --cache-root; now names the unified cache.")
     parser.add_argument(
-        "--manifest", type=Path, default=None,
-        help="Use one explicit manifest instead of per-folder pipeline.yaml files.")
-    parser.add_argument(
         "--state-file", type=Path, default=None,
         help="Use one explicit state file instead of per-folder render_state.yaml files.")
     parser.add_argument("--stage", choices=("all", "stills", "videos"),
                         default="all", help="Media stage to render.")
-    parser.add_argument("--comfy-server", default="127.0.0.1:8188",
+    parser.add_argument("--comfy-server", default="192.168.33.101:8188",
                         help="ComfyUI server address.")
     parser.add_argument("--comfyui-output-dir", type=Path, default=None,
                         help="Optional local or mounted ComfyUI output directory.")
@@ -80,22 +86,43 @@ def main(argv=None):
         logger.warning(
             "--thumbnail-cache-root is deprecated; use --cache-root")
     output_dir = args.output_dir.resolve()
+    try:
+        configured_input = validate_pipeline_input_dir(args.input_dir)
+        input_dir = (ROOT / configured_input).resolve()
+        pipeline_name = pipeline_filename(args.pipeline_suffix)
+    except ValueError as error:
+        logger.error("error: %s", error)
+        return 2
+    if (output_dir == input_dir
+            or output_dir.is_relative_to(input_dir)
+            or input_dir.is_relative_to(output_dir)):
+        logger.error("error: --output-dir and --input-dir must not overlap")
+        return 2
     args.cache_root = args.cache_root.expanduser()
     args.thumbnail_cache_root = args.cache_root / THUMBNAIL_CACHE_SUBDIR
-    manifest_path = args.manifest.resolve() if args.manifest else None
     args.state_file = args.state_file.resolve() if args.state_file else None
     args.state_root = output_dir
     if args.comfyui_output_dir:
         args.comfyui_output_dir = args.comfyui_output_dir.resolve()
     try:
         started = time.perf_counter()
-        manifest = (load_pipeline(manifest_path)
-                    if manifest_path else load_pipeline_tree(
-                        output_dir, filename=PIPELINE_FILENAME))
+        manifest = load_pipeline_tree(input_dir, filename=pipeline_name)
+        if manifest.input_dir != configured_input:
+            raise ValueError(
+                f"{pipeline_name} records input directory {manifest.input_dir}, "
+                f"not {configured_input}")
+        run_path = output_dir / RENDER_RUN_FILENAME
+        if run_path.is_file():
+            prior = load_render_run(run_path)
+            selected = (configured_input, pipeline_name)
+            if prior != selected:
+                raise ValueError(
+                    f"output directory is already linked to {prior[0]}/**/"
+                    f"{prior[1]}; choose another --output-dir")
+        else:
+            save_render_run(run_path, configured_input, pipeline_name)
         for message in incomplete_plan_messages(manifest, args.stage):
             logger.warning("%s; rendering available items", message)
-        if not manifest_path and (output_dir / PIPELINE_FILENAME).is_file():
-            save_pipeline_tree(output_dir, manifest, PIPELINE_FILENAME)
         state = (load_render_state(args.state_file) if args.state_file
                  else load_render_state_tree(
                      output_dir, filename=RENDER_STATE_FILENAME))

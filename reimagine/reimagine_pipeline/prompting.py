@@ -10,12 +10,12 @@ logger = logging.getLogger(__name__)
 MAX_CORRECTION_RESPONSE_CHARS = 2000
 
 
-def load_system_prompt(name, prompt_dir=PROMPTS_DIR):
+def load_user_prompt(name, prompt_dir=PROMPTS_DIR):
     path = Path(prompt_dir) / name
     try:
         return path.read_text(encoding="utf-8").strip()
     except OSError as error:
-        raise ValueError(f"could not read system prompt {path}: {error}") from error
+        raise ValueError(f"could not read user prompt {path}: {error}") from error
 
 
 def load_json_schema(name, prompt_dir=PROMPTS_DIR):
@@ -157,15 +157,18 @@ def _parse_regions(text):
     return validate_regions(spec)
 
 
-def generate_still_prompt(llm, source, mode, prompt_dir=PROMPTS_DIR):
+def generate_still_prompt(
+        llm, source, mode, prompt_dir=PROMPTS_DIR, system_prompt=None):
     if mode == "manual":
         return generate_tagged(
-            llm, load_system_prompt("system_manual.txt", prompt_dir),
-            f"Read this reference image and write the krea2 prompt:\n{source}",
+            llm, system_prompt,
+            load_user_prompt("user_manual.txt", prompt_dir) +
+            "\n\nApply these instructions to the supplied reference image.",
             source, "prompt")
     return _generate_with_retries(
-        llm, load_system_prompt("system_regions.txt", prompt_dir),
-        f"Inspect this reference image and return its region JSON object:\n{source}",
+        llm, system_prompt,
+        load_user_prompt("user_regions.txt", prompt_dir) +
+        "\n\nApply these instructions to the supplied reference image.",
         source, "region JSON object", _parse_regions,
         json_schema=load_json_schema("regions.schema.json", prompt_dir))
 
@@ -176,12 +179,12 @@ def video_prompt_word_range(duration):
 
 def generate_video_prompt(
         llm, image_path, basis, still_spec, duration=10,
-        prompt_dir=PROMPTS_DIR):
+        prompt_dir=PROMPTS_DIR, system_prompt=None):
     if basis == "rendered":
-        system_name = "system_video.txt"
+        user_name = "user_video.txt"
         context = "The supplied image is the exact LTX first frame."
     else:
-        system_name = "system_video_reference.txt"
+        user_name = "user_video_reference.txt"
         still_context = (still_spec.prompt if still_spec.prompt is not None
                          else json.dumps(still_spec.regions, ensure_ascii=False))
         context = (
@@ -189,8 +192,9 @@ def generate_video_prompt(
             "will follow this validated still plan:\n" + still_context)
     minimum_words, maximum_words = video_prompt_word_range(duration)
     return generate_tagged(
-        llm, load_system_prompt(system_name, prompt_dir),
-        f"{context}\nWrite a controlled {duration}-second LTX motion prompt. "
+        llm, system_prompt,
+        load_user_prompt(user_name, prompt_dir) +
+        f"\n\n{context}\nWrite a controlled {duration}-second LTX motion prompt. "
         f"Aim for {minimum_words}-{maximum_words} words so the described beats "
         "fill the full runtime without rushing.",
         image_path, "video")

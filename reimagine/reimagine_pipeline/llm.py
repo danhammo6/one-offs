@@ -159,8 +159,10 @@ class ClaudeCodeLLM:
             user_prompt += f"\n\n{correction}"
         command = [
             self.cli, "-p", "--output-format", "json", "--model", self.model,
-            "--system-prompt", system_prompt, "--allowedTools", "Read",
+            "--allowedTools", "Read",
         ]
+        if system_prompt is not None:
+            command += ["--system-prompt", system_prompt]
         if self.add_dir:
             command += ["--add-dir", str(self.add_dir)]
         process = subprocess.Popen(command, **_cli_popen_kwargs())
@@ -235,12 +237,12 @@ class OpenAILLM:
         ]
         if correction:
             content.append({"type": "text", "text": correction})
+        messages = [{"role": "user", "content": content}]
+        if system_prompt is not None:
+            messages.insert(0, {"role": "system", "content": system_prompt})
         payload = {
             "model": self.model,
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": content},
-            ],
+            "messages": messages,
             "temperature": 0.7,
             "max_tokens": self.max_tokens,
             "cache_prompt": True,

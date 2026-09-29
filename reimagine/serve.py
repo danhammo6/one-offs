@@ -10,7 +10,7 @@ metadata is parsed once at startup and remains fixed for the server lifetime.
 
 Multiple output sets live side by side under a single top-level dir (default
 `outputs/`); each subdirectory is one selectable "source" in the UI, labeled by
-its directory name (e.g. claude, local-llm, local-llm-regions). Point at a
+its directory name (e.g. gemma4, local-llm, local-llm-regions). Point at a
 different tree with --outputs-dir, or a single flat dir with --output-dir.
 
 Routes:

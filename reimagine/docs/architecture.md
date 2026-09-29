@@ -88,7 +88,7 @@ Range/chunked video serving is not implemented.
 | `reimagine_pipeline/files.py` | Paths, atomic writes, thumbnails, common dims |
 | `reimagine_pipeline/rendering.py` | Still/video render + thumbnail backfill |
 | `reimagine_pipeline/models.py` | `PipelineItem` / still / video specs |
-| `reimagine_pipeline/llm.py` | Claude Code and OpenAI-compatible clients |
+| `reimagine_pipeline/llm.py` | OpenAI-compatible LLM client |
 | `reimagine_pipeline/prompting.py` | Still/video prompt generation |
 | `reimagine_pipeline/comfy.py` | ComfyUI HTTP + artifact fetch |
 | `reimagine_pipeline/workflows.py` | Workflow JSON patches |

@@ -2,10 +2,7 @@ import base64
 import json
 import logging
 import mimetypes
-import os
-import signal
 import socket
-import subprocess
 import sys
 import threading
 import time
@@ -16,23 +13,9 @@ logger = logging.getLogger(__name__)
 _INTERRUPT_POLL_S = 0.05
 
 
-def _uses_windows_process_tree():
-    if os.name == "nt":
-        return True
+def _needs_sleep_poll():
     platform = sys.platform
-    return platform == "msys" or platform.startswith("cygwin")
-
-
-def _cli_popen_kwargs():
-    kwargs = dict(
-        stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE, text=True)
-    if os.name == "nt":
-        kwargs["creationflags"] = getattr(
-            subprocess, "CREATE_NEW_PROCESS_GROUP", 0x00000200)
-    else:
-        kwargs["start_new_session"] = True
-    return kwargs
+    return platform in {"win32", "msys"} or platform.startswith("cygwin")
 
 
 def _close_quietly(stream):
@@ -55,40 +38,6 @@ def _close_quietly(stream):
         pass
 
 
-def _taskkill_tree(pid):
-    if not pid:
-        return
-    if os.name == "nt":
-        command = ["taskkill.exe", "/F", "/T", "/PID", str(pid)]
-        extra = {"creationflags": getattr(subprocess, "CREATE_NO_WINDOW", 0)}
-    else:
-        # MSYS converts "/F" into a filesystem path; "//F" reaches taskkill as /F.
-        command = ["taskkill.exe", "//F", "//T", "//PID", str(pid)]
-        extra = {}
-    try:
-        subprocess.Popen(
-            command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-            **extra)
-    except OSError:
-        pass
-
-
-def _kill_process_group(process):
-    if process.poll() is not None:
-        return
-    if _uses_windows_process_tree():
-        _taskkill_tree(process.pid)
-    else:
-        try:
-            os.killpg(process.pid, signal.SIGKILL)
-        except (AttributeError, ProcessLookupError, PermissionError, OSError):
-            pass
-    try:
-        process.kill()
-    except OSError:
-        pass
-
-
 def _run_interruptible(func, on_interrupt=None, poll=_INTERRUPT_POLL_S):
     """Run *func* in a daemon thread so Ctrl-C is not stuck in a blocking call."""
     result = {}
@@ -105,7 +54,7 @@ def _run_interruptible(func, on_interrupt=None, poll=_INTERRUPT_POLL_S):
         while thread.is_alive():
             # time.sleep is more reliably interrupted by Ctrl-C under MSYS2
             # than Thread.join; join still returns as soon as work finishes.
-            if _uses_windows_process_tree():
+            if _needs_sleep_poll():
                 time.sleep(poll)
             else:
                 thread.join(poll)
@@ -132,60 +81,6 @@ def _urlopen_read(request, timeout):
 
     return _run_interruptible(
         fetch, on_interrupt=lambda: _close_quietly(holder["response"]))
-
-
-class ClaudeCodeLLM:
-    def __init__(self, model="opus", timeout=300, cli="claude", add_dir=None):
-        self.model = model
-        self.timeout = timeout
-        self.cli = cli
-        self.add_dir = add_dir
-        self.log_reasoning = False
-
-    def describe(self):
-        return f"Claude Code CLI ({self.model}, multimodal via Read)"
-
-    def chat(
-            self, system_prompt, user_prompt, image_path, correction=None,
-            json_schema=None):
-        user_prompt = (
-            f"{user_prompt}\n\nUse the Read tool to inspect this image:\n"
-            f"{image_path.resolve()}")
-        if json_schema is not None:
-            user_prompt += (
-                "\n\nReturn JSON matching this schema:\n" +
-                json.dumps(json_schema, separators=(",", ":")))
-        if correction:
-            user_prompt += f"\n\n{correction}"
-        command = [
-            self.cli, "-p", "--output-format", "json", "--model", self.model,
-            "--allowedTools", "Read",
-        ]
-        if system_prompt is not None:
-            command += ["--system-prompt", system_prompt]
-        if self.add_dir:
-            command += ["--add-dir", str(self.add_dir)]
-        process = subprocess.Popen(command, **_cli_popen_kwargs())
-        try:
-            stdout, stderr = _run_interruptible(
-                lambda: process.communicate(
-                    input=user_prompt, timeout=self.timeout),
-                on_interrupt=lambda: _kill_process_group(process))
-        except subprocess.TimeoutExpired:
-            _kill_process_group(process)
-            raise
-        if process.returncode != 0:
-            raise RuntimeError(
-                f"claude exited {process.returncode}: {stderr.strip()[:200]}")
-        try:
-            envelope = json.loads(stdout)
-        except json.JSONDecodeError as error:
-            raise RuntimeError(
-                f"claude returned non-JSON: {stdout.strip()[:200]!r}") from error
-        if envelope.get("is_error") or envelope.get("subtype") != "success":
-            raise RuntimeError(
-                f"claude error envelope: subtype={envelope.get('subtype')}")
-        return (envelope.get("result") or "").strip()
 
 
 class OpenAILLM:

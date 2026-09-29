@@ -13,7 +13,7 @@ from reimagine_pipeline import pipeline_filename
 from reimagine_pipeline.files import (
     derive_dims, iter_images, prepare_common_image, sha256_file,
 )
-from reimagine_pipeline.llm import ClaudeCodeLLM, OpenAILLM
+from reimagine_pipeline.llm import OpenAILLM
 from reimagine_pipeline.manifest import (
     load_pipeline_tree, pipeline_paths, save_pipeline_folder,
     save_pipeline_tree, validate_pipeline_input_dir,
@@ -37,15 +37,12 @@ class PromptJob:
     height: int
 
 
-def build_llm(args, input_dir):
-    if not getattr(args, "claude_code", False):
-        llm = OpenAILLM(
-            args.llm_server, model=args.llm_model,
-            api_key=(os.environ.get("OMLX_API_KEY")
-                     or os.environ.get("OPENAI_API_KEY")),
-            max_tokens=args.llm_max_tokens, reasoning=args.llm_reasoning)
-    else:
-        llm = ClaudeCodeLLM(model=args.claude_model, add_dir=input_dir)
+def build_llm(args):
+    llm = OpenAILLM(
+        args.llm_server, model=args.llm_model,
+        api_key=(os.environ.get("OMLX_API_KEY")
+                 or os.environ.get("OPENAI_API_KEY")),
+        max_tokens=args.llm_max_tokens, reasoning=args.llm_reasoning)
     llm.log_reasoning = args.verbose >= 2
     return llm
 
@@ -84,11 +81,6 @@ def build_parser():
     system_group.add_argument(
         "--system-prompt-file", type=Path, default=None,
         help="Read the optional system message from this UTF-8 file.")
-    parser.add_argument("--claude-model", default="opus",
-                        help="Claude Code model used with --claude-code.")
-    parser.add_argument(
-        "--claude-code", action="store_true",
-        help="Use the Claude Code CLI instead of the OMLX server.")
     parser.add_argument("--llm-server", default="127.0.0.1:9503",
                         help="OpenAI-compatible multimodal server address; auth "
                              "uses OMLX_API_KEY or OPENAI_API_KEY.")
@@ -277,9 +269,7 @@ def _run(args):
         jobs = discover(input_dir, common_dir)
         still_mode, by_id, folder_counts = _load_planning_state(
             args, jobs, input_dir, pipeline_name, configured_input)
-        llm = build_llm(
-            args, (common_dir or input_dir)
-            if args.video_basis == "reference" else output_dir)
+        llm = build_llm(args)
         logger.info("generate prompts: %d item(s), stage=%s", len(jobs), args.stage)
         logger.info("  llm:      %s", llm.describe())
         logger.info("  prompts:  %s", prompt_dir)

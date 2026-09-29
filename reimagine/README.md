@@ -120,7 +120,6 @@ its input directory relative to this `reimagine/` folder. The default is
 | `--system-prompt` | *(none)* | optional inline system message for every request |
 | `--system-prompt-file` | *(none)* | optional UTF-8 system-message file; mutually exclusive with the inline option |
 | `--llm-server` | `127.0.0.1:9503` | OpenAI-compatible multimodal server |
-| `--claude-code` | off | use Claude Code instead of the OpenAI-compatible server |
 | `--llm-max-tokens` | `16384` | maximum completion-token budget for the OpenAI-compatible server |
 | `--llm-reasoning` | `on` | llama.cpp reasoning mode; use `off` to disable |
 | `-v`, `--verbose` | off | log rejected LLM responses; repeat (`-vv`) to include available reasoning |

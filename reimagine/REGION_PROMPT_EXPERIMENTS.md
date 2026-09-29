@@ -290,7 +290,7 @@ the same local Gemma 4 / llama.cpp server.
       JSON output, including the exact request field supported by the installed
       server version.
 - [x] Add a structured-output transport option to `OpenAILLM` without affecting
-      Claude Code or plain-text prompt generation.
+      plain-text prompt generation.
 - [x] Parse and validate schema-constrained JSON while retaining semantic
       validation for on-canvas boxes and usable descriptions.
 - [x] Add an explicit experimental thinking flag instead of permanently adding

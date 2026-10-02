@@ -126,9 +126,9 @@ class OpenAILLM:
         raw = image_path.read_bytes()
         mime = mimetypes.guess_type(image_path.name)[0] or "image/jpeg"
         content = [
-            {"type": "text", "text": user_prompt},
             {"type": "image_url", "image_url": {
                 "url": f"data:{mime};base64,{base64.b64encode(raw).decode('ascii')}"}},
+            {"type": "text", "text": user_prompt},
         ]
         if correction:
             content.append({"type": "text", "text": correction})

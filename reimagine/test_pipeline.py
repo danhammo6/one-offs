@@ -1066,7 +1066,7 @@ class PipelineManifestTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, str(missing)):
             load_user_prompt("user_manual.txt", missing.parent)
 
-    def test_openai_retry_payload_keeps_correction_after_image(self):
+    def test_openai_retry_payload_puts_image_first_and_correction_last(self):
         client = OpenAILLM(
             "127.0.0.1:9503", model="test", max_tokens=16384)
         response = mock.MagicMock()
@@ -1085,8 +1085,8 @@ class PipelineManifestTests(unittest.TestCase):
         content = payload["messages"][1]["content"]
         self.assertTrue(payload["cache_prompt"])
         self.assertEqual(payload["max_tokens"], 16384)
-        self.assertEqual(content[0], {"type": "text", "text": "original"})
-        self.assertEqual(content[1]["type"], "image_url")
+        self.assertEqual(content[0]["type"], "image_url")
+        self.assertEqual(content[1], {"type": "text", "text": "original"})
         self.assertEqual(content[2], {"type": "text", "text": "retry"})
 
     def test_openai_omits_system_role_when_not_configured(self):

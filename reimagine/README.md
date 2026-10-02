@@ -111,7 +111,7 @@ its input directory relative to this `reimagine/` folder. The default is
 | `--stage` | `all` | generate `stills`, `videos`, or `all` plans |
 | `--still-mode` | `manual` | plain `manual` prompt or structured `regions` spec |
 | `--video-basis` | `reference` | generate motion from the `reference` or actual `rendered` still |
-| `--common-dims` | off | center-crop temporary reference copies to the closest common 1.5 MP size |
+| `--original-dims` | off | skip the default common-dims preprocessing; prompt with the original reference images and derived dimensions |
 | `--input-dir` | `input` | project-relative reference tree and pipeline location |
 | `--pipeline-suffix` | *(empty)* | select `pipeline_<suffix>.yaml`; empty selects `pipeline.yaml` |
 | `--output-dir` | `output` | rendered still location used only with `--video-basis rendered` |
@@ -163,7 +163,7 @@ This creates `pipeline_gemma4_nothink_8ktokens.yaml` and
 Suffixes must start with a letter or number and may contain only letters,
 numbers, underscores, and hyphens (100 characters maximum).
 
-`--common-dims` EXIF-normalizes each reference, scales it with Lanczos
+By default, each reference is EXIF-normalized, scales it with Lanczos
 resampling, and center-crops it to the closest supported aspect ratio. The
 temporary JPEG copies are used for still prompting and for reference-basis
 video prompting; source files are never modified. The selected dimensions are
@@ -180,10 +180,10 @@ also saved as the still render dimensions:
 | Square format (1:1) | 1248 x 1248 |
 
 When splitting still and reference-basis video planning into separate commands,
-pass `--common-dims` to both so each temporary copy uses the same deterministic
-crop. The manifest records this preprocessing mode and rejects a mismatched
-resume rather than silently planning against different framing. Omitting the
-flag preserves the existing aspect-ratio-derived dimensions and original
+use the same `--original-dims` setting for both so each temporary copy uses
+the same deterministic crop. The manifest records this preprocessing mode and rejects a mismatched
+resume rather than silently planning against different framing. Passing
+`--original-dims` preserves the aspect-ratio-derived dimensions and original
 reference image behavior.
 
 Invalid tagged or region responses consume one of three prompt attempts. Retry

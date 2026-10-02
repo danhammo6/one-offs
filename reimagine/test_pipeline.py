@@ -2482,7 +2482,7 @@ class ProcessIsolationTests(unittest.TestCase):
                                       return_value=llm):
                 code = generate_prompts.main([
                     "--output-dir", str(root / "output"),
-                    "--stage", "stills", "--common-dims",
+                    "--stage", "stills",
                 ])
             manifest = load_pipeline(input_dir / "pipeline.yaml")
             still = manifest.items[0].still
@@ -2495,7 +2495,7 @@ class ProcessIsolationTests(unittest.TestCase):
         self.assertEqual(seen[0][1], (1664, 928))
         self.assertNotEqual(seen[0][0], source)
 
-    def test_default_prompting_uses_original_source_and_derived_dimensions(self):
+    def test_original_dims_prompting_uses_original_source_and_derived_dimensions(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             input_dir = root / "input"
@@ -2512,7 +2512,7 @@ class ProcessIsolationTests(unittest.TestCase):
                                    return_value=llm):
                 code = generate_prompts.main([
                     "--output-dir", str(root / "output"),
-                    "--stage", "stills",
+                    "--stage", "stills", "--original-dims",
                 ])
             manifest = load_pipeline(input_dir / "pipeline.yaml")
 
@@ -2537,7 +2537,7 @@ class ProcessIsolationTests(unittest.TestCase):
                     still=StillSpec(
                         Path("sample.jpg"), 1440, 1088,
                         prompt="A detailed action photograph of a subject."),
-                )], common_dims=True))
+                )], common_dims=False))
 
             with mock.patch.object(generate_prompts, "ROOT", root), \
                     self.assertLogs("generate_prompts", "ERROR") as logs:
@@ -2547,7 +2547,7 @@ class ProcessIsolationTests(unittest.TestCase):
                 ])
 
         self.assertEqual(code, 2)
-        self.assertIn("matching --common-dims", logs.output[-1])
+        self.assertIn("matching --original-dims", logs.output[-1])
 
     def test_prompt_generation_writes_one_manifest_per_image_folder(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -2882,7 +2882,7 @@ class ProcessIsolationTests(unittest.TestCase):
                                    return_value=llm):
                 code = generate_prompts.main([
                     "--output-dir", str(output_dir),
-                    "--stage", "videos", "--force",
+                    "--original-dims", "--stage", "videos", "--force",
                 ])
             loaded = load_pipeline(input_dir / "pipeline.yaml")
 
@@ -2997,7 +2997,7 @@ class ProcessIsolationTests(unittest.TestCase):
                     mock.patch.object(generate_prompts, "build_llm",
                                    return_value=llm):
                 code = generate_prompts.main([
-                    "--output-dir", str(output_dir), "--stage", "all",
+                    "--output-dir", str(output_dir), "--original-dims", "--stage", "all",
                 ])
             loaded = load_pipeline(input_dir / "pipeline.yaml")
 
@@ -3036,7 +3036,7 @@ class ProcessIsolationTests(unittest.TestCase):
                     mock.patch.object(generate_prompts, "build_llm",
                                    return_value=llm):
                 code = generate_prompts.main([
-                    "--output-dir", str(output_dir), "--stage", "stills",
+                    "--output-dir", str(output_dir), "--original-dims", "--stage", "stills",
                 ])
             loaded = load_pipeline_tree(input_dir, require_stage="stills")
 

@@ -51,9 +51,10 @@ def build_parser():
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
-        "--common-dims", action="store_true",
-        help="Center-crop temporary reference copies to the closest common "
-             "1.5 MP dimensions before prompting.")
+        "--original-dims", dest="common_dims", action="store_false",
+        help="Prompt with the original reference images and derived "
+             "dimensions instead of center-cropping temporary copies to the "
+             "closest common 1.5 MP dimensions.")
     parser.add_argument(
         "--input-dir", type=Path, default=Path("input"),
         help="Project-relative reference tree where reusable pipeline files live.")
@@ -165,7 +166,7 @@ def _load_planning_state(
             and existing.common_dims != args.common_dims):
         raise ValueError(
             "existing pipeline source preprocessing differs; use the matching "
-            "--common-dims setting")
+            "--original-dims setting")
     still_mode = (existing.still_mode if existing and args.stage == "videos"
                   else args.still_mode)
     if existing and args.stage == "videos" and existing.item_count != len(jobs):

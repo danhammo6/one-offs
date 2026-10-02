@@ -47,6 +47,15 @@ def _read_pipeline_data(path):
         raise ValueError(f"could not read pipeline {path}: {error}") from error
 
 
+def _optional_stat(raw, key):
+    value = raw.get(key)
+    if value is None:
+        return None
+    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+        raise ValueError(f"{key} is not a non-negative integer")
+    return value
+
+
 def _validate_hash(value, label):
     value = str(value)
     if len(value) != 64 or any(c not in "0123456789abcdef" for c in value):
@@ -90,6 +99,9 @@ def save_pipeline(path, manifest):
             "source_path": item.source_path.as_posix(),
             "source_sha256": item.source_sha256,
         }
+        if item.source_size is not None and item.source_mtime_ns is not None:
+            entry["source_size"] = item.source_size
+            entry["source_mtime_ns"] = item.source_mtime_ns
         if item.still:
             entry["still"] = _still_to_data(item.still)
         if item.video:
@@ -205,6 +217,8 @@ def _load_pipeline_data(data, path, require_stage=None):
                 source_sha256=_validate_hash(raw["source_sha256"], "source_sha256"),
                 still=_load_still(raw["still"], mode) if raw.get("still") else None,
                 video=_load_video(raw["video"]) if raw.get("video") else None,
+                source_size=_optional_stat(raw, "source_size"),
+                source_mtime_ns=_optional_stat(raw, "source_mtime_ns"),
             )
         except (KeyError, TypeError, ValueError) as error:
             raise ValueError(f"invalid pipeline item: {error}") from error

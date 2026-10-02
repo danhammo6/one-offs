@@ -2,6 +2,7 @@
 """Generate durable still and video prompt plans using only an LLM."""
 import argparse
 import contextlib
+import dataclasses
 import logging
 import os
 import tempfile
@@ -11,7 +12,8 @@ from pathlib import Path
 
 from reimagine_pipeline import pipeline_filename
 from reimagine_pipeline.files import (
-    derive_dims, iter_images, prepare_common_image, sha256_file,
+    common_target_dims, derive_dims, iter_images, prepare_common_image,
+    sha256_file,
 )
 from reimagine_pipeline.llm import OpenAILLM
 from reimagine_pipeline.manifest import (
@@ -30,11 +32,13 @@ class PromptJob:
     index: int
     item_id: str
     source: Path
-    prompt_source: Path
     relative: Path
-    source_hash: str
     width: int
     height: int
+    size: int
+    mtime_ns: int
+    prompt_source: Path | None = None
+    source_hash: str | None = None
 
 
 def build_llm(args):
@@ -111,7 +115,7 @@ def load_optional_system_prompt(args):
             f"could not read system prompt {args.system_prompt_file}: {error}") from error
 
 
-def discover(input_dir, common_dir=None):
+def discover(input_dir, common_dims=False):
     images = list(iter_images(input_dir))
     if not images:
         raise ValueError(f"no reference images under {input_dir}")
@@ -126,16 +130,35 @@ def discover(input_dir, common_dir=None):
             raise ValueError(f"duplicate pipeline identity at {relative}")
         ids.add(item_id)
         outputs.add(output)
-        if common_dir is None:
-            prompt_source = source
-            width, height = derive_dims(source)
-        else:
-            prompt_source = common_dir / relative.with_suffix(".jpg")
-            width, height = prepare_common_image(source, prompt_source)
+        width, height = (common_target_dims(source) if common_dims
+                         else derive_dims(source))
+        stat = source.stat()
         jobs.append(PromptJob(
-            index, item_id, source, prompt_source, relative,
-            sha256_file(source), width, height))
+            index, item_id, source, relative, width, height,
+            stat.st_size, stat.st_mtime_ns))
     return jobs
+
+
+def _resolve_source_hash(job, item):
+    if (item and item.source_size == job.size
+            and item.source_mtime_ns == job.mtime_ns):
+        return item.source_sha256
+    return sha256_file(job.source)
+
+
+def _needs_prompt_source(args, item):
+    if args.stage in {"all", "stills"} and (
+            args.force or not (item and item.still)):
+        return True
+    return args.stage in {"all", "videos"} and args.video_basis == "reference"
+
+
+def _prepare_prompt_source(job, common_dir):
+    if common_dir is None:
+        return job.source
+    destination = common_dir / job.relative.with_suffix(".jpg")
+    prepare_common_image(job.source, destination)
+    return destination
 
 
 def _load_planning_state(
@@ -245,7 +268,8 @@ def _plan_item(
                 still.output.with_suffix(".mp4"), prompt,
                 args.video_basis, basis_hash, args.duration)
     return PipelineItem(
-        job.index, job.item_id, job.relative, job.source_hash, still, video)
+        job.index, job.item_id, job.relative, job.source_hash, still, video,
+        job.size, job.mtime_ns)
 
 
 def _save_checkpoint(
@@ -267,7 +291,7 @@ def _run(args):
                  if preprocess else contextlib.nullcontext(None))
     with directory as common_dir:
         common_dir = Path(common_dir) if common_dir else None
-        jobs = discover(input_dir, common_dir)
+        jobs = discover(input_dir, preprocess)
         still_mode, by_id, folder_counts = _load_planning_state(
             args, jobs, input_dir, pipeline_name, configured_input)
         llm = build_llm(args)
@@ -290,10 +314,16 @@ def _run(args):
             dimensions_changed = (
                 args.stage in {"all", "stills"} and item and item.still
                 and (item.still.width, item.still.height) != (job.width, job.height))
-            if item and (item.source_sha256 != job.source_hash
-                         or dimensions_changed):
-                item = None
             try:
+                source_hash = _resolve_source_hash(job, item)
+                if item and (item.source_sha256 != source_hash
+                             or dimensions_changed):
+                    item = None
+                job = dataclasses.replace(
+                    job, source_hash=source_hash,
+                    prompt_source=(_prepare_prompt_source(job, common_dir)
+                                   if _needs_prompt_source(args, item)
+                                   else None))
                 planned = _plan_item(
                     args, llm, job, item, still_mode, output_dir, prompt_dir,
                     system_prompt)
@@ -301,7 +331,9 @@ def _run(args):
                 logger.error("%s  failed: %s", tag, error)
                 failed += 1
                 continue
-            changed = planned != item
+            changed = item is None or dataclasses.replace(
+                planned, source_size=item.source_size,
+                source_mtime_ns=item.source_mtime_ns) != item
             by_id[job.item_id] = planned
             manifest = PipelineManifest(
                 still_mode, len(jobs),

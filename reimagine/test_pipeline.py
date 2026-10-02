@@ -2523,6 +2523,108 @@ class ProcessIsolationTests(unittest.TestCase):
             (1664, 1216))
         self.assertFalse(manifest.common_dims)
 
+    def _run_stills(self, root, *extra):
+        llm = mock.Mock()
+        llm.describe.return_value = "fake"
+        llm.chat.return_value = (
+            "<prompt>A detailed action photograph of a moving subject in "
+            "a landscape.</prompt>")
+        with mock.patch.object(generate_prompts, "ROOT", root), \
+                mock.patch.object(generate_prompts, "build_llm",
+                                  return_value=llm):
+            code = generate_prompts.main([
+                "--output-dir", str(root / "output"),
+                "--stage", "stills", *extra])
+        return code, llm
+
+    def test_resume_trusts_saved_stat_without_hashing_or_cropping(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            input_dir = root / "input"
+            input_dir.mkdir()
+            Image.new("RGB", (640, 480), "green").save(input_dir / "a.jpg")
+            self.assertEqual(self._run_stills(root)[0], 0)
+            saved = load_pipeline(input_dir / "pipeline.yaml").items[0]
+            self.assertIsNotNone(saved.source_size)
+            self.assertIsNotNone(saved.source_mtime_ns)
+            with mock.patch.object(generate_prompts, "sha256_file") as sha, \
+                    mock.patch.object(
+                        generate_prompts, "prepare_common_image") as crop:
+                code, llm = self._run_stills(root)
+        self.assertEqual(code, 0)
+        sha.assert_not_called()
+        crop.assert_not_called()
+        llm.chat.assert_not_called()
+
+    def test_touched_but_identical_file_rehashes_and_refreshes_stat(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            input_dir = root / "input"
+            input_dir.mkdir()
+            source = input_dir / "a.jpg"
+            Image.new("RGB", (640, 480), "green").save(source)
+            self._run_stills(root)
+            before = load_pipeline(input_dir / "pipeline.yaml").items[0]
+            os.utime(source, ns=(1, 1))
+            code, llm = self._run_stills(root)
+            after = load_pipeline(input_dir / "pipeline.yaml").items[0]
+        self.assertEqual(code, 0)
+        llm.chat.assert_not_called()
+        self.assertEqual(after.source_sha256, before.source_sha256)
+        self.assertEqual(after.source_mtime_ns, 1)
+
+    def test_changed_file_is_replanned(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            input_dir = root / "input"
+            input_dir.mkdir()
+            source = input_dir / "a.jpg"
+            Image.new("RGB", (640, 480), "green").save(source)
+            self._run_stills(root)
+            Image.new("RGB", (640, 480), "red").save(source)
+            code, llm = self._run_stills(root)
+        self.assertEqual(code, 0)
+        llm.chat.assert_called_once()
+
+    def test_legacy_manifest_without_stat_loads_and_is_upgraded(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            input_dir = root / "input"
+            input_dir.mkdir()
+            Image.new("RGB", (640, 480), "green").save(input_dir / "a.jpg")
+            self._run_stills(root)
+            path = input_dir / "pipeline.yaml"
+            data = yaml.safe_load(path.read_text())
+            del data["items"][0]["source_size"]
+            del data["items"][0]["source_mtime_ns"]
+            path.write_text(yaml.safe_dump(data))
+            self.assertIsNone(load_pipeline(path).items[0].source_size)
+            code, llm = self._run_stills(root)
+            upgraded = load_pipeline(path).items[0]
+        self.assertEqual(code, 0)
+        llm.chat.assert_not_called()
+        self.assertIsNotNone(upgraded.source_size)
+
+    def test_common_target_dims_matches_prepared_crop_with_exif_rotation(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for name, size, orientation in (
+                    ("plain.jpg", (2000, 1000), None),
+                    ("rotated.jpg", (2000, 1000), 6),
+                    ("square.png", (500, 500), None)):
+                source = root / name
+                image = Image.new("RGB", size, "green")
+                if orientation:
+                    exif = Image.Exif()
+                    exif[0x0112] = orientation
+                    image.save(source, exif=exif)
+                else:
+                    image.save(source)
+                self.assertEqual(
+                    pipeline_files.common_target_dims(source),
+                    pipeline_files.prepare_common_image(
+                        source, root / f"out-{name}.jpg"))
+
     def test_video_resume_rejects_mismatched_common_dims(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

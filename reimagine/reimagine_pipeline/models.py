@@ -28,6 +28,8 @@ class PipelineItem:
     source_sha256: str
     still: StillSpec | None = None
     video: VideoSpec | None = None
+    source_size: int | None = None
+    source_mtime_ns: int | None = None
 
 
 @dataclass

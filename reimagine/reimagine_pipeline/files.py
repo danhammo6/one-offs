@@ -344,6 +344,17 @@ def select_common_dims(width, height):
         key=lambda dims: abs(source_ratio - dims[0] / dims[1]))
 
 
+def common_target_dims(source):
+    """Target size prepare_common_image would pick, from the header only."""
+    from PIL import Image
+
+    with Image.open(source) as image:
+        width, height = image.size
+        if image.getexif().get(0x0112) in {5, 6, 7, 8}:
+            width, height = height, width
+    return select_common_dims(width, height)
+
+
 def prepare_common_image(source, destination):
     from PIL import Image, ImageOps
 

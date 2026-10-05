@@ -29,3 +29,6 @@ input-large-gallery-test/
 # Fetcher local scratch (the committed credits file is CREDITS.md)
 input/.credits.json
 input/first-attempt-failures*/
+
+# Generated prompt plans (regenerable with generate_prompts.py)
+input/**/pipeline*.yaml

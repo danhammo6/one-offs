@@ -1,3 +1,4 @@
+import hashlib
 import io
 import logging
 import time
@@ -39,6 +40,27 @@ def _client(args):
     client = ComfyClient(args.comfy_server)
     client.wait_until_up()
     return client
+
+
+def item_seed(base_seed, item_id):
+    """Stable per-item seed: independent of which other items are in the plan."""
+    digest = hashlib.sha256(item_id.encode("utf-8")).digest()
+    return base_seed + int.from_bytes(digest[:4], "big")
+
+
+def still_overrides(args, seed):
+    """Render options that are part of a still's plan fingerprint.
+
+    The ComfyUI save subdirectory is deliberately excluded: it only names the
+    host-side file and does not change the rendered pixels.
+    """
+    return {"clip_name": args.clip_name, "unet_name": args.unet_name,
+            "seed": seed}
+
+
+def video_overrides(args, seed):
+    return {"clip_name": args.video_clip_name,
+            "unet_name": args.video_unet_name, "seed": seed}
 
 
 def _render_fingerprint(spec, workflow, overrides=None):
@@ -109,11 +131,9 @@ def render_stills(args, manifest, output_dir, state):
             continue
         destination = output_dir / item.still.output
         record = state["items"].get(item.item_id, {}).get("still", {})
-        seed = args.seed + item.index
-        fingerprint = _render_fingerprint(item.still, workflow, {
-            "clip_name": args.clip_name, "unet_name": args.unet_name,
-            "save_subdir": args.still_save_subdir, "seed": seed,
-        })
+        seed = item_seed(args.seed, item.item_id)
+        fingerprint = _render_fingerprint(
+            item.still, workflow, still_overrides(args, seed))
         if not args.force and destination.is_file():
             fingerprint_mismatch = record.get("plan_fingerprint") != fingerprint
             output_path_mismatch = record.get("output_sha256") != sha256_file(destination)
@@ -187,20 +207,16 @@ def render_videos(args, manifest, output_dir, state):
             continue
         destination = output_dir / item.video.output
         record = state["items"].get(item.item_id, {}).get("video", {})
-        fingerprint = _render_fingerprint(item.video, workflow, {
-            "save_subdir": args.video_save_subdir,
-            "seed": args.seed + item.index,
-            "clip_name": args.video_clip_name,
-            "unet_name": args.video_unet_name,
-        })
+        seed = item_seed(args.seed, item.item_id)
+        fingerprint = _render_fingerprint(
+            item.video, workflow, video_overrides(args, seed))
         if (not args.force and destination.is_file()
                 and record.get("plan_fingerprint") == fingerprint
                 and record.get("input_still_sha256") == still_hash
                 and record.get("output_sha256") == sha256_file(destination)):
             continue
         pending.append((
-            item, still_path, still_hash, destination, fingerprint,
-            args.seed + item.index))
+            item, still_path, still_hash, destination, fingerprint, seed))
     if not pending:
         return 0, len([item for item in manifest.items if item.video]) - blocked, blocked
     client = _client(args)

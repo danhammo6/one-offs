@@ -331,8 +331,10 @@ def _run(args):
                 logger.error("%s  failed: %s", tag, error)
                 failed += 1
                 continue
+            # Stored indexes are renumbered per folder on save, so they differ
+            # from discovery indexes whenever an earlier item is missing.
             changed = item is None or dataclasses.replace(
-                planned, source_size=item.source_size,
+                planned, index=item.index, source_size=item.source_size,
                 source_mtime_ns=item.source_mtime_ns) != item
             by_id[job.item_id] = planned
             manifest = PipelineManifest(

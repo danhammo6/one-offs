@@ -69,7 +69,7 @@ def build_parser():
     parser.add_argument("--video-unet-name", default=None,
                         help="Video workflow diffusion model override.")
     parser.add_argument("--seed", type=int, default=42,
-                        help="Base render seed; item i uses seed + its index.")
+                        help="Base render seed; each item uses seed + a stable offset hashed from its id.")
     parser.add_argument("--force", action="store_true",
                         help="Rerender requested stages.")
     return parser

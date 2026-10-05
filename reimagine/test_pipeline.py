@@ -3,6 +3,7 @@ import contextlib
 import io
 import json
 import os
+import sys
 import tempfile
 import threading
 import unittest
@@ -39,7 +40,7 @@ from reimagine_pipeline.prompting import (
     generate_still_prompt, generate_tagged, generate_video_prompt,
     load_user_prompt, video_prompt_word_range,
 )
-from reimagine_pipeline.rendering import _read_still_output, render_stills
+from reimagine_pipeline.rendering import _read_still_output, item_seed, render_stills
 
 import generate_prompts
 import render_media
@@ -767,6 +768,40 @@ class PipelineManifestTests(unittest.TestCase):
             generate_prompts.build_parser().parse_args(["--seed", "100"])
         args = render_media.build_parser().parse_args(["--seed", "100"])
         self.assertEqual(args.seed, 100)
+
+    def test_item_seed_depends_only_on_base_seed_and_item_id(self):
+        self.assertEqual(item_seed(42, "animals/cat"), item_seed(42, "animals/cat"))
+        self.assertNotEqual(item_seed(42, "animals/cat"), item_seed(42, "animals/dog"))
+        self.assertEqual(
+            item_seed(100, "animals/cat") - item_seed(42, "animals/cat"), 58)
+
+    def test_migration_matches_legacy_fingerprints_and_ignores_save_subdir(self):
+        sys.path.insert(0, str(Path(__file__).parent / "scripts"))
+        import migrate_render_fingerprints as migrate
+        from reimagine_pipeline.rendering import (
+            _render_fingerprint, still_overrides)
+        args = render_media.build_parser().parse_args([])
+        workflow = {"1": {"inputs": {}}}
+        specs = [StillSpec(Path(f"a/{name}.jpg"), 64, 64, prompt=name)
+                 for name in ("x", "y", "z")]
+        manifest = PipelineManifest("manual", 3, [
+            PipelineItem(i, f"a/{spec.output.stem}", Path(f"a/{spec.output.stem}.jpg"),
+                         "0" * 64, spec)
+            for i, spec in enumerate(specs)])
+        legacy = lambda i, spec: _render_fingerprint(spec, workflow, dict(
+            still_overrides(args, args.seed + i), save_subdir="reimagine"))
+        state = {"items": {
+            "a/x": {"still": {"plan_fingerprint": legacy(0, specs[0])}},
+            "a/y": {"still": {"plan_fingerprint": legacy(2, specs[1])}},  # gap
+            "a/z": {"still": {"plan_fingerprint": "bogus"}}}}
+        with mock.patch.object(migrate, "load_workflow", return_value=workflow):
+            results = migrate.plan(args, manifest, state)
+            # Changing the save subdir must not change the current fingerprint.
+            args.still_save_subdir = "elsewhere"
+            moved = migrate.plan(args, manifest, state)
+        self.assertEqual([r[2] for r in results],
+                         ["legacy (index 0)", "legacy (index 2)", "unmatched"])
+        self.assertEqual([r[4] for r in results], [r[4] for r in moved])
 
     def test_renderer_thumbnail_cache_root_default_and_override(self):
         default_args = render_media.build_parser().parse_args([])
@@ -2873,8 +2908,8 @@ class ProcessIsolationTests(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertFalse(nested_cache_exists)
         self.assertEqual(len(unified_thumbnails), 1)
-        self.assertEqual(workflow["273"]["inputs"]["seed"], 100)
-        self.assertEqual(workflow["265"]["inputs"]["seed"], 100)
+        self.assertEqual(workflow["273"]["inputs"]["seed"], item_seed(100, "sample"))
+        self.assertEqual(workflow["265"]["inputs"]["seed"], item_seed(100, "sample"))
 
     def test_video_render_logs_elapsed_time(self):
         manifest = PipelineManifest(

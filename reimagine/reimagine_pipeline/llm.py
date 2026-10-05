@@ -11,6 +11,7 @@ import urllib.request
 
 logger = logging.getLogger(__name__)
 _INTERRUPT_POLL_S = 0.05
+_SERVER_ERROR_ATTEMPTS = 3
 
 
 def _needs_sleep_poll():
@@ -155,16 +156,18 @@ class OpenAILLM:
         request = urllib.request.Request(
             self.base_url + "/v1/chat/completions",
             data=json.dumps(payload).encode(), headers=self._headers())
-        for attempt in range(2):
+        for attempt in range(_SERVER_ERROR_ATTEMPTS):
             try:
                 body = json.loads(_urlopen_read(request, timeout=self.timeout))
                 break
             except urllib.error.HTTPError as error:
-                if error.code != 500 or attempt:
+                if error.code < 500 or attempt == _SERVER_ERROR_ATTEMPTS - 1:
                     raise
+                delay = 2 ** attempt
                 logger.warning(
-                    "LLM request returned HTTP 500; retrying once in 1 second")
-                time.sleep(1)
+                    "LLM request returned HTTP %d; retry %d/%d in %d second(s)",
+                    error.code, attempt + 1, _SERVER_ERROR_ATTEMPTS - 1, delay)
+                time.sleep(delay)
         choices = body.get("choices") or []
         if not choices:
             raise RuntimeError(f"no choices in response: {str(body)[:200]}")

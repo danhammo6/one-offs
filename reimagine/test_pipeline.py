@@ -1184,27 +1184,41 @@ class PipelineManifestTests(unittest.TestCase):
         payload = json.loads(urlopen.call_args.args[0].data)
         self.assertEqual(payload["reasoning"], "on")
 
-    def test_openai_retries_http_500_once(self):
+    def _http_error(self, code):
+        return urllib.error.HTTPError(
+            "http://127.0.0.1:9503/v1/chat/completions", code, "err", {}, None)
+
+    def _chat_with_urlopen(self, side_effect):
         client = OpenAILLM("127.0.0.1:9503", model="test")
-        failure = urllib.error.HTTPError(
-            "http://127.0.0.1:9503/v1/chat/completions", 500,
-            "Internal Server Error", {}, None)
-        response = mock.MagicMock()
-        response.__enter__.return_value.read.return_value = json.dumps({
-            "choices": [{"message": {"content": "recovered"}}]
-        }).encode()
         with tempfile.TemporaryDirectory() as tmp:
             image = Path(tmp) / "sample.jpg"
             image.write_bytes(b"image")
             with mock.patch.object(
-                    urllib.request, "urlopen",
-                    side_effect=[failure, response]) as urlopen, \
+                    urllib.request, "urlopen", side_effect=side_effect) as urlopen, \
                     mock.patch("reimagine_pipeline.llm.time.sleep") as sleep:
-                result = client.chat("system", "request", image)
+                try:
+                    result = client.chat("system", "request", image)
+                except urllib.error.HTTPError as error:
+                    result = error
+        return result, urlopen, sleep
 
+    def test_openai_retries_server_errors_up_to_three_attempts(self):
+        response = mock.MagicMock()
+        response.__enter__.return_value.read.return_value = json.dumps({
+            "choices": [{"message": {"content": "recovered"}}]
+        }).encode()
+        result, urlopen, sleep = self._chat_with_urlopen(
+            [self._http_error(500), self._http_error(502), response])
         self.assertEqual(result, "recovered")
-        self.assertEqual(urlopen.call_count, 2)
-        sleep.assert_called_once_with(1)
+        self.assertEqual(urlopen.call_count, 3)
+        self.assertEqual([c.args[0] for c in sleep.call_args_list], [1, 2])
+
+    def test_openai_gives_up_after_three_server_error_attempts(self):
+        result, urlopen, _ = self._chat_with_urlopen(
+            [self._http_error(502)] * 3)
+        self.assertIsInstance(result, urllib.error.HTTPError)
+        self.assertEqual(result.code, 502)
+        self.assertEqual(urlopen.call_count, 3)
 
     def test_openai_does_not_retry_non_500_http_errors(self):
         client = OpenAILLM("127.0.0.1:9503", model="test")

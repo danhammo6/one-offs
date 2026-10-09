@@ -803,6 +803,51 @@ class PipelineManifestTests(unittest.TestCase):
                          ["legacy (index 0)", "legacy (index 2)", "unmatched"])
         self.assertEqual([r[4] for r in results], [r[4] for r in moved])
 
+    def test_swap_unet_name_rewrites_only_matching_kinds_with_a_new_name(self):
+        sys.path.insert(0, str(Path(__file__).parent / "scripts"))
+        import swap_unet_name as swap
+        from reimagine_pipeline.rendering import (
+            _render_fingerprint, item_seed, still_overrides, video_overrides)
+        args = swap.build_parser().parse_args([
+            "--unet-name", "int8.safetensors",
+            "--video-unet-name", "video-int8.safetensors",
+            "--new-unet-name", "fp8.safetensors"])
+        workflow = {"1": {"inputs": {}}}
+        still = StillSpec(Path("a/x.jpg"), 64, 64, prompt="x")
+        video = VideoSpec(Path("a/x.mp4"), "move", "reference", "a" * 64)
+        manifest = PipelineManifest("manual", 2, [
+            PipelineItem(i, f"a/{name}", Path(f"a/{name}.jpg"), "0" * 64,
+                         still, video)
+            for i, name in enumerate(("x", "y"))])
+
+        def fingerprint(item_id, kind, **override):
+            seed = item_seed(args.seed, item_id)
+            make, spec = ((still_overrides, still) if kind == "still"
+                          else (video_overrides, video))
+            return _render_fingerprint(
+                spec, workflow, dict(make(args, seed), **override))
+
+        state = {"items": {
+            "a/x": {"still": {"plan_fingerprint": fingerprint("a/x", "still")},
+                    "video": {"plan_fingerprint": fingerprint("a/x", "video")}},
+            "a/y": {"still": {"plan_fingerprint": fingerprint(
+                "a/y", "still", unet_name="fp8.safetensors")},
+                    "video": {"plan_fingerprint": "bogus"}}}}
+        with mock.patch.object(swap, "load_workflow", return_value=workflow):
+            results = swap.plan(args, manifest, state)
+            args.new_video_unet_name = "video-fp8.safetensors"
+            with_video = swap.plan(args, manifest, state)
+
+        # Videos are skipped entirely until a new video name is given.
+        self.assertEqual([(r[0], r[1], r[2]) for r in results],
+                         [("a/x", "still", "swap"), ("a/y", "still", "current")])
+        self.assertEqual(results[0][4], fingerprint(
+            "a/x", "still", unet_name="fp8.safetensors"))
+        self.assertEqual(
+            [(r[0], r[1], r[2]) for r in with_video],
+            [("a/x", "still", "swap"), ("a/x", "video", "swap"),
+             ("a/y", "still", "current"), ("a/y", "video", "unmatched")])
+
     def test_renderer_thumbnail_cache_root_default_and_override(self):
         default_args = render_media.build_parser().parse_args([])
         custom_args = render_media.build_parser().parse_args([

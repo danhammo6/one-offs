@@ -24,7 +24,13 @@ references at `low` after the visible results are ready. Overscan waits until
 visible results have loaded (or 1.5s) and does not prefetch reference thumbs,
 so a scrollbar jump does not share an HDD queue with off-screen rows or
 side-by-side sources. Source selection persists in
-`localStorage`. The header stays outside the gallery scroller, so the
+`localStorage`. Scroll position persists per source
+(`reimagine.position.<source>`) as the first visible row's item path plus
+the pixel offset into that row, so added or removed items don't shift it.
+On load the anchor is re-applied as items stream in (categories sort, so
+positions keep moving) until the load ends or the user scrolls or presses a
+key. Closing the lightbox scrolls to the last item viewed there, centering
+its row when it is off-screen, and focuses that card. The header stays outside the gallery scroller, so the
 scrollbar starts just below the controls. On coarse pointers the gallery
 scrollbar stays visually compact but uses an 88px hit strip.
 

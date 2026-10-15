@@ -284,6 +284,9 @@ let lightboxMediaVersion = 0;
 let lightboxLayoutFrame = 0;
 let lightboxLayoutState = null;
 let edgeTap = null;
+let pendingRestore = null;  // {path, offset} still being re-applied while items stream in
+let loadedSource = "";
+let saveTimer = 0;
 const METADATA_CACHE = new Map();
 const MEDIA_DIMENSIONS = new Map();
 
@@ -303,6 +306,56 @@ const setBackgroundInert = (inert) => {
 };
 
 const SOURCE_KEY = "reimagine.source";  // persists the pick across full reloads
+const POSITION_KEY = "reimagine.position.";  // + source; gallery scroll anchor
+
+function readSavedPosition(source) {
+  try {
+    const saved = JSON.parse(localStorage.getItem(POSITION_KEY + source));
+    if (saved && typeof saved.path === "string") {
+      return { path: saved.path, offset: +saved.offset || 0 };
+    }
+  } catch (e) {}
+  return null;
+}
+
+// The first visible row's first item plus the pixels scrolled into that row.
+// Keyed by path so added or removed items elsewhere don't shift the anchor.
+function currentAnchor() {
+  const localTop = readScrollY() - galleryTop();
+  const row = LAYOUT.find(unit =>
+    unit.type === "row" && unit.top + unit.height >= localTop);
+  if (!row) return null;
+  return { path: row.entries[0].item.path, offset: Math.max(0, localTop - row.top) };
+}
+
+function savePosition() {
+  window.clearTimeout(saveTimer);
+  saveTimer = 0;
+  // While loading, scrollTop is not the user's position yet.
+  const source = $("sourceSel").value;
+  if (pendingRestore || loading || !source || !$("gallery")) return;
+  const anchor = currentAnchor();
+  if (!anchor) return;
+  try {
+    localStorage.setItem(POSITION_KEY + source, JSON.stringify(anchor));
+  } catch (e) {}
+}
+
+function scheduleSavePosition() {
+  window.clearTimeout(saveTimer);
+  saveTimer = window.setTimeout(savePosition, 150);
+}
+
+// Categories sort and stream in, so a path's pixel position keeps moving until
+// the load ends; re-apply the anchor on each render until then.
+function applyPendingRestore() {
+  if (!pendingRestore) return;
+  const idx = VIEW.findIndex(item => item.path === pendingRestore.path);
+  const row = idx < 0 ? null : findLayoutRow(idx);
+  if (!row) return;
+  writeScrollY(
+    galleryTop() + row.top + Math.min(pendingRestore.offset, row.height - 1));
+}
 
 async function loadSources(signal) {
   const r = await fetch("/api/sources", { cache: "no-store", signal });
@@ -322,7 +375,10 @@ async function loadSources(signal) {
 }
 
 async function load() {
+  // A refresh keeps the live position; a source switch starts from its own save.
+  const live = loadedSource === $("sourceSel").value ? currentAnchor() : null;
   const version = ++loadVersion;
+  pendingRestore = null;
   loadController?.abort();
   loadController = new AbortController();
   METADATA_CACHE.clear();
@@ -337,6 +393,8 @@ async function load() {
     await loadSources(loadController.signal);
     if (version !== loadVersion) return;
     const source = $("sourceSel").value;
+    loadedSource = source;
+    pendingRestore = live || readSavedPosition(source);
     const url = source
       ? `/api/stream?source=${encodeURIComponent(source)}`
       : "/api/stream";
@@ -378,6 +436,7 @@ async function load() {
     loading = false;
     updateCategoryFilter();
     render();
+    pendingRestore = null;
   }
 }
 
@@ -725,6 +784,7 @@ function render() {
           aria-describedby="galleryHelp" tabindex="-1"></ul>`;
   }
   buildLayout();
+  applyPendingRestore();
   renderWindow(created);
 }
 
@@ -1098,7 +1158,8 @@ function closeLb() {
   cancelAnimationFrame(lightboxLayoutFrame);
   lightboxLayoutFrame = 0;
   $("lbPreload").replaceChildren();
-  const returnIndex = returnFocus?.dataset.idx;
+  const lastPath = VIEW[cur]?.path;
+  const openerIndex = returnFocus?.dataset.idx;
   $("lb").classList.remove("open");
   setPromptExpanded(false);
   setBackgroundInert(false);
@@ -1110,18 +1171,36 @@ function closeLb() {
     renderDeferred = false;
     render();
   }
+  // Land on the last item viewed in the lightbox, not the one that opened it.
+  const lastIndex = lastPath === undefined
+    ? -1 : VIEW.findIndex(item => item.path === lastPath);
+  const returnIndex = lastIndex >= 0 ? lastIndex : openerIndex;
+  if (lastIndex >= 0) centerCardIfHidden(lastIndex);
   renderWindow(true);
   const replacement = returnIndex === undefined ? null :
     $("main").querySelector(`.card[data-idx="${returnIndex}"]`);
   if (replacement) {
-    replacement.focus();
+    replacement.focus({ preventScroll: true });
   } else if (returnFocus?.isConnected) {
     returnFocus.focus();
   } else {
     $("gallery")?.focus({ preventScroll: true });
   }
   returnFocus = null;
+  savePosition();
 }
+
+function centerCardIfHidden(index) {
+  const unit = findLayoutRow(index);
+  if (!unit) return;
+  const top = galleryTop() + unit.top;
+  const height = unit.height - GRID_GAP;
+  const viewTop = readScrollY();
+  const viewHeight = scrollViewportHeight();
+  if (top >= viewTop && top + height <= viewTop + viewHeight) return;
+  writeScrollY(Math.max(0, top - (viewHeight - height) / 2));
+}
+
 function step(d) {
   if (cur < 0 || !VIEW.length) return;
   openLb((cur + d + VIEW.length) % VIEW.length);
@@ -1142,6 +1221,7 @@ $("sourceSel").addEventListener("change", () => {
 });
 $("catFilter").addEventListener("change", () => {
   preferredCategory = $("catFilter").value;
+  pendingRestore = null;
   writeScrollY(0);
   render();
 });
@@ -1168,6 +1248,16 @@ $("main").addEventListener("keydown", (event) => {
   focusLogicalCard(index + movements[event.key]);
 });
 $("main").addEventListener("scroll", scheduleWindowRender, { passive: true });
+$("main").addEventListener("scroll", scheduleSavePosition, { passive: true });
+// Real user input ends the restore so late-streaming items don't yank the view.
+for (const type of ["wheel", "touchstart", "pointerdown", "keydown"]) {
+  $("main").addEventListener(type, () => { pendingRestore = null; },
+    { passive: true });
+}
+window.addEventListener("pagehide", savePosition);
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden") savePosition();
+});
 window.addEventListener("resize", scheduleWindowRender);
 window.addEventListener("resize", scheduleComparisonLayout);
 window.visualViewport?.addEventListener("resize", scheduleComparisonLayout);

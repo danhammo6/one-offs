@@ -973,8 +973,10 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
         === "beta/item-2001.jpg",
     );
     await page.keyboard.press("Escape");
-    assert.equal(await firstCard.evaluate(
-      element => element === document.activeElement), true);
+    // Closing returns to the last item viewed, not the one that opened it.
+    assert.equal(await page.evaluate(() =>
+      document.activeElement?.getAttribute("aria-label")),
+    "View beta/item-2001.jpg");
 
     await page.locator("#videoMode").check();
     const secondCard = page.locator('.card[data-idx="1"]');
@@ -1612,6 +1614,97 @@ test(`gallery windowing, navigation, metadata, and prompt semantics (${name})`, 
   } finally {
     releaseInitialStream?.();
     releaseDelayedMetadata?.();
+    await browser.close();
+    server.close();
+    await once(server, "close");
+  }
+});
+
+test(`gallery remembers position and returns to the last lightbox item (${name})`, {
+  timeout: 45000,
+}, async () => {
+  const items = ITEMS.filter((_, index) => index % 4 === 0);
+  const server = createServer((request, response) => {
+    const url = new URL(request.url, "http://gallery.test");
+    if (url.pathname === "/") {
+      response.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+      return response.end(INDEX);
+    }
+    if (url.pathname === "/api/sources") {
+      response.writeHead(200, { "Content-Type": "application/json" });
+      return response.end(JSON.stringify({ sources: ["test"], default: "test" }));
+    }
+    if (url.pathname === "/api/stream") {
+      response.writeHead(200, { "Content-Type": "application/x-ndjson" });
+      return response.end(items.map(item => JSON.stringify(item)).join("\n"));
+    }
+    if (url.pathname === "/api/metadata") {
+      response.writeHead(200, { "Content-Type": "application/json" });
+      return response.end(JSON.stringify({ prompt: "p" }));
+    }
+    if (url.pathname.startsWith("/img/")) {
+      response.writeHead(200, { "Content-Type": "image/svg+xml" });
+      return response.end(fixtureImage(url));
+    }
+    response.writeHead(404);
+    response.end();
+  });
+  server.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  const browser = await type.launch(launchOptions());
+  const page = await browser.newPage({ viewport: { width: 1200, height: 800 } });
+  const firstVisiblePath = () => page.evaluate(() => {
+    const main = document.querySelector("#main").getBoundingClientRect();
+    return [...document.querySelectorAll(".card")]
+      .map(card => ({ card, rect: card.getBoundingClientRect() }))
+      .filter(({ rect }) => rect.top >= main.top - 1 && rect.bottom <= main.bottom)
+      .map(({ card }) => card.getAttribute("aria-label"))[0];
+  });
+  const cardVisible = (index) => page.evaluate(i => {
+    const main = document.querySelector("#main").getBoundingClientRect();
+    const rect = document.querySelector(`.card[data-idx="${i}"]`)
+      ?.getBoundingClientRect();
+    return !!rect && rect.top >= main.top && rect.bottom <= main.bottom;
+  }, index);
+  try {
+    const url = `http://127.0.0.1:${server.address().port}/`;
+    await page.goto(url);
+    await page.waitForFunction(
+      () => document.querySelector("#stat")?.textContent.includes("1000 renders"));
+    await scrollGallery(page, 20000);
+    await page.waitForFunction(() => localStorage.getItem("reimagine.position.test"));
+    const saved = JSON.parse(await page.evaluate(
+      () => localStorage.getItem("reimagine.position.test")));
+    assert.match(saved.path, /^(alpha|beta)\/item-/);
+    const before = await firstVisiblePath();
+
+    await page.reload();
+    await page.waitForFunction(
+      () => document.querySelector("#stat")?.textContent.includes("1000 renders"));
+    await eventually(async () =>
+      Math.abs(await page.evaluate(() => document.querySelector("#main").scrollTop)
+        - 20000) < 300, "reload restores the saved position");
+    assert.equal(await firstVisiblePath(), before);
+
+    // A saved path that no longer exists leaves the gallery at the top.
+    // (init script, because pagehide would otherwise overwrite the value)
+    await page.addInitScript(() => localStorage.setItem(
+      "reimagine.position.test", JSON.stringify({ path: "gone/x.jpg", offset: 5 })));
+    await page.reload();
+    await page.waitForFunction(
+      () => document.querySelector("#stat")?.textContent.includes("1000 renders"));
+    assert.equal(
+      await page.evaluate(() => document.querySelector("#main").scrollTop), 0);
+
+    // Closing the lightbox centres the last-viewed item when it is off-screen.
+    await page.locator('.card[data-idx="0"]').click();
+    // The first ArrowRight only hides the HUD.
+    for (let i = 0; i < 41; i++) await page.keyboard.press("ArrowRight");
+    await page.keyboard.press("Escape");
+    await eventually(() => cardVisible(40), "last viewed card is scrolled into view");
+    assert.equal(
+      await page.evaluate(() => document.activeElement?.dataset.idx), "40");
+  } finally {
     await browser.close();
     server.close();
     await once(server, "close");

@@ -479,7 +479,8 @@ class PipelineManifestTests(unittest.TestCase):
             args = mock.Mock(
                 still_workflow=Path("workflow.json"), seed=42,
                 clip_name=None, unet_name=None, still_save_subdir="stills",
-                force=False, thumbnail_cache_root=output_dir.parent / "cache",
+                force=False, reroll=0,
+                thumbnail_cache_root=output_dir.parent / "cache",
             )
             state = {"items": {"sample": {"still": {
                 "plan_fingerprint": "fingerprint",
@@ -504,6 +505,73 @@ class PipelineManifestTests(unittest.TestCase):
         self.assertEqual(counts, (0, 1, 0))
         self.assertTrue(thumbnail_exists)
         self.assertFalse(nested_cache_exists)
+
+    def _reroll_setup(self, tmp):
+        output_dir = Path(tmp)
+        manifest = PipelineManifest("manual", 1, [PipelineItem(
+            0, "sample", Path("sample.jpg"), "a" * 64,
+            still=StillSpec(Path("sample.jpg"), 64, 64, prompt="x"))])
+        args = mock.Mock(
+            still_workflow=Path("workflow.json"), seed=42, clip_name=None,
+            unet_name=None, still_save_subdir="stills", force=False,
+            reroll=0, comfyui_output_dir=None,
+            thumbnail_cache_root=output_dir.parent / "cache",
+            state_file=None, state_root=output_dir)
+        return output_dir, manifest, args
+
+    def _render_with_seeds(self, args, manifest, output_dir, state):
+        jpeg = io.BytesIO()
+        Image.new("RGB", (64, 64), "red").save(jpeg, "JPEG")
+        seeds = []
+
+        def fake_patch(_workflow, _still, _mode, seed, *_rest):
+            seeds.append(seed)
+            return {}
+
+        with mock.patch("reimagine_pipeline.rendering.load_workflow",
+                        return_value={}), \
+                mock.patch("reimagine_pipeline.rendering._client"), \
+                mock.patch("reimagine_pipeline.rendering.patch_still_workflow",
+                           side_effect=fake_patch), \
+                mock.patch("reimagine_pipeline.rendering._read_still_output",
+                           return_value=jpeg.getvalue()), \
+                mock.patch("reimagine_pipeline.rendering._save_state"):
+            counts = render_stills(args, manifest, output_dir, state)
+        return counts, seeds
+
+    def test_reroll_shifts_seed_of_missing_stills_and_is_recorded(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            output_dir, manifest, args = self._reroll_setup(tmp)
+            state = {"items": {}}
+            args.reroll = 3
+            counts, seeds = self._render_with_seeds(
+                args, manifest, output_dir, state)
+            self.assertEqual(counts, (1, 0, 0))
+            self.assertEqual(seeds, [item_seed(42, "sample", 3)])
+            self.assertEqual(state["items"]["sample"]["still"]["reroll"], 3)
+
+            # Resuming without the flag keeps the recorded reroll: the existing
+            # file validates against its recorded seed and is not re-rendered.
+            args.reroll = 0
+            counts, seeds = self._render_with_seeds(
+                args, manifest, output_dir, state)
+            self.assertEqual(counts, (0, 1, 0))
+            self.assertEqual(seeds, [])
+
+            # Deleting the file brings it back, using the new --reroll.
+            (output_dir / "sample.jpg").unlink()
+            args.reroll = 5
+            counts, seeds = self._render_with_seeds(
+                args, manifest, output_dir, state)
+            self.assertEqual(seeds, [item_seed(42, "sample", 5)])
+            self.assertEqual(state["items"]["sample"]["still"]["reroll"], 5)
+
+    def test_reroll_flag_parses_default_bare_and_integer(self):
+        parse = render_media.build_parser().parse_args
+        self.assertEqual(parse([]).reroll, 0)
+        self.assertEqual(parse(["--reroll"]).reroll, 1)
+        self.assertEqual(parse(["--reroll", "7"]).reroll, 7)
+        self.assertEqual(parse(["--reroll=2", "--force"]).reroll, 2)
 
     def test_round_trip_preserves_still_and_video_specs(self):
         manifest = PipelineManifest(

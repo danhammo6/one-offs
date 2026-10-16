@@ -47,7 +47,7 @@ def plan(args, manifest, state):
             if not record or spec is None:
                 continue
             stored = record.get("plan_fingerprint")
-            seed = item_seed(args.seed, item.item_id)
+            seed = item_seed(args.seed, item.item_id, record.get("reroll", 0))
             new = _render_fingerprint(spec, workflow, make(args, seed))
             if stored == new:
                 results.append((item.item_id, kind, "current", record, new))

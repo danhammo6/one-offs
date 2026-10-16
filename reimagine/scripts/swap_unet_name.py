@@ -48,7 +48,8 @@ def plan(args, manifest, state):
             if not record or spec is None or not new_name:
                 continue
             stored = record.get("plan_fingerprint")
-            overrides = make(args, item_seed(args.seed, item.item_id))
+            overrides = make(args, item_seed(
+                args.seed, item.item_id, record.get("reroll", 0)))
             old = _render_fingerprint(spec, workflow, overrides)
             new = _render_fingerprint(
                 spec, workflow, dict(overrides, unet_name=new_name))

@@ -42,10 +42,25 @@ def _client(args):
     return client
 
 
-def item_seed(base_seed, item_id):
-    """Stable per-item seed: independent of which other items are in the plan."""
+def item_seed(base_seed, item_id, reroll=0):
+    """Stable per-item seed: independent of which other items are in the plan.
+
+    `reroll` shifts the seed to get a different image for the same item.
+    """
     digest = hashlib.sha256(item_id.encode("utf-8")).digest()
-    return base_seed + int.from_bytes(digest[:4], "big")
+    return base_seed + int.from_bytes(digest[:4], "big") + reroll
+
+
+def record_reroll(args, record, destination):
+    """Reroll for one output: kept for a file already rendered, else --reroll.
+
+    An existing file keeps the reroll recorded in the render state so its
+    fingerprint still matches when a run is resumed; anything about to be
+    (re)rendered takes the requested --reroll.
+    """
+    if destination.is_file() and not args.force:
+        return record.get("reroll", 0)
+    return args.reroll
 
 
 def still_overrides(args, seed):
@@ -131,7 +146,8 @@ def render_stills(args, manifest, output_dir, state):
             continue
         destination = output_dir / item.still.output
         record = state["items"].get(item.item_id, {}).get("still", {})
-        seed = item_seed(args.seed, item.item_id)
+        reroll = record_reroll(args, record, destination)
+        seed = item_seed(args.seed, item.item_id, reroll)
         fingerprint = _render_fingerprint(
             item.still, workflow, still_overrides(args, seed))
         if not args.force and destination.is_file():
@@ -148,12 +164,12 @@ def render_stills(args, manifest, output_dir, state):
             _ensure_still_thumbnail(
                 output_dir, item.still.output, thumbnail_cache_root)
             continue
-        pending.append((item, destination, fingerprint, seed))
+        pending.append((item, destination, fingerprint, seed, reroll))
     if not pending:
         return 0, len([item for item in manifest.items if item.still]), 0
     client = _client(args)
     rendered = failed = 0
-    for item, destination, fingerprint, seed in pending:
+    for item, destination, fingerprint, seed, reroll in pending:
         started = time.perf_counter()
         try:
             name = host_name(item.still.output)
@@ -173,6 +189,7 @@ def render_stills(args, manifest, output_dir, state):
             item_state["still"] = {
                 "plan_fingerprint": fingerprint,
                 "output_sha256": sha256_file(destination),
+                "reroll": reroll,
             }
             item_state.pop("video", None)
             _save_state(args, item.item_id, state)
@@ -209,7 +226,8 @@ def render_videos(args, manifest, output_dir, state):
             continue
         destination = output_dir / item.video.output
         record = state["items"].get(item.item_id, {}).get("video", {})
-        seed = item_seed(args.seed, item.item_id)
+        reroll = record_reroll(args, record, destination)
+        seed = item_seed(args.seed, item.item_id, reroll)
         fingerprint = _render_fingerprint(
             item.video, workflow, video_overrides(args, seed))
         if (not args.force and destination.is_file()
@@ -218,12 +236,14 @@ def render_videos(args, manifest, output_dir, state):
                 and record.get("output_sha256") == sha256_file(destination)):
             continue
         pending.append((
-            item, still_path, still_hash, destination, fingerprint, seed))
+            item, still_path, still_hash, destination, fingerprint, seed,
+            reroll))
     if not pending:
         return 0, len([item for item in manifest.items if item.video]) - blocked, blocked
     client = _client(args)
     rendered = failed = 0
-    for item, still_path, still_hash, destination, fingerprint, seed in pending:
+    for (item, still_path, still_hash, destination, fingerprint, seed,
+         reroll) in pending:
         started = time.perf_counter()
         try:
             remote_name = f"reimagine/{still_hash[:12]}/{host_name(item.still.output)}.jpg"
@@ -246,6 +266,7 @@ def render_videos(args, manifest, output_dir, state):
                 "plan_fingerprint": fingerprint,
                 "input_still_sha256": still_hash,
                 "output_sha256": sha256_file(destination),
+                "reroll": reroll,
             }
             _save_state(args, item.item_id, state)
             rendered += 1

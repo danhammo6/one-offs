@@ -259,7 +259,14 @@ are a renderer concern and are not stored in prompt plans.
 | `--video-clip-name` | workflow value | optional LTX text-encoder override |
 | `--video-unet-name` | workflow value | optional LTX diffusion-model override |
 | `--seed` | `42` | base render seed; item i uses seed plus its sorted index |
+| `--reroll [N]` | `0` (bare flag: `1`) | add N to the seed of every missing output about to be rendered, e.g. to replace deleted images with new ones |
 | `--force` | off | rerender requested stages |
+
+Missing outputs are always re-rendered, which lets an interrupted run resume
+or deleted images come back. Without `--reroll` they get their original seed
+(so likely the same picture); `--reroll` gives them a new one. The reroll used
+is saved in `render_state.yaml`, and existing outputs keep theirs, so resuming
+a `--reroll` run with or without the flag leaves finished images alone.
 
 Each image folder's `render_state.yaml` tracks its render fingerprints and
 output hashes. A changed still invalidates its dependent video. Corrupt or

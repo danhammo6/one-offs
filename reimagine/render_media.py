@@ -71,6 +71,13 @@ def build_parser():
                         help="Video workflow diffusion model override.")
     parser.add_argument("--seed", type=int, default=42,
                         help="Base render seed; each item uses seed + a stable offset hashed from its id.")
+    parser.add_argument(
+        "--reroll", type=int, nargs="?", const=1, default=0, metavar="N",
+        help="Add N (bare --reroll means 1) to the seed of every output that "
+             "is missing and about to be rendered, e.g. to replace deleted "
+             "images with new ones. Outputs that already exist keep the reroll "
+             "recorded in their render state, so an interrupted run can be "
+             "resumed with the same flag.")
     parser.add_argument("--force", action="store_true",
                         help="Rerender requested stages.")
     return parser

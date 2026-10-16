@@ -9,6 +9,7 @@ from pathlib import Path
 from reimagine_pipeline import (
     RENDER_RUN_FILENAME, RENDER_STATE_FILENAME, pipeline_filename,
 )
+from reimagine_pipeline.comfy import ComfyTimeout
 from reimagine_pipeline.files import (
     DEFAULT_CACHE_ROOT, THUMBNAIL_CACHE_SUBDIR,
 )
@@ -147,6 +148,9 @@ def main(argv=None):
         logger.info("done in %.2fs: %d rendered, %d skipped, %d failed",
                     time.perf_counter() - started, rendered, skipped, failed)
         return 1 if failed else 0
+    except ComfyTimeout as error:
+        logger.error("error: %s; aborting", error)
+        return 3
     except (ValueError, OSError) as error:
         logger.error("error: %s", error)
         return 2

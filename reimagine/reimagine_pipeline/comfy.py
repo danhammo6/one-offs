@@ -10,6 +10,14 @@ from dataclasses import dataclass
 logger = logging.getLogger(__name__)
 
 
+FIRST_RENDER_TIMEOUT = 600.0
+RENDER_IDLE_TIMEOUT = 90.0
+
+
+class ComfyTimeout(Exception):
+    """The server went silent; queued work must not be left to catch up."""
+
+
 @dataclass(frozen=True)
 class ComfyArtifact:
     node_id: str
@@ -24,6 +32,7 @@ class ComfyClient:
             server = urllib.parse.urlparse(server).netloc or server.split("://", 1)[1]
         self.server = server.rstrip("/")
         self.client_id = str(uuid.uuid4())
+        self._rendered_once = False
 
     def ping(self):
         try:
@@ -46,6 +55,18 @@ class ComfyClient:
                 f"http://{self.server}/history/{prompt_id}", timeout=30) as response:
             return json.loads(response.read())
 
+    def _cancel(self, prompt_id):
+        """Best-effort removal of a prompt so the server does not render it later."""
+        for path, body in (("queue", {"delete": [prompt_id]}), ("interrupt", {})):
+            try:
+                request = urllib.request.Request(
+                    f"http://{self.server}/{path}", data=json.dumps(body).encode(),
+                    headers={"Content-Type": "application/json"})
+                with urllib.request.urlopen(request, timeout=10):
+                    pass
+            except Exception:
+                logger.warning("could not cancel prompt %s via /%s", prompt_id, path)
+
     def run_workflow(self, workflow):
         import websocket
         prompt_id = str(uuid.uuid4())
@@ -61,8 +82,17 @@ class ComfyClient:
                 headers={"Content-Type": "application/json"})
             with urllib.request.urlopen(request, timeout=30):
                 pass
+            # The first render may wait on a slow model load (e.g. HDD contention).
+            socket.settimeout(
+                RENDER_IDLE_TIMEOUT if self._rendered_once else FIRST_RENDER_TIMEOUT)
             while True:
-                message = socket.recv()
+                try:
+                    message = socket.recv()
+                except websocket.WebSocketTimeoutException:
+                    self._cancel(prompt_id)
+                    raise ComfyTimeout(
+                        f"no ComfyUI activity from {self.server} for "
+                        f"{socket.gettimeout():.0f}s; cancelled prompt {prompt_id}")
                 if not isinstance(message, str):
                     continue
                 event = json.loads(message)
@@ -72,6 +102,7 @@ class ComfyClient:
                 if event.get("type") == "execution_error":
                     raise RuntimeError(f"Comfy execution error: {data}")
                 if event.get("type") == "executing" and data.get("node") is None:
+                    self._rendered_once = True
                     break
         finally:
             socket.close()

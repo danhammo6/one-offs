@@ -4,7 +4,7 @@ import logging
 import time
 from pathlib import Path
 
-from .comfy import ComfyClient
+from .comfy import ComfyClient, ComfyTimeout
 from .files import (
     DEFAULT_THUMBNAIL_CACHE_ROOT, atomic_write_bytes, ensure_thumbnail,
     host_name, sha256_file, thumbnail_cache_path,
@@ -179,6 +179,8 @@ def render_stills(args, manifest, output_dir, state):
             rendered += 1
             logger.info("still %s: rendered in %.2fs", item.item_id,
                         time.perf_counter() - started)
+        except ComfyTimeout:
+            raise
         except Exception as error:
             failed += 1
             logger.error("still %s: failed after %.2fs: %s", item.item_id,
@@ -249,6 +251,8 @@ def render_videos(args, manifest, output_dir, state):
             rendered += 1
             logger.info("video %s: rendered in %.2fs", item.item_id,
                         time.perf_counter() - started)
+        except ComfyTimeout:
+            raise
         except Exception as error:
             failed += 1
             logger.error("video %s: failed after %.2fs: %s", item.item_id,

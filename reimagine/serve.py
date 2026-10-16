@@ -20,15 +20,20 @@ Routes:
     /api/stream?source=NAME    NDJSON: the same images streamed progressively
     /img/output/NAME/<path>    raw bytes of an output image in source NAME
     /img/input/NAME/<path>     raw bytes of a reference image
+    POST /api/delete           move an output image (+ sibling video) or a
+                               top-level folder to the Trash
 
 Uses the project's PyYAML dependency. Serve, then open the printed URL.
 """
 import argparse
+import glob
 import hashlib
+import ipaddress
 import json
 import logging
 import mimetypes
 import os
+import shutil
 import stat
 import threading
 import time
@@ -568,6 +573,108 @@ def iter_pairs(source_name, output_dir, on_reference=None,
             }
 
 
+class DeleteError(Exception):
+    """A delete request that cannot be honored; carries the HTTP status."""
+
+    def __init__(self, status, message):
+        super().__init__(message)
+        self.status = status
+
+
+def move_to_trash(path):
+    """Send path to the OS Trash / Recycle Bin (never deletes permanently)."""
+    from send2trash import send2trash
+    send2trash(str(path))
+
+
+def _evict_thumbnail_memory(handler, prefix):
+    with handler.thumbnail_memory_lock:
+        for key in [k for k in handler.thumbnail_memory_cache
+                    if k.startswith(prefix)]:
+            del handler.thumbnail_memory_cache[key]
+
+
+def purge_thumbnails(handler, output_dir, relative, folder=False):
+    """Best-effort removal of cached thumbnails for a deleted image or folder."""
+    try:
+        # Any valid fingerprint locates the cache directory for this path.
+        probe = thumbnail_cache_path(
+            handler.thumbnail_cache_root, output_dir,
+            Path(relative) / "x.jpg" if folder else relative,
+            fingerprint="0" * 24)
+        if folder:
+            shutil.rmtree(probe.parent, ignore_errors=True)
+            _evict_thumbnail_memory(handler, f"{probe.parent}{os.sep}")
+            return
+        prefix = f"{probe.name.rsplit('.', 2)[0]}."
+        for cached in probe.parent.glob(f"{glob.escape(prefix)}*.webp"):
+            cached.unlink(missing_ok=True)
+        _evict_thumbnail_memory(handler, str(probe.parent / prefix))
+    except (OSError, ValueError) as error:
+        logger.warning("thumbnail cleanup failed for %s: %s", relative, error)
+
+
+def delete_media(handler, output_dir, path=None, category=None):
+    """Trash one output image (and its sibling videos) or a top-level folder.
+
+    Returns the image paths (relative to output_dir) that no longer exist."""
+    if (path is None) == (category is None):
+        raise DeleteError(400, "give exactly one of path or category")
+    base = output_dir.resolve()
+    trash = handler.trash
+    if path is not None:
+        target = safe_media_path(output_dir, path, IMAGE_EXTS)
+        if target is None:
+            raise DeleteError(404, "image not found")
+        rel = target.relative_to(output_dir)
+        videos = [
+            target.with_suffix(ext) for ext in VIDEO_EXTS
+            if target.with_suffix(ext).is_file()
+            and not target.with_suffix(ext).is_symlink()]
+        try:
+            # Videos first: a failure leaves the image listed and consistent.
+            for video in videos:
+                trash(video)
+            trash(target)
+        except Exception as error:
+            raise DeleteError(500, f"could not move to Trash: {error}")
+        purge_thumbnails(handler, output_dir, rel)
+        return [rel.as_posix()]
+    name = Path(category)
+    if (len(name.parts) != 1 or name.is_absolute() or category.startswith(".")
+            or category == "(root)" or ".." in name.parts):
+        raise DeleteError(400, "invalid folder")
+    folder = output_dir / name
+    if (folder.is_symlink() or not folder.is_dir()
+            or folder.resolve().parent != base):
+        raise DeleteError(404, "folder not found")
+    removed = [p.relative_to(output_dir).as_posix()
+               for p, _video in iter_output_media(folder)]
+    try:
+        trash(folder)
+    except Exception as error:
+        raise DeleteError(500, f"could not move to Trash: {error}")
+    purge_thumbnails(handler, output_dir, name, folder=True)
+    return removed
+
+
+def host_allowed(host_header):
+    """Reject DNS-rebinding hosts: allow IPs, localhost, and single-label or
+    .local names (LAN/Bonjour), but not public-looking domains."""
+    if not host_header:
+        return False
+    host = urllib.parse.urlsplit(f"//{host_header}").hostname
+    if not host:
+        return False
+    try:
+        ipaddress.ip_address(host)
+        return True
+    except ValueError:
+        pass
+    host = host.lower()
+    return host == "localhost" or host.endswith(".local") or "." not in host
+
+
 def list_pairs(source_name, output_dir):
     """Return all records for compatibility with non-streaming clients."""
     return list(iter_pairs(source_name, output_dir))
@@ -617,6 +724,8 @@ class Handler(BaseHTTPRequestHandler):
     THUMBNAIL_MEMORY_MAX = 4096
     cache_root = DEFAULT_CACHE_ROOT
     thumbnail_cache_root = DEFAULT_CACHE_ROOT / THUMBNAIL_CACHE_SUBDIR
+    trash = staticmethod(move_to_trash)
+    delete_lock = threading.Lock()
 
     def log_message(self, *_):  # keep the console quiet
         pass
@@ -886,6 +995,45 @@ class Handler(BaseHTTPRequestHandler):
         return self._send(404, "not found")
 
     do_HEAD = do_GET
+
+    def _send_error_json(self, code, message):
+        self._send(code, json.dumps({"error": message}), "application/json",
+                   extra={"Cache-Control": "no-store"})
+
+    def do_POST(self):
+        path = urllib.parse.urlparse(self.path).path
+        if path != "/api/delete":
+            return self._send(404, "not found")
+        # Browsers cannot add a custom header cross-origin without a CORS
+        # preflight, which this server never grants; Host/Origin checks stop
+        # DNS rebinding and cross-site form posts.
+        host = self.headers.get("Host")
+        origin = self.headers.get("Origin")
+        if (self.headers.get("X-Requested-With") != "reimagine"
+                or not host_allowed(host)
+                or (origin and urllib.parse.urlsplit(origin).netloc != host)):
+            return self._send_error_json(403, "forbidden")
+        try:
+            length = int(self.headers.get("Content-Length") or 0)
+            if not 0 < length <= 4096:
+                raise ValueError
+            body = json.loads(self.rfile.read(length))
+            source, rel, category = (
+                body.get("source"), body.get("path"), body.get("category"))
+            if (source not in self.sources
+                    or any(v is not None and not isinstance(v, str)
+                           for v in (rel, category))):
+                raise ValueError
+        except (ValueError, AttributeError):
+            return self._send_error_json(400, "bad request")
+        try:
+            with self.delete_lock:
+                deleted = delete_media(
+                    self, self.sources[source], rel, category)
+        except DeleteError as error:
+            return self._send_error_json(error.status, str(error))
+        self._send(200, json.dumps({"deleted": deleted}), "application/json",
+                   extra={"Cache-Control": "no-store"})
 
 
 def main():

@@ -1710,4 +1710,143 @@ test(`gallery remembers position and returns to the last lightbox item (${name})
     await once(server, "close");
   }
 });
+
+test(`delete prompts, don't-ask-again, and folder delete (${name})`, {
+  timeout: 45000,
+}, async () => {
+  let items = [
+    ...ITEMS.filter(item => item.category === "alpha").slice(0, 5),
+    ...ITEMS.filter(item => item.category === "beta").slice(0, 3),
+  ];
+  const deletes = [];
+  const server = createServer((request, response) => {
+    const url = new URL(request.url, "http://gallery.test");
+    if (url.pathname === "/") {
+      response.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+      return response.end(INDEX);
+    }
+    if (url.pathname === "/api/sources") {
+      response.writeHead(200, { "Content-Type": "application/json" });
+      return response.end(JSON.stringify({ sources: ["test"], default: "test" }));
+    }
+    if (url.pathname === "/api/stream") {
+      response.writeHead(200, { "Content-Type": "application/x-ndjson" });
+      return response.end(items.map(item => JSON.stringify(item)).join("\n"));
+    }
+    if (url.pathname === "/api/metadata") {
+      response.writeHead(200, { "Content-Type": "application/json" });
+      return response.end(JSON.stringify({ prompt: "p" }));
+    }
+    if (url.pathname === "/api/delete" && request.method === "POST") {
+      let raw = "";
+      request.on("data", chunk => { raw += chunk; });
+      request.on("end", () => {
+        const body = JSON.parse(raw);
+        deletes.push({ body, header: request.headers["x-requested-with"] });
+        const gone = items.filter(item => body.path
+          ? item.path === body.path : item.category === body.category);
+        items = items.filter(item => !gone.includes(item));
+        response.writeHead(200, { "Content-Type": "application/json" });
+        response.end(JSON.stringify({ deleted: gone.map(item => item.path) }));
+      });
+      return;
+    }
+    if (url.pathname.startsWith("/img/")) {
+      response.writeHead(200, { "Content-Type": "image/svg+xml" });
+      return response.end(fixtureImage(url));
+    }
+    response.writeHead(404);
+    response.end();
+  });
+  server.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  const browser = await type.launch(launchOptions());
+  const page = await browser.newPage({ viewport: { width: 1200, height: 800 } });
+  const dialogOpen = () => page.evaluate(
+    () => !document.querySelector("#delDialog").hidden);
+  const stat = () => page.evaluate(() => document.querySelector("#stat").textContent);
+  const activeIdx = () => page.evaluate(() => document.activeElement?.dataset.idx);
+  try {
+    await page.goto(`http://127.0.0.1:${server.address().port}/`);
+    await page.waitForFunction(
+      () => document.querySelector("#stat")?.textContent.includes("8 renders"));
+    await page.locator('.card[data-idx="0"]').focus();
+    const firstPath = items[0].path;
+
+    // "no" (and Escape) delete nothing.
+    await page.keyboard.press("d");
+    assert.ok(await dialogOpen());
+    assert.equal(await page.evaluate(() => document.activeElement.id), "delNo");
+    await page.keyboard.press("n");
+    assert.ok(!await dialogOpen());
+    await page.keyboard.press("Delete");
+    await page.keyboard.press("Escape");
+    assert.ok(!await dialogOpen());
+    assert.equal(deletes.length, 0);
+
+    // Backspace (the Mac "delete" key) + yes deletes and keeps focus in place.
+    await page.keyboard.press("Backspace");
+    await page.keyboard.press("y");
+    await page.waitForFunction(
+      () => document.querySelector("#stat")?.textContent.includes("7 renders"));
+    assert.deepEqual(
+      deletes[0].body, { source: "test", path: firstPath });
+    assert.equal(deletes[0].header, "reimagine");
+    assert.equal(await activeIdx(), "0");
+
+    // In the lightbox, delete advances to the next item and Escape in the
+    // dialog does not close the viewer.
+    await page.locator('.card[data-idx="0"]').click();
+    await page.keyboard.press("d");
+    await page.keyboard.press("Escape");
+    assert.ok(await page.evaluate(
+      () => document.querySelector("#lb").classList.contains("open")));
+    await page.keyboard.press("d");
+    await page.keyboard.press("y");
+    await page.waitForFunction(
+      () => document.querySelector("#stat")?.textContent.includes("6 renders"));
+    assert.equal(await page.evaluate(
+      () => document.querySelector("#lbName").textContent), items[0].path);
+    assert.equal(deletes.length, 2);
+
+    // "don't ask again" deletes now and silently afterwards; D re-enables.
+    await page.keyboard.press("d");
+    await page.keyboard.press("a");
+    await page.waitForFunction(
+      () => document.querySelector("#stat")?.textContent.includes("5 renders"));
+    assert.ok(await page.evaluate(() => !document.querySelector("#delStatus").hidden));
+    await page.keyboard.press("d");
+    await page.waitForFunction(
+      () => document.querySelector("#stat")?.textContent.includes("4 renders"));
+    assert.ok(!await dialogOpen());
+    await page.keyboard.press("Escape");  // close lightbox
+    await page.keyboard.press("D");
+    assert.ok(await page.evaluate(() => document.querySelector("#delStatus").hidden));
+    await page.locator('.card[data-idx="0"]').focus();
+    await page.keyboard.press("d");
+    assert.ok(await dialogOpen());
+    await page.keyboard.press("n");
+    assert.equal(deletes.length, 4);
+
+    // Folder delete from the focusable heading; category filter updates.
+    const category = items[0].category;
+    await page.locator(`.virtual-heading h2[data-category="${category}"]`).focus();
+    await page.keyboard.press("d");
+    assert.match(await page.evaluate(
+      () => document.querySelector("#delTitle").textContent),
+    new RegExp(`folder "${category}"`));
+    await page.keyboard.press("y");
+    await page.waitForFunction(
+      () => document.querySelector("#stat")?.textContent.includes("3 renders"));
+    assert.deepEqual(deletes.at(-1).body, { source: "test", category });
+    assert.equal(await page.evaluate(
+      c => [...document.querySelectorAll("#catFilter option")]
+        .some(option => option.value === c), category), false);
+    assert.match(await stat(), /3 renders$/);
+  } finally {
+    await browser.close();
+    server.close();
+    await once(server, "close");
+  }
+});
 }

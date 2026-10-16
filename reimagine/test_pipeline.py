@@ -3243,5 +3243,143 @@ class ProcessIsolationTests(unittest.TestCase):
         llm.chat.assert_called_once()
 
 
+class GalleryDeleteTests(unittest.TestCase):
+    SOURCE = "src"
+
+    def setUp(self):
+        import serve
+
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.root = Path(tmp.name)
+        self.output = self.root / "output"
+        self.trash_dir = self.root / "trash"
+        self.trash_dir.mkdir()
+        for rel in ("a/one.jpg", "a/two.jpg", "b/three.jpg", "root.jpg"):
+            path = self.output / rel
+            path.parent.mkdir(parents=True, exist_ok=True)
+            Image.new("RGB", (64, 64)).save(path)
+        (self.output / "a" / "one.mp4").write_bytes(b"video")
+        self.trashed = []
+
+        def fake_trash(path):
+            self.trashed.append(Path(path))
+            os.replace(path, self.trash_dir / f"{len(self.trashed)}-{Path(path).name}")
+
+        class TestHandler(serve.Handler):
+            sources = {self.SOURCE: self.output}
+            pipeline_metadata_cache = {self.SOURCE: (None, {})}
+            thumbnail_cache_root = self.root / "cache"
+            thumbnail_memory_cache = OrderedDict()
+            trash = staticmethod(fake_trash)
+
+        self.handler = TestHandler
+        server = serve.ThreadingHTTPServer(("127.0.0.1", 0), TestHandler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        self.base = f"http://127.0.0.1:{server.server_port}"
+
+    def post(self, body, headers=None):
+        headers = {"Content-Type": "application/json",
+                   "X-Requested-With": "reimagine", **(headers or {})}
+        request = urllib.request.Request(
+            f"{self.base}/api/delete", json.dumps(body).encode(),
+            headers=headers, method="POST")
+        try:
+            with urllib.request.urlopen(request) as response:
+                return response.status, json.loads(response.read())
+        except urllib.error.HTTPError as error:
+            with error:
+                return error.code, json.loads(error.read())
+
+    def test_delete_image_trashes_sibling_video_and_thumbnails(self):
+        import serve
+
+        relative = Path("a/one.jpg")
+        fingerprint = thumbnail_source_fingerprint(
+            self.output / relative, relative)
+        cached = thumbnail_cache_path(
+            self.handler.thumbnail_cache_root, self.output, relative,
+            fingerprint=fingerprint)
+        cached.parent.mkdir(parents=True)
+        cached.write_bytes(b"webp")
+        self.handler.thumbnail_memory_cache[str(cached)] = b"webp"
+        status, body = self.post({"source": self.SOURCE, "path": "a/one.jpg"})
+        self.assertEqual((status, body), (200, {"deleted": ["a/one.jpg"]}))
+        self.assertFalse((self.output / "a/one.jpg").exists())
+        self.assertFalse((self.output / "a/one.mp4").exists())
+        self.assertTrue((self.output / "a/two.jpg").exists())
+        self.assertFalse(cached.exists())
+        self.assertNotIn(str(cached), self.handler.thumbnail_memory_cache)
+
+    def test_delete_folder_reports_images_and_trashes_directory(self):
+        status, body = self.post({"source": self.SOURCE, "category": "a"})
+        self.assertEqual(status, 200)
+        self.assertEqual(sorted(body["deleted"]), ["a/one.jpg", "a/two.jpg"])
+        self.assertFalse((self.output / "a").exists())
+        self.assertTrue((self.output / "b/three.jpg").exists())
+
+    def test_rejects_unsafe_requests(self):
+        cases = [
+            ({"source": self.SOURCE, "path": "../output/root.jpg"}, 404),
+            ({"source": self.SOURCE, "path": "/etc/passwd"}, 404),
+            ({"source": self.SOURCE, "path": "a/missing.jpg"}, 404),
+            ({"source": self.SOURCE, "path": "a/one.mp4"}, 404),
+            ({"source": self.SOURCE, "category": "(root)"}, 400),
+            ({"source": self.SOURCE, "category": ".."}, 400),
+            ({"source": self.SOURCE, "category": "a/.."}, 400),
+            ({"source": self.SOURCE, "category": "nope"}, 404),
+            ({"source": self.SOURCE, "path": "a/one.jpg", "category": "a"}, 400),
+            ({"source": "other", "path": "a/one.jpg"}, 400),
+            ({"source": self.SOURCE}, 400),
+            ({"source": self.SOURCE, "path": 5}, 400),
+        ]
+        for body, expected in cases:
+            with self.subTest(body=body):
+                self.assertEqual(self.post(body)[0], expected)
+        self.assertEqual(self.trashed, [])
+        self.assertTrue((self.output / "root.jpg").exists())
+
+    def test_rejects_symlinked_folder(self):
+        outside = self.root / "outside"
+        outside.mkdir()
+        (self.output / "link").symlink_to(outside, target_is_directory=True)
+        self.assertEqual(
+            self.post({"source": self.SOURCE, "category": "link"})[0], 404)
+        self.assertTrue(outside.exists())
+
+    def test_requires_csrf_header_and_same_origin(self):
+        body = {"source": self.SOURCE, "path": "root.jpg"}
+        self.assertEqual(
+            self.post(body, {"X-Requested-With": "x"})[0], 403)
+        self.assertEqual(
+            self.post(body, {"Origin": "http://evil.example"})[0], 403)
+        self.assertEqual(
+            self.post(body, {"Host": "evil.example.com"})[0], 403)
+        self.assertTrue((self.output / "root.jpg").exists())
+        self.assertEqual(self.post(body, {"Origin": self.base})[0], 200)
+
+    def test_trash_failure_leaves_image_and_reports_error(self):
+        def failing(_path):
+            raise OSError("no trash here")
+
+        self.handler.trash = staticmethod(failing)
+        status, body = self.post({"source": self.SOURCE, "path": "root.jpg"})
+        self.assertEqual(status, 500)
+        self.assertIn("no trash here", body["error"])
+        self.assertTrue((self.output / "root.jpg").exists())
+
+    def test_host_allowed(self):
+        import serve
+
+        for host in ("127.0.0.1:8000", "localhost:8000", "[::1]:8000",
+                     "192.168.1.5", "macbook.local:8000", "macbook"):
+            self.assertTrue(serve.host_allowed(host), host)
+        for host in ("evil.com", "a.b.example.org:8000", "", None):
+            self.assertFalse(serve.host_allowed(host), host)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -97,3 +97,25 @@ empty stage.
 
 Video mode still compares against the reference still. Range/chunked video
 delivery is a server gap, not a UI feature.
+
+## Deleting
+
+`d`, `Delete`, or `Backspace` (the Mac "delete" key) deletes the focused card,
+the item open in the lightbox, or, on a focused category heading, the whole
+folder. Everything goes to the OS Trash / Recycle Bin via `send2trash`; if the
+Trash is unavailable (e.g. some network shares) the request fails and nothing
+is removed. Deleting an image also trashes its sibling video. A folder is the
+top-level category directory; `(root)` cannot be deleted.
+
+An ncdu-style dialog asks **yes / no / don't ask me again** (`y`/`n`/`a`;
+Escape is no; focus starts on "no"). "Don't ask again" deletes immediately
+and skips the dialog until **`D`** (capital) turns it back on. It is held in
+memory only and resets on reload. Escape in the dialog does not close the
+lightbox. After a delete, focus (or the lightbox) moves to the next item.
+
+`POST /api/delete` takes `{source, path}` or `{source, category}` and requires
+`X-Requested-With: reimagine`, a same-origin `Origin`, and a non-public
+`Host` (IP, localhost, `.local`, or single label) as CSRF / DNS-rebinding
+guards. It also drops the item's cached thumbnails. Touch/mobile has no
+delete affordance yet. A re-render of a deleted image by `render_media.py`
+is also unresolved.

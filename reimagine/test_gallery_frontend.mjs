@@ -284,6 +284,56 @@ async function lightboxHudGeometry(page) {
 const comparisonMediaArea = geometry => geometry.media.reduce(
   (area, media) => area + media.width * media.height, 0);
 
+async function startDeleteServer() {
+  let items = [
+    ...ITEMS.filter(item => item.category === "alpha").slice(0, 5),
+    ...ITEMS.filter(item => item.category === "beta").slice(0, 3),
+  ];
+  const deletes = [];
+  const server = createServer((request, response) => {
+    const url = new URL(request.url, "http://gallery.test");
+    if (url.pathname === "/") {
+      response.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+      return response.end(INDEX);
+    }
+    if (url.pathname === "/api/sources") {
+      response.writeHead(200, { "Content-Type": "application/json" });
+      return response.end(JSON.stringify({ sources: ["test"], default: "test" }));
+    }
+    if (url.pathname === "/api/stream") {
+      response.writeHead(200, { "Content-Type": "application/x-ndjson" });
+      return response.end(items.map(item => JSON.stringify(item)).join("\n"));
+    }
+    if (url.pathname === "/api/metadata") {
+      response.writeHead(200, { "Content-Type": "application/json" });
+      return response.end(JSON.stringify({ prompt: "p" }));
+    }
+    if (url.pathname === "/api/delete" && request.method === "POST") {
+      let raw = "";
+      request.on("data", chunk => { raw += chunk; });
+      request.on("end", () => {
+        const body = JSON.parse(raw);
+        deletes.push({ body, header: request.headers["x-requested-with"] });
+        const gone = items.filter(item => body.path
+          ? item.path === body.path : item.category === body.category);
+        items = items.filter(item => !gone.includes(item));
+        response.writeHead(200, { "Content-Type": "application/json" });
+        response.end(JSON.stringify({ deleted: gone.map(item => item.path) }));
+      });
+      return;
+    }
+    if (url.pathname.startsWith("/img/")) {
+      response.writeHead(200, { "Content-Type": "image/svg+xml" });
+      return response.end(fixtureImage(url));
+    }
+    response.writeHead(404);
+    response.end();
+  });
+  server.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  return { server, deletes, remaining: () => items };
+}
+
 const BROWSERS = [
   {
     name: "Chromium",
@@ -1714,52 +1764,7 @@ test(`gallery remembers position and returns to the last lightbox item (${name})
 test(`delete prompts, don't-ask-again, and folder delete (${name})`, {
   timeout: 45000,
 }, async () => {
-  let items = [
-    ...ITEMS.filter(item => item.category === "alpha").slice(0, 5),
-    ...ITEMS.filter(item => item.category === "beta").slice(0, 3),
-  ];
-  const deletes = [];
-  const server = createServer((request, response) => {
-    const url = new URL(request.url, "http://gallery.test");
-    if (url.pathname === "/") {
-      response.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
-      return response.end(INDEX);
-    }
-    if (url.pathname === "/api/sources") {
-      response.writeHead(200, { "Content-Type": "application/json" });
-      return response.end(JSON.stringify({ sources: ["test"], default: "test" }));
-    }
-    if (url.pathname === "/api/stream") {
-      response.writeHead(200, { "Content-Type": "application/x-ndjson" });
-      return response.end(items.map(item => JSON.stringify(item)).join("\n"));
-    }
-    if (url.pathname === "/api/metadata") {
-      response.writeHead(200, { "Content-Type": "application/json" });
-      return response.end(JSON.stringify({ prompt: "p" }));
-    }
-    if (url.pathname === "/api/delete" && request.method === "POST") {
-      let raw = "";
-      request.on("data", chunk => { raw += chunk; });
-      request.on("end", () => {
-        const body = JSON.parse(raw);
-        deletes.push({ body, header: request.headers["x-requested-with"] });
-        const gone = items.filter(item => body.path
-          ? item.path === body.path : item.category === body.category);
-        items = items.filter(item => !gone.includes(item));
-        response.writeHead(200, { "Content-Type": "application/json" });
-        response.end(JSON.stringify({ deleted: gone.map(item => item.path) }));
-      });
-      return;
-    }
-    if (url.pathname.startsWith("/img/")) {
-      response.writeHead(200, { "Content-Type": "image/svg+xml" });
-      return response.end(fixtureImage(url));
-    }
-    response.writeHead(404);
-    response.end();
-  });
-  server.listen(0, "127.0.0.1");
-  await once(server, "listening");
+  const { server, deletes, remaining } = await startDeleteServer();
   const browser = await type.launch(launchOptions());
   const page = await browser.newPage({ viewport: { width: 1200, height: 800 } });
   const dialogOpen = () => page.evaluate(
@@ -1771,7 +1776,7 @@ test(`delete prompts, don't-ask-again, and folder delete (${name})`, {
     await page.waitForFunction(
       () => document.querySelector("#stat")?.textContent.includes("8 renders"));
     await page.locator('.card[data-idx="0"]').focus();
-    const firstPath = items[0].path;
+    const firstPath = remaining()[0].path;
 
     // "no" (and Escape) delete nothing.
     await page.keyboard.press("d");
@@ -1806,7 +1811,7 @@ test(`delete prompts, don't-ask-again, and folder delete (${name})`, {
     await page.waitForFunction(
       () => document.querySelector("#stat")?.textContent.includes("6 renders"));
     assert.equal(await page.evaluate(
-      () => document.querySelector("#lbName").textContent), items[0].path);
+      () => document.querySelector("#lbName").textContent), remaining()[0].path);
     assert.equal(deletes.length, 2);
 
     // "don't ask again" deletes now and silently afterwards; D re-enables.
@@ -1829,7 +1834,7 @@ test(`delete prompts, don't-ask-again, and folder delete (${name})`, {
     assert.equal(deletes.length, 4);
 
     // Folder delete from the focusable heading; category filter updates.
-    const category = items[0].category;
+    const category = remaining()[0].category;
     await page.locator(`.virtual-heading h2[data-category="${category}"]`).focus();
     await page.keyboard.press("d");
     assert.match(await page.evaluate(
@@ -1843,6 +1848,74 @@ test(`delete prompts, don't-ask-again, and folder delete (${name})`, {
       c => [...document.querySelectorAll("#catFilter option")]
         .some(option => option.value === c), category), false);
     assert.match(await stat(), /3 renders$/);
+  } finally {
+    await browser.close();
+    server.close();
+    await once(server, "close");
+  }
+});
+
+test(`delete works by touch: lightbox button, folder button, re-enable (${name})`, {
+  timeout: 45000,
+}, async () => {
+  const { server, deletes, remaining } = await startDeleteServer();
+  const browser = await type.launch(launchOptions());
+  const context = await browser.newContext({
+    viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true,
+  });
+  const page = await context.newPage();
+  const statHas = text => page.waitForFunction(
+    t => document.querySelector("#stat")?.textContent.includes(t), text);
+  try {
+    await page.goto(`http://127.0.0.1:${server.address().port}/`);
+    await statHas("8 renders");
+    await page.locator('.card[data-idx="0"]').tap();
+    assert.ok(await page.locator("#lbDelete").isVisible());
+
+    // The button sits at the far side of the bar from Close, and a tap on it
+    // neither hides the HUD nor navigates.
+    const [del, close] = await Promise.all([
+      page.locator("#lbDelete").boundingBox(),
+      page.locator("#lbClose").boundingBox(),
+    ]);
+    assert.ok(del.x + del.width < close.x);
+    assert.ok(del.height >= 44 && del.width >= 44);
+    const name = await page.locator("#lbName").textContent();
+    await page.locator("#lbDelete").tap();
+    assert.ok(await page.locator("#delDialog").isVisible());
+    assert.ok(await page.locator("#delNo").evaluate(
+      el => el.getBoundingClientRect().height >= 44));
+    await page.locator("#delNo").tap();
+    assert.equal(deletes.length, 0);
+    assert.equal(await page.locator("#lbName").textContent(), name);
+    assert.ok(!await page.evaluate(
+      () => document.querySelector("#lb").classList.contains("hud-hidden")));
+
+    await page.locator("#lbDelete").tap();
+    await page.locator("#delYes").tap();
+    await statHas("7 renders");
+    assert.notEqual(await page.locator("#lbName").textContent(), name);
+    await page.locator("#lbClose").tap();
+
+    // Don't-ask-again, then the header note re-enables the prompt by tap.
+    await page.locator('.card[data-idx="0"]').tap();
+    await page.locator("#lbDelete").tap();
+    await page.locator("#delAlways").tap();
+    await statHas("6 renders");
+    await page.locator("#lbDelete").tap();
+    await statHas("5 renders");
+    await page.locator("#lbClose").tap();
+    await page.locator("#delStatus").tap();
+    assert.ok(await page.locator("#delStatus").isHidden());
+
+    // Folder button on the heading.
+    const category = remaining()[0].category;
+    await page.locator(`.folder-del[data-category="${category}"]`).tap();
+    assert.match(await page.locator("#delTitle").textContent(),
+      new RegExp(`folder "${category}"`));
+    await page.locator("#delYes").tap();
+    await statHas("3 renders");
+    assert.deepEqual(deletes.at(-1).body, { source: "test", category });
   } finally {
     await browser.close();
     server.close();

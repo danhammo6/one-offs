@@ -79,6 +79,24 @@
     position: absolute; list-style: none;
   }
   header .stat.err { color: #ff8a80; }
+  button.stat {
+    background: none; border: 0; padding: 4px 0; text-decoration: underline;
+    font: inherit; font-size: 12px; color: var(--muted);
+  }
+  .virtual-heading { display: flex; align-items: baseline; gap: 12px; }
+  .folder-del {
+    font-size: 11px; padding: 2px 8px; color: var(--muted);
+    background: transparent;
+  }
+  #lbDelete { min-width: 44px; min-height: 44px; white-space: nowrap; }
+  #delDialog .hk { color: var(--muted); font-size: 11px; margin-left: 4px; }
+  @media (pointer: coarse) {
+    .folder-del { min-height: 44px; padding: 0 14px; font-size: 13px; }
+    #delDialog .hk { display: none; }
+    #delDialog .actions { flex-direction: column; }
+    #delNo { order: -1; }
+    #delDialog .actions button { min-height: 48px; font-size: 16px; }
+  }
   #delDialog {
     position: fixed; inset: 0; z-index: 40; display: flex;
     align-items: center; justify-content: center; background: rgba(0,0,0,.6);
@@ -236,7 +254,7 @@
   <label class="toggle" for="sourceSel">source</label>
   <select id="sourceSel" title="which output set to browse"></select>
   <span class="stat" id="stat">loading…</span>
-  <span class="stat" id="delStatus" hidden>delete prompt off · D turns it back on</span>
+  <button type="button" class="stat" id="delStatus" hidden>delete prompt is off · tap or press D to turn it on</button>
   <span class="stat" id="notice" role="status"></span>
   <span class="grow"></span>
   <label class="toggle"><input type="checkbox" id="videoMode"> video</label>
@@ -251,6 +269,8 @@
 
 <div id="lb" role="dialog" aria-modal="true" aria-label="Media viewer">
   <div class="bar" id="lbBar">
+    <button type="button" id="lbDelete" title="Move to Trash (d)"
+            aria-label="Move this image to the Trash">delete</button>
     <span class="name" id="lbName"></span>
     <span id="lbMeta"></span>
     <span class="grow"></span>
@@ -281,9 +301,9 @@
     <p id="delTitle"></p>
     <p class="detail" id="delDetail"></p>
     <div class="actions">
-      <button type="button" id="delYes">(y)es</button>
-      <button type="button" id="delNo">(n)o</button>
-      <button type="button" id="delAlways">(a) don't ask me again</button>
+      <button type="button" id="delYes">Yes<span class="hk">y</span></button>
+      <button type="button" id="delNo">No<span class="hk">n</span></button>
+      <button type="button" id="delAlways">Yes, and don't ask me again<span class="hk">a</span></button>
     </div>
   </div>
 </div>
@@ -696,6 +716,16 @@ function renderWindow(force = false) {
         heading.dataset.category = unit.category;
         heading.setAttribute("aria-keyshortcuts", "D Delete");
         node.append(heading);
+        if (unit.category !== "(root)") {
+          const del = document.createElement("button");
+          del.type = "button";
+          del.className = "folder-del";
+          del.dataset.category = unit.category;
+          del.textContent = "delete folder";
+          del.setAttribute(
+            "aria-label", `Move folder ${unit.category} to the Trash`);
+          node.append(del);
+        }
       }
       node.style.top = `${unit.top}px`;
       node.style.height = `${unit.height}px`;
@@ -1434,7 +1464,8 @@ function deleteTargetFor(event) {
     const index = +card.dataset.idx;
     return VIEW[index] && { kind: "item", item: VIEW[index], index };
   }
-  const heading = event.target.closest?.(".virtual-heading h2");
+  const heading = event.target.closest?.(
+    ".virtual-heading h2, .folder-del");
   if (heading) return { kind: "folder", category: heading.dataset.category };
   return null;
 }
@@ -1476,6 +1507,23 @@ function askDelete(target) {
 $("delYes").addEventListener("click", () => askDelete.finish?.("yes"));
 $("delNo").addEventListener("click", () => askDelete.finish?.("no"));
 $("delAlways").addEventListener("click", () => askDelete.finish?.("always"));
+
+function enableDeleteConfirm() {
+  confirmDelete = true;
+  $("delStatus").hidden = true;
+  notice("Delete confirmation is on.");
+}
+$("delStatus").addEventListener("click", enableDeleteConfirm);
+$("lbDelete").addEventListener("click", () => {
+  const item = VIEW[cur];
+  if (item) requestDelete({ kind: "item", item, index: cur });
+});
+$("main").addEventListener("click", (event) => {
+  const button = event.target.closest(".folder-del");
+  if (button) {
+    requestDelete({ kind: "folder", category: button.dataset.category });
+  }
+});
 
 async function requestDelete(target) {
   if (deleting) return;
@@ -1558,9 +1606,7 @@ document.addEventListener("keydown", (e) => {
   if (e.target.closest?.("input, select, textarea")) return;
   if (e.key === "D") {
     e.preventDefault();
-    confirmDelete = true;
-    $("delStatus").hidden = true;
-    notice("Delete confirmation is on.");
+    enableDeleteConfirm();
   } else if (e.key === "d" || e.key === "Delete" || e.key === "Backspace") {
     const target = deleteTargetFor(e);
     if (!target) return;

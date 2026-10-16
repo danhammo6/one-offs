@@ -69,3 +69,18 @@ Serve it as a normal outputs tree:
 .venv/bin/python serve.py
 # pick source local-llm-regions-pipeline-test-large
 ```
+
+## Known issues / tech debt
+
+- **Chromium windowing test fails** (found 2026-10-16, macOS). `gallery
+  windowing, navigation, metadata, and prompt semantics (Chromium)` dies about
+  5s in, at the step after clicking `#refresh` (the `waitForFunction` for
+  `"2000 in beta"`), with `Target page, context or browser has been closed`.
+  The same test passes in WebKit, and it fails identically on commits that
+  predate the delete feature, so it is not a gallery regression. Likely the
+  system Chrome crashing or closing the page rather than an assertion failure;
+  not yet diagnosed (try `PLAYWRIGHT_CHROME` with a different Chromium, or
+  headed mode). After the failure `node --test` can hang instead of exiting;
+  pass `--test-force-exit` when running it by hand. Until fixed, treat the
+  Chromium result of this one test as noise and rely on WebKit plus the other
+  Chromium tests.

@@ -116,6 +116,15 @@ lightbox. After a delete, focus (or the lightbox) moves to the next item.
 `POST /api/delete` takes `{source, path}` or `{source, category}` and requires
 `X-Requested-With: reimagine`, a same-origin `Origin`, and a non-public
 `Host` (IP, localhost, `.local`, or single label) as CSRF / DNS-rebinding
-guards. It also drops the item's cached thumbnails. Touch/mobile has no
-delete affordance yet. A re-render of a deleted image by `render_media.py`
-is also unresolved.
+guards. It also drops the item's cached thumbnails. A re-render of a deleted
+image by `render_media.py` is unresolved.
+
+### Touch
+
+There are no keys on a phone, so deletion is button-driven: a **delete**
+button at the far left of the lightbox bar (opposite **close ✕**, and in the
+HUD, so it is unavailable while the HUD is hidden), and a **delete folder**
+button beside each category heading. Grid cards have no delete gesture (they
+open the lightbox on tap). The dialog uses full-width 48px buttons with "No"
+on top, and the header note "delete prompt is off" is a button that turns the
+prompt back on (the touch equivalent of `D`).

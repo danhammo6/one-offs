@@ -378,9 +378,14 @@ source fingerprints prevent extension, root, and version collisions. Thumbnail
 writes are atomic; corrupt entries are regenerated. A lightweight fingerprint
 of the relative path and high-resolution file identity fields drives both disk
 paths and versioned URLs without hashing every full image during gallery
-listing. Versioned and legacy files are retained because another process or
-active request may still need them; perform cleanup offline while renderers and
-gallery servers are stopped. Versioned responses use long-lived immutable
+listing. Superseded and orphaned files (the source was deleted or re-rendered, or its
+root is no longer served) accumulate until pruned:
+`.venv/bin/python scripts/prune_cache.py` reports what it would remove, and
+`--write` deletes it. Pass the same `--outputs-dir`/`--output-dir`/`--cache-root`
+as the server; roots not among those sources are treated as gone (see
+`--keep-unknown-roots`). It is safe while the gallery runs, since anything still
+wanted is regenerated on demand, and it skips a missing or empty media root
+rather than treating it as deleted. Versioned responses use long-lived immutable
 browser caching, while the lightbox loads full-resolution media.
 
 Manifest indexes and thumbnails can be deleted while the renderer and gallery

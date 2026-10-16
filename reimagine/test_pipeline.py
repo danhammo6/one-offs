@@ -29,6 +29,7 @@ from reimagine_pipeline.files import (
     COMMON_DIMS, DEFAULT_CACHE_ROOT, DEFAULT_THUMBNAIL_CACHE_ROOT,
     THUMBNAIL_CACHE_SUBDIR, ensure_thumbnail, iter_images, prepare_common_image,
     select_common_dims, sha256_file,
+    prune_thumbnail_cache, prune_thumbnail_root,
     thumbnail_cache_path, thumbnail_fingerprint_map,
     thumbnail_source_fingerprint,
 )
@@ -3309,6 +3310,99 @@ class ProcessIsolationTests(unittest.TestCase):
             [item.item_id for item in loaded.items],
             ["animals/sample", "sports/sample"])
         llm.chat.assert_called_once()
+
+
+class ThumbnailPruneTests(unittest.TestCase):
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.root = Path(tmp.name)
+        self.cache = self.root / "cache"
+        self.media = self.root / "media"
+
+    def add(self, relative, color="red", media=None, namespace="output"):
+        """Create a source image and its current thumbnail; return both."""
+        media = media or self.media
+        relative = Path(relative)
+        source = media / relative
+        source.parent.mkdir(parents=True, exist_ok=True)
+        Image.new("RGB", (32, 32), color).save(source)
+        fingerprint = thumbnail_source_fingerprint(source, relative)
+        destination = thumbnail_cache_path(
+            self.cache, media, relative, namespace=namespace,
+            fingerprint=fingerprint)
+        ensure_thumbnail(
+            source, destination, relative=relative, fingerprint=fingerprint)
+        return source, destination
+
+    def test_keeps_live_and_drops_deleted_and_rerendered(self):
+        _, kept = self.add("a/keep.jpg")
+        gone_source, gone = self.add("a/gone.jpg")
+        redo_source, redo = self.add("b/redo.jpg")
+        gone_source.unlink()
+        Image.new("RGB", (48, 48), "blue").save(redo_source)
+
+        stats = prune_thumbnail_root(self.cache, self.media, dry_run=False)
+
+        self.assertTrue(kept.exists())
+        self.assertFalse(gone.exists())
+        self.assertFalse(redo.exists())
+        self.assertEqual(stats.files, 2)
+        self.assertGreater(stats.bytes, 0)
+        # Emptied cache directories go; populated ones stay.
+        self.assertFalse(redo.parent.exists())
+        self.assertTrue(kept.parent.exists())
+
+    def test_dry_run_deletes_nothing(self):
+        source, destination = self.add("a/gone.jpg")
+        source.unlink()
+        stats = prune_thumbnail_root(self.cache, self.media)
+        self.assertEqual(stats.files, 1)
+        self.assertTrue(destination.exists())
+
+    def test_missing_or_empty_media_root_is_skipped(self):
+        source, destination = self.add("a/one.jpg")
+        source.unlink()
+        source.parent.rmdir()
+        for absent in (False, True):  # empty root, then absent root
+            if absent:
+                self.media.rmdir()
+            stats = prune_thumbnail_root(self.cache, self.media, dry_run=False)
+            self.assertEqual(stats.files, 0)
+            self.assertEqual(len(stats.skipped), 1)
+            self.assertTrue(destination.exists())
+
+    def test_leaves_temp_and_unversioned_files_alone(self):
+        source, destination = self.add("a/keep.jpg")
+        temp = destination.with_name(f".{destination.name}.abc123")
+        legacy = destination.with_name("legacy.webp")
+        temp.write_bytes(b"x")
+        legacy.write_bytes(b"x")
+        source.with_name("other.jpg").write_bytes(b"x")
+        prune_thumbnail_root(self.cache, self.media, dry_run=False)
+        self.assertTrue(temp.exists())
+        self.assertTrue(legacy.exists())
+
+    def test_cache_prune_removes_unknown_roots_and_covers_both_namespaces(self):
+        other = self.root / "other"
+        input_media = self.root / "inputs"
+        _, kept_output = self.add("a/one.jpg")
+        _, kept_input = self.add(
+            "ref.jpg", media=input_media, namespace="input")
+        _, orphan_root = self.add("a/two.jpg", media=other)
+        roots = {"output": [self.media], "input": [input_media]}
+
+        stats = prune_thumbnail_cache(
+            self.cache, roots, dry_run=False, remove_unknown_roots=False)
+        self.assertEqual(stats.files, 0)
+        self.assertTrue(orphan_root.exists())
+
+        stats = prune_thumbnail_cache(self.cache, roots, dry_run=False)
+        self.assertEqual(stats.files, 1)
+        self.assertFalse(orphan_root.exists())
+        self.assertFalse(orphan_root.parent.exists())
+        self.assertTrue(kept_output.exists())
+        self.assertTrue(kept_input.exists())
 
 
 class GalleryDeleteTests(unittest.TestCase):

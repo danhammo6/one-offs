@@ -1,8 +1,10 @@
 import hashlib
 import io
 import os
+import shutil
 import stat
 import tempfile
+from dataclasses import dataclass, field
 from functools import lru_cache
 from pathlib import Path
 
@@ -117,6 +119,17 @@ def thumbnail_namespace_root(cache_root, media_root, namespace="output"):
     )
 
 
+def parse_thumbnail_name(name):
+    """Split `<source name>.<24 hex fingerprint>.webp`; None for other files."""
+    if not name.endswith(".webp"):
+        return None
+    original, separator, fingerprint = name[:-5].rpartition(".")
+    if (separator != "." or not original or len(fingerprint) != 24
+            or any(char not in "0123456789abcdef" for char in fingerprint)):
+        return None
+    return original, fingerprint
+
+
 def thumbnail_fingerprint_map(cache_root, media_root, namespace="output"):
     """Map relative posix paths to fingerprints by walking cached WebPs.
 
@@ -140,15 +153,10 @@ def thumbnail_fingerprint_map(cache_root, media_root, namespace="output"):
         except ValueError:
             continue
         for name in file_names:
-            if not name.endswith(".webp"):
+            parsed = parse_thumbnail_name(name)
+            if parsed is None:
                 continue
-            stem = name[:-5]
-            original, separator, fingerprint = stem.rpartition(".")
-            if (separator != "." or not original
-                    or len(fingerprint) != 24
-                    or any(char not in "0123456789abcdef"
-                           for char in fingerprint)):
-                continue
+            original, fingerprint = parsed
             relative = (
                 original if not relative_parent.parts
                 else (relative_parent / original).as_posix())
@@ -161,6 +169,131 @@ def thumbnail_fingerprint_map(cache_root, media_root, namespace="output"):
             if previous is None or mtime_ns >= previous[1]:
                 found[relative] = (fingerprint, mtime_ns)
     return {relative: fingerprint for relative, (fingerprint, _) in found.items()}
+
+
+@dataclass
+class PruneStats:
+    """What a prune removed (or would remove, on a dry run)."""
+    files: int = 0
+    bytes: int = 0
+    dirs: int = 0
+    skipped: list = field(default_factory=list)
+
+    def merge(self, other):
+        self.files += other.files
+        self.bytes += other.bytes
+        self.dirs += other.dirs
+        self.skipped += other.skipped
+
+
+def _media_root_is_populated(media_root):
+    try:
+        with os.scandir(media_root) as entries:
+            return next(entries, None) is not None
+    except OSError:
+        return False
+
+
+def prune_thumbnail_root(cache_root, media_root, namespace="output",
+                         dry_run=True, tick=None):
+    """Remove cached WebPs for one media root that no longer match a source.
+
+    A thumbnail is live only if its source is still a regular file whose
+    current fingerprint equals the one in the cache name, so deleted and
+    re-rendered images are both dropped. A missing or empty media root (an
+    unmounted drive) is skipped rather than treated as "everything deleted".
+    Files that are not versioned WebPs, such as in-flight temp files, are left
+    alone. `tick`, if given, is called once per cache directory so a server
+    can yield to request threads.
+    """
+    stats = PruneStats()
+    try:
+        root = thumbnail_namespace_root(cache_root, media_root, namespace)
+    except ValueError:
+        return stats
+    if not root.is_dir():
+        return stats
+    media_root = Path(media_root)
+    if not _media_root_is_populated(media_root):
+        stats.skipped.append(f"{namespace}: {media_root} missing or empty")
+        return stats
+    for dir_path, _dir_names, file_names in os.walk(
+            root, topdown=False, followlinks=False):
+        if tick is not None:
+            tick()
+        parent = Path(dir_path)
+        relative_parent = parent.relative_to(root)
+        remaining = False
+        for name in file_names:
+            parsed = parse_thumbnail_name(name)
+            path = parent / name
+            if parsed is not None:
+                original, fingerprint = parsed
+                relative = relative_parent / original
+                if thumbnail_source_fingerprint(
+                        media_root / relative, relative) != fingerprint:
+                    try:
+                        size = path.lstat().st_size
+                        if not dry_run:
+                            path.unlink()
+                    except FileNotFoundError:
+                        continue
+                    except OSError:
+                        remaining = True
+                        continue
+                    stats.files += 1
+                    stats.bytes += size
+                    continue
+            remaining = True
+        if not remaining and parent != root and not dry_run:
+            try:
+                parent.rmdir()
+                stats.dirs += 1
+            except OSError:
+                pass
+    return stats
+
+
+def prune_thumbnail_cache(cache_root, roots, dry_run=True,
+                          remove_unknown_roots=True, tick=None):
+    """Prune the whole thumbnail cache against the media roots still in use.
+
+    `roots` maps namespace ("input"/"output") to an iterable of media roots.
+    Per-root directories that no listed root maps to belong to roots that are
+    gone (their key is a hash, so the path cannot be recovered) and are removed
+    outright unless `remove_unknown_roots` is false.
+    """
+    stats = PruneStats()
+    for namespace, media_roots in roots.items():
+        known = set()
+        for media_root in media_roots:
+            known.add(_thumbnail_media_root_key(media_root))
+            stats.merge(prune_thumbnail_root(
+                cache_root, media_root, namespace, dry_run, tick))
+        if not remove_unknown_roots:
+            continue
+        try:
+            namespace_dir = thumbnail_namespace_root(
+                cache_root, ".", namespace).parent
+            children = sorted(namespace_dir.iterdir())
+        except (OSError, ValueError):
+            continue
+        for child in children:
+            if child.name in known or child.is_symlink() or not child.is_dir():
+                continue
+            for dir_path, _dirs, file_names in os.walk(child):
+                for name in file_names:
+                    if parse_thumbnail_name(name) is None:
+                        continue
+                    stats.files += 1
+                    try:
+                        stats.bytes += (Path(dir_path) / name).lstat().st_size
+                    except OSError:
+                        pass
+            stats.dirs += 1
+            if not dry_run:
+                shutil.rmtree(child, ignore_errors=True)
+    return stats
 
 
 def _source_snapshot(source, relative):

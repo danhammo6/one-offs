@@ -43,6 +43,18 @@ file only.
 Malformed plans are stored as error records, logged, and served without
 reference or prompt metadata. Media listing still walks the tree live.
 
+## Live rescans
+
+After startup a `GalleryScanner` thread (triggered by watchdog events, a 60 s
+safety timer, or `--poll-interval` polling if watchdog is unavailable) diffs
+`(mtime_ns, size)` snapshots of each source and manifest identities. It only
+rebuilds metadata when a manifest or the source set changed, and publishes by
+assigning whole objects to `Handler`, so request threads take no lock. Bursts
+of events are debounced (1 s) with a 2 s floor between rescans, and directory
+walks yield the GIL per directory. The first pass is a baseline and prunes
+nothing. `/api/changes` only reads published state; the page polls it every
+5 s while visible.
+
 ## Thumbnails
 
 Still rendering (and gallery lazy fallback) writes 512 px max-edge WebP,
@@ -60,8 +72,12 @@ relative path + fingerprint. The fingerprint is a 24-hex hash of the relative
 path plus high-resolution file identity (size, mtime/ctime ns, device,
 inode) — not a full-image hash. Versioned URLs use `?v=<fingerprint>` and
 `Cache-Control: public, max-age=31536000, immutable`. Other fingerprint
-versions and legacy files are retained; do not sync-delete them while a
-renderer or gallery is running.
+versions and legacy files are retained until pruned. The running server
+prunes the entries of media it sees removed or re-rendered, and
+`scripts/prune_cache.py` (dry run unless `--write`) removes every orphan,
+including roots no longer served. Both are safe while a renderer or gallery is
+running: a thumbnail is dropped only if its source is gone or its fingerprint
+no longer matches, and a missing or empty media root is skipped.
 
 A versioned GET that already has a cache file is one `lstat` + one read of
 the WebP. The server does not stat or open the source JPEG, does not take a

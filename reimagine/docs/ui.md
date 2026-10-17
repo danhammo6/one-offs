@@ -34,6 +34,14 @@ its row when it is off-screen, and focuses that card. The header stays outside t
 scrollbar starts just below the controls. On coarse pointers the gallery
 scrollbar stays visually compact but uses an 88px hit strip.
 
+When the server notices media or sources changed on disk, the header shows a
+"gallery changed on disk · tap to refresh" button. The page polls
+`/api/changes` every 5 s (and when the tab becomes visible) and compares the
+per-source token and source list with what it loaded; it never reloads or
+moves the gallery by itself. Clicking the button runs the normal refresh,
+which keeps the scroll anchor. A null token (server still on its first scan)
+is adopted as the baseline, not treated as a change.
+
 ## Comparison layout
 
 Lightbox compare uses the **result** orientation when source and result

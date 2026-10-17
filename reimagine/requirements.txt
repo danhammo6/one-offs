@@ -3,3 +3,4 @@ websocket-client>=1.7
 pillow>=10.0
 pyyaml>=6.0
 send2trash>=1.8
+watchdog>=4.0

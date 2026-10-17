@@ -14,7 +14,7 @@ Two suites. Python covers pipeline, cache, and gallery HTTP. Playwright covers
 
 Stdlib `unittest`. Planner/renderer isolation, reusable-plan and render-run
 validation, pipeline suffixes, prompt roles, thumbnail paths, incremental index
-warm/cold behavior, malformed-plan gallery fallback, CLI flags including
+warm/cold behavior, live rescans (scanner and watcher), thumbnail pruning, malformed-plan gallery fallback, CLI flags including
 `--cache-root` and deprecated
 `--thumbnail-cache-root`.
 

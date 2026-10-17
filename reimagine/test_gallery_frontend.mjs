@@ -1922,4 +1922,81 @@ test(`delete works by touch: lightbox button, folder button, re-enable (${name})
     await once(server, "close");
   }
 });
+test(`a disk change offers a refresh without moving the gallery (${name})`, {
+  timeout: 45000,
+}, async () => {
+  let items = ITEMS.filter(item => item.category === "alpha").slice(0, 5);
+  let changes = { sources: ["test"], token: null };
+  const server = createServer((request, response) => {
+    const url = new URL(request.url, "http://gallery.test");
+    const json = body => {
+      response.writeHead(200, { "Content-Type": "application/json" });
+      response.end(JSON.stringify(body));
+    };
+    if (url.pathname === "/") {
+      response.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+      return response.end(INDEX);
+    }
+    if (url.pathname === "/api/sources") {
+      return json({ sources: ["test"], default: "test" });
+    }
+    if (url.pathname === "/api/changes") return json(changes);
+    if (url.pathname === "/api/stream") {
+      response.writeHead(200, { "Content-Type": "application/x-ndjson" });
+      return response.end(items.map(item => JSON.stringify(item)).join("\n"));
+    }
+    if (url.pathname.startsWith("/img/")) {
+      response.writeHead(200, { "Content-Type": "image/svg+xml" });
+      return response.end(fixtureImage(url));
+    }
+    response.writeHead(404);
+    response.end();
+  });
+  server.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  const browser = await type.launch(launchOptions());
+  const page = await browser.newPage({ viewport: { width: 1200, height: 800 } });
+  const pillHidden = () => page.evaluate(
+    () => document.querySelector("#changePill").hidden);
+  const check = () => page.evaluate(async () => {
+    document.dispatchEvent(new Event("visibilitychange"));
+    await new Promise(resolve => setTimeout(resolve, 150));
+  });
+  try {
+    await page.goto(`http://127.0.0.1:${server.address().port}/`);
+    await page.waitForFunction(
+      () => document.querySelector("#stat")?.textContent.includes("5 renders"));
+    assert.ok(await pillHidden());
+
+    // The server's first scan finishing is a baseline, not a change.
+    changes = { sources: ["test"], token: "aaa" };
+    await check();
+    assert.ok(await pillHidden());
+
+    // New media on disk: the pill appears, but the gallery is untouched.
+    items = ITEMS.filter(item => item.category === "alpha").slice(0, 7);
+    changes = { sources: ["test"], token: "bbb" };
+    await check();
+    assert.ok(!await pillHidden());
+    assert.match(await page.evaluate(
+      () => document.querySelector("#stat").textContent), /5 renders$/);
+
+    // Clicking it reloads, hides the pill, and adopts the new token.
+    await page.locator("#changePill").click();
+    await page.waitForFunction(
+      () => document.querySelector("#stat")?.textContent.includes("7 renders"));
+    assert.ok(await pillHidden());
+    await check();
+    assert.ok(await pillHidden());
+
+    // A new or removed source also counts.
+    changes = { sources: ["test", "more"], token: "bbb" };
+    await check();
+    assert.ok(!await pillHidden());
+  } finally {
+    await browser.close();
+    server.close();
+    await once(server, "close");
+  }
+});
 }

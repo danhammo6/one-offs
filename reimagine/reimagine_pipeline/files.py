@@ -254,6 +254,16 @@ def prune_thumbnail_root(cache_root, media_root, namespace="output",
     return stats
 
 
+def remove_thumbnail_root(cache_root, media_root, namespace="output"):
+    """Delete every cached thumbnail for a media root that is no longer served."""
+    try:
+        root = thumbnail_namespace_root(cache_root, media_root, namespace)
+    except ValueError:
+        return
+    if root.is_dir() and not root.is_symlink():
+        shutil.rmtree(root, ignore_errors=True)
+
+
 def prune_thumbnail_cache(cache_root, roots, dry_run=True,
                           remove_unknown_roots=True, tick=None):
     """Prune the whole thumbnail cache against the media roots still in use.

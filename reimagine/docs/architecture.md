@@ -2,7 +2,7 @@
 purpose: Pipeline + gallery server + frontend data flow and key modules
 audience: Later sessions changing planner, renderer, serve.py, or manifests
 when to read: Wiring, HTTP routes, pipeline.yaml semantics — not HUD or cache layout
-related: generate_prompts.py, render_media.py, serve.py, index.html, reimagine_pipeline/{manifest,files,rendering,models,llm,prompting,comfy,workflows}.py
+related: generate_prompts.py, render_media.py, serve.py, index.html, reimagine_pipeline/{watcher,manifest,files,rendering,models,llm,prompting,comfy,workflows}.py
 ---
 
 # Architecture
@@ -48,8 +48,12 @@ flowchart TD
 3. `serve.py` discovers output sets under `outputs/` (or `--output-dir`), follows
    each `render_run.yaml` to its reusable plan, builds an in-memory metadata
    cache from the persisted JSON index before `serve_forever()`, then serves
-   media live on each list/stream request. Legacy output-side `pipeline.yaml`
-   remains read-only compatible.
+   media live on each list/stream request. A background `GalleryScanner`
+   (triggered by `reimagine_pipeline/watcher.py`: watchdog events, else polling)
+   re-discovers sources, refreshes metadata when manifests change, prunes
+   thumbnails of removed or re-rendered media, and publishes by assigning whole
+   objects to `Handler` so request threads take no lock. Legacy output-side
+   `pipeline.yaml` remains read-only compatible.
 4. The page streams gallery records without prompts. Opening a lightbox item
    fetches `/api/metadata?source=&path=`. Full-resolution stills and videos
    load in the lightbox; the grid uses versioned thumbnail URLs.
@@ -65,13 +69,13 @@ empty). Media discovery does not depend on a valid manifest.
 | `/`, `/index.html` | Static gallery page |
 | `/api/sources` | Source names + default |
 | `/api/list`, `/api/stream` | Records; stream is NDJSON |
-| `/api/metadata` | Prompt + video_prompt from startup cache |
+| `/api/changes` | Source list + per-source media token; the page compares it to what it loaded and offers a refresh |
+| `/api/metadata` | Prompt + video_prompt from the scanner-maintained cache |
 | `/img/output/<source>/…` | Output stills and videos (`read_bytes`, no Range) |
 | `/img/input/<source>/…` | References allowlisted during the last list/stream |
 | `/img/thumbnail/{input\|output}/…` | Immutable WebP when `?v=` fingerprint matches |
 
-Pipeline metadata is fixed for the process lifetime; restart after changing a
-manifest. Index contents are never returned over HTTP.
+Index contents are never returned over HTTP.
 
 Video support is kept: sibling videos are listed, and the UI can play them.
 Range/chunked video serving is not implemented.
@@ -82,10 +86,11 @@ Range/chunked video serving is not implemented.
 | --- | --- |
 | `generate_prompts.py` | LLM-only planner CLI |
 | `render_media.py` | ComfyUI-only renderer CLI; `--cache-root` |
-| `serve.py` | Gallery HTTP server, index, live media walk |
+| `serve.py` | Gallery HTTP server, index, live media walk, `GalleryScanner` |
 | `index.html` | Virtualized gallery + lightbox |
 | `reimagine_pipeline/manifest.py` | Load/save/validate `pipeline.yaml` |
-| `reimagine_pipeline/files.py` | Paths, atomic writes, thumbnails, common dims |
+| `reimagine_pipeline/files.py` | Paths, atomic writes, thumbnails + pruning, common dims |
+| `reimagine_pipeline/watcher.py` | Debounced watchdog/poll trigger loop for the scanner |
 | `reimagine_pipeline/rendering.py` | Still/video render + thumbnail backfill |
 | `reimagine_pipeline/models.py` | `PipelineItem` / still / video specs |
 | `reimagine_pipeline/llm.py` | OpenAI-compatible LLM client |

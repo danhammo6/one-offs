@@ -339,9 +339,9 @@ lightbox, tap the outer quarter of either side, swipe, or use Left/Right Arrow
 to navigate. Tap the middle half or press `H` to hide/show all lightbox chrome
 and give the media more room; a center tap closes an open prompt before hiding
 the HUD. Closing and reopening the lightbox restores visible controls.
-Pipeline metadata is loaded before the server starts listening and remains
-fixed for the lifetime of the process; restart the gallery after changing a
-manifest. A disposable
+Pipeline metadata is loaded before the server starts listening and is
+refreshed in the background when manifests or sources change (see "Live
+updates" below). A disposable
 `.reimagine-cache/manifest-index-v2-<scope-hash>.json` index keeps the validated
 result of each YAML plan. The scope hash is a stable SHA-256 prefix derived
 from the sorted canonical discovery roots and relevant discovery options; it
@@ -355,7 +355,7 @@ missing, incompatible, or corrupt indexes are rebuilt from the authoritative
 YAML files. Cached input-directory values are revalidated with the same
 authoritative path rules as YAML before reuse. A source with malformed or
 inconsistent manifests is logged and remains browseable without reference or
-prompt metadata. Media files are still discovered live on each request.
+prompt metadata. Media files are discovered live on each request.
 Project manifests use project-relative index keys. If an explicitly served
 output root is outside the project, its canonical absolute manifest key may
 appear only in this server-local JSON; index contents are never returned by the
@@ -387,6 +387,22 @@ as the server; roots not among those sources are treated as gone (see
 wanted is regenerated on demand, and it skips a missing or empty media root
 rather than treating it as deleted. Versioned responses use long-lived immutable
 browser caching, while the lightbox loads full-resolution media.
+
+**Live updates.** While running, the server notices media added, removed, or
+re-rendered, new or removed sources under `--outputs-dir`, and changed
+manifests, without a restart. It uses filesystem events (the `watchdog`
+package: FSEvents on macOS, `ReadDirectoryChangesW` on Windows, inotify on
+Linux) as hints, debounced so a render run causes a few rescans rather than
+one per image, plus a 60 s safety rescan. If `watchdog` cannot start it polls
+every `--poll-interval` seconds (default 5; `0` turns live rescanning off).
+Rescans run on a background thread and publish their results by swapping whole
+objects, so requests never wait on them. Each rescan refreshes metadata only
+when a manifest changed, prunes thumbnails for removed or re-rendered media,
+and deletes the cache of a source that disappeared. The page does not move
+under you: `/api/changes` exposes a per-source token and the source list, and
+when either differs from what the page loaded, a "gallery changed on disk"
+button appears in the header; clicking it refreshes in place. Expect a few
+seconds of lag. Reference images added later are not watched.
 
 Manifest indexes and thumbnails can be deleted while the renderer and gallery
 are stopped; the next render or server startup recreates what it needs.

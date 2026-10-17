@@ -255,6 +255,7 @@
   <select id="sourceSel" title="which output set to browse"></select>
   <span class="stat" id="stat">loading…</span>
   <button type="button" class="stat" id="delStatus" hidden>delete prompt is off · tap or press D to turn it on</button>
+  <button type="button" class="stat" id="changePill" hidden>gallery changed on disk · tap to refresh</button>
   <span class="stat" id="notice" role="status"></span>
   <span class="grow"></span>
   <label class="toggle"><input type="checkbox" id="videoMode"> video</label>
@@ -340,6 +341,7 @@ let lightboxLayoutState = null;
 let edgeTap = null;
 let pendingRestore = null;  // {path, offset} still being re-applied while items stream in
 let loadedSource = "";
+let loadedChange = null;  // {sources, token} from /api/changes when this view loaded
 let saveTimer = 0;
 const METADATA_CACHE = new Map();
 const MEDIA_DIMENSIONS = new Map();
@@ -428,6 +430,33 @@ async function loadSources(signal) {
   sel.disabled = sources.length <= 1;
 }
 
+async function fetchChanges(source) {
+  try {
+    const r = await fetch(
+      `/api/changes?source=${encodeURIComponent(source)}`, { cache: "no-store" });
+    return r.ok ? await r.json() : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+// The server rescans on its own; the page only offers a refresh, never moves
+// anything under the user. Token is null until the server's first scan ends.
+async function checkForChanges() {
+  if (document.hidden || loading || loadedSource === null) return;
+  const source = loadedSource;
+  const now = await fetchChanges(source);
+  if (!now || loading || source !== loadedSource) return;
+  if (!loadedChange) loadedChange = now;
+  if (loadedChange.token == null) loadedChange.token = now.token;
+  const changed = now.token !== loadedChange.token
+    || JSON.stringify(now.sources) !== JSON.stringify(loadedChange.sources);
+  $("changePill").hidden = !changed;
+}
+window.setInterval(checkForChanges, 5000);
+document.addEventListener("visibilitychange", checkForChanges);
+$("changePill").addEventListener("click", load);
+
 async function load() {
   // A refresh keeps the live position; a source switch starts from its own save.
   const live = loadedSource === $("sourceSel").value ? currentAnchor() : null;
@@ -436,6 +465,7 @@ async function load() {
   loadController?.abort();
   loadController = new AbortController();
   METADATA_CACHE.clear();
+  $("changePill").hidden = true;
   loading = true;
   loadError = "";
   ITEMS = [];
@@ -448,6 +478,8 @@ async function load() {
     if (version !== loadVersion) return;
     const source = $("sourceSel").value;
     loadedSource = source;
+    loadedChange = await fetchChanges(source);
+    if (version !== loadVersion) return;
     pendingRestore = live || readSavedPosition(source);
     const url = source
       ? `/api/stream?source=${encodeURIComponent(source)}`

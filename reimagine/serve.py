@@ -2,8 +2,10 @@
 """reimagine gallery server.
 
 A tiny stdlib HTTP server for browsing the rendered outputs against their
-reference images. Media files are walked live on every request, while pipeline
-metadata is parsed once at startup and remains fixed for the server lifetime.
+reference images. Media files are walked live on every request. A background
+watcher (watchdog events, or polling) notices added, removed, and re-rendered
+media, new or removed sources, and changed manifests; it refreshes pipeline
+metadata, prunes orphaned thumbnails, and lets the page offer a refresh.
 
     .venv/bin/python serve.py            # serve on http://127.0.0.1:8000
     .venv/bin/python serve.py --port 9000
@@ -18,6 +20,7 @@ Routes:
     /api/sources               JSON: the available output sources + the default
     /api/list?source=NAME      JSON: every output image in NAME + its reference
     /api/stream?source=NAME    NDJSON: the same images streamed progressively
+    /api/changes?source=NAME   JSON: sources + a token that changes with the media
     /img/output/NAME/<path>    raw bytes of an output image in source NAME
     /img/input/NAME/<path>     raw bytes of a reference image
     POST /api/delete           move an output image (+ sibling video) or a
@@ -45,7 +48,8 @@ from pathlib import Path
 from reimagine_pipeline import PIPELINE_FILENAME, RENDER_RUN_FILENAME
 from reimagine_pipeline.files import (
     DEFAULT_CACHE_ROOT, IMAGE_EXTS, THUMBNAIL_CACHE_SUBDIR,
-    atomic_write_text, ensure_thumbnail, read_cached_thumbnail_bytes,
+    atomic_write_text, ensure_thumbnail, prune_thumbnail_root,
+    read_cached_thumbnail_bytes, remove_thumbnail_root,
     thumbnail_cache_path, thumbnail_fingerprint_map,
     thumbnail_source_fingerprint,
 )
@@ -54,6 +58,7 @@ from reimagine_pipeline.manifest import (
     validate_pipeline_input_dir,
 )
 from reimagine_pipeline.prompting import regions_to_text
+from reimagine_pipeline.watcher import ChangeWatcher
 
 logger = logging.getLogger(__name__)
 
@@ -67,6 +72,7 @@ ROOT = Path(__file__).parent.resolve()
 # Video extensions render_media.py may write next to a still (same stem). Ordered by
 # preference when several exist for one still.
 VIDEO_EXTS = (".mp4", ".webm", ".mkv")
+MEDIA_EXTS = IMAGE_EXTS | set(VIDEO_EXTS)
 # Bump when the normalized document fields or gallery validation semantics change.
 MANIFEST_INDEX_SCHEMA_VERSION = 2
 MANIFEST_INDEX_PREFIX = f"manifest-index-v{MANIFEST_INDEX_SCHEMA_VERSION}"
@@ -658,6 +664,130 @@ def delete_media(handler, output_dir, path=None, category=None):
     return removed
 
 
+def snapshot_source(output_dir, tick=None):
+    """Return {relative posix path: (mtime_ns, size)} for a source's media."""
+    found = {}
+    for dir_path, dir_names, file_names in os.walk(output_dir):
+        if tick is not None:
+            tick()
+        dir_names[:] = [n for n in dir_names if not n.startswith(".")]
+        for name in file_names:
+            if Path(name).suffix.lower() not in MEDIA_EXTS:
+                continue
+            path = Path(dir_path) / name
+            try:
+                info = path.lstat()
+            except OSError:
+                continue
+            found[path.relative_to(output_dir).as_posix()] = (
+                info.st_mtime_ns, info.st_size)
+    return found
+
+
+def snapshot_token(snapshot):
+    """Short stable digest of a snapshot; equal media give equal tokens."""
+    return hashlib.sha1(repr(sorted(snapshot.items())).encode()).hexdigest()[:12]
+
+
+def manifest_signature(output_dir):
+    """Identity of every file that feeds a source's metadata."""
+    try:
+        pipeline_root, pipeline_name, _ = _pipeline_selection(output_dir)
+        paths = pipeline_paths(pipeline_root, pipeline_name)
+    except (OSError, ValueError) as error:
+        return ("error", str(error))
+    signature = []
+    for path in [output_dir / RENDER_RUN_FILENAME, *paths]:
+        try:
+            identity = tuple(sorted(_manifest_identity(path).items()))
+        except (OSError, ValueError):
+            identity = None
+        signature.append((path.as_posix(), identity))
+    return tuple(signature)
+
+
+def _yield_gil():
+    time.sleep(0)
+
+
+class GalleryScanner:
+    """Reconciles the served state with the disk, off the request threads.
+
+    Everything is computed on the side and published by assigning whole objects
+    to the handler class, so request threads never wait on a lock. The first
+    pass only records a baseline; later passes prune thumbnails for removed or
+    re-rendered media and drop the caches of sources that disappeared.
+    """
+
+    def __init__(self, handler, discover, outputs_dir=None, tick=_yield_gil):
+        self.handler = handler
+        self.discover = discover
+        self.outputs_dir = outputs_dir  # watched non-recursively for new sources
+        self.tick = tick
+        self._media = None  # {source: snapshot}; None until the baseline
+        self._manifests = {}
+        self._dirs = {}
+        self._input_dirs = set()
+
+    def watch_roots(self):
+        """Directories to watch: sources, their plan roots, and the outputs dir."""
+        roots = [(d, True) for d in self.handler.sources.values()]
+        for output_dir in self.handler.sources.values():
+            try:
+                roots.append((_pipeline_selection(output_dir)[0], True))
+            except (OSError, ValueError):
+                pass
+        if self.outputs_dir is not None:
+            roots.append((self.outputs_dir, False))
+        return roots
+
+    def reconcile(self):
+        handler = self.handler
+        sources = self.discover()
+        if not sources and self._dirs:
+            logger.warning("gallery rescan found no sources; keeping the "
+                           "previous state")
+            return
+        thumb_root = handler.thumbnail_cache_root
+        first = self._media is None
+        media, manifests = {}, {}
+        for name, directory in sources.items():
+            media[name] = snapshot_source(directory, self.tick)
+            manifests[name] = manifest_signature(directory)
+
+        sources_changed = sources != self._dirs
+        if first or sources_changed or manifests != self._manifests:
+            metadata = build_pipeline_metadata_cache(sources, handler.cache_root)
+            handler.pipeline_metadata_cache = metadata
+        else:
+            metadata = handler.pipeline_metadata_cache
+
+        if not first:
+            for name, directory in sources.items():
+                previous = self._media.get(name)
+                if previous is not None and any(
+                        media[name].get(rel) != stat for rel, stat
+                        in previous.items()):
+                    prune_thumbnail_root(
+                        thumb_root, directory, "output", dry_run=False,
+                        tick=self.tick)
+            for name in self._dirs.keys() - sources.keys():
+                remove_thumbnail_root(thumb_root, self._dirs[name], "output")
+        input_dirs = {
+            input_dir for input_dir, _ in metadata.values()
+            if input_dir is not None}
+        if not first:
+            for input_dir in self._input_dirs - input_dirs:
+                remove_thumbnail_root(thumb_root, input_dir, "input")
+
+        handler.source_tokens = {
+            name: snapshot_token(snapshot) for name, snapshot in media.items()}
+        if sources_changed:
+            handler.sources = sources
+        self._media, self._manifests = media, manifests
+        self._dirs, self._input_dirs = dict(sources), input_dirs
+
+
 def host_allowed(host_header):
     """Reject DNS-rebinding hosts: allow IPs, localhost, and single-label or
     .local names (LAN/Bonjour), but not public-looking domains."""
@@ -716,6 +846,7 @@ class Handler(BaseHTTPRequestHandler):
     pipeline_metadata_cache = {}
     input_dirs = {}
     allowed_references = {}
+    source_tokens = {}  # {source: digest of its media}; empty until first scan
     gallery_lock = threading.Lock()
     thumbnail_locks = tuple(threading.Lock() for _ in range(32))
     thumbnail_generate = threading.Semaphore(2)
@@ -915,6 +1046,15 @@ class Handler(BaseHTTPRequestHandler):
             names = list(self.sources.keys())
             return self._send_json({"sources": names,
                                     "default": names[0] if names else None})
+        if path == "/api/changes":
+            want = (urllib.parse.parse_qs(parsed.query).get("source")
+                    or [None])[0]
+            sources = list(self.sources)
+            name = want if want in self.sources else (
+                sources[0] if sources else None)
+            return self._send_json({
+                "sources": sources,
+                "token": self.source_tokens.get(name)})
         if path == "/api/metadata":
             qs = urllib.parse.parse_qs(parsed.query)
             source = (qs.get("source") or [None])[0]
@@ -1050,6 +1190,9 @@ def main():
     parser.add_argument("--output-dir", type=Path, default=None,
                         help="Serve a single flat output dir instead of the "
                              "outputs/ tree (labeled by its own name).")
+    parser.add_argument("--poll-interval", type=float, default=5.0,
+                        help="Seconds between rescans when filesystem events "
+                             "are unavailable; 0 turns live rescanning off.")
     cache_group = parser.add_mutually_exclusive_group()
     cache_group.add_argument(
         "--cache-root", type=Path, default=DEFAULT_CACHE_ROOT,
@@ -1061,9 +1204,16 @@ def main():
 
     if args.output_dir is not None:
         d = args.output_dir.resolve()
-        Handler.sources = {d.name: d}
+        outputs_dir = None
+
+        def discover():
+            return {d.name: d}
     else:
-        Handler.sources = discover_sources(args.outputs_dir.resolve())
+        outputs_dir = args.outputs_dir.resolve()
+
+        def discover():
+            return discover_sources(outputs_dir)
+    Handler.sources = discover()
     if args.thumbnail_cache_root is not None:
         logger.warning(
             "--thumbnail-cache-root is deprecated; use --cache-root")
@@ -1082,10 +1232,21 @@ def main():
         logger.warning("reimagine gallery: no output sources found "
                        "(looked under %s)", args.outputs_dir)
     logger.info("  serving http://%s:%d  (Ctrl-C to stop)", args.host, args.port)
+    watcher = None
+    if args.poll_interval > 0:
+        scanner = GalleryScanner(Handler, discover, outputs_dir)
+        watcher = ChangeWatcher(
+            scanner.reconcile, scanner.watch_roots,
+            poll_interval=args.poll_interval,
+            ignored_roots=[Handler.cache_root])
+        watcher.start()
     try:
         srv.serve_forever()
     except KeyboardInterrupt:
         logger.info("\nbye")
+    finally:
+        if watcher is not None:
+            watcher.stop()
 
 
 if __name__ == "__main__":

@@ -3,9 +3,11 @@ import contextlib
 import io
 import json
 import os
+import shutil
 import sys
 import tempfile
 import threading
+import time
 import unittest
 import urllib.error
 import urllib.request
@@ -33,6 +35,7 @@ from reimagine_pipeline.files import (
     thumbnail_cache_path, thumbnail_fingerprint_map,
     thumbnail_source_fingerprint,
 )
+from reimagine_pipeline.watcher import ChangeWatcher
 from reimagine_pipeline.llm import OpenAILLM, _run_interruptible
 from reimagine_pipeline.workflows import patch_ltx_workflow, pick_artifact
 from reimagine_pipeline.comfy import ComfyArtifact
@@ -2553,7 +2556,7 @@ class ProcessIsolationTests(unittest.TestCase):
             with (
                 mock.patch("sys.argv", [
                     "serve.py", "--output-dir", tmp,
-                    "--cache-root", str(cache_root),
+                    "--cache-root", str(cache_root), "--poll-interval", "0",
                 ]),
                 mock.patch.object(
                     serve, "build_pipeline_metadata_cache",
@@ -3403,6 +3406,187 @@ class ThumbnailPruneTests(unittest.TestCase):
         self.assertFalse(orphan_root.parent.exists())
         self.assertTrue(kept_output.exists())
         self.assertTrue(kept_input.exists())
+
+
+class GalleryScannerTests(unittest.TestCase):
+    def setUp(self):
+        import serve
+
+        self.serve = serve
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.root = Path(tmp.name)
+        self.outputs = self.root / "outputs"
+        self.cache = self.root / "cache"
+        (self.outputs / "one").mkdir(parents=True)
+
+        class TestHandler(serve.Handler):
+            sources = {}
+            pipeline_metadata_cache = {}
+            source_tokens = {}
+            cache_root = self.cache
+            thumbnail_cache_root = self.cache / "thumbnails"
+            thumbnail_memory_cache = OrderedDict()
+
+        self.handler = TestHandler
+        self.scanner = serve.GalleryScanner(
+            TestHandler, lambda: serve.discover_sources(self.outputs),
+            self.outputs)
+
+    def image(self, source, relative, color="red"):
+        path = self.outputs / source / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        Image.new("RGB", (32, 32), color).save(path)
+        return path
+
+    def thumbnail(self, source, relative):
+        path = self.image(source, relative)
+        media = self.outputs / source
+        fingerprint = thumbnail_source_fingerprint(path, Path(relative))
+        destination = thumbnail_cache_path(
+            self.handler.thumbnail_cache_root, media, Path(relative),
+            fingerprint=fingerprint)
+        ensure_thumbnail(path, destination, relative=Path(relative),
+                         fingerprint=fingerprint)
+        return path, destination
+
+    def test_baseline_then_additions_change_token_without_pruning(self):
+        _, thumb = self.thumbnail("one", "a.jpg")
+        self.scanner.reconcile()
+        self.assertEqual(list(self.handler.sources), ["one"])
+        before = self.handler.source_tokens["one"]
+
+        self.image("one", "b.jpg")
+        (self.outputs / "one" / "b.mp4").write_bytes(b"v")
+        self.scanner.reconcile()
+
+        self.assertNotEqual(self.handler.source_tokens["one"], before)
+        self.assertTrue(thumb.exists())
+        stable = self.handler.source_tokens["one"]
+        self.scanner.reconcile()
+        self.assertEqual(self.handler.source_tokens["one"], stable)
+
+    def test_removed_and_rerendered_media_lose_their_thumbnails(self):
+        gone, gone_thumb = self.thumbnail("one", "gone.jpg")
+        redo, redo_thumb = self.thumbnail("one", "redo.jpg")
+        _, kept_thumb = self.thumbnail("one", "kept.jpg")
+        self.scanner.reconcile()
+
+        gone.unlink()
+        Image.new("RGB", (48, 48), "blue").save(redo)
+        self.scanner.reconcile()
+
+        self.assertFalse(gone_thumb.exists())
+        self.assertFalse(redo_thumb.exists())
+        self.assertTrue(kept_thumb.exists())
+
+    def test_sources_appear_and_disappear_with_their_caches(self):
+        _, thumb = self.thumbnail("one", "a.jpg")
+        self.scanner.reconcile()
+        self.image("two", "b.jpg")
+        self.scanner.reconcile()
+        self.assertEqual(sorted(self.handler.sources), ["one", "two"])
+        self.assertIn("two", self.handler.source_tokens)
+
+        shutil.rmtree(self.outputs / "one")
+        self.scanner.reconcile()
+        self.assertEqual(list(self.handler.sources), ["two"])
+        self.assertFalse(thumb.exists())
+
+    def test_vanished_outputs_dir_keeps_previous_state(self):
+        _, thumb = self.thumbnail("one", "a.jpg")
+        self.scanner.reconcile()
+        shutil.rmtree(self.outputs)
+        self.scanner.reconcile()
+        self.assertEqual(list(self.handler.sources), ["one"])
+        self.assertTrue(thumb.exists())
+
+    def test_metadata_rebuilds_only_when_manifests_or_sources_change(self):
+        from unittest import mock
+
+        with mock.patch.object(
+                self.serve, "build_pipeline_metadata_cache",
+                return_value={"one": (None, {})}) as build:
+            self.scanner.reconcile()
+            self.assertEqual(build.call_count, 1)
+            self.image("one", "new.jpg")
+            self.scanner.reconcile()
+            self.assertEqual(build.call_count, 1)
+            (self.outputs / "one" / "pipeline.yaml").write_text("items: []\n")
+            self.scanner.reconcile()
+            self.assertEqual(build.call_count, 2)
+            self.image("two", "x.jpg")
+            self.scanner.reconcile()
+            self.assertEqual(build.call_count, 3)
+
+    def test_changes_endpoint_reports_sources_and_token(self):
+        self.image("one", "a.jpg")
+        self.scanner.reconcile()
+        server = self.serve.ThreadingHTTPServer(("127.0.0.1", 0), self.handler)
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        url = f"http://127.0.0.1:{server.server_port}/api/changes?source=one"
+        with urllib.request.urlopen(url) as response:
+            body = json.loads(response.read())
+        self.assertEqual(body, {
+            "sources": ["one"],
+            "token": self.handler.source_tokens["one"]})
+
+
+class ChangeWatcherTests(unittest.TestCase):
+    def run_watcher(self, **options):
+        calls = []
+        watcher = ChangeWatcher(
+            lambda: calls.append(time.monotonic()), options.pop("roots"),
+            debounce=0.05, min_gap=0.05, **options)
+        self.addCleanup(watcher.stop)
+        watcher.start()
+        return watcher, calls
+
+    def wait_for(self, predicate, timeout=5):
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            if predicate():
+                return True
+            time.sleep(0.02)
+        return False
+
+    def test_polling_fallback_rescans_repeatedly(self):
+        _, calls = self.run_watcher(
+            roots=lambda: [], poll_interval=0.05, use_watchdog=False)
+        self.assertTrue(self.wait_for(lambda: len(calls) >= 3))
+
+    def test_file_events_trigger_a_rescan_ahead_of_the_safety_poll(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            watcher, calls = self.run_watcher(
+                roots=lambda: [(tmp, True)], poll_interval=30,
+                safety_interval=30)
+            self.assertTrue(self.wait_for(lambda: calls))
+            if not self.wait_for(lambda: watcher.watching):
+                self.skipTest("watchdog not available")
+            time.sleep(0.5)  # let the observer settle
+            seen = len(calls)
+            (Path(tmp) / ".temp").write_bytes(b"x")  # dotfiles are ignored
+            time.sleep(0.5)
+            self.assertEqual(len(calls), seen)
+            (Path(tmp) / "new.jpg").write_bytes(b"x")
+            self.assertTrue(self.wait_for(lambda: len(calls) > seen))
+
+    def test_reconcile_errors_do_not_stop_the_loop(self):
+        attempts = []
+
+        def flaky():
+            attempts.append(1)
+            if len(attempts) == 1:
+                raise RuntimeError("boom")
+
+        watcher = ChangeWatcher(
+            flaky, lambda: [], poll_interval=0.05, min_gap=0.05,
+            use_watchdog=False)
+        self.addCleanup(watcher.stop)
+        watcher.start()
+        self.assertTrue(self.wait_for(lambda: len(attempts) >= 3))
 
 
 class GalleryDeleteTests(unittest.TestCase):

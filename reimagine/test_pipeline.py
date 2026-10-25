@@ -3314,6 +3314,107 @@ class ProcessIsolationTests(unittest.TestCase):
             ["animals/sample", "sports/sample"])
         llm.chat.assert_called_once()
 
+    def test_deduplicated_and_moved_files_reconcile_without_force(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            input_a = root / "input2/group_a"
+            input_b = root / "input2/group_b"
+            for folder in ("keep", "removed_dir", "moved_from"):
+                (input_a / folder).mkdir(parents=True)
+            (input_b / "moved_to").mkdir(parents=True)
+
+            # Create distinct images
+            Image.new("RGB", (640, 480), "red").save(input_a / "keep/stay.jpg")
+            Image.new("RGB", (640, 480), "blue").save(input_a / "keep/deleted.jpg")
+            Image.new("RGB", (640, 480), "green").save(input_a / "removed_dir/gone.jpg")
+            Image.new("RGB", (640, 480), "yellow").save(input_a / "moved_from/local_move.jpg")
+            Image.new("RGB", (640, 480), "purple").save(input_a / "moved_from/cross_move.jpg")
+
+            stay_hash = sha256_file(input_a / "keep/stay.jpg")
+            deleted_hash = sha256_file(input_a / "keep/deleted.jpg")
+            gone_hash = sha256_file(input_a / "removed_dir/gone.jpg")
+            local_move_hash = sha256_file(input_a / "moved_from/local_move.jpg")
+            cross_move_hash = sha256_file(input_a / "moved_from/cross_move.jpg")
+
+            initial_a = PipelineManifest(
+                still_mode="manual", item_count=5, common_dims=False,
+                input_dir=Path("input2/group_a"),
+                items=[
+                    PipelineItem(
+                        0, "keep/deleted", Path("keep/deleted.jpg"), deleted_hash,
+                        still=StillSpec(Path("keep/deleted.jpg"), 1664, 1216,
+                                        prompt="A detailed photograph of a deleted blue item.")),
+                    PipelineItem(
+                        1, "keep/stay", Path("keep/stay.jpg"), stay_hash,
+                        still=StillSpec(Path("keep/stay.jpg"), 1664, 1216,
+                                        prompt="A detailed photograph of a staying red item.")),
+                    PipelineItem(
+                        2, "moved_from/cross_move", Path("moved_from/cross_move.jpg"), cross_move_hash,
+                        still=StillSpec(Path("moved_from/cross_move.jpg"), 1664, 1216,
+                                        prompt="A detailed photograph of a cross-moved purple item.")),
+                    PipelineItem(
+                        3, "moved_from/local_move", Path("moved_from/local_move.jpg"), local_move_hash,
+                        still=StillSpec(Path("moved_from/local_move.jpg"), 1664, 1216,
+                                        prompt="A detailed photograph of a locally moved yellow item.")),
+                    PipelineItem(
+                        4, "removed_dir/gone", Path("removed_dir/gone.jpg"), gone_hash,
+                        still=StillSpec(Path("removed_dir/gone.jpg"), 1664, 1216,
+                                        prompt="A detailed photograph of a removed green item.")),
+                ],
+            )
+            save_pipeline_tree(input_a, initial_a)
+
+            # Now simulate deduplication:
+            # 1. Delete keep/deleted.jpg
+            (input_a / "keep/deleted.jpg").unlink()
+            # 2. Remove removed_dir/gone.jpg (leaving stale pipeline.yaml in removed_dir or deleting dir)
+            (input_a / "removed_dir/gone.jpg").unlink()
+            # 3. Move local_move.jpg into keep/
+            shutil.move(input_a / "moved_from/local_move.jpg", input_a / "keep/local_move.jpg")
+            # 4. Move cross_move.jpg into input_b/moved_to/ and also add a brand new image in input_b
+            shutil.move(input_a / "moved_from/cross_move.jpg", input_b / "moved_to/cross_move.jpg")
+            Image.new("RGB", (640, 480), "orange").save(input_b / "moved_to/brand_new.jpg")
+
+            llm = mock.Mock()
+            llm.describe.return_value = "fake"
+            llm.chat.return_value = (
+                "<prompt>A detailed photograph of a brand new orange item.</prompt>")
+
+            # Run on group_b first (so cross_move is still in group_a's stale pipeline.yaml)
+            with mock.patch.object(generate_prompts, "ROOT", root), \
+                    mock.patch.object(generate_prompts, "build_llm", return_value=llm):
+                code_b = generate_prompts.main([
+                    "--input-dir", "input2/group_b",
+                    "--output-dir", str(root / "output_b"),
+                    "--original-dims", "--stage", "stills",
+                ])
+                code_a = generate_prompts.main([
+                    "--input-dir", "input2/group_a",
+                    "--output-dir", str(root / "output_a"),
+                    "--original-dims", "--stage", "stills",
+                ])
+
+            loaded_a = load_pipeline_tree(input_a, require_stage="stills")
+            loaded_b = load_pipeline_tree(input_b, require_stage="stills")
+            stale_removed_yaml = (input_a / "removed_dir/pipeline.yaml").exists()
+            stale_moved_yaml = (input_a / "moved_from/pipeline.yaml").exists()
+
+        self.assertEqual((code_a, code_b), (0, 0))
+        # LLM was only called once (for brand_new.jpg in group_b); stay, local_move, and cross_move were reused!
+        llm.chat.assert_called_once()
+        self.assertFalse(stale_removed_yaml)
+        self.assertFalse(stale_moved_yaml)
+        self.assertEqual(
+            [item.item_id for item in loaded_a.items],
+            ["keep/local_move", "keep/stay"])
+        self.assertIn("locally moved yellow", loaded_a.items[0].still.prompt)
+        self.assertEqual(loaded_a.items[0].still.output, Path("keep/local_move.jpg"))
+        self.assertEqual(
+            [item.item_id for item in loaded_b.items],
+            ["moved_to/brand_new", "moved_to/cross_move"])
+        self.assertIn("cross-moved purple", loaded_b.items[1].still.prompt)
+        self.assertEqual(loaded_b.items[1].still.output, Path("moved_to/cross_move.jpg"))
+
 
 class ThumbnailPruneTests(unittest.TestCase):
     def setUp(self):

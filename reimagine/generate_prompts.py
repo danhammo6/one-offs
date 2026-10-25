@@ -17,7 +17,7 @@ from reimagine_pipeline.files import (
 )
 from reimagine_pipeline.llm import OpenAILLM
 from reimagine_pipeline.manifest import (
-    load_pipeline_tree, pipeline_paths, save_pipeline_folder,
+    load_pipeline, load_pipeline_tree, pipeline_paths, save_pipeline_folder,
     save_pipeline_tree, validate_pipeline_input_dir,
 )
 from reimagine_pipeline.models import PipelineItem, PipelineManifest, StillSpec, VideoSpec
@@ -161,6 +161,19 @@ def _prepare_prompt_source(job, common_dir):
     return destination
 
 
+def _rebind_item_paths(item, job):
+    still = item.still
+    if still:
+        still = dataclasses.replace(still, output=job.relative.with_suffix(".jpg"))
+    video = item.video
+    if video:
+        video_suffix = video.output.suffix or ".mp4"
+        video = dataclasses.replace(video, output=job.relative.with_suffix(video_suffix))
+    return dataclasses.replace(
+        item, index=job.index, item_id=job.item_id, source_path=job.relative,
+        still=still, video=video)
+
+
 def _load_planning_state(
         args, jobs, pipeline_root, pipeline_name, configured_input):
     existing = None
@@ -168,23 +181,15 @@ def _load_planning_state(
     for job in jobs:
         folder_counts[job.relative.parent] = (
             folder_counts.get(job.relative.parent, 0) + 1)
-    if pipeline_paths(pipeline_root, pipeline_name):
+    existing_paths = pipeline_paths(pipeline_root, pipeline_name)
+    if existing_paths:
         existing = load_pipeline_tree(pipeline_root, filename=pipeline_name)
-        checkpointed_parents = {
-            item.source_path.parent for item in existing.items}
-        checkpointed_count = sum(
-            folder_counts.get(parent, -1) for parent in checkpointed_parents)
-        if (not args.force and args.stage != "videos" and (
+        if not args.force and args.stage != "videos" and (
                 existing.still_mode != args.still_mode
-                or existing.common_dims != args.common_dims
-                or existing.item_count != checkpointed_count)):
+                or existing.common_dims != args.common_dims):
             raise ValueError(
-                "existing pipeline mode, preprocessing, or inventory differs; "
+                "existing pipeline mode or preprocessing differs; "
                 "use --force")
-    if (existing and args.stage != "videos" and not args.force
-            and existing.common_dims != args.common_dims):
-        raise ValueError(
-            "existing pipeline source preprocessing differs; use --force")
     if (existing and args.stage == "videos"
             and existing.common_dims != args.common_dims):
         raise ValueError(
@@ -192,18 +197,10 @@ def _load_planning_state(
             "--original-dims setting")
     still_mode = (existing.still_mode if existing and args.stage == "videos"
                   else args.still_mode)
-    if existing and args.stage == "videos" and existing.item_count != len(jobs):
-        raise ValueError("existing pipeline inventory differs; use --force")
-    by_id = {} if not existing else {
-        item.item_id: item for item in existing.items}
-    jobs_by_id = {job.item_id: job for job in jobs}
-    if existing and not (args.force and args.stage == "all"):
-        for item_id, item in by_id.items():
-            job = jobs_by_id.get(item_id)
-            if job is None or item.source_path != job.relative:
-                raise ValueError("existing pipeline inventory differs; use --force")
     if args.force and args.stage == "all":
-        by_id = {}
+        for path in existing_paths:
+            if path.parent.relative_to(pipeline_root) not in folder_counts:
+                path.unlink(missing_ok=True)
         for parent in folder_counts:
             save_pipeline_folder(
                 pipeline_root, parent,
@@ -211,7 +208,49 @@ def _load_planning_state(
                     args.still_mode, 0, [], common_dims=args.common_dims,
                     input_dir=configured_input),
                 pipeline_name, prune_empty=True)
-    return still_mode, by_id, folder_counts
+        return still_mode, {}, {}, folder_counts
+
+    by_id = {}
+    by_hash = {}
+    if existing:
+        jobs_by_id = {job.item_id: job for job in jobs}
+        unmatched = []
+        for item in existing.items:
+            job = jobs_by_id.get(item.item_id)
+            if job is not None and item.source_path == job.relative:
+                by_id[item.item_id] = item
+            else:
+                unmatched.append(item)
+        for item in unmatched:
+            by_hash.setdefault(item.source_sha256, item)
+
+        reconciled_manifest = PipelineManifest(
+            still_mode, len(jobs),
+            sorted(by_id.values(), key=lambda value: value.index),
+            common_dims=args.common_dims, input_dir=configured_input)
+        existing_parents = {
+            path.parent.relative_to(pipeline_root) for path in existing_paths}
+        for parent in sorted(existing_parents):
+            if parent not in folder_counts:
+                (pipeline_root / parent / pipeline_name).unlink(missing_ok=True)
+            else:
+                save_pipeline_folder(
+                    pipeline_root, parent, reconciled_manifest, pipeline_name,
+                    folder_counts[parent])
+    if len(configured_input.parts) > 1 and pipeline_root.parent.is_dir():
+        for sibling_path in pipeline_paths(pipeline_root.parent, pipeline_name):
+            if sibling_path.is_relative_to(pipeline_root):
+                continue
+            try:
+                sibling_manifest = load_pipeline(sibling_path)
+            except ValueError:
+                continue
+            if (sibling_manifest.still_mode != still_mode
+                    or sibling_manifest.common_dims != args.common_dims):
+                continue
+            for item in sibling_manifest.items:
+                by_hash.setdefault(item.source_sha256, item)
+    return still_mode, by_id, by_hash, folder_counts
 
 
 def _plan_item(
@@ -292,7 +331,7 @@ def _run(args):
     with directory as common_dir:
         common_dir = Path(common_dir) if common_dir else None
         jobs = discover(input_dir, preprocess)
-        still_mode, by_id, folder_counts = _load_planning_state(
+        still_mode, by_id, by_hash, folder_counts = _load_planning_state(
             args, jobs, input_dir, pipeline_name, configured_input)
         llm = build_llm(args)
         logger.info("generate prompts: %d item(s), stage=%s", len(jobs), args.stage)
@@ -311,6 +350,7 @@ def _run(args):
         for job in jobs:
             tag = f"[{job.index + 1}/{len(jobs)}] {job.relative}"
             item = by_id.get(job.item_id)
+            rebound = False
             dimensions_changed = (
                 args.stage in {"all", "stills"} and item and item.still
                 and (item.still.width, item.still.height) != (job.width, job.height))
@@ -319,6 +359,14 @@ def _run(args):
                 if item and (item.source_sha256 != source_hash
                              or dimensions_changed):
                     item = None
+                if item is None:
+                    matched = by_hash.get(source_hash)
+                    if matched and (
+                            args.stage == "videos"
+                            or not matched.still
+                            or (matched.still.width, matched.still.height) == (job.width, job.height)):
+                        item = _rebind_item_paths(matched, job)
+                        rebound = True
                 job = dataclasses.replace(
                     job, source_hash=source_hash,
                     prompt_source=(_prepare_prompt_source(job, common_dir)
@@ -346,6 +394,9 @@ def _run(args):
             if changed:
                 generated += 1
                 logger.info("%s  planned", tag)
+            elif rebound:
+                skipped += 1
+                logger.info("%s  reused moved plan", tag)
             else:
                 skipped += 1
                 logger.info("%s  saved plan unchanged", tag)

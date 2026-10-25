@@ -384,13 +384,17 @@ def _run(args):
             changed = item is None or dataclasses.replace(
                 planned, index=item.index, source_size=item.source_size,
                 source_mtime_ns=item.source_mtime_ns) != item
+            stat_changed = item is not None and (
+                planned.source_size != item.source_size
+                or planned.source_mtime_ns != item.source_mtime_ns)
             by_id[job.item_id] = planned
             manifest = PipelineManifest(
                 still_mode, len(jobs),
                 sorted(by_id.values(), key=lambda value: value.index),
                 common_dims=args.common_dims, input_dir=configured_input)
-            _save_checkpoint(
-                input_dir, pipeline_name, folder_counts, job, manifest)
+            if changed or rebound or stat_changed:
+                _save_checkpoint(
+                    input_dir, pipeline_name, folder_counts, job, manifest)
             if changed:
                 generated += 1
                 logger.info("%s  planned", tag)

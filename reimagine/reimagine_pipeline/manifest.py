@@ -107,9 +107,15 @@ def save_pipeline(path, manifest):
         if item.video:
             entry["video"] = _video_to_data(item.video)
         data["items"].append(entry)
-    atomic_write_text(path, yaml.safe_dump(
+    text = yaml.safe_dump(
         data, sort_keys=False, allow_unicode=True, default_flow_style=False,
-        width=1000))
+        width=1000)
+    try:
+        current = path.read_text(encoding="utf-8")
+    except OSError:
+        current = None
+    if current != text:
+        atomic_write_text(path, text)
     for obsolete in ("prompts.yaml", "video_prompts.yaml"):
         (path.parent / obsolete).unlink(missing_ok=True)
 

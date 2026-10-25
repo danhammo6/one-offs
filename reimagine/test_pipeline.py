@@ -3393,6 +3393,14 @@ class ProcessIsolationTests(unittest.TestCase):
                     "--output-dir", str(root / "output_a"),
                     "--original-dims", "--stage", "stills",
                 ])
+                with mock.patch("reimagine_pipeline.manifest.atomic_write_text") as write_text:
+                    code_a_rerun = generate_prompts.main([
+                        "--input-dir", "input2/group_a",
+                        "--output-dir", str(root / "output_a"),
+                        "--original-dims", "--stage", "stills",
+                    ])
+                write_text.assert_not_called()
+                self.assertEqual(code_a_rerun, 0)
 
             loaded_a = load_pipeline_tree(input_a, require_stage="stills")
             loaded_b = load_pipeline_tree(input_b, require_stage="stills")

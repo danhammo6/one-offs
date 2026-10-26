@@ -268,6 +268,15 @@ or deleted images come back. Without `--reroll` they get their original seed
 is saved in `render_state.yaml`, and existing outputs keep theirs, so resuming
 a `--reroll` run with or without the flag leaves finished images alone.
 
+Media and state files are written to a temporary file beside the destination,
+then atomically renamed. On Windows, access-denied and sharing/lock errors at
+the rename are retried with backoff for up to 30 seconds, reusing the completed
+temporary file without rerunning ComfyUI. Persistent errors still fail the save.
+If backup software keeps locking files, consider temporarily excluding the
+active output directory from backup and including it again after rendering.
+`--comfyui-output-dir` only selects where ComfyUI results are read; converted
+JPEGs and copied videos are still saved separately under `--output-dir`.
+
 Each image folder's `render_state.yaml` tracks its render fingerprints and
 output hashes. A changed still invalidates its dependent video. Corrupt or
 stale files are not silently accepted merely because a path exists.

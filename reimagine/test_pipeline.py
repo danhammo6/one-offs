@@ -50,6 +50,84 @@ import generate_prompts
 import render_media
 
 
+class AtomicWriteTests(unittest.TestCase):
+    @staticmethod
+    def windows_error(code):
+        error = PermissionError("simulated Windows file lock")
+        error.winerror = code
+        return error
+
+    def test_transient_windows_locks_retry_without_rewriting_data(self):
+        real_replace = Path.replace
+        for code in (5, 32, 33):
+            with self.subTest(code=code), tempfile.TemporaryDirectory() as tmp:
+                destination = Path(tmp) / "image.jpg"
+                destination.write_bytes(b"old image")
+                attempts = []
+
+                def replace(source, target):
+                    attempts.append(source)
+                    self.assertEqual(source.read_bytes(), b"complete new image")
+                    self.assertEqual(target.read_bytes(), b"old image")
+                    if len(attempts) < 3:
+                        raise self.windows_error(code)
+                    return real_replace(source, target)
+
+                with mock.patch.object(Path, "replace", replace), mock.patch(
+                        "reimagine_pipeline.files.time.sleep") as sleep:
+                    pipeline_files.atomic_write_bytes(
+                        destination, b"complete new image")
+                self.assertEqual(sleep.call_count, 2)
+                self.assertEqual(len(set(attempts)), 1)
+                self.assertEqual(destination.read_bytes(), b"complete new image")
+                self.assertEqual(list(Path(tmp).iterdir()), [destination])
+
+    def test_persistent_windows_lock_times_out_and_keeps_old_file(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            destination = Path(tmp) / "image.jpg"
+            destination.write_bytes(b"old image")
+            error = self.windows_error(5)
+            with mock.patch.object(Path, "replace", side_effect=error), mock.patch(
+                    "reimagine_pipeline.files.time.monotonic",
+                    side_effect=[0, 0, 31]), mock.patch(
+                    "reimagine_pipeline.files.time.sleep") as sleep:
+                with self.assertRaises(PermissionError) as raised:
+                    pipeline_files.atomic_write_bytes(destination, b"new image")
+            self.assertIs(raised.exception, error)
+            sleep.assert_called_once_with(0.05)
+            self.assertEqual(destination.read_bytes(), b"old image")
+            self.assertEqual(list(Path(tmp).iterdir()), [destination])
+
+    def test_other_errors_fail_without_retry(self):
+        for error in (PermissionError("permissions"), OSError("disk full"),
+                      self.windows_error(123)):
+            with self.subTest(error=error), tempfile.TemporaryDirectory() as tmp:
+                with mock.patch.object(Path, "replace", side_effect=error), mock.patch(
+                        "reimagine_pipeline.files.time.sleep") as sleep:
+                    with self.assertRaises(OSError) as raised:
+                        pipeline_files.atomic_write_text(Path(tmp) / "state.yaml", "state")
+                self.assertIs(raised.exception, error)
+                sleep.assert_not_called()
+                self.assertEqual(list(Path(tmp).iterdir()), [])
+
+    def test_locked_temp_cleanup_preserves_original_failure(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            error = OSError("original save error")
+            with mock.patch.object(Path, "replace", side_effect=error), mock.patch.object(
+                    Path, "unlink", side_effect=self.windows_error(5)):
+                with self.assertRaises(OSError) as raised:
+                    pipeline_files.atomic_write_bytes(Path(tmp) / "image.jpg", b"image")
+            self.assertIs(raised.exception, error)
+
+    def test_write_without_unix_fchmod(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            destination = Path(tmp) / "image.jpg"
+            with mock.patch.object(pipeline_files.os, "fchmod"):
+                del pipeline_files.os.fchmod
+                pipeline_files.atomic_write_bytes(destination, b"image")
+            self.assertEqual(destination.read_bytes(), b"image")
+
+
 class PipelineManifestTests(unittest.TestCase):
     def test_common_dimensions_cover_supported_aspect_ratios(self):
         cases = [

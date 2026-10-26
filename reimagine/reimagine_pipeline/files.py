@@ -1,9 +1,11 @@
 import hashlib
 import io
+import logging
 import os
 import shutil
 import stat
 import tempfile
+import time
 from dataclasses import dataclass, field
 from functools import lru_cache
 from pathlib import Path
@@ -29,6 +31,36 @@ COMMON_DIMS = {
 }
 
 
+logger = logging.getLogger(__name__)
+
+
+def _replace_with_retry(source, destination):
+    """Allow Windows scanners/readers time to release either file."""
+    deadline = time.monotonic() + 30.0
+    delay = 0.05
+    warned = False
+    while True:
+        try:
+            source.replace(destination)
+            return
+        except OSError as error:
+            # winerror distinguishes Windows locks/access errors from ordinary
+            # permission failures on other platforms. Permanent Windows access
+            # failures still propagate once the bounded wait expires.
+            if getattr(error, "winerror", None) not in {5, 32, 33}:
+                raise
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise
+            if not warned:
+                logger.warning(
+                    "Waiting up to 30s to save %s: Windows denied the rename; "
+                    "another process may have the file open", destination)
+                warned = True
+            time.sleep(min(delay, remaining))
+            delay = min(delay * 2, 1.0)
+
+
 def _atomic_write(path, data, mode, encoding=None, durable=False):
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = None
@@ -37,12 +69,13 @@ def _atomic_write(path, data, mode, encoding=None, durable=False):
                 mode=mode, encoding=encoding, dir=path.parent,
                 prefix=f".{path.name}.", delete=False) as handle:
             temporary = Path(handle.name)
-            os.fchmod(handle.fileno(), 0o600)
+            if hasattr(os, "fchmod"):
+                os.fchmod(handle.fileno(), 0o600)
             handle.write(data)
             handle.flush()
             if durable:
                 os.fsync(handle.fileno())
-        temporary.replace(path)
+        _replace_with_retry(temporary, path)
         temporary = None
         if durable:
             try:
@@ -55,7 +88,13 @@ def _atomic_write(path, data, mode, encoding=None, durable=False):
                 pass
     finally:
         if temporary is not None:
-            temporary.unlink(missing_ok=True)
+            try:
+                temporary.unlink(missing_ok=True)
+            except OSError:
+                # A scanner can also lock the temporary file against deletion.
+                # Keep the original write/rename error visible to the caller.
+                logger.warning("Could not remove temporary file %s", temporary,
+                               exc_info=True)
 
 
 def atomic_write_text(path, text, durable=False):
